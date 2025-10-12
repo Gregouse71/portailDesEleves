@@ -23,6 +23,7 @@ export default function BlocChat() {
     });
 
     newSocket.on("message", (message) => {
+    console.log(`received ${message}`)
       setMessages((prev) => [
         ...prev,
         { text: message.text, time: message.time, author: message.author, is_you: message.is_you, id: message.id }
@@ -49,6 +50,7 @@ export default function BlocChat() {
   const sendMessage = () => {
     if (!input.trim()) return;
     const message = { text: input };
+    console.log(`sent ${message}`)
     socket.emit("message", message);
     setInput("");
     // After sending a message, always scroll to the bottom
