@@ -17,26 +17,21 @@ def route_sondage_du_jour():
     """
     resultat = obtenir_sondage_du_jour_et_votes()
     if resultat:
-        question_du_jour, reponses_brutes, votes_par_question = resultat
-        reponses = []
-        votes = []
-        for i in range(4) :
-            if reponses_brutes[i] != None :
-                reponses.append(reponses_brutes[i])
-                votes.append(votes_par_question[i])
+        question_du_jour, reponses, votes_par_question = resultat
+        print(resultat)
         
         # Retourner les données sous forme de JSON
         return jsonify({
             'is_sondage': True,
             'question': question_du_jour, # quel est le meilleur etage ?
             'reponses': reponses, #["piche", "straal", "bench"]
-            'votes' : votes # [0,1,8]
+            'votes' : votes_par_question # [0,1,8]
         })
     else:
         return jsonify({'is_sondage': False}), 200
 
 # /!\ ajouter un decorateur pour verifier qu'il y a bien un sodage aujourd'hui   
-@controllers_sondages.route('/route_voter_sondage/<int:vote>', methods=['POST'])
+@controllers_sondages.route('/voter_sondage/<int:vote>', methods=['POST'])
 @login_required
 def route_voter_sondage(vote:int):
     """
@@ -74,7 +69,7 @@ def route_supprimer_sondage(id_sondage:int):
         return jsonify({'message': str(e)}), 500
 
 
-@controllers_sondages.route('/route_proposer_sondage', methods=['POST'])
+@controllers_sondages.route('/proposer_sondage', methods=['POST'])
 @login_required
 def route_proposer_sondage():
     """
@@ -103,7 +98,7 @@ def route_sondage_suivant() :
     except Exception as e:
         return jsonify({'message': f'Erreur lors du passage au sondage suivant : {str(e)}'}), 500
 
-@controllers_sondages.route("/route_obtenir_sondages_en_attente", methods=["GET"])
+@controllers_sondages.route("/obtenir_sondages_en_attente", methods=["GET"])
 def route_obtenir_sondages_en_attente() :
     try :
         sondages = obtenir_sondages_non_valide()
