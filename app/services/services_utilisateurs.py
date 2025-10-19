@@ -19,36 +19,38 @@ def get_utilisateur(utilisateur_id) -> Utilisateur:
     else:
         return None
 
-def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur):
+def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     """
     Supprime le lien de colocation entre les deux utilisateurs. 
     Leve si les deux utilisateurs ne sont pas co
     """
-    if utilisateur1.co == utilisateur2 and utilisateur2.co == utilisateur1: # les deux sont co
+    if utilisateur1.co == utilisateur2 and utilisateur2.co == utilisateur1 : # les deux sont co
             utilisateur1.co = None
             utilisateur2.co = None
-            db.session.commit()       
     else :
         raise ErreurDeLienUtilisateurs("Erreur : les deux utilisateurs ne sont pas co.") # sinon erreur
     
 
-def creer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur):
+def creer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     """
     Crée un lien de colocation entre deux utilisateurs en modifiant leurs attributs.
     Si l'un des deux utilisateurs avait deja un co, le lien precedent est detruit. 
     """
-    if utilisateur1.co is None and utilisateur2.co is None: # les deux sont libres : on cree le lien
-        utilisateur1.co = utilisateur2
-        utilisateur2.co = utilisateur1
-    else :
-        if utilisateur1.co is not None: # 1 a un co : on le supprime
-            supprimer_co(utilisateur1, utilisateur1.co)
-        if utilisateur2.co is not None: # 2 a un co : on le supprime
-            supprimer_co(utilisateur2, utilisateur2.co)
-        # Les deux sont libres : on met a jour
-        utilisateur1.co = utilisateur2
-        utilisateur2.co = utilisateur1
-    db.session.commit()       
+    # Verifier que les deux utilisateurs ne sont pas deja co
+    if utilisateur1.co_id == utilisateur2.id and utilisateur2.co_id == utilisateur1.id:
+        return
+
+    # Casser les anciennes relations
+    if utilisateur1.co:
+        utilisateur1.co.co = None
+    if utilisateur2.co:
+        utilisateur2.co.co = None
+
+    # Mettre en place la nouvelle relation
+    utilisateur1.co = utilisateur2
+    utilisateur2.co = utilisateur1
+
+    db.session.commit()
 
 # PARRAINAGE
 
@@ -71,7 +73,6 @@ def ajouter_fillots_a_la_famille(marrain:Utilisateur, liste_fillots:list[Utilisa
     # modification
     marrain.fillots.extend(fillots_a_ajouter)
     db.session.commit()
-
 
 
 def supprimer_fillots(marrain:Utilisateur) :
@@ -109,4 +110,3 @@ def prochains_anniv():
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
     print (ret)
     return ret
-    
