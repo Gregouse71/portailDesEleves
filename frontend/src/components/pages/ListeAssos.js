@@ -41,14 +41,12 @@ export default function ListeAssos() {
             {isSuperUser && (
                 <Col>
                     <Card 
-                        className="h-100 text-center" 
+                        className="h-100 text-center hover-overlay" 
                         onClick={() => navigate("/assos/ajouter")}
                         style={{ cursor: 'pointer' }}
                     >
                         <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                            <Button variant="outline-primary">
-                                <img src='/assets/icons/plus.svg' alt="Ajouter une association" style={{ width: "50px" }}/>
-                            </Button>
+                            <img src='/assets/icons/plus.svg' alt="Ajouter une association" style={{ width: "50px" }}/>
                             <Card.Title className="mt-2">Ajouter</Card.Title>
                         </Card.Body>
                     </Card>

@@ -1,44 +1,8 @@
 import { useEffect, useState } from "react";
-import Select from "react-select";
-import { chargerUtilisateursParPromo, modifierInfos, obtenirDataUser} from "../../../api/api_utilisateurs";
+import { chargerUtilisateursParPromo, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import { useLayout } from "../../../layouts/Layout";
 import BoutonEditer from "../../elements/BoutonEditer";
-
-function DropDownSelect({ options, open, setOpen, selected, setSelected, single }) {
-    return (<div>
-        {/* Button to open dropdown */}
-        <button
-            onClick={() => setOpen((prev) => !prev)}
-            style={{ padding: "0.5rem 1rem", width: "100%" }}
-        >
-            {single ? selected.label :
-                selected.length === 0 ? "Select options..." : selected.map((opt) => opt.label).join(", ")}
-        </button>
-
-        {/* Dropdown menu */}
-        {open && (
-            <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, }}                    >
-                <Select
-                    options={options}
-                    value={selected}
-                    onChange={(opt) => {
-                        setSelected(opt);
-                        setOpen(false); // close on selection
-                    }}
-                    isMulti={!single}
-                    autoFocus
-                    placeholder="Search..."
-                    menuIsOpen={true} // always open inside the popover
-                    styles={{
-                        menu: (provided) => ({ ...provided, position: "relative" }),
-                    }}
-                />
-            </div>
-        )}
-    </div>);
-}
-
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const { userData } = useLayout();
@@ -49,36 +13,58 @@ export default function TabInfo({ id, autoriseAModifier }) {
             date_de_naissance: "0",
             chambre: "0",
             ville_origine: "Lens",
-            instruments: []
+            instruments: [],
+            co: null,
+            marrain: null,
+            fillots: []
         }
     );
 
-    const [openP, setOpenP] = useState(false);
-    const [selectedP, setSelectedP] = useState([]);
+    const [selectedP, setSelectedP] = useState("");
     const [optionsP, setOptionsP] = useState([]);
 
-    const [openC, setOpenC] = useState(false);
-    const [selectedC, setSelectedC] = useState([]);
+    const [selectedC, setSelectedC] = useState("");
     const [optionsC, setOptionsC] = useState([]);
+
+    const [selectedF, setSelectedF] = useState([]);
+    const [optionsF, setOptionsF] = useState([]);
 
     useEffect(() => {// Obtention des données utilisateur à afficher
         const fetchData = async () => {
-            var data = await obtenirDataUser(id);
+            const data = await obtenirDataUser(id);
             setUserInfos({
                 email: data.email,
                 telephone: data.telephone,
-                promo: data.promo,
+                promo: data.promotion,
                 date_de_naissance: data.date_de_naissance,
                 chambre: data.chambre,
                 ville_origine: data.ville_origine,
-                instruments: data.instruments ? data.instruments : []
+                instruments: data.instruments || [],
+                co: data.co,
+                marrain: data.marrain,
+                fillots: data.fillots || []
             });
-            if (!isNaN(parseInt(userInfos.promo))) {
-                var data = await chargerUtilisateursParPromo(userInfos.promo - 1);
-                setOptionsP(data.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
 
-                var data = await chargerUtilisateursParPromo(userInfos.promo);
-                setOptionsC(data.map(elt => ({ value: elt.id, label: elt.promo + " " + elt.nom })));
+            if (data.co) {
+                setSelectedC(data.co.id);
+            }
+            if (data.marrain) {
+                setSelectedP(data.marrain.id);
+            }
+            if (data.fillots) {
+                setSelectedF(data.fillots.map(f => f.id));
+            }
+
+            if (data.promotion && !isNaN(parseInt(data.promotion))) {
+                const promoInt = parseInt(data.promotion);
+                const dataParrains = await chargerUtilisateursParPromo(promoInt - 1);
+                setOptionsP(dataParrains.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
+
+                const dataCo = await chargerUtilisateursParPromo(promoInt);
+                setOptionsC(dataCo.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
+
+                const dataFillots = await chargerUtilisateursParPromo(promoInt + 1);
+                setOptionsF(dataFillots.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
             }
         };
         fetchData();
@@ -101,7 +87,20 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     const validerModifierInfos = () => {
-        modifierInfos(id, userInfos);
+        const infosToSave = {
+            ...userInfos,
+            co: selectedC,
+        };
+        modifierInfos(id, infosToSave);
+
+        if (selectedP) { // if a marrain is selected
+            changerMarrain(selectedP, id);
+        }
+
+        if (selectedF.length > 0) {
+            selectionnerFillots(selectedF);
+        }
+
         setIsGestion(false);
     }
 
@@ -124,20 +123,23 @@ export default function TabInfo({ id, autoriseAModifier }) {
     }
 
     return (<>
-        {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)}/>}
-        
-        <Row className="mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            <h2>Informations personnelles</h2>
+            {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)} />}
+        </div>
+
+        <Row>
             <Col md={6}>
                 <InputGroup className="mb-3">
-                    <InputGroup.Text><img src="/assets/icons/phone.svg" alt="Phone" style={{width: '20px'}}/></InputGroup.Text>
-                    <Form.Control value={userInfos.telephone || '01 23 45 67 89'} disabled/>
+                    <InputGroup.Text><img src="/assets/icons/phone.svg" alt="Phone" style={{ width: '20px' }} /></InputGroup.Text>
+                    <Form.Control value={userInfos.telephone || '01 23 45 67 89'} disabled />
                     <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.telephone || '01 23 45 67 89')}>Copier</Button>
                 </InputGroup>
             </Col>
             <Col md={6}>
                 <InputGroup className="mb-3">
-                    <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{width: '20px'}}/></InputGroup.Text>
-                    <Form.Control value={userInfos.email || 'example@mail.com'} disabled/>
+                    <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{ width: '20px' }} /></InputGroup.Text>
+                    <Form.Control value={userInfos.email || 'example@mail.com'} disabled />
                     <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.email || 'example@mail.com')}>Copier</Button>
                 </InputGroup>
             </Col>
@@ -148,10 +150,24 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <p>Promo : {userInfos.promo}</p>
                 <p>Ville d'origine : {userInfos.ville_origine}</p>
                 <p>Chambre : {userInfos.chambre}</p>
-                <div><h3>Instruments</h3>
+                <div>
+                    <h3>Instruments</h3>
                     <ul>
                         {userInfos.instruments.map(elt => (<li>{elt[0]} : {elt[1]}</li>))}
                     </ul>
+                </div>
+                <div>
+                    <h3>Relations</h3>
+                    <p>Co : {userInfos.co?.nom_utilisateur}</p>
+                    <p>Marrain : {userInfos.marrain?.nom_utilisateur}</p>
+                    <div>
+                        <p>Fillots :</p>
+                        <ul>
+                            {userInfos.fillots.map(fillot => (
+                                <li key={fillot.id}>{fillot.nom_utilisateur}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </>
             :
@@ -174,15 +190,15 @@ export default function TabInfo({ id, autoriseAModifier }) {
                         <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={e => handleChange(e)} />
                     </Col>
                 </Form.Group>
-                
+
                 <h3>Instruments</h3>
                 {userInfos.instruments.map((elt, ind) => (
                     <Row key={ind} className="mb-2">
                         <Col>
-                            <Form.Control value={elt[0]} name={ind} onChange={handleInstruNameChange}/>
+                            <Form.Control value={elt[0]} name={ind} onChange={handleInstruNameChange} />
                         </Col>
                         <Col>
-                            <Form.Control value={elt[1]} name={ind} onChange={handleInstruChange}/>
+                            <Form.Control value={elt[1]} name={ind} onChange={handleInstruChange} />
                         </Col>
                     </Row>
                 ))}
@@ -192,13 +208,34 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Co</Form.Label>
                     <Col sm="10">
-                        <DropDownSelect options={optionsC} open={openC} setOpen={setOpenC} selected={selectedC} setSelected={setSelectedC} single={true} />
+                        <Form.Select value={selectedC} onChange={e => setSelectedC(e.target.value)}>
+                            <option value="">---</option>
+                            {optionsC.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                        </Form.Select>
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Parrain(s)</Form.Label>
+                    <Form.Label column sm="2">Marrain</Form.Label>
                     <Col sm="10">
-                        <DropDownSelect options={optionsP} open={openP} setOpen={setOpenP} selected={selectedP} setSelected={setSelectedP} single={false} />
+                        <Form.Select value={selectedP} onChange={e => setSelectedP(e.target.value)}>
+                            <option value="">---</option>
+                            {optionsP.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                        </Form.Select>
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Fillots</Form.Label>
+                    <Col sm="10">
+                        <Form.Select 
+                            multiple
+                            value={selectedF} 
+                            onChange={e => {
+                                const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                                setSelectedF(selectedOptions);
+                            }}
+                        >
+                            {optionsF.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                        </Form.Select>
                     </Col>
                 </Form.Group>
 
@@ -207,7 +244,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
                 </div>
             </Form>
-            }
+        }
     </>
     );
 }

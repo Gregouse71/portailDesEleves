@@ -144,12 +144,14 @@ function AssoMembres({ asso_id }) {
                 ))}
 
                 {isMembreAutorise && isGestionMembres &&
-                    <Card className="text-center h-100">
-                        <Card.Body className="d-flex flex-column justify-content-center">
+                    <Card 
+                        className="text-center h-100"
+                        onClick={!isAjoutMembre ? () => setIsAjoutMembre(true) : undefined}
+                        style={!isAjoutMembre ? { cursor: 'pointer' } : {}}
+                    >
+                        <Card.Body className="d-flex flex-column justify-content-center align-items-center">
                             {!isAjoutMembre && <>
-                                <Button variant="outline-primary" onClick={() => setIsAjoutMembre(true)}>
-                                    <img src='/assets/icons/plus.svg' alt="Ajouter une association" style={{ width: "50px" }} />
-                                </Button>
+                                <img src='/assets/icons/plus.svg' alt="Ajouter un membre" style={{ width: "50px" }} />
                                 <Card.Title className="mt-2">Ajouter un membre</Card.Title>
                             </>}
                             {isAjoutMembre && <>
