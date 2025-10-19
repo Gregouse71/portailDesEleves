@@ -1,0 +1,16 @@
+name: site
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13
+  - Flask
+  - Flask-SQLAlchemy
+  - Flask-Login
+  - Flask-Cors
+  - Flask-SocketIO
+  - Flask-Apscheduler
+  - pytest
+  - requests
+  - gunicorn
+  - eventlet
