@@ -1,0 +1,27 @@
+/* Déclaration des variables globales */
+:root {
+  --global-style-primary-color: #000000; /* Couleur du header (noir) */
+  --global-style-secondary-color: #035BA2;
+  --global-style-background-color: #f5f5f5; /* Fond de la page */
+  --global-style-text-color: #333333; /* Couleur du texte principal */
+}
+
+/* Styles généraux */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: var(--global-style-background-color);
+}
+
+/* Layout global */
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content-global {
+    padding: 10px;
+    margin-top: 10px;
+}

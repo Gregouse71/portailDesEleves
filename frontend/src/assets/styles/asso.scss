@@ -1,0 +1,39 @@
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+:root {
+    --primary-color: #007bff;
+    --text-color: #333;
+}
+
+.asso-banner {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+
+.asso-logo {
+    margin-top: -75px;
+    width: 150px;
+    height: 150px;
+    border: 6px solid $light;
+    background-color: $light;
+    object-fit: cover;
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1.5rem;
+}

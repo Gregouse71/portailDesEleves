@@ -1,52 +1,77 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
-import '../../../assets/styles/utilisateur.css';
-import { chargerUtilisateursParPromo, modifierInfos} from "../../../api/api_utilisateurs";
+import { Link } from "react-router-dom";
+import { chargerUtilisateursParPromo, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
+import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
+import { useLayout } from "../../../layouts/Layout";
+import BoutonEditer from "../../elements/BoutonEditer";
 
-function DropDownSelect({ options, open, setOpen, selected, setSelected, single }) {
-    return (<div>
-        {/* Button to open dropdown */}
-        <button
-            onClick={() => setOpen((prev) => !prev)}
-            style={{ padding: "0.5rem 1rem", width: "100%" }}
-        >
-            {single ? selected.label :
-                selected.length === 0 ? "Select options..." : selected.map((opt) => opt.label).join(", ")}
-        </button>
-
-        {/* Dropdown menu */}
-        {open && (
-            <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, }}                    >
-                <Select
-                    options={options}
-                    value={selected}
-                    onChange={(opt) => {
-                        setSelected(opt);
-                        setOpen(false); // close on selection
-                    }}
-                    isMulti={!single}
-                    autoFocus
-                    placeholder="Search..."
-                    menuIsOpen={true} // always open inside the popover
-                    styles={{
-                        menu: (provided) => ({ ...provided, position: "relative" }),
-                    }}
-                />
-            </div>
-        )}
-    </div>);
-}
-
-
-export default function TabInfo({ id, donneesUtilisateur, autoriseAModifier }) {
+export default function TabInfo({ id, autoriseAModifier }) {
+    const { userData } = useLayout();
     const [isGestion, setIsGestion] = useState(false);
-    const [userInfos, setUserInfos] = useState({
-        promo: donneesUtilisateur.promotion,
-        date_de_naissance: donneesUtilisateur.date_de_naissance,
-        chambre: donneesUtilisateur.chambre,
-        ville_origine: donneesUtilisateur.ville_origine,
-        instruments: donneesUtilisateur.instruments ? donneesUtilisateur.instruments : []
-    });
+    const [userInfos, setUserInfos] = useState(
+        {
+            promo: 2,
+            date_de_naissance: "0",
+            chambre: "0",
+            ville_origine: "Lens",
+            instruments: [],
+            co: null,
+            marrain: null,
+            fillots: []
+        }
+    );
+
+    const [selectedP, setSelectedP] = useState(null);
+    const [optionsP, setOptionsP] = useState([]);
+
+    const [selectedC, setSelectedC] = useState(null);
+    const [optionsC, setOptionsC] = useState([]);
+
+    const [selectedF, setSelectedF] = useState([]);
+    const [optionsF, setOptionsF] = useState([]);
+
+    useEffect(() => {// Obtention des données utilisateur à afficher
+        const fetchData = async () => {
+            const data = await obtenirDataUser(id);
+            setUserInfos({
+                email: data.email,
+                telephone: data.telephone,
+                promo: data.promotion,
+                date_de_naissance: data.date_de_naissance,
+                chambre: data.chambre,
+                ville_origine: data.ville_origine,
+                instruments: data.instruments || [],
+                co: data.co,
+                marrain: data.marrain,
+                fillots: data.fillots || []
+            });
+
+            if (data.promotion && !isNaN(parseInt(data.promotion))) {
+                const promoInt = parseInt(data.promotion);
+
+                const dataParrains = await chargerUtilisateursParPromo(promoInt - 1);
+                setOptionsP(dataParrains.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+
+                const dataCo = await chargerUtilisateursParPromo(promoInt);
+                setOptionsC(dataCo.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+
+                const dataFillots = await chargerUtilisateursParPromo(promoInt + 1);
+                setOptionsF(dataFillots.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+
+                if (data.co) {
+                    setSelectedC({ value: data.co.id, label: data.co.nom_utilisateur });
+                }
+                if (data.marrain) {
+                    setSelectedP({ value: data.marrain.id, label: data.marrain.nom_utilisateur });
+                }
+                if (data.fillots) {
+                    setSelectedF(data.fillots.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+                }
+            }
+        };
+        fetchData();
+    }, [id]);
 
     const copyToClipboard = (text) => {
         if (navigator.clipboard) {
@@ -55,7 +80,7 @@ export default function TabInfo({ id, donneesUtilisateur, autoriseAModifier }) {
                 console.error("Erreur lors de la copie : ", err);
             });
         } else {
-            console.log("La fonctionnalité de copier dans le presse-papiers n'est pas supportée.");
+            console.err("La fonctionnalité de copier dans le presse-papiers n'est pas supportée.");
         }
     };
 
@@ -64,44 +89,46 @@ export default function TabInfo({ id, donneesUtilisateur, autoriseAModifier }) {
         setUserInfos({ ...userInfos, [name]: value })
     };
 
-    const validerModifierInfos = () => {
-        modifierInfos(id, userInfos);
+    const validerModifierInfos = async () => {
+        const { co, marrain, fillots, ...otherInfos } = userInfos;
+        await modifierInfos(id, otherInfos);
+
+        const newCoId = selectedC ? selectedC.value : null;
+        if (co?.id !== newCoId) {
+            await changerCo(id, newCoId);
+        }
+
+        const newMarrainId = selectedP ? selectedP.value : null;
+        if (userInfos.marrain?.id !== newMarrainId) {
+             await changerMarrain(newMarrainId, id);
+        }
+
+        await selectionnerFillots(id, selectedF.map(f => f.value));
+
+        const data = await obtenirDataUser(id);
+
+        setUserInfos({
+            email: data.email,
+            telephone: data.telephone,
+            promo: data.promotion,
+            date_de_naissance: data.date_de_naissance,
+            chambre: data.chambre,
+            ville_origine: data.ville_origine,
+            instruments: data.instruments || [],
+            co: data.co,
+            marrain: data.marrain,
+            fillots: data.fillots || []
+
+        });
+
         setIsGestion(false);
     }
 
-    const [openP, setOpenP] = useState(false);
-    const [selectedP, setSelectedP] = useState([]);
-    const [optionsP, setOptionsP] = useState([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const data = await chargerUtilisateursParPromo(donneesUtilisateur.promotion - 1);
-            setOptionsP(data.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
-        };
-        fetchData();
-    }, []);
-
-    const [openC, setOpenC] = useState(false);
-    const [selectedC, setSelectedC] = useState([]);
-    const [optionsC, setOptionsC] = useState([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const data = await chargerUtilisateursParPromo(donneesUtilisateur.promotion);
-            setOptionsC(data.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
-        };
-        fetchData();
-    }, []);
-
     const handleInstruChange = (e) => {
         const { name, value } = e.target;
-        console.log(name, value)
         let temp = userInfos.instruments;
-        console.log(temp[name])
         temp[name] = [userInfos.instruments[name][0], value];
-        console.log(`temp: ${temp}`)
         setUserInfos({ ...userInfos, instruments: temp })
-        console.log(userInfos.instruments)
     }
 
     const handleInstruNameChange = (e) => {
@@ -109,78 +136,153 @@ export default function TabInfo({ id, donneesUtilisateur, autoriseAModifier }) {
         var temp = userInfos.instruments;
         temp[name] = [value, userInfos.instruments[name][1]];
         setUserInfos({ ...userInfos, instruments: temp })
-        console.log(userInfos.instruments)
     }
 
     const ajouterInstru = () => {
         setUserInfos({ ...userInfos, instruments: [...userInfos.instruments, ["Piano", "1 an"]] })
-        console.log(userInfos.instruments)
     }
 
     return (<>
-        {autoriseAModifier && <div className='asso-button' id="asso-description-button" onClick={() => setIsGestion(!isGestion)}>
-            <img src="/assets/icons/edit.svg" alt="Copy" />
-            <p id="texteCopier">Éditer</p>
-        </div>}
-        <div className='user-info-contact'>
-            {/* Section Téléphone */}
-            <div className="user-contact">
-                <img src="/assets/icons/phone.svg" alt="Phone" className="user-icon" />
-                <p className='user-donnee-contact'>{donneesUtilisateur.telephone || '01 23 45 67 89'}</p> {/* Mettre le numéro réel ici */}
-                <div className='asso-button'>
-                    <img src="/assets/icons/copy.svg" alt="Copy" className="user-icon" onClick={() => copyToClipboard(donneesUtilisateur.telephone || '01 23 45 67 89')} />
-                    <p id="texteCopier">copier</p>
-                </div>
-            </div>
-
-            {/* Section Email */}
-            <div className="user-contact">
-                <img src="/assets/icons/mail.svg" alt="Mail" className="user-icon" />
-                <p className='user-donnee-contact'>{donneesUtilisateur.email || 'example@mail.com'}</p> {/* Mettre l'email réel ici */}
-                <div className='asso-button'>
-                    <img src="/assets/icons/copy.svg" alt="Copy" className="user-icon copy" onClick={() => copyToClipboard(donneesUtilisateur.email || 'example@mail.com')} />
-                    <p id="texteCopier">copier</p>
-                </div>
-            </div>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            <h2>Informations personnelles</h2>
+            {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)} />}
         </div>
+
+        <Row>
+            <Col md={6}>
+                <InputGroup className="mb-3">
+                    <InputGroup.Text><img src="/assets/icons/phone.svg" alt="Phone" style={{ width: '20px' }} /></InputGroup.Text>
+                    <Form.Control
+                        name="telephone"
+                        value={userInfos.telephone || ''}
+                        placeholder="01 23 45 67 89"
+                        disabled={!isGestion}
+                        onChange={handleChange}
+                    />
+                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.telephone || '')}>Copier</Button>
+                </InputGroup>
+            </Col>
+            <Col md={6}>
+                <InputGroup className="mb-3">
+                    <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{ width: '20px' }} /></InputGroup.Text>
+                    <Form.Control value={userInfos.email || 'example@mail.com'} disabled />
+                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.email || 'example@mail.com')}>Copier</Button>
+                </InputGroup>
+            </Col>
+        </Row>
 
         {!isGestion ?
             <>
                 <p>Promo : {userInfos.promo}</p>
                 <p>Ville d'origine : {userInfos.ville_origine}</p>
                 <p>Chambre : {userInfos.chambre}</p>
-                <div><h3>Instruments</h3>
-                    <ul>
-                        {userInfos.instruments.map(elt => (<li>{elt[0]} : {elt[1]}</li>))}
-                    </ul>
+                {userInfos.instruments && userInfos.instruments.length > 0 &&
+                    <p>
+                        Instruments :{' '}
+                        {userInfos.instruments.map((elt, index) => (
+                            <span key={index}>
+                                {elt[0]} ({elt[1]})
+                                {index < userInfos.instruments.length - 1 ? ', ' : ''}
+                            </span>
+                        ))}
+                    </p>
+                }
+                <div>
+                    <h3>Relations</h3>
+                    {userInfos.co &&
+                        <p>Co : <Link to={`/utilisateur/${userInfos.co.id}`}>{userInfos.co.nom_utilisateur}</Link></p>
+                    }
+                    {userInfos.marrain &&
+                        <p>Marrain : <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></p>
+                    }
+                    {userInfos.fillots && userInfos.fillots.length > 0 &&
+                        <p>
+                            Fillots :{' '}
+                            {userInfos.fillots.map((fillot, index) => (
+                                <span key={fillot.id}>
+                                    <Link to={`/utilisateur/${fillot.id}`}>{fillot.nom_utilisateur}</Link>
+                                    {index < userInfos.fillots.length - 1 ? ', ' : ''}
+                                </span>
+                            ))}
+                        </p>
+                    }
                 </div>
             </>
             :
-            <>
-                <p>Promo : {userInfos.promo}</p>
-                <p>Ville d'origine : <input type="text" name="ville_origine" value={userInfos.ville_origine} onChange={e => handleChange(e)} ></input></p>
-                <p>Chambre : <input type="text" name="chambre" value={userInfos.chambre} onChange={e => handleChange(e)} ></input></p>
-                <div><h3>Instruments</h3>
-                    <ul>
-                        {userInfos.instruments.map((elt, ind) => (<li><input value={elt[0]} name={ind} onChange={handleInstruNameChange}></input> : <input value={elt[1]} name={ind} onChange={handleInstruChange}></input></li>))}
-                    </ul>
-                    <button onClick={ajouterInstru}>Ajouter instrument</button>
-                </div>
-                Co : <DropDownSelect options={optionsC} open={openC} setOpen={setOpenC} selected={selectedC} setSelected={setSelectedC} single={true} />
-                Parrainne : <DropDownSelect options={optionsP} open={openP} setOpen={setOpenP} selected={selectedP} setSelected={setSelectedP} single={false} />
+            <Form>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Promo</Form.Label>
+                    <Col sm="10">
+                        <Form.Control value={userInfos.promo} disabled />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Ville d'origine</Form.Label>
+                    <Col sm="10">
+                        <Form.Control type="text" name="ville_origine" value={userInfos.ville_origine} onChange={e => handleChange(e)} />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Chambre</Form.Label>
+                    <Col sm="10">
+                        <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={e => handleChange(e)} />
+                    </Col>
+                </Form.Group>
 
-                <div className='buttons-container'>
-                    <div className='valider-button' onClick={validerModifierInfos}>
-                        <img src="/assets/icons/check-mark.svg" alt="Ajouter" />
-                        <p>Ajouter</p>
-                    </div>
-                    <div className='annuler-button' onClick={() => setIsGestion(false)}>
-                        <img src="/assets/icons/cross-mark.svg" alt="Annuler" />
-                        <p>Annuler</p>
-                    </div>
+                <h3>Instruments</h3>
+                {userInfos.instruments.map((elt, ind) => (
+                    <Row key={ind} className="mb-2">
+                        <Col>
+                            <Form.Control value={elt[0]} name={ind} onChange={handleInstruNameChange} />
+                        </Col>
+                        <Col>
+                            <Form.Control value={elt[1]} name={ind} onChange={handleInstruChange} />
+                        </Col>
+                    </Row>
+                ))}
+                <Button variant="outline-primary" size="sm" onClick={ajouterInstru}>Ajouter instrument</Button>
+
+                <h3 className="mt-3">Relations</h3>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Co</Form.Label>
+                    <Col sm="10">
+                        <Select
+                            options={optionsC}
+                            value={selectedC}
+                            onChange={setSelectedC}
+                            isClearable
+                        />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Marrain</Form.Label>
+                    <Col sm="10">
+                        <Select
+                            options={optionsP}
+                            value={selectedP}
+                            onChange={setSelectedP}
+                            isClearable
+                        />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Fillots</Form.Label>
+                    <Col sm="10">
+                        <Select
+                            isMulti
+                            options={optionsF}
+                            value={selectedF}
+                            onChange={setSelectedF}
+                        />
+                    </Col>
+                </Form.Group>
+
+                <div className="d-flex gap-2 mt-3">
+                    <Button variant="success" onClick={validerModifierInfos}>Valider</Button>
+                    <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
                 </div>
-            </>}
+            </Form>
+        }
     </>
     );
 }
-

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { requeteProposerSondage } from './../../api/api_sondages';  // Importation de la fonction proposerSondage
-import '../../assets/styles/proposer_sondage.css';  // Import du CSS global du layout
 import { useNavigate } from "react-router-dom";
+import { Container, Form, Button, InputGroup, Alert } from "react-bootstrap";
 
 function ProposerSondage() {
   const navigate = useNavigate();
@@ -24,14 +24,14 @@ function ProposerSondage() {
     // Appel de la fonction proposerSondage du fichier api.js pour soumettre les données
     const data = await requeteProposerSondage(question, reponses);
     if (data.etat) {
-        setMessage("Sondage soumis avec succès!");
-        
-        // Réinitialiser les champs du formulaire après soumission réussie
-        setQuestion("");
-        setReponses(["", ""]);
-      } else {
-        setMessage(data.message);
-      }
+      setMessage("Sondage soumis avec succès!");
+
+      // Réinitialiser les champs du formulaire après soumission réussie
+      setQuestion("");
+      setReponses(["", ""]);
+    } else {
+      setMessage(data.message);
+    }
   };
 
   // Fonction pour ajouter une réponse
@@ -56,72 +56,59 @@ function ProposerSondage() {
   };
 
   return (
-    <div className="proposer_sondage_container">
-      <h1 className="proposer_sondage_title">Proposer un sondage</h1>
-      <form onSubmit={handleSubmit} className="proposer_sondage_form">
-        <div className="proposer_sondage_field">
-          <label htmlFor="question">Question :</label>
-          <input
+    <Container className="mt-4">
+      <h1>Proposer un sondage</h1>
+      <Form onSubmit={handleSubmit} className="mt-3">
+        <Form.Group className="mb-3">
+          <Form.Label>Question</Form.Label>
+          <Form.Control
             type="text"
-            id="question"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             required
-            className="proposer_sondage_input"
           />
-        </div>
+        </Form.Group>
 
-        <div className="proposer_sondage_field">
-          <label>Réponses :</label>
+        <Form.Group className="mb-3">
+          <Form.Label>Réponses</Form.Label>
           {reponses.map((reponse, index) => (
-            <div key={index} className="proposer_sondage_reponse_group">
-              <input
+            <InputGroup className="mb-2" key={index}>
+              <Form.Control
                 type="text"
                 value={reponse}
                 onChange={(e) => handleReponseChange(index, e.target.value)}
                 required
-                className="proposer_sondage_input"
               />
               {reponses.length > 2 && (
-                <button
-                  type="button"
-                  onClick={() => removeReponse(index)}
-                  className="proposer_sondage_button"
-                  title="Retirer"
-                >
-                  <img src="/assets/icons/delete.svg" alt="Bouton en forme de poubelle"/>
-                </button>
+                <Button variant="danger" onClick={() => removeReponse(index)}>
+                  <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                </Button>
               )}
-            </div>
+            </InputGroup>
           ))}
-          <button
-            type="button"
-            onClick={addReponse}
-            className="proposer_sondage_button"
-            title="Ajouter une réponse"
-          >
-            <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus"/> 
-          </button>
-        </div>
+          {reponses.length < 4 && (
+            <Button variant="light border d-flex gap-1 justify-content-center" onClick={addReponse}>
+              <img src="/assets/icons/plus.svg" alt="Ajouter" />
+              <span>Rajouter une option</span>
+            </Button>
+          )}
+        </Form.Group>
 
-        <button type="submit" className="proposer_sondage_submit">
+        <Button variant="primary" type="submit" className="mb-3">
           Soumettre
-        </button>
-      </form>
+        </Button>
+      </Form>
 
       {message && (
-        <div className="proposer_sondage_message">
-          <p>{message}</p>
-        </div>
+        <Alert variant={message.includes("succès") ? "success" : "danger"}>
+          {message}
+        </Alert>
       )}
 
-      <button
-        onClick={() => navigate("/")}
-        className="proposer_sondage_retour"
-      >
+      <Button variant="secondary" onClick={() => navigate("/")}>
         Retour
-      </button>
-    </div>
+      </Button>
+    </Container>
 
   );
 }

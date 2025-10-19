@@ -1,13 +1,12 @@
-// src/components/blocs/Header.js
 import { useNavigate } from 'react-router-dom';
-
-import '../../assets/styles/header.css';
 import { useLayout } from '../../layouts/Layout';
-
 import { seDeconnecter } from '../../api/api_global';
 import { verifierSuperutilisateur } from '../../api/api_utilisateurs';
 import { useEffect, useState } from 'react';
 import { verifierPermission } from '../../api/api_soifguard';
+import { Container, Navbar, Nav, NavDropdown, Button } from 'react-bootstrap';
+
+import '../../assets/styles/header.scss';
 
 export default function Header() {
   const { userData } = useLayout();
@@ -39,39 +38,31 @@ export default function Header() {
   }
 
   return (
-    <div className="global-header-header">
-      {/* Menu déroulant */}
-      <div className="global-header-left-container">
-        <div className="global-header-dropdown">
-          <button className="global-header-dropdown-btn">Menu</button>
-          <div className="global-header-menu">
-            <button onClick={() => navigate("/")}>Accueil</button>
-            <button onClick={() => navigate("/assos")}>Assos</button>
-            <button onClick={() => navigate("/assos/planning")}>Planning associatif</button>
-            <button onClick={() => navigate("/trombi")}>Trombinoscope</button>
-          </div>
-        </div>
-        {hasPermission && <button className="global-header-dropdown-btn" onClick={() => navigate("/soifguard")}>Soifguard</button>}
-        {isSuperUser && <button className="global-header-dropdown-btn" onClick={() => navigate("/administration")}>Administration</button>}
-      </div>
-
-      {/* Titre centré */}
-      <div className="global-header-centered-container">
-        <h1
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}>Portail des élèves</h1>
-      </div>
-
-      <div className="global-header-right-container">
-        <div className="global-header-dropdown">
-          <button className="global-header-dropdown-btn">{userData ? userData.nom_utilisateur : "Chargement..."}</button>
-          <div className="global-header-menu" style={{right : 0}}>
-            <button onClick={() => navigate(`utilisateur/${userData.id}`)} className="bloc-global-button">Ma page</button>
-            <button onClick={() => handleLogout()} className="bloc-global-button">Se déconnecter</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <Navbar bg="dark" variant="dark" expand="md" className="global-header-header">
+      <Container fluid>
+        <Navbar.Brand href="#" onClick={() => navigate("/")}>Portail des élèves</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <NavDropdown title="Menu" id="basic-nav-dropdown">
+                <NavDropdown.Item onClick={() => navigate("/")}>Accueil</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => navigate("/assos")}>Assos</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => navigate("/assos/planning")}>Planning associatif</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
+            </NavDropdown>
+            <div className="d-grid d-md-flex gap-2 mt-2 mt-md-0 ms-md-3">
+                {hasPermission && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
+                {isSuperUser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}
+            </div>
+          </Nav>
+          <Nav className="ms-auto">
+            <NavDropdown title={userData ? userData.nom_utilisateur : "Chargement..."} id="user-nav-dropdown" align="end">
+                <NavDropdown.Item onClick={() => navigate(`utilisateur/${userData.id}`)}>Ma page</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleLogout()}>Se déconnecter</NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 };

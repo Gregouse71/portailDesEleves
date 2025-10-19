@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ajouterAsso } from '../../api/api_associations';  // Importation de la fonction ajouterAsso
 import { useNavigate } from "react-router-dom";
+import { Container, Form, Button, Alert } from "react-bootstrap";
 
 function AjouterAssociation() {
   const navigate = useNavigate();
@@ -18,11 +19,13 @@ function AjouterAssociation() {
     // Vérifier que les champs obligatoires sont remplis
     if (!nom.trim()) {
       setErreur("Le nom de l'association est requis.");
+      setMessage("");
       return;
     }
 
     if (!ordreImportance.trim()) {
       setErreur("L'ordre d'importance est requis.");
+      setMessage("");
       return;
     }
 
@@ -33,38 +36,44 @@ function AjouterAssociation() {
       setMessage("Association ajoutée avec succès.");
       setErreur("");
     } else {
-      setMessage(response.message || "Erreur lors de l'ajout de l'association.");
-      setErreur("");
+      setErreur(response.message || "Erreur lors de l'ajout de l'association.");
+      setMessage("");
     }
   };
 
   return (
-    <div>
+    <Container className="mt-4">
       <h1>Ajout d'une association</h1>
       
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nom de l'association</label>
-          <input
+      {message && <Alert variant="success" onClose={() => setMessage('')} dismissible>{message}</Alert>}
+      {erreur && <Alert variant="danger" onClose={() => setErreur('')} dismissible>{erreur}</Alert>}
+
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3" controlId="formNomAsso">
+          <Form.Label>Nom de l'association</Form.Label>
+          <Form.Control
             type="text"
             value={nom}
             onChange={(e) => setNom(e.target.value)}
             placeholder="Nom de l'association"
+            required
           />
-        </div>
+        </Form.Group>
 
-        <div>
-          <label>Description</label>
-          <textarea
+        <Form.Group className="mb-3" controlId="formDescriptionAsso">
+          <Form.Label>Description</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Description de l'association"
           />
-        </div>
+        </Form.Group>
 
-        <div>
-          <label>Type d'association</label>
-          <select
+        <Form.Group className="mb-3" controlId="formTypeAsso">
+          <Form.Label>Type d'association</Form.Label>
+          <Form.Select
             value={typeAssociation}
             onChange={(e) => setTypeAssociation(e.target.value)}
           >
@@ -72,36 +81,37 @@ function AjouterAssociation() {
             <option value="Club BDE">Club BDE</option>
             <option value="Asso Loi 1901">Asso Loi 1901</option>
             {/* Ajoutez d'autres options si nécessaire */}
-          </select>
-        </div>
+          </Form.Select>
+        </Form.Group>
 
-        <div>
-          <label>Ordre d'importance</label>
-          <input
+        <Form.Group className="mb-3" controlId="formOrdreImportance">
+          <Form.Label>Ordre d'importance</Form.Label>
+          <Form.Control
             type="number"
             value={ordreImportance}
             onChange={(e) => setOrdreImportance(e.target.value)}
             placeholder="Ordre d'importance"
+            required
           />
-        </div>
+        </Form.Group>
 
-        <div>
-          <label>Association sensible</label>
-          <input
+        <Form.Group className="mb-3" controlId="formEstSensible">
+          <Form.Check
             type="checkbox"
-            value={estSensible}
+            label="Association sensible"
+            checked={estSensible}
             onChange={(e) => setEstSensible(e.target.checked)}
           />
-        </div>
+        </Form.Group>
 
-        <button type="submit">Ajouter l'association</button>
-      </form>
-
-      {message && <p>{message}</p>}
-      {erreur && <p style={{ color: "red" }}>{erreur}</p>}
-
-      <button onClick={() => navigate("/assos")}>Retour</button>
-    </div>
+        <Button variant="primary" type="submit">
+          Ajouter l'association
+        </Button>
+        <Button variant="secondary" onClick={() => navigate("/assos")} className="ms-2">
+          Retour
+        </Button>
+      </Form>
+    </Container>
   );
 }
 

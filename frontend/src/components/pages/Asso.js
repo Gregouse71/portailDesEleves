@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import '../../assets/styles/asso.css';
+import '../../assets/styles/asso.scss';
 import { chargerAsso, estUtilisateurDansAsso, ajouterContenu, changerPhoto } from './../../api/api_associations';
 import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
@@ -7,6 +7,7 @@ import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BASE_URL } from '../../api/base';
+import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
 
 function Asso() {
     const [asso, setAsso] = useState(null);
@@ -15,11 +16,7 @@ function Asso() {
 
     const [activeTab, setActiveTab] = useState("info");
 
-    const [isBannerDarkened, setIsBannerDarkened] = useState(false);
-    const [isPhotoDarkened, setIsPhotoDarkened] = useState(false);
-
-    const navigate = useNavigate ();
-
+    const navigate = useNavigate();
     const { id } = useParams();
 
     const changerPhotoLogoOuBanniere = (type_photo) => {
@@ -28,22 +25,14 @@ function Asso() {
     };
 
     const handleFileChange = async (event) => {
-        const file = event.target.files[0]; // Récupère le fichier sélectionné directement
+        const file = event.target.files[0];
         const type_photo = event.target.getAttribute("data-type");
 
         if (file) {
-            console.log(`Fichier sélectionné (${type_photo}) :`, file.name);
             try {
-                await ajouterContenu(id, file); // Téléversement 
-                try {
-                    await changerPhoto(id, type_photo, file.name);
-                    navigate ("");
-                    setTimeout(() => {
-                        navigate (`/assos/get/${id}`);
-                    }, 0);
-                } catch (error) {
-                    console.error(`Erreur : ${error}`);
-                }
+                await ajouterContenu(id, file);
+                await changerPhoto(id, type_photo, file.name);
+                navigate(0);
             } catch (error) {
                 alert(`Erreur lors du téléversement : ${error.message}`);
             }
@@ -65,99 +54,96 @@ function Asso() {
         fetchData();
     }, [id]);
 
-
     if (asso === null || isMembreDansAsso === null) return <p>Chargement...</p>;
 
-    return (
-        <div className="asso-container">
+    const bannerStyle = {
+        backgroundImage: asso.banniere_path ? `url(${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
+        backgroundColor: 'lightgrey'
+    };
 
-            {/* Champ de fichier caché */}
+    return (
+        <Container>
             <input
                 type="file"
                 id="file-upload"
-                style={{ display: 'none' }} // Caché
-                onChange={handleFileChange} // Téléverse automatiquement après sélection
+                className="d-none"
+                onChange={handleFileChange}
+                data-type=""
             />
+            <Row>
+                <Col xs={12} className="p-0">
+                    <div className="position-relative">
+                        <div className="asso-banner rounded-top" style={bannerStyle}>
+                            {isMembreAutorise && (
+                                <Button variant="outline-light" className="position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
+                                    <i className="bi bi-camera"></i>
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </Col>
+            </Row>
 
+            <div className="bg-light p-3 rounded-bottom">
+                <Row>
+                    <Col md={3} className="text-center text-md-start">
+                        <div className="position-relative d-inline-block">
+                            <Image
+                                src={asso.img ? `${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
+                                alt={asso.nom}
+                                className="asso-logo rounded-3"
+                            />
+                            {isMembreAutorise && (
+                                <div className="position-absolute top-50 start-50 translate-middle opacity-75">
+                                    <Button variant="link" className="text-dark" onClick={() => changerPhotoLogoOuBanniere('logo')}>
+                                        <i className="bi bi-camera fs-3"></i>
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </Col>
+                    <Col md={9} className="d-flex align-items-center justify-content-center justify-content-md-start mt-3 mt-md-0">
+                        <h2>{asso.nom}</h2>
+                        {isMembreAutorise && isMembreDansAsso && <Badge bg="success" className="ms-3">Vous êtes dans l'asso</Badge>}
+                    </Col>
+                </Row>
 
-
-            {/* Bannière avec logo */}
-            <div
-                className="asso-banner"
-                style={{
-                    backgroundImage: asso.banniere_path
-                        ? `url(${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.banniere_path})`
-                        : 'none', // Si la bannière n'existe pas, pas d'image de fond
-                    backgroundColor: asso.banniere_path ? 'transparent' : 'var(--global-style-secondary-color)', // Si la bannière n'existe pas, couleur de fond
-                }}
-            >
-                {/*Accessible pour modifier les photos de l'asso*/}
-                {isMembreAutorise && (
-                    <>
-                        {/* Overlay qui s'affiche uniquement si isDarkened est true */}
-                        {isBannerDarkened && <div className="asso-overlay-banner"></div>}
-                        <img id='asso-add-photo-banner' src='/assets/icons/add_photo.svg'
-                            onMouseEnter={() => setIsBannerDarkened(true)}
-                            onMouseLeave={() => setIsBannerDarkened(false)}
-                            onClick={() => changerPhotoLogoOuBanniere('banniere')}
-                            alt="Bouton en forme d'appareil-photo"
-                        />
-                    </>
-                )}
-
-                <img
-                    className="asso-logo"
-                    src={
-                        asso.img
-                            ? `${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}`
-                            : '/assets/icons/group.svg'
-                    }
-                    alt={asso.nom}
-                />
-
-                {/*Accessible pour modifier les photos de l'asso*/}
-                {isMembreAutorise && (
-                    <>
-                        {isPhotoDarkened && <div className="asso-overlay-profilpic"></div>}
-                        <img id='asso-add-photo-profilpic' src='/assets/icons/add_photo.svg'
-                            onMouseEnter={() => setIsPhotoDarkened(true)}
-                            onMouseLeave={() => setIsPhotoDarkened(false)}
-                            onClick={() => changerPhotoLogoOuBanniere('logo')}
-                            alt="Bouton en forme d'appareil-photo"
-                        />
-                    </>
-                )}
-
+                <Row className="mt-3">
+                    <Col xs={12}>
+                        <Tab.Container id="asso-tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
+                            <Nav variant="tabs" className="mb-3">
+                                <Nav.Item>
+                                    <Nav.Link eventKey="info">Infos</Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="events">Événements</Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="members">Membres</Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="posts">Publications</Nav.Link>
+                                </Nav.Item>
+                            </Nav>
+                            <Tab.Content>
+                                <Tab.Pane eventKey="info">
+                                    <AssoInfo asso_id={asso.id} />
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="events">
+                                    <AssoEvents asso_id={asso.id} />
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="members">
+                                    <AssoMembres asso_id={asso.id} />
+                                </Tab.Pane>
+                                <Tab.Pane eventKey="posts">
+                                    <AssoPosts asso_id={asso.id} />
+                                </Tab.Pane>
+                            </Tab.Content>
+                        </Tab.Container>
+                    </Col>
+                </Row>
             </div>
-
-
-            <div className='asso-infos-principales'>
-                <h2 className='asso-nom'>{asso.nom}</h2>
-                {/* Administration de l'asso */}
-                {isMembreAutorise &&
-                    <div className='asso-admin'>
-                        {isMembreDansAsso && <div className='badge_est_dans_asso'><p>Vous êtes dans l'asso</p></div>}
-                    </div>}
-            </div>
-
-
-
-            {/* Menu */}
-            <div className="asso-tabs">
-                <div className={`asso-tab ${activeTab === "info" ? "active" : ""}`} onClick={() => setActiveTab("info")}>Infos</div>
-                <div className={`asso-tab ${activeTab === "events" ? "active" : ""}`} onClick={() => setActiveTab("events")}>Événements</div>
-                <div className={`asso-tab ${activeTab === "members" ? "active" : ""}`} onClick={() => setActiveTab("members")}>Membres</div>
-                <div className={`asso-tab ${activeTab === "posts" ? "active" : ""}`} onClick={() => setActiveTab("posts")}>Publications</div>
-            </div>
-
-            {/* Contenu des onglets */}
-            <div className="asso-tab-content">
-                {activeTab === "info" && <AssoInfo asso_id={asso.id} />}
-                {activeTab === "events" && <AssoEvents asso_id={asso.id} />}
-                {activeTab === "members" && <AssoMembres asso_id={asso.id} />}
-                {activeTab === "posts" && <AssoPosts asso_id={asso.id}/>}
-            </div>
-        </div >
+        </Container>
     );
 }
 

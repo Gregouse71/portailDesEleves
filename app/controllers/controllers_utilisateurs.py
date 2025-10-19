@@ -71,8 +71,7 @@ def charger_utilisateurs_par_promo(promo: int):
     Charge la liste des utilisateurs d'une promo donnée pour Soifguard
     """
     utilisateurs = Utilisateur.query.filter_by(promotion=promo).all()
-    if not utilisateurs:
-        return jsonify({"message": "Aucun utilisateur trouvé pour cette promo"}), 404
+
     liste_utilisateurs = [
         {
             "id": utilisateur.id,
@@ -87,6 +86,7 @@ def charger_utilisateurs_par_promo(promo: int):
         }
         for utilisateur in utilisateurs
     ]
+
     return jsonify(liste_utilisateurs), 200
 
 
@@ -165,10 +165,12 @@ def assos_utilisateur(user_id: int):
 
     data = {
         "associations_actuelles": [
-            {"role": role.role, "nom": role.association.nom, "asso_id": role.association_id} for role in roles_actuels
+            {"role": role.role, "nom": role.association.nom, "id": role.association_id, "img": role.association.logo_path, "nom_dossier": role.association.nom_dossier}
+            for role in roles_actuels
         ],
         "associations_anciennes": [
-            {"role": role.role, "nom": role.association.nom, "asso_id": role.association_id} for role in roles_anciens
+            {"role": role.role, "nom": role.association.nom, "id": role.association_id, "img": role.association.logo_path, "nom_dossier": role.association.nom_dossier}
+            for role in roles_anciens
         ]
     }
     return jsonify(data)
@@ -214,13 +216,11 @@ def set_user_infos(user_id: int):
         return jsonify({"message": "Pas le droit"}), 401
 
     data = request.get_json()
-    # if not valider_questions_du_portail (data):
-    #     return jsonify({"message": "Reponses mal formées"}), 400
-
-    # utilisateur.date_de_naissance = date.fromisoformat(data[1][1])
-    utilisateur.ville_origine = data["ville_origine"]
-    utilisateur.chambre = data["chambre"]
-    utilisateur.instruments = data["instruments"]
+    
+    utilisateur.ville_origine = data.get("ville_origine")
+    utilisateur.chambre = data.get("chambre")
+    utilisateur.instruments = data.get("instruments")
+    utilisateur.telephone = data.get("telephone")   
 
     db.session.add(utilisateur)
     db.session.commit()
@@ -260,6 +260,36 @@ def route_creer_co(new_co_id: int):
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la creation du lien de co : {str(e)}"}), 500
 
+@controllers_utilisateurs.route('/changer_co', methods=['POST'])
+@login_required
+def route_changer_co():
+    """
+    Change le co d'un utilisateur.
+    Prend un JSON avec "user_id" and "co_id".
+    """
+    data = request.get_json()
+    user_id = data.get('user_id')
+    co_id = data.get('co_id')
+
+    user = get_utilisateur(user_id)
+    if not user:
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
+
+    if not (user_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    if co_id:
+        co = get_utilisateur(co_id)
+        if not co:
+            return jsonify({"message": "Co non trouvé"}), 404
+        creer_co(user, co)
+    elif user.co_id:
+        co = get_utilisateur(user.co_id)
+        if co:
+            supprimer_co(user, co)
+    
+    return jsonify({"message": "Co mis à jour avec succès"}), 200
+
 # Ajouter un decorateur qui verifie si on a le droit de modifier sa genealogie (variable globale mise a True pendant le parrainnage)
 
 
@@ -267,15 +297,23 @@ def route_creer_co(new_co_id: int):
 @login_required
 def route_selectionner_fillots():
     """
-    Ajoute une liste de fillots a la famille.
-    La liste des IDs de fillots est fournie dans le corps de la requête en JSON.
-    Exemple: {"fillots_ids": [12, 45, 78]}
+    Définit la liste de fillots pour un utilisateur donné.
+    Prend un JSON avec "user_id" et "fillots_ids".
     """
     data = request.get_json()
-    if not data or 'fillots_ids' not in data:
-        return jsonify({"message": "Liste d'IDs de fillots non fournie"}), 400
+    user_id = data.get('user_id')
+    fillots_id_list = data.get('fillots_ids')
 
-    fillots_id_list = data['fillots_ids']
+    if not user_id or fillots_id_list is None:
+        return jsonify({"message": "user_id et fillots_ids requis"}), 400
+
+    # Authorization check
+    if not (current_user.id == user_id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    marrain = get_utilisateur(user_id)
+    if not marrain:
+        return jsonify({"message": "Utilisateur (marrain) non trouvé"}), 404
 
     if not isinstance(fillots_id_list, list) or not all(isinstance(i, int) for i in fillots_id_list):
         return jsonify({"message": "La liste d'IDs de fillots est invalide"}), 400
@@ -286,10 +324,12 @@ def route_selectionner_fillots():
         return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
 
     try:
-        ajouter_fillots_a_la_famille(current_user, fillots_list)
-        return jsonify({"message": "Fillots ajoutes avec succes"}), 200
+        marrain.fillots = fillots_list
+        db.session.commit()
+        return jsonify({"message": "Fillots mis à jour avec succès"}), 200
     except Exception as e:
-        return jsonify({"message": f"Erreur lors de l'ajout des fillots : {str(e)}"}), 500
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors de la mise à jour des fillots : {str(e)}"}), 500
 # Ajouter un decorateur qui verifie si on a le droit de modifier sa genealogie (variable globale mise a True pendant le parrainnage)
 
 
@@ -326,28 +366,36 @@ def route_get_anniv():
 @login_required
 def route_changer_marrain():
     """
-    Change le marrain d'un fillot.
-    Prend un JSON avec "marrain_id" and "fillot_id".
+    Change ou supprime le marrain d'un fillot.
+    Prend un JSON avec "fillot_id" et optionnellement "marrain_id".
+    Si "marrain_id" est null ou absent, le marrain est supprimé.
     """
     data = request.get_json()
-    if not data or 'marrain_id' not in data or 'fillot_id' not in data:
-        return jsonify({"message": "marrain_id et fillot_id requis"}), 400
+    fillot_id = data.get('fillot_id')
+    marrain_id = data.get('marrain_id') # Can be null
 
-    marrain_id = data['marrain_id']
-    fillot_id = data['fillot_id']
+    if not fillot_id:
+        return jsonify({"message": "fillot_id requis"}), 400
 
-    marrain = db.session.get(Utilisateur, marrain_id)
-    fillot = db.session.get(Utilisateur, fillot_id)
+    fillot = Utilisateur.query.get(fillot_id)
+    if not fillot:
+        return jsonify({"message": "Fillot non trouvé"}), 404
 
-    if not marrain or not fillot:
-        return jsonify({"message": "Marrain ou fillot non trouvé"}), 404
-
-    # For now, let's assume only a superuser can.
-    if not current_user.est_superutilisateur:
+    # Authorization check: only superuser or the fillot themselves can change marrain
+    if not (current_user.id == fillot_id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
 
     try:
-        changer_marrain(marrain, fillot)
-        return jsonify({"message": "Marrain changé avec succès"}), 200
+        if marrain_id:
+            marrain = Utilisateur.query.get(marrain_id)
+            if not marrain:
+                return jsonify({"message": "Marrain non trouvé"}), 404
+            changer_marrain(marrain, fillot)
+        else:
+            # Remove marrain
+            fillot.marrain = None
+            db.session.commit()
+        return jsonify({"message": "Marrain mis à jour avec succès"}), 200
     except Exception as e:
+        db.session.rollback()
         return jsonify({"message": f"Erreur lors du changement de marrain : {str(e)}"}), 500

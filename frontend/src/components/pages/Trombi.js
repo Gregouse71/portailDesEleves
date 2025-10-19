@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import '../../assets/styles/trombi.css';
 import { obtenirListeDesPromos } from '../../api/api_utilisateurs';
 import { useNavigate } from 'react-router-dom';
+import { Container, Card } from 'react-bootstrap';
+import '../../assets/styles/asso.scss';
+import '../../assets/styles/trombi.scss';
 
 function Trombi() {
     const [listePromos, setListePromos] = useState(null);
@@ -26,20 +28,18 @@ function Trombi() {
     }
 
     return (
-        <div className="trombinoscope">
+        <Container className="py-4">
             <h1>Trombinoscopes</h1>
-            <div className='liste_promos'>
+            <div className="member-grid">
                 {listePromos.map((promo, index) => (
-                    <div 
-                        className='promo_dans_liste' 
-                        key={index} 
-                        onClick={() => navigate(`/trombi/get/${promo}`)}
-                    >
-                        {promo}
-                    </div>
+                    <Card onClick={() => navigate(`/trombi/get/${promo}`)} key={index} className="text-center trombi-card">
+                        <Card.Body>
+                            <Card.Title>{promo}</Card.Title>
+                        </Card.Body>
+                    </Card>
                 ))}
             </div>
-        </div>
+        </Container>
     );
 }
 

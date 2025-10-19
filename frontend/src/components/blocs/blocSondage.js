@@ -1,17 +1,20 @@
 // src/components/blocs/BlocSondage.jsx
 import { useEffect, useState } from 'react';
-import {obtenirDataUser } from '../../api/api_utilisateurs';
-import {obtenirSondageDuJour, voterSondage} from '../../api/api_sondages';
+import { obtenirDataUser, verifierSuperutilisateur } from '../../api/api_utilisateurs';
+import { obtenirSondageDuJour, voterSondage } from '../../api/api_sondages';
 import { obtenirIdUser } from '../../api/api_global';
-import {useLayout} from './../../layouts/Layout';
+import { useLayout } from './../../layouts/Layout';
 import { useNavigate } from 'react-router-dom';
+import { Card, Button, ProgressBar } from 'react-bootstrap';
 
 export default function BlocSondage({ reloadSondage }) {
   const [sondage, setSondage] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { reloadBlocSondage} = useLayout();
+  const { reloadBlocSondage } = useLayout();
   const [voteUser, setVoteUser] = useState(null);
+  const [isSuperUser, setIsSuperUser] = useState(false);
   const navigate = useNavigate();
+
   const voterEtReload = async (id_vote) => {
     try {
       await voterSondage(id_vote);  // Attendre la fin du vote
@@ -20,9 +23,18 @@ export default function BlocSondage({ reloadSondage }) {
       console.error("Erreur lors du vote et du rechargement du sondage", error);
     }
   };
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const check = await verifierSuperutilisateur()
+      setIsSuperUser(check.is_superuser)
+    }
+    checkUser()
+  })
+
   useEffect(() => {
     async function fetchSondageAndVote() {
-      setLoading(true); 
+      setLoading(true);
       try {
         const id_user = await obtenirIdUser();
         if (id_user) {
@@ -52,13 +64,12 @@ export default function BlocSondage({ reloadSondage }) {
     if (voteUser === null) {
       content = (
         <>
-          <h3 className='sondage_titre'>Sondage du jour</h3>
-          <p className='sondage_question'>{sondage.question}</p>
-          <div className='sondage_reponses_container'>
+          <p className="h3 fw-bold">{sondage.question}</p>
+          <div className="d-grid gap-2">
             {sondage.reponses.map((reponse, index) => (
-              <button className='sondage_reponse' key={index} onClick={() => voterEtReload(index + 1)}>
+              <Button variant="primary" key={index} onClick={() => voterEtReload(index + 1)}>
                 {reponse}
-              </button>
+              </Button>
             ))}
           </div>
         </>
@@ -66,29 +77,20 @@ export default function BlocSondage({ reloadSondage }) {
     } else {
       content = (
         <>
-          <h3 className='sondage_titre'>Sondage du jour</h3>
-          <p className='sondage_question'>{sondage.question}</p>
+          <p className="h3 fw-bold">{sondage.question}</p>
           <div>
             {(() => {
               const totalVotes = sondage.votes.reduce((sum, v) => sum + v, 0);
               return sondage.reponses.map((reponse, index) => {
                 const votes = sondage.votes[index];
                 const percent = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
-                // const isUserVote = voteUser === index + 1;
                 return (
                   <div key={index}>
-                    <div className='sondage_question_stats_container'>
-                      <p className='sondage_question_post_vote'>{reponse}</p>
-                      <p className='sondage_stats_question'> {votes} votes ({percent.toFixed(1)}%)</p>
+                    <div className="d-flex justify-content-between">
+                      <p>{reponse}</p>
+                      <p className="text-muted"> {votes} votes ({percent.toFixed(1)}%)</p>
                     </div>
-                    <div className='sondage_progress_bar_empty'>
-                      <div style={{
-                        background: '#035BA2',
-                        width: `${percent}%`,
-                        height: '100%',
-                        borderRadius: '4px'
-                      }} />
-                    </div>
+                    <ProgressBar now={percent} />
                   </div>
                 );
               });
@@ -101,33 +103,37 @@ export default function BlocSondage({ reloadSondage }) {
   } else {
     content = (
       <>
-        <h3 className='sondage_question'>Pas de sondage aujourd'hui</h3>
-        <div className='sondage_gros_plus_container' onClick={() => navigate("/sondage/proposer")}>
-          <img className='sondage_gros_plus' src="assets/icons/plus.svg" alt="Bouton en forme de plus"/>
-        </div>
+        <p className="h4 fw-bold text-center">Pas de sondage aujourd'hui</p>
+        <Button variant='light border' onClick={() => navigate("/sondage/proposer")} style={{cursor : "pointer"}}>
+          <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ width: "70px", transition: "transform 0.2s ease"}} />
+          <p className="h6 text-center">Proposer un nouveau sondage</p>
+        </Button>
       </>
     );
   }
 
   return (
-    <div className="bloc-global">
-      {content}
-      <div className="gestion_sondage_container">
-        <button
-          className="gestion_sondage_button"
+    <Card className="bloc-global">
+      <Card.Header as="h5" className="text-center">Sondage du jour</Card.Header>
+      <Card.Body className='d-flex flex-column'>
+        {content}
+      </Card.Body>
+      <Card.Footer className="d-flex justify-content-between">
+        <Button
+          variant="light"
           onClick={() => navigate("/sondage/proposer")}
         >
-          <img src="/assets/icons/plus.svg" className='sondage_icon_button' alt="Bouton en forme de plus"/>
-        </button>
-        <button
-          className="gestion_sondage_button"
+          <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+        </Button>
+        {isSuperUser && <Button
+          variant="light"
           onClick={() => navigate("/sondage/gerer")}
         >
-          <img src="/assets/icons/manage.svg" className='sondage_icon_button' alt="Bouton en rouage"/>
-        </button>
-      </div>
-    </div>
+          <img src="/assets/icons/manage.svg" alt="Bouton en rouage" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+        </Button>}
+      </Card.Footer>
+    </Card>
   );
 
-  
+
 }
