@@ -1,6 +1,7 @@
 # importer les models grace a __init__.py de models
 from app.services import db
-from app.models import *
+from app.models.models_utilisateurs import Utilisateur
+from app.models.models_sondages import VoteSondage, Sondage, VoteSondageDuJour, AncienSondage
 from app.services.services_global import get_global_var, set_global_var
 from datetime import datetime
 
@@ -14,14 +15,7 @@ def proposer_sondage(question:str, reponses:list, utilisateur:Utilisateur) :
     """
     Ajouter un sondage dans la bdd. La liste des reponses possibles est au format ["reponse1", "reponse2", "reponse3"], de taille entre 2 et 4
     """
-    if len(reponses) == 4 :
-        proposition =  Sondage(question=question, reponse1=reponses[0], reponse2=reponses[1], reponse3=reponses[2], reponse4=reponses[3], propose_par_user_id=utilisateur.id, date_sondage=datetime.now().strftime("%Y%m%d%H%M"), status=False)
-    elif len(reponses) == 3 :
-        proposition =  Sondage(question=question, reponse1=reponses[0], reponse2=reponses[1], reponse3=reponses[2], propose_par_user_id=utilisateur.id, date_sondage=datetime.now().strftime("%Y%m%d%H%M"), status=False)
-    elif len(reponses) == 2 : 
-        proposition =  Sondage(question=question, reponse1=reponses[0], reponse2=reponses[1], propose_par_user_id=utilisateur.id, date_sondage=datetime.now().strftime("%Y%m%d%H%M"), status=False)
-    else :
-        raise ValueError(f"reponses doit etre un tableau de taille 4, pas {reponses}")
+    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_sondage=datetime.now().strftime("%Y%m%d%H%M"))
     db.session.add(proposition)
     db.session.commit()
 
@@ -29,16 +23,20 @@ def proposer_sondage(question:str, reponses:list, utilisateur:Utilisateur) :
 # TODO: METTRE decorateur sondage_du_jour_required sur le controller
 def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
     """
-    Fait voter un utilisateur a un sondage
+    Fait voter un utilisateur au sondage du jour
     Met a jour utilisateur.vote_sondaj_du_jour
     Met a jour le nombre de votes du sondage de la reponse du sondage en question dans la table "votes_sondage_du_jour"
     - vote doit etre 1, 2, 3 ou 4. Cette fonction ne verifie pas si le vote est possible (ex : reponse 4 alors qu'il n'y a que 3 reponses possibles)
     - il faudra aussi verifier s'il y a bien un sondage aujourd'hui
     """
-    if get_global_var("id_sondage_du_jour") is not None :
+    id_sondage_du_jour = get_global_var("id_sondage_du_jour")
+    if id_sondage_du_jour is not None :
         utilisateur.vote_sondaj_du_jour = vote
-        utilisateur.nombre_participations_sondaj += 1
         nouveau_vote = VoteSondageDuJour(id_utilisateur=utilisateur.id, numero_vote=vote)
+
+        sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour).first()
+        nouveau_vote = VoteSondage(sondage=sondage_du_jour, utilisateur=utilisateur, vote=vote)
+
         db.session.add(nouveau_vote)
         db.session.commit()
     else :
@@ -51,28 +49,21 @@ def valider_sondage(id_sondage:int) :
     """
     sondage = db.session.get(Sondage, id_sondage)
     if sondage :
-        if sondage.status :
+        if sondage.autorise :
             print("Sondage deja valide.")
         else :
-            sondage.status = True
+            sondage.autorise = True
             db.session.commit()
     else :
         raise ValueError("id de sondage invalide")
 
 # Passage d'un sondage a un autre 
 # Les fonctions suivantes ne doivent etre utilisees qu'au sein d'une meme route
-def _resultat_sondage_du_jour(votes_sondage_du_jour) :
+def _resultat_sondage(id_sondage) :
     """
-    - Prend en entree la table des votes du jour, obtenue avec VoteSondageDuJour.query.all()
-    Renvoie le resultat du sondage du jour : 
-    [0, 2, 3, 10] : toujours un tableau de longueur 4
-    Ne verifie pas si le sondage du jour existe, et que le vote a bien eu lieu
+    Renvoie la liste des nombres de votes du sondage du jour par option
     """
-    # comptage des votes : 
-    votes = [vote.numero_vote for vote in votes_sondage_du_jour]
-    compteur_votes = [0,0,0,0]
-    for vote in votes :
-        compteur_votes[vote-1] += 1
+    compteur_votes = [VoteSondage.query.filter_by(sondage_id=id_sondage, vote=i).count() for i in range(1, 5)]
     return compteur_votes
 
 def _donner_votes_gagnants(compteur_votes) :
@@ -82,9 +73,9 @@ def _donner_votes_gagnants(compteur_votes) :
     for i in range(4) :
         if compteur_votes[i] > maxi :
             maxi = compteur_votes[i]
-    for i in range(4) :
-        if compteur_votes[i] == maxi :
-            gagnants.append(i+1)
+            gagnants = [i]
+        elif compteur_votes[i] == maxi :
+            gagnants.append(i)
     return gagnants
 
 def _update_si_win(utilisateurs: list[Utilisateur], gagnants: list[int]) :
@@ -102,9 +93,9 @@ def _archiver_sondage(sondage_du_jour:Sondage, compteur_votes) -> AncienSondage:
     """
     Archive un sondage qui vient de s'achever. Renvoie l'element a ajouter dans la table
     - sondage_du_jour : le sondage d'aujourd'hui a archiver
-    - compteur vote : obtenu avec _resultat_sondage_du_jour
+    - compteur vote : obtenu avec _resultat_sondage
     Ne pas appliquer sur du None
-    """       
+    """
     nouveau_ancien_sondage = AncienSondage(propose_par_user_id=sondage_du_jour.propose_par_user_id,
                                         date_d_archivage=datetime.now().strftime("%Y%m%d%H%M"),
                                         question=sondage_du_jour.question,
@@ -117,7 +108,7 @@ def _archiver_sondage(sondage_du_jour:Sondage, compteur_votes) -> AncienSondage:
                                         votes3=compteur_votes[2],
                                         votes4=compteur_votes[3])
     return nouveau_ancien_sondage
- 
+
 
 def sondage_suivant() -> None:
     """
@@ -128,28 +119,33 @@ def sondage_suivant() -> None:
     - supprime le sondage du jour de la table des sondages en attente
     - trouve le nouveau sondage du jour, met son id dans la variable globale
     """
-    id_sondage_du_jour = get_global_var("id_sondage_du_jour")
-    if id_sondage_du_jour :
-        # il y a un sondage du jour
-        sondage_du_jour = db.session.get(Sondage, id_sondage_du_jour)
-        votes = VoteSondageDuJour.query.all()
-        if votes:
-            # des gens ont vote
-            compteur_votes = _resultat_sondage_du_jour(votes)
-            gagnants = _donner_votes_gagnants(compteur_votes)
-            utilisateurs = [db.session.get(Utilisateur, vote.id_utilisateur) for vote in votes]
-            _update_si_win(utilisateurs, gagnants)
-            nouveau_ancien_sondage = _archiver_sondage(sondage_du_jour, compteur_votes)
-            db.session.add(nouveau_ancien_sondage)
-        db.session.delete(sondage_du_jour) # on enleve le sondage_du_jour de la table des sondages
-        # on vide la table des votes du jour
-        db.session.query(VoteSondageDuJour).delete()
+    id_ancien_sondage_du_jour = get_global_var("id_sondage_du_jour")
     # on met un nouveau sondage du jour
-    nouveau_sondage_du_jour = Sondage.query.filter(Sondage.status == True).order_by(Sondage.date_sondage).first()
+    nouveau_sondage_du_jour = Sondage.query.filter_by(autorise=True, archive=False).order_by(Sondage.date_sondage).first()
     if nouveau_sondage_du_jour :
+        nouveau_sondage_du_jour.archive = True  # On archive le sondage
+        db.session.add(nouveau_sondage_du_jour)
         set_global_var("id_sondage_du_jour", nouveau_sondage_du_jour.id)
     else :
         set_global_var("id_sondage_du_jour", None)
+
+    # On traite les résultats de l'ancien
+    if id_ancien_sondage_du_jour :  # il y a un sondage du jour
+        compteur_votes = _resultat_sondage(id_ancien_sondage_du_jour)  # On récupère le résultat
+        gagnants = _donner_votes_gagnants(compteur_votes)  # On détermine les votes gagnants
+        votes = VoteSondage.query.filter_by(sondage_id=id_ancien_sondage_du_jour).all()
+        for vote in votes:  # Pour chaque vote, on détermine s'il est gagnant
+            vote.gagnant = vote.vote in gagnants
+            db.session.add(vote)
+
+            user = vote.utilisateur
+            user.vote_sondaj_du_jour = None
+            db.session.add(user)
+
+        sondage_du_jour = Sondage.query.filter_by(id=id_ancien_sondage_du_jour).first()
+        sondage_du_jour.gagnants = gagnants
+        db.session.add(sondage_du_jour)
+
     db.session.commit()
 
 def obtenir_sondages_non_valide() :
@@ -157,19 +153,16 @@ def obtenir_sondages_non_valide() :
     Renvoie les sondages non valides sous forme de liste de dictionnaires, classés par ordre décroissant de date
     """
     # Récupérer les sondages non validés triés par date décroissante
-    sondages_non_valides = Sondage.query.filter_by(status=False).order_by(Sondage.date_sondage.desc()).all()
+    sondages_non_valides = Sondage.query.filter_by(autorise=False).order_by(Sondage.date_sondage.desc()).all()
     sondages_data = []
     for sondage in sondages_non_valides:
         sondages_data.append({
             "id": sondage.id,
             "question": sondage.question,
-            "reponse1": sondage.reponse1,
-            "reponse2": sondage.reponse2,
-            "reponse3": sondage.reponse3,
-            "reponse4": sondage.reponse4,
+            "reponses": sondage.reponses,
             "propose_par_user_id": sondage.propose_par_user_id,
             "date_sondage": sondage.date_sondage,
-            "status": sondage.status
+            "status": sondage.autorise
         })
     return sondages_data
 
@@ -185,18 +178,9 @@ def obtenir_sondage_du_jour_et_votes():
     if id_sondage_du_jour:
         sondage_du_jour = db.session.get(Sondage, id_sondage_du_jour)
         question_du_jour = sondage_du_jour.question
-        reponses_brut = [
-            sondage_du_jour.reponse1,
-            sondage_du_jour.reponse2,
-            sondage_du_jour.reponse3,
-            sondage_du_jour.reponse4
-        ]
-        votes = VoteSondageDuJour.query.all()
-        compteur_votes = [0, 0, 0, 0]
-        for vote in votes:
-            if 1 <= vote.numero_vote <= 4:
-                compteur_votes[vote.numero_vote-1] += 1
-    
+        reponses_brut = sondage_du_jour.reponses
+        compteur_votes = _resultat_sondage(id_sondage_du_jour)
+
         return question_du_jour, reponses_brut, compteur_votes
     else :
         return None

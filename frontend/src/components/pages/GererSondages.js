@@ -4,13 +4,13 @@ import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuiv
 import { useNavigate } from "react-router-dom";
 
 function GererSondages() {
-    const { reloadBlocSondage} = useLayout();
+    const { reloadBlocSondage } = useLayout();
     const [sondagesEnAttente, setSondagesEnAttente] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     const suivantEtReload = async () => {
-        await sondageSuivant(); 
+        await sondageSuivant();
         reloadBlocSondage();
     }
 
@@ -84,10 +84,8 @@ function GererSondages() {
                                 <td>{sondage.question}</td>
                                 <td>
                                     <ul>
-                                        <li>{sondage.reponse1}</li>
-                                        <li>{sondage.reponse2}</li>
-                                        {sondage.reponse3 && <li>{sondage.reponse3}</li>}
-                                        {sondage.reponse4 && <li>{sondage.reponse4}</li>}
+                                        {sondage.reponses.map((reponse) => (<li>{reponse}</li>
+                                        ))}
                                     </ul>
                                 </td>
                                 <td>{sondage.propose_par_user_id}</td>

@@ -1,43 +1,10 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
-import { chargerUtilisateursParPromo, modifierInfos, obtenirDataUser} from "../../../api/api_utilisateurs";
+import { Link } from "react-router-dom";
+import { chargerUtilisateursParPromo, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import { useLayout } from "../../../layouts/Layout";
-
-function DropDownSelect({ options, open, setOpen, selected, setSelected, single }) {
-    return (<div>
-        {/* Button to open dropdown */}
-        <button
-            onClick={() => setOpen((prev) => !prev)}
-            style={{ padding: "0.5rem 1rem", width: "100%" }}
-        >
-            {single ? selected.label :
-                selected.length === 0 ? "Select options..." : selected.map((opt) => opt.label).join(", ")}
-        </button>
-
-        {/* Dropdown menu */}
-        {open && (
-            <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100, }}                    >
-                <Select
-                    options={options}
-                    value={selected}
-                    onChange={(opt) => {
-                        setSelected(opt);
-                        setOpen(false); // close on selection
-                    }}
-                    isMulti={!single}
-                    autoFocus
-                    placeholder="Search..."
-                    menuIsOpen={true} // always open inside the popover
-                    styles={{
-                        menu: (provided) => ({ ...provided, position: "relative" }),
-                    }}
-                />
-            </div>
-        )}
-    </div>);
-}
-
+import BoutonEditer from "../../elements/BoutonEditer";
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const { userData } = useLayout();
@@ -48,36 +15,59 @@ export default function TabInfo({ id, autoriseAModifier }) {
             date_de_naissance: "0",
             chambre: "0",
             ville_origine: "Lens",
-            instruments: []
+            instruments: [],
+            co: null,
+            marrain: null,
+            fillots: []
         }
     );
 
-    const [openP, setOpenP] = useState(false);
-    const [selectedP, setSelectedP] = useState([]);
+    const [selectedP, setSelectedP] = useState(null);
     const [optionsP, setOptionsP] = useState([]);
 
-    const [openC, setOpenC] = useState(false);
-    const [selectedC, setSelectedC] = useState([]);
+    const [selectedC, setSelectedC] = useState(null);
     const [optionsC, setOptionsC] = useState([]);
+
+    const [selectedF, setSelectedF] = useState([]);
+    const [optionsF, setOptionsF] = useState([]);
 
     useEffect(() => {// Obtention des données utilisateur à afficher
         const fetchData = async () => {
-            var data = await obtenirDataUser(id);
+            const data = await obtenirDataUser(id);
             setUserInfos({
                 email: data.email,
                 telephone: data.telephone,
-                promo: data.promo,
+                promo: data.promotion,
                 date_de_naissance: data.date_de_naissance,
                 chambre: data.chambre,
                 ville_origine: data.ville_origine,
-                instruments: data.instruments ? data.instruments : []
+                instruments: data.instruments || [],
+                co: data.co,
+                marrain: data.marrain,
+                fillots: data.fillots || []
             });
-            if (!isNaN(parseInt(userInfos.promo))) {
-                var data = await chargerUtilisateursParPromo(userInfos.promo - 1);
-                setOptionsP(data.map(elt => ({ value: elt.id, label: elt.prenom + " " + elt.nom })));
 
-                var data = await chargerUtilisateursParPromo(userInfos.promo);
-                setOptionsC(data.map(elt => ({ value: elt.id, label: elt.promo + " " + elt.nom })));
+            if (data.promotion && !isNaN(parseInt(data.promotion))) {
+                const promoInt = parseInt(data.promotion);
+
+                const dataParrains = await chargerUtilisateursParPromo(promoInt - 1);
+                setOptionsP(dataParrains.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+
+                const dataCo = await chargerUtilisateursParPromo(promoInt);
+                setOptionsC(dataCo.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+
+                const dataFillots = await chargerUtilisateursParPromo(promoInt + 1);
+                setOptionsF(dataFillots.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+
+                if (data.co) {
+                    setSelectedC({ value: data.co.id, label: data.co.nom_utilisateur });
+                }
+                if (data.marrain) {
+                    setSelectedP({ value: data.marrain.id, label: data.marrain.nom_utilisateur });
+                }
+                if (data.fillots) {
+                    setSelectedF(data.fillots.map(elt => ({ value: elt.id, label: elt.nom_utilisateur })));
+                }
             }
         };
         fetchData();
@@ -99,8 +89,38 @@ export default function TabInfo({ id, autoriseAModifier }) {
         setUserInfos({ ...userInfos, [name]: value })
     };
 
-    const validerModifierInfos = () => {
-        modifierInfos(id, userInfos);
+    const validerModifierInfos = async () => {
+        const { co, marrain, fillots, ...otherInfos } = userInfos;
+        await modifierInfos(id, otherInfos);
+
+        const newCoId = selectedC ? selectedC.value : null;
+        if (co?.id !== newCoId) {
+            await changerCo(id, newCoId);
+        }
+
+        const newMarrainId = selectedP ? selectedP.value : null;
+        if (userInfos.marrain?.id !== newMarrainId) {
+             await changerMarrain(newMarrainId, id);
+        }
+
+        await selectionnerFillots(id, selectedF.map(f => f.value));
+
+        const data = await obtenirDataUser(id);
+
+        setUserInfos({
+            email: data.email,
+            telephone: data.telephone,
+            promo: data.promotion,
+            date_de_naissance: data.date_de_naissance,
+            chambre: data.chambre,
+            ville_origine: data.ville_origine,
+            instruments: data.instruments || [],
+            co: data.co,
+            marrain: data.marrain,
+            fillots: data.fillots || []
+
+        });
+
         setIsGestion(false);
     }
 
@@ -123,22 +143,29 @@ export default function TabInfo({ id, autoriseAModifier }) {
     }
 
     return (<>
-        {autoriseAModifier && <Button variant="outline-primary" className="float-end" onClick={() => setIsGestion(!isGestion)}>
-            <img src="/assets/icons/edit.svg" alt="Edit" /> Éditer
-        </Button>}
-        
-        <Row className="mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            <h2>Informations personnelles</h2>
+            {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)} />}
+        </div>
+
+        <Row>
             <Col md={6}>
                 <InputGroup className="mb-3">
-                    <InputGroup.Text><img src="/assets/icons/phone.svg" alt="Phone" style={{width: '20px'}}/></InputGroup.Text>
-                    <Form.Control value={userInfos.telephone || '01 23 45 67 89'} disabled/>
-                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.telephone || '01 23 45 67 89')}>Copier</Button>
+                    <InputGroup.Text><img src="/assets/icons/phone.svg" alt="Phone" style={{ width: '20px' }} /></InputGroup.Text>
+                    <Form.Control
+                        name="telephone"
+                        value={userInfos.telephone || ''}
+                        placeholder="01 23 45 67 89"
+                        disabled={!isGestion}
+                        onChange={handleChange}
+                    />
+                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.telephone || '')}>Copier</Button>
                 </InputGroup>
             </Col>
             <Col md={6}>
                 <InputGroup className="mb-3">
-                    <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{width: '20px'}}/></InputGroup.Text>
-                    <Form.Control value={userInfos.email || 'example@mail.com'} disabled/>
+                    <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{ width: '20px' }} /></InputGroup.Text>
+                    <Form.Control value={userInfos.email || 'example@mail.com'} disabled />
                     <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.email || 'example@mail.com')}>Copier</Button>
                 </InputGroup>
             </Col>
@@ -149,10 +176,36 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <p>Promo : {userInfos.promo}</p>
                 <p>Ville d'origine : {userInfos.ville_origine}</p>
                 <p>Chambre : {userInfos.chambre}</p>
-                <div><h3>Instruments</h3>
-                    <ul>
-                        {userInfos.instruments.map(elt => (<li>{elt[0]} : {elt[1]}</li>))}
-                    </ul>
+                {userInfos.instruments && userInfos.instruments.length > 0 &&
+                    <p>
+                        Instruments :{' '}
+                        {userInfos.instruments.map((elt, index) => (
+                            <span key={index}>
+                                {elt[0]} ({elt[1]})
+                                {index < userInfos.instruments.length - 1 ? ', ' : ''}
+                            </span>
+                        ))}
+                    </p>
+                }
+                <div>
+                    <h3>Relations</h3>
+                    {userInfos.co &&
+                        <p>Co : <Link to={`/utilisateur/${userInfos.co.id}`}>{userInfos.co.nom_utilisateur}</Link></p>
+                    }
+                    {userInfos.marrain &&
+                        <p>Marrain : <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></p>
+                    }
+                    {userInfos.fillots && userInfos.fillots.length > 0 &&
+                        <p>
+                            Fillots :{' '}
+                            {userInfos.fillots.map((fillot, index) => (
+                                <span key={fillot.id}>
+                                    <Link to={`/utilisateur/${fillot.id}`}>{fillot.nom_utilisateur}</Link>
+                                    {index < userInfos.fillots.length - 1 ? ', ' : ''}
+                                </span>
+                            ))}
+                        </p>
+                    }
                 </div>
             </>
             :
@@ -175,15 +228,15 @@ export default function TabInfo({ id, autoriseAModifier }) {
                         <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={e => handleChange(e)} />
                     </Col>
                 </Form.Group>
-                
+
                 <h3>Instruments</h3>
                 {userInfos.instruments.map((elt, ind) => (
                     <Row key={ind} className="mb-2">
                         <Col>
-                            <Form.Control value={elt[0]} name={ind} onChange={handleInstruNameChange}/>
+                            <Form.Control value={elt[0]} name={ind} onChange={handleInstruNameChange} />
                         </Col>
                         <Col>
-                            <Form.Control value={elt[1]} name={ind} onChange={handleInstruChange}/>
+                            <Form.Control value={elt[1]} name={ind} onChange={handleInstruChange} />
                         </Col>
                     </Row>
                 ))}
@@ -193,13 +246,34 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Co</Form.Label>
                     <Col sm="10">
-                        <DropDownSelect options={optionsC} open={openC} setOpen={setOpenC} selected={selectedC} setSelected={setSelectedC} single={true} />
+                        <Select
+                            options={optionsC}
+                            value={selectedC}
+                            onChange={setSelectedC}
+                            isClearable
+                        />
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Parrain(s)</Form.Label>
+                    <Form.Label column sm="2">Marrain</Form.Label>
                     <Col sm="10">
-                        <DropDownSelect options={optionsP} open={openP} setOpen={setOpenP} selected={selectedP} setSelected={setSelectedP} single={false} />
+                        <Select
+                            options={optionsP}
+                            value={selectedP}
+                            onChange={setSelectedP}
+                            isClearable
+                        />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Fillots</Form.Label>
+                    <Col sm="10">
+                        <Select
+                            isMulti
+                            options={optionsF}
+                            value={selectedF}
+                            onChange={setSelectedF}
+                        />
                     </Col>
                 </Form.Group>
 
@@ -208,7 +282,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
                 </div>
             </Form>
-            }
+        }
     </>
     );
 }

@@ -65,7 +65,7 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Gestion des colocations - meme commentaire
     co_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
-    co = db.relationship('Utilisateur', remote_side=[id], uselist=False, foreign_keys=[co_id])
+    co = db.relationship('Utilisateur', remote_side=[id], uselist=False, foreign_keys=[co_id], post_update=True)
 
     # Questions du portail - modifiable avec un formulaire
     questions_reponses_du_portail = db.Column(MutableDict.as_mutable(db.JSON), nullable=True)
@@ -81,6 +81,7 @@ class Utilisateur(db.Model, UserMixin) :
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
     nombre_participations_sondaj = db.Column(db.Integer, nullable=False)
     nombre_victoires_sondaj = db.Column(db.Integer, nullable=False)
+    votes = votes = db.relationship('VoteSondage', back_populates='utilisateur')
 
     # 2048
     # Apparaitra sur la page du 2048

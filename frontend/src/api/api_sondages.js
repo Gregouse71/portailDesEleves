@@ -9,7 +9,7 @@ export async function obtenirSondageDuJour() {
 }
 
 export async function obtenirSondagesEnAttente() {
-  const res = await fetch(`${API_BASE_URL}/sondages/route_obtenir_sondages_en_attente`,
+  const res = await fetch(`${API_BASE_URL}/sondages/obtenir_sondages_en_attente`,
     { credentials: "include" }
   );
   const data = await res.json();
@@ -57,7 +57,7 @@ export async function sondageSuivant() {
 }
 
 export async function voterSondage(id_vote) {
-  await fetch(`${API_BASE_URL}/sondages/route_voter_sondage/${id_vote}`, {
+  await fetch(`${API_BASE_URL}/sondages/voter_sondage/${id_vote}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include"
@@ -65,7 +65,7 @@ export async function voterSondage(id_vote) {
 }
 
 export async function requeteProposerSondage(question, reponses) {
-  const res = await fetch(`${API_BASE_URL}/sondages/route_proposer_sondage`, {
+  const res = await fetch(`${API_BASE_URL}/sondages/proposer_sondage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include", // Si tu utilises des cookies de session

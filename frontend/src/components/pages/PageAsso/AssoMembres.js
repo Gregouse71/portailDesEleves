@@ -3,7 +3,9 @@ import { ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierPositionMem
 import { obtenirListeDesPromos, chargerUtilisateursParPromo } from "../../../api/api_utilisateurs";
 import { BASE_URL } from "../../../api/base";
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Form, Row, Col, Image } from "react-bootstrap";
+import { Card, Button, Form } from "react-bootstrap";
+import UserCard from "../../elements/UserCard";
+import BoutonEditer from "../../elements/BoutonEditer";
 
 function AssoMembres({ asso_id }) {
     const [isMembreAutorise, setIsMembreAutorise] = useState(false);
@@ -124,59 +126,32 @@ function AssoMembres({ asso_id }) {
         <div>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les membres</h2>
-                {isMembreAutorise && <Button variant="outline-primary" onClick={() => handleSetIsGestionMembres(!isGestionMembres)}>
-                    <img src="/assets/icons/edit.svg" alt="Edit" />
-                    Éditer
-                </Button>}
+                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestionMembres(!isGestionMembres)}/>}
             </div>
-            <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+            <div className="member-grid">
                 {listeMembres.map((user) => (
-                    <Col key={user.id}>
-                        <Card className="text-center">
-                            <Card.Body>
-                                <div className="position-relative">
-                                    {isGestionMembres && (<Button variant="danger" size="sm" className="position-absolute top-0 end-0" title="Supprimer ce membre" onClick={() => handleRetirerMembre(user.id)}>
-                                        <img src="/assets/icons/delete.svg" alt="suppression du membre" />
-                                    </Button>)}
-                                    {isGestionMembres && (<Button variant="primary" size="sm" className="position-absolute top-0 start-0" title="Modifier les paramètres" onClick={() => { handleModifierParametres(user.id, user.role, user.position) }}>
-                                        <img src="/assets/icons/edit.svg" alt="modification de rôle" />
-                                    </Button>)}
-                                    <Image
-                                        src={`${BASE_URL}/upload/utilisateurs/09brique.jpg`}
-                                        alt={`${user.nom_utilisateur}`}
-                                        roundedCircle
-                                        fluid
-                                        onClick={() => navigate(`/utilisateur/${user.id}`)}
-                                        style={{cursor: "pointer"}}
-                                    />
-                                </div>
-                                <Card.Title className="mt-2">{user.nom_utilisateur}</Card.Title>
-                                {idMembreModifier !== user.id && <Card.Text>{user.role}</Card.Text>}
-
-                                {idMembreModifier === user.id && <>
-                                    <Form.Group className="mb-2">
-                                        <Form.Label>Rôle</Form.Label>
-                                        <Form.Control value={nouveauRole} onChange={(e) => setNouveauRole(e.target.value)} />
-                                    </Form.Group>
-                                    <Form.Group className="mb-2">
-                                        <Form.Label>Position</Form.Label>
-                                        <Form.Control type="number" value={nouvellePosition} onChange={(e) => setNouvellePosition(e.target.value)} />
-                                    </Form.Group>
-                                    <Button variant="success" onClick={() => handleMembreChange(user.id)}>Valider</Button>
-                                </>}
-                            </Card.Body>
-                            {isGestionMembres && idMembreModifier !== user.id && <Card.Footer>Position : {user.position}</Card.Footer>}
-                        </Card>
-                    </Col>
+                    <UserCard user={user} isGestion={isGestionMembres} isModifying={idMembreModifier === user.id}
+                        f1={() => handleRetirerMembre(user.id)}
+                        t1="Supprimer ce membre"
+                        f2={() => { handleModifierParametres(user.id, user.role, user.position) }}
+                        t2="Modifier les paramètres"
+                        values={[
+                            { label: "Rôle", value: nouveauRole, onChange: (e) => setNouveauRole(e.target.value) },
+                            { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) }
+                        ]}
+                        validate={() => handleMembreChange(user.id)}
+                    />
                 ))}
 
-                {isMembreAutorise && isGestionMembres && <Col>
-                    <Card className="text-center h-100">
-                        <Card.Body className="d-flex flex-column justify-content-center">
+                {isMembreAutorise && isGestionMembres &&
+                    <Card 
+                        className="text-center h-100"
+                        onClick={!isAjoutMembre ? () => setIsAjoutMembre(true) : undefined}
+                        style={!isAjoutMembre ? { cursor: 'pointer' } : {}}
+                    >
+                        <Card.Body className="d-flex flex-column justify-content-center align-items-center">
                             {!isAjoutMembre && <>
-                                <Button variant="outline-primary" onClick={() => setIsAjoutMembre(true)}>
-                                    <img src='/assets/icons/plus.svg' alt="Ajouter une association" style={{width: "50px"}}/>
-                                </Button>
+                                <img src='/assets/icons/plus.svg' alt="Ajouter un membre" style={{ width: "50px" }} />
                                 <Card.Title className="mt-2">Ajouter un membre</Card.Title>
                             </>}
                             {isAjoutMembre && <>
@@ -198,8 +173,8 @@ function AssoMembres({ asso_id }) {
                             </>}
                         </Card.Body>
                     </Card>
-                </Col>}
-            </Row>
+                }
+            </div>
         </div>
     )
 }

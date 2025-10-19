@@ -111,14 +111,14 @@ export async function obtenirProchainsAnnivs() {
   return data;
 }
 
-export async function selectionnerFillots(fillots_ids) {
+export async function selectionnerFillots(user_id, fillots_ids) {
   const response = await fetch(`${API_BASE_URL}/users/select_fillots`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ fillots_ids: fillots_ids }),
+    body: JSON.stringify({ user_id: user_id, fillots_ids: fillots_ids }),
   });
   return handleResponse(response);
 }
@@ -131,6 +131,18 @@ export async function changerMarrain(marrain_id, fillot_id) {
     },
     credentials: "include",
     body: JSON.stringify({ marrain_id: marrain_id, fillot_id: fillot_id }),
+  });
+  return handleResponse(response);
+}
+
+export async function changerCo(user_id, co_id) {
+  const response = await fetch(`${API_BASE_URL}/users/changer_co`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ user_id: user_id, co_id: co_id }),
   });
   return handleResponse(response);
 }
