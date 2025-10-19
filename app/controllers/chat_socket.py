@@ -28,7 +28,7 @@ def handle_message(data):
         message = Message (data["text"], current_user.id, datetime.now ())
         message.save ()
         to_send = message.to_dict(current_user.id)
-        emit ("message", to_send)
+        emit ("message", to_send, broadcast=True)
     else:
         return False
 

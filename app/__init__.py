@@ -19,7 +19,7 @@ from flask_apscheduler import APScheduler
 from config import Config
 import os
 
-socketio = SocketIO(cors_allowed_origins="*")
+socketio = SocketIO(async_mode='eventlet', cors_allowed_origins="*")
 
 # Initialisation des extensions (sans encore les attacher à l'application)
 db = SQLAlchemy()
