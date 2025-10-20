@@ -1,4 +1,5 @@
-# __init__.py
+from gevent import monkey
+monkey.patch_all()
 
 """
 Ce fichier crée et initialise l'application et les extensions. Il charge la configuration
@@ -19,7 +20,7 @@ from flask_apscheduler import APScheduler
 from config import Config
 import os
 
-socketio = SocketIO(cors_allowed_origins="*")
+socketio = SocketIO(async_mode='gevent', cors_allowed_origins="*")
 
 # Initialisation des extensions (sans encore les attacher à l'application)
 db = SQLAlchemy()

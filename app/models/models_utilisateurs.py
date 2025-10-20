@@ -81,7 +81,9 @@ class Utilisateur(db.Model, UserMixin) :
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
     nombre_participations_sondaj = db.Column(db.Integer, nullable=False)
     nombre_victoires_sondaj = db.Column(db.Integer, nullable=False)
-    votes = votes = db.relationship('VoteSondage', back_populates='utilisateur')
+    votes = db.relationship('VoteSondage', back_populates='utilisateur')
+    # Messages
+    messages = db.relationship('Message', back_populates='utilisateur')
 
     # 2048
     # Apparaitra sur la page du 2048

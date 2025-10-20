@@ -4,6 +4,7 @@ import { SOCKET_BASE_URL } from '../../api/base';
 import "../../assets/styles/chat.scss"
 import { obtenirPlusDeMessages } from '../../api/api_chat';
 import { Card, Form, InputGroup } from 'react-bootstrap';
+import { useLayout } from '../../layouts/Layout';
 
 export default function BlocChat() {
   const [messages, setMessages] = useState([]);
@@ -11,10 +12,12 @@ export default function BlocChat() {
   const [socket, setSocket] = useState(null);
   const messageDisplayRef = useRef(null);
   const isAtBottomRef = useRef(true); // Ref to track if user is at the bottom
+  const userData = useLayout();
 
   useEffect(() => {
     const newSocket = io(`${SOCKET_BASE_URL}`, {
       withCredentials: true,
+      transports: ["websocket"],
     });
     setSocket(newSocket);
 
@@ -23,10 +26,9 @@ export default function BlocChat() {
     });
 
     newSocket.on("message", (message) => {
-    console.log(`received ${message}`)
       setMessages((prev) => [
         ...prev,
-        { text: message.text, time: message.time, author: message.author, is_you: message.is_you, id: message.id }
+        { text: message.text, time: message.time, author: message.author, author_id: message.author_id, id: message.id }
       ]);
     });
 
@@ -50,7 +52,6 @@ export default function BlocChat() {
   const sendMessage = () => {
     if (!input.trim()) return;
     const message = { text: input };
-    console.log(`sent ${message}`)
     socket.emit("message", message);
     setInput("");
     // After sending a message, always scroll to the bottom
@@ -84,7 +85,7 @@ export default function BlocChat() {
           {messages.map((msg, idx) => (
             <div key={idx} className="p-1 rounded-lg chat-message">
               <span className="text-muted">{msg.time}</span>{" "}
-              <span className={msg.is_you ? "chat-author-me" : "chat-author-other"}>
+              <span className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}>
                 {msg.author}
               </span>{" "}
               :{" "}
