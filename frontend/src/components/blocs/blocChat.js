@@ -12,7 +12,7 @@ export default function BlocChat() {
   const [socket, setSocket] = useState(null);
   const messageDisplayRef = useRef(null);
   const isAtBottomRef = useRef(true); // Ref to track if user is at the bottom
-  const userData = useLayout();
+  const { userData } = useLayout();
 
   useEffect(() => {
     const newSocket = io(`${SOCKET_BASE_URL}`, {
