@@ -75,3 +75,11 @@ export async function requeteProposerSondage(question, reponses) {
   const data = await res.json(); // Récupère la réponse JSON de l'API
   return data;
 }
+
+export async function obtenirScoresSondages() {
+  const res = await fetch(`${API_BASE_URL}/sondages/scores`,
+    { credentials: "include" }
+  );
+  const data = await res.json();
+  return data; // au format JSON 
+}

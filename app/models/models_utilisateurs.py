@@ -79,8 +79,8 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
-    nombre_participations_sondaj = db.Column(db.Integer, nullable=False)
-    nombre_victoires_sondaj = db.Column(db.Integer, nullable=False)
+    score_recent = db.Column(db.Float, nullable=True)
+    score_global = db.Column(db.Float, nullable=True)
     votes = db.relationship('VoteSondage', back_populates='utilisateur')
     # Messages
     messages = db.relationship('Message', back_populates='utilisateur')
@@ -342,3 +342,28 @@ class Utilisateur(db.Model, UserMixin) :
             else :
                 raise KeyError(f"L'attribut {key} n'existe pas.")
 
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nom_utilisateur": self.nom_utilisateur,
+            "prenom": self.prenom,
+            "nom": self.nom,
+            "surnom": self.surnom,
+            "promotion": self.promotion,
+            "chambre": self.chambre,
+            "cycle": self.cycle,
+            "email": self.email,
+            "telephone": self.telephone,
+            "date_de_naissance": self.date_de_naissance,
+            "ville_origine": self.ville_origine,
+            "sports": self.sports,
+            "instruments": self.instruments,
+            "marrain": {"id": self.marrain.id, "nom_utilisateur": self.marrain.nom_utilisateur} if self.marrain else None,
+            "co": {"id": self.co.id, "nom_utilisateur": self.co.nom_utilisateur} if self.co else None,
+            "fillots": [{"id": fillot.id, "nom_utilisateur": fillot.nom_utilisateur} for fillot in self.fillots],
+            "vote_sondaj_du_jour": self.vote_sondaj_du_jour,
+            "is_superuser": self.est_superutilisateur,
+            "score_recent": self.score_recent,
+            "score_global": self.score_global
+        }

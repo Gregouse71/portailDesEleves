@@ -1,5 +1,6 @@
 from app import db
 from sqlalchemy.ext.mutable import MutableList
+from datetime import date
 
 # verification du format des donnees :
 from ..utils.verification_format import *
@@ -34,9 +35,11 @@ class Sondage(db.Model):
     date_sondage = db.Column(db.String(20), nullable=False) # au format AAAAMMJJHHMM
     autorise = db.Column(db.Boolean, nullable=False, default=False) # False : non autorise, True : en attente de publciation ou sondage du jour
     archive = db.Column(db.Boolean, nullable=False, default=False)
+    date_publication = db.Column(db.Date(), nullable=True)
 
     votes = db.relationship('VoteSondage', back_populates='sondage')
     gagnants = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
+    perdants = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
 
     def __init__(self, propose_par_user_id:int, date_sondage:str, question:str, reponses: list[str], autorise:bool=False) :
         """
@@ -51,6 +54,12 @@ class Sondage(db.Model):
         self.reponses = reponses
 
 
+    def age (self):
+        if not self.archive:
+            return -1
+        return (date.today() - self.date_publication).days
+
+
 class VoteSondage(db.Model):
     __tablename__ = 'votes'
     sondage_id = db.Column(db.Integer, db.ForeignKey('sondages.id'), primary_key=True)
@@ -60,6 +69,7 @@ class VoteSondage(db.Model):
     utilisateur = db.relationship('Utilisateur', back_populates='votes')
     vote = db.Column(db.Integer, nullable=False)
     gagnant = db.Column(db.Boolean, nullable=True)
+    perdant = db.Column(db.Boolean, nullable=True)
 
     def __init__(self, sondage: Sondage, utilisateur: Utilisateur, vote: vote):
         if sondage.reponses[vote - 1] is None:
@@ -69,46 +79,6 @@ class VoteSondage(db.Model):
         self.vote = vote
 
 
-class AncienSondage(db.Model):
-    """
-    Table des anciens sondages : contient la date de publication, l'utilisateur 
-    ayant propose, la question, les reponses, le nombre de votes par reponse
-    """
-    __tablename__ = 'anciens_sondages'
-    id = db.Column(db.Integer, primary_key=True)  # Clef primaire
-    question = db.Column(db.String(1000), nullable=False)
-    # reponses possibles
-    reponse1 = db.Column(db.String(500), nullable=False)
-    reponse2 = db.Column(db.String(500), nullable=False)
-    reponse3 = db.Column(db.String(500), nullable=True) # on peut avoir 2 3 ou 4 reponses
-    reponse4 = db.Column(db.String(500), nullable=True)
-    # donnees du sondage
-    propose_par_user_id = db.Column(db.Integer, nullable=False)
-    date_d_archivage = db.Column(db.String(20), nullable=False) # au format AAAAMMJJHHMM
-    # nombre de votes pour chaque reponse
-    votes1 = db.Column(db.Integer, nullable=False, default=0)
-    votes2 = db.Column(db.Integer, nullable=False, default=0)
-    votes3 = db.Column(db.Integer, nullable=False, default=0)
-    votes4 = db.Column(db.Integer, nullable=False, default=0)
-
-    def __init__(self, propose_par_user_id:int, date_d_archivage:str, question:str, reponse1:str, reponse2:str, reponse3:str, reponse4:str, votes1:int, votes2:int, votes3:int, votes4:int) :
-        """
-        Cree un nouveau "ancien_sondage" (sera appele a partir des donnees du sondage du jour)
-        """
-        self.propose_par_user_id = propose_par_user_id
-        if valider_date_AAAAMMJJHHMM(date_d_archivage):
-            self.date_d_archivage = date_d_archivage
-        else :
-            raise ValueError("Fomat invalide de date")
-        self.question = question
-        self.reponse1 = reponse1
-        self.reponse2 = reponse2
-        self.reponse3 = reponse3
-        self.reponse4 = reponse4
-        self.votes1 = votes1
-        self.votes2 = votes2
-        self.votes3 = votes3
-        self.votes4 = votes4
 
 class VoteSondageDuJour(db.Model):
     """

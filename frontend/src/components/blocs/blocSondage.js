@@ -119,6 +119,12 @@ export default function BlocSondage({ reloadSondage }) {
         {content}
       </Card.Body>
       <Card.Footer className="d-flex justify-content-between">
+      <Button
+          variant="light"
+          onClick={() => navigate("/sondage/classement")}
+        >
+          <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+        </Button>
         <Button
           variant="light"
           onClick={() => navigate("/sondage/proposer")}
