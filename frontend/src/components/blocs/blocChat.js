@@ -13,6 +13,7 @@ export default function BlocChat() {
   const messageDisplayRef = useRef(null);
   const isAtBottomRef = useRef(true); // Ref to track if user is at the bottom
   const { userData } = useLayout();
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     const newSocket = io(`${SOCKET_BASE_URL}`, {
@@ -21,11 +22,19 @@ export default function BlocChat() {
     });
     setSocket(newSocket);
 
+    const initialLoadTimer = setTimeout(() => {
+      isInitialLoad.current = false;
+    }, 2000);
+
     newSocket.on("connect", () => {
       console.log("Connected to server");
     });
 
     newSocket.on("message", (message) => {
+      if (!isInitialLoad.current && message.text.trim().toLowerCase() === "piche" && message.author_id !== userData.id) {
+        const audio = new Audio('/assets/sons/piche.wav');
+        audio.play();
+      }
       setMessages((prev) => [
         ...prev,
         { text: message.text, time: message.time, author: message.author, author_id: message.author_id, id: message.id }
@@ -37,9 +46,10 @@ export default function BlocChat() {
     });
 
     return () => {
+      clearTimeout(initialLoadTimer);
       newSocket.disconnect();
     };
-  }, []);
+  }, [userData.id]);
 
   // Auto-scroll to bottom when new messages arrive, but only if user was already at the bottom
   useEffect(() => {
@@ -51,6 +61,12 @@ export default function BlocChat() {
 
   const sendMessage = () => {
     if (!input.trim()) return;
+
+    if (input.trim().toLowerCase() === "piche") {
+      const audio = new Audio('/assets/sons/piche.wav');
+      audio.play();
+    }
+
     const message = { text: input };
     socket.emit("message", message);
     setInput("");
