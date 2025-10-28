@@ -75,9 +75,14 @@ function Asso() {
                     <div className="position-relative">
                         <div className="asso-banner rounded-top" style={bannerStyle}>
                             {isMembreAutorise && (
-                                <Button variant="outline-light" className="position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
-                                    <i className="bi bi-camera"></i>
-                                </Button>
+                                <>
+                                    <Button variant="primary" className="position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
+                                        <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
+                                    </Button>
+                                    <Button variant="primary" className="position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
+                                        <img src="/assets/icons/upload_photo.svg" alt="Changer la bannière" style={{ width: '24px', height: '24px' }} /> Changer la bannière
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -87,19 +92,12 @@ function Asso() {
             <div className="bg-light p-3 rounded-bottom">
                 <Row>
                     <Col md={3} className="text-center text-md-start">
-                        <div className="position-relative d-inline-block">
+                        <div style={{ position: "relative", zIndex: 1 }}>
                             <Image
                                 src={asso.img ? `${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
                                 alt={asso.nom}
                                 className="asso-logo rounded-3"
                             />
-                            {isMembreAutorise && (
-                                <div className="position-absolute top-50 start-50 translate-middle opacity-75">
-                                    <Button variant="link" className="text-dark" onClick={() => changerPhotoLogoOuBanniere('logo')}>
-                                        <i className="bi bi-camera fs-3"></i>
-                                    </Button>
-                                </div>
-                            )}
                         </div>
                     </Col>
                     <Col md={9} className="d-flex align-items-center justify-content-center justify-content-md-start mt-3 mt-md-0">

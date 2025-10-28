@@ -12,5 +12,4 @@ dependencies:
   - Flask-Apscheduler
   - pytest
   - requests
-  - gunicorn
   - gevent
