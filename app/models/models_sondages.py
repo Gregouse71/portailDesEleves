@@ -78,13 +78,3 @@ class VoteSondage(db.Model):
         self.utilisateur = utilisateur
         self.vote = vote
 
-
-
-class VoteSondageDuJour(db.Model):
-    """
-    Contient les utilisateurs ayant vote au sondage du jour, et leur vote
-    """
-    __tablename__ = 'votes_sondage_du_jour'
-    id = db.Column(db.Integer, primary_key=True)  # Clef primaire
-    id_utilisateur = db.Column(db.Integer, nullable=False)
-    numero_vote = db.Column(db.Integer, nullable=False)
