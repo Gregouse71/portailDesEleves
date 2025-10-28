@@ -3,7 +3,7 @@ from math import exp
 # importer les models grace a __init__.py de models
 from app.services import db
 from app.models.models_utilisateurs import Utilisateur
-from app.models.models_sondages import VoteSondage, Sondage, VoteSondageDuJour
+from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
 from datetime import datetime, date
 
@@ -34,7 +34,6 @@ def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
     if id_sondage_du_jour is not None :
         utilisateur.vote_sondaj_du_jour = vote
-        nouveau_vote = VoteSondageDuJour(id_utilisateur=utilisateur.id, numero_vote=vote)
 
         sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour).first()
         nouveau_vote = VoteSondage(sondage=sondage_du_jour, utilisateur=utilisateur, vote=vote)
@@ -71,10 +70,10 @@ def _resultat_sondage(id_sondage) :
 def _donner_votes_gagnants_perdants(compteur_votes) :
     """prend en entree le tableau des votes, renvoie les numeros gagnants. Ne pas appliquer s'il n'y a pas eu de sondage ce jour"""
     gagnants = []
-    maxi = 0
+    maxi = -1
 
-    perdants = [0]
-    mini = compteur_votes[0]
+    perdants = []
+    mini = compteur_votes[0] + 1
 
     for i in range(4) :
         if compteur_votes[i] > maxi :
@@ -199,7 +198,7 @@ def scores_sondages (utilisateur):
         if vote.perdant:
             valeur += -1
 
-        score_recent += exp(- vote.sondage.age()) * valeur
+        score_recent += exp(- vote.sondage.age() / 14) * valeur
 
     return score_recent, score_global
 
