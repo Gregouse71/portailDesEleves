@@ -59,14 +59,17 @@ function AssoPosts({ asso_id }) {
 
     const formatPublicationDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleString("fr-FR", {
+        const datePart = date.toLocaleDateString("fr-FR", {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
+        });
+        const timePart = date.toLocaleTimeString("fr-FR", {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
+        return `${datePart} à ${timePart}`;
     }
 
     const handleSetNewPost = (e) => {
@@ -249,6 +252,15 @@ function AssoPosts({ asso_id }) {
         }
     }
 
+    const handleSetIsGestion = (newState) => {
+        if (!newState)
+        {
+            setIsNewPost(false)
+            setIdModifyPost(null)
+        }
+        setIsGestion(newState)
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -267,7 +279,7 @@ function AssoPosts({ asso_id }) {
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les publications</h2>
-                {isMembreAutorise && <BoutonEditer onClick={() => setIsGestion(!isGestion)}/>}
+                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)}/>}
             </div>
             {isGestion && !isNewPost && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewPost(true)}>
@@ -322,11 +334,11 @@ function AssoPosts({ asso_id }) {
                                 <div className="d-flex justify-content-between align-items-center mt-3">
                                     <div className="d-flex gap-2">
                                         {!isGestion && <>
-                                            <Button variant="outline-primary" onClick={() => handleChangePostLike(post.id)}>
+                                            <Button variant="primary" onClick={() => handleChangePostLike(post.id)}>
                                                 {post.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
                                                 {post.likes.length}
                                             </Button>
-                                            <Button variant="outline-secondary" onClick={() => handleSetIdNewComment(post.id)}>Commenter</Button>
+                                            <Button variant="secondary" onClick={() => handleSetIdNewComment(post.id)}>Commenter</Button>
                                         </>}
                                         {isGestion && <>
                                             <Button variant="primary" onClick={() => handleSetIdModifyPost(post.id)}>Éditer</Button>
@@ -355,17 +367,17 @@ function AssoPosts({ asso_id }) {
                                     <Card.Body>
                                         {comment.id !== idModifyComment && <>
                                             <div className="d-flex align-items-center gap-3">
-                                                <Image src={`${BASE_URL}/upload/utilisateurs/09brique.jpg`} alt={`${comment.auteur}`} roundedCircle width={50} height={50} />
+                                                <Image src={`${BASE_URL}/upload/utilisateurs/09brique.jpg`} alt={`${comment.auteur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
                                                 <p className="mb-0">{comment.contenu}</p>
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center mt-2">
                                                 <div className="d-flex gap-2">
-                                                    <Button variant="outline-primary" size="sm" onClick={() => handleChangeCommentLike(comment.id)}>
+                                                    <Button variant="primary" size="sm" onClick={() => handleChangeCommentLike(comment.id)}>
                                                         {comment.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
                                                         {comment.likes.length}
                                                     </Button>
-                                                    {comment.id_auteur === userData.id && <Button variant="outline-secondary" size="sm" onClick={() => handleSetIdModifyComment(comment.id)}>Éditer</Button>}
-                                                    {(isGestion || comment.id_auteur === userData.id) && <Button variant="outline-danger" size="sm" onClick={() => removeComment(comment.id)}>Supprimer</Button>}
+                                                    {comment.id_auteur === userData.id && <Button variant="secondary" size="sm" onClick={() => handleSetIdModifyComment(comment.id)}>Éditer</Button>}
+                                                    {(isGestion || comment.id_auteur === userData.id) && <Button variant="danger" size="sm" onClick={() => removeComment(comment.id)}>Supprimer</Button>}
                                                 </div>
                                                 <small className="text-muted">Publié le : {formatPublicationDate(comment.date)}</small>
                                             </div>
