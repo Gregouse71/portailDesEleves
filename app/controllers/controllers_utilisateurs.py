@@ -378,3 +378,33 @@ def route_changer_marrain():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Erreur lors du changement de marrain : {str(e)}"}), 500
+
+@controllers_utilisateurs.route('/search/<string:query>', methods=['GET'])
+@login_required
+def search_users(query):
+    """
+    Search for users by username, first name, last name or phone number.
+    """
+    try:
+        search_term = f"%{query}%"
+        users = Utilisateur.query.filter(
+            (Utilisateur.nom_utilisateur.ilike(search_term)) |
+            (Utilisateur.prenom.ilike(search_term)) |
+            (Utilisateur.nom.ilike(search_term)) |
+            (Utilisateur.telephone.ilike(search_term))
+        ).all()
+
+        user_list = [
+            {
+                "id": user.id,
+                "nom_utilisateur": user.nom_utilisateur,
+                "prenom": user.prenom,
+                "nom": user.nom,
+                "promotion": user.promotion
+            }
+            for user in users
+        ]
+
+        return jsonify(user_list)
+    except Exception as e:
+        return jsonify({"message": f"Erreur lors de la recherche : {str(e)}"}), 500

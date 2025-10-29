@@ -232,6 +232,7 @@ function AssoEvents({ asso_id }) {
         if (!newState) {
             clearNewEvent();
             setIsNewEvent(false);
+            setIdEventModifier(null)
         }
         setIsGestionEvents(newState);
     };
@@ -332,8 +333,7 @@ function AssoEvents({ asso_id }) {
             </div>
             {isGestionEvents && !isNewEvent && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewEvent(true)}>
-                    <img src="/assets/icons/plus.svg" alt="Ajouter un événement" />
-                    Ajouter un événement
+                    <img src="/assets/icons/plus.svg" alt="Ajouter un événement" /> Ajouter un événement
                 </Button>
             </div>}
             <div className="d-flex flex-column gap-3">

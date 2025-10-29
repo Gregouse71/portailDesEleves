@@ -146,3 +146,11 @@ export async function supprimerCo() {
   });
   return handleResponse(response);
 }
+
+export async function searchUsers(query) {
+  const response = await fetch(`${API_BASE_URL}/users/search/${query}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return handleResponse(response);
+}
