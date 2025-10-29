@@ -17,6 +17,7 @@ import PageUtilisateur from "./components/pages/PageUtilisateur";
 import AjouterAssociation from "./components/pages/AjouterAssociation";
 import { LayoutProvider } from "./layouts/Layout";
 import FormulaireConnexion from "./components/FormulaireConnexion";
+import Search from "./components/pages/Search";
 import ClassementSondage from "./components/pages/Sondage/ClassementSondage";
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="utilisateur">
           <Route path=":id" element={<PageUtilisateur />} />
         </Route>
+        <Route path="search" element={<Search />} />
       </Route>
       <Route path="soifguard">
         <Route path="accueil" element={<AccueilSoifguard />} />

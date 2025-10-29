@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useLayout } from '../../layouts/Layout';
 import { seDeconnecter } from '../../api/api_global';
-import { verifierSuperutilisateur } from '../../api/api_utilisateurs';
+import { verifierSuperutilisateur, searchUsers } from '../../api/api_utilisateurs';
 import { useEffect, useState } from 'react';
 import { verifierPermission } from '../../api/api_soifguard';
-import { Container, Navbar, Nav, NavDropdown, Button } from 'react-bootstrap';
+import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
 
 import '../../assets/styles/header.scss';
 
@@ -13,6 +13,15 @@ export default function Header() {
   const navigate = useNavigate();
   const [isSuperUser, setIsSuperUser] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.length > 0) {
+      navigate(`/search?q=${searchQuery}`);
+    }
+  };
 
   useEffect(() => {
     async function checkSuperUser() {
@@ -40,7 +49,7 @@ export default function Header() {
   return (
     <Navbar bg="dark" variant="dark" expand="md" className="global-header-header">
       <Container fluid>
-        <Navbar.Brand href="#" onClick={() => navigate("/")}>Portail des élèves</Navbar.Brand>
+        <Navbar.Brand href="#" onClick={() => navigate("/")}><em>Le nouveau</em> portail des élèves</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
@@ -55,7 +64,17 @@ export default function Header() {
                 {isSuperUser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}
             </div>
           </Nav>
-          <Nav className="ms-auto">
+          <Nav className="ms-auto d-flex align-items-center">
+            <Form className="d-flex me-2" onSubmit={handleSearchSubmit}>
+              <FormControl
+                type="search"
+                placeholder="Rechercher"
+                className="me-2"
+                aria-label="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Form>
             <NavDropdown title={userData ? userData.nom_utilisateur : "Chargement..."} id="user-nav-dropdown" align="end">
                 <NavDropdown.Item onClick={() => navigate(`utilisateur/${userData.id}`)}>Ma page</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => handleLogout()}>Se déconnecter</NavDropdown.Item>
