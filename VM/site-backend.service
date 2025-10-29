@@ -1,0 +1,14 @@
+#/home/rezal/.config/systemd/user/site-backend@.service
+
+[Unit]
+Description="Serveur pour le backend du site."
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/rezal/site/
+ExecStart=/home/rezal/miniconda3/envs/site/bin/gunicorn --worker-class eventlet -w 5 run:app
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

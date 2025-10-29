@@ -1,5 +1,5 @@
-from gevent import monkey
-monkey.patch_all()
+import eventlet
+eventlet.monkey_patch()
 
 """
 Ce fichier crée et initialise l'application et les extensions. Il charge la configuration
@@ -8,7 +8,6 @@ et enregistre les blueprints.
 Il est execute pour initialiser l'application. 
 
 """
-
 from flask import Flask, send_from_directory
 from flask_cors import CORS # permet d'accepter les requetes provenant de n'importe quelle origine
 from flask_sqlalchemy import SQLAlchemy
@@ -20,7 +19,13 @@ from flask_apscheduler import APScheduler
 from config import Config
 import os
 
-socketio = SocketIO(async_mode='gevent', cors_allowed_origins="*")
+socketio = SocketIO(
+    async_mode='eventlet',
+    cors_allowed_origins="*",
+    message_queue="redis://localhost:6379/0",
+    logger=True,
+    engineio_logger=True
+)
 
 # Initialisation des extensions (sans encore les attacher à l'application)
 db = SQLAlchemy()
@@ -31,16 +36,18 @@ scheduler = APScheduler()
 def create_app():
     # Creation de l'instance de l'application Flask
     app = Flask(__name__)
+    # Chargement de la configuration
+    app.config.from_object(Config)
 
     # Active CORS pour toutes les routes de l'application
     CORS(app, origins="*", supports_credentials=True)
 
-    # Chargement de la configuration
-    app.config.from_object(Config)
     
     # Initialisation des extensions avec l'application
     db.init_app(app)
     login_manager.init_app(app)
+    socketio.init_app(app)
+    scheduler.init_app(app)
     # session.init_app(app)
 
     from .models import Utilisateur  # Importer la classe Utilisateur
@@ -61,11 +68,6 @@ def create_app():
     def serve_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)
     
-    socketio.init_app(app)
-
-    scheduler.init_app(app)
     from .tasks import tasks
-    scheduler.start()
-
-    # socketio.init_app(app, cors_allowed_origins="*")
+    socketio.start_background_task(scheduler.start)
     return socketio, app

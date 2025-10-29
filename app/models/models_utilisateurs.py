@@ -79,8 +79,8 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
-    score_recent = db.Column(db.Float, nullable=True)
-    score_global = db.Column(db.Float, nullable=True)
+    score_recent = db.Column(db.Float, nullable=False, default=0)
+    score_global = db.Column(db.Float, nullable=False, default=0)
     votes = db.relationship('VoteSondage', back_populates='utilisateur')
     # Messages
     messages = db.relationship('Message', back_populates='utilisateur')
