@@ -104,8 +104,8 @@ export default function BlocSondage({ reloadSondage }) {
     content = (
       <>
         <p className="h4 fw-bold text-center">Pas de sondage aujourd'hui</p>
-        <Button variant='light border' onClick={() => navigate("/sondage/proposer")} style={{cursor : "pointer"}}>
-          <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ width: "70px", transition: "transform 0.2s ease"}} />
+        <Button variant='light border' onClick={() => navigate("/sondage/proposer")} style={{ cursor: "pointer" }}>
+          <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ width: "70px", transition: "transform 0.2s ease" }} />
           <p className="h6 text-center">Proposer un nouveau sondage</p>
         </Button>
       </>
@@ -123,13 +123,19 @@ export default function BlocSondage({ reloadSondage }) {
           variant="light"
           onClick={() => navigate("/sondage/proposer")}
         >
-          <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+          <img src="/assets/icons/plus.svg" alt="proposer un sondage" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+        </Button>
+        <Button
+          variant="light"
+          onClick={() => navigate("/sondage/classement")}
+        >
+          <img src="/assets/icons/stats.svg" alt="classement" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
         </Button>
         {isSuperUser && <Button
           variant="light"
           onClick={() => navigate("/sondage/gerer")}
         >
-          <img src="/assets/icons/manage.svg" alt="Bouton en rouage" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+          <img src="/assets/icons/manage.svg" alt="gestion" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
         </Button>}
       </Card.Footer>
     </Card>

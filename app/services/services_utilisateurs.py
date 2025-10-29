@@ -1,9 +1,11 @@
 # importer les models grace a __init__.py de models
 from app.services import db
-from app.models import *
+from app.models.models_utilisateurs import Utilisateur
+from app.models.models_sondages import VoteSondage, Sondage
 
 from datetime import date, timedelta
 from itertools import groupby
+from math import exp
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurDeLienUtilisateurs(Exception):

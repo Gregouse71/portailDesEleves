@@ -1,9 +1,11 @@
+from math import exp
+
 # importer les models grace a __init__.py de models
 from app.services import db
 from app.models.models_utilisateurs import Utilisateur
-from app.models.models_sondages import VoteSondage, Sondage, VoteSondageDuJour, AncienSondage
+from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
-from datetime import datetime
+from datetime import datetime, date
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurSondage(Exception):
@@ -32,7 +34,6 @@ def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
     if id_sondage_du_jour is not None :
         utilisateur.vote_sondaj_du_jour = vote
-        nouveau_vote = VoteSondageDuJour(id_utilisateur=utilisateur.id, numero_vote=vote)
 
         sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour).first()
         nouveau_vote = VoteSondage(sondage=sondage_du_jour, utilisateur=utilisateur, vote=vote)
@@ -66,48 +67,28 @@ def _resultat_sondage(id_sondage) :
     compteur_votes = [VoteSondage.query.filter_by(sondage_id=id_sondage, vote=i).count() for i in range(1, 5)]
     return compteur_votes
 
-def _donner_votes_gagnants(compteur_votes) :
+def _donner_votes_gagnants_perdants(compteur_votes) :
     """prend en entree le tableau des votes, renvoie les numeros gagnants. Ne pas appliquer s'il n'y a pas eu de sondage ce jour"""
     gagnants = []
-    maxi = 0
+    maxi = -1
+
+    perdants = []
+    mini = compteur_votes[0] + 1
+
     for i in range(4) :
         if compteur_votes[i] > maxi :
             maxi = compteur_votes[i]
             gagnants = [i]
         elif compteur_votes[i] == maxi :
             gagnants.append(i)
-    return gagnants
 
-def _update_si_win(utilisateurs: list[Utilisateur], gagnants: list[int]) :
-    """
-    Met a jour la ligne de l'utilisateur s'il a gagne le sondage du jour
-    - utilisateurs : tableau d'utilisateurs
-    - gagnants : tableau des votes gagnants (exemple : [1,2] si egalite entre 1 et 2)
-    """
-    for utilisateur in utilisateurs :
-        if utilisateur.vote_sondaj_du_jour in gagnants :
-            utilisateur.nombre_victoires_sondaj += 1
-        utilisateur.update(vote_sondaj_du_jour=None)
+        if 0 < compteur_votes[i] < mini:
+            mini = compteur_votes[i]
+            perdants = [i]
+        elif compteur_votes[i] == mini:
+            perdants.append(i)
 
-def _archiver_sondage(sondage_du_jour:Sondage, compteur_votes) -> AncienSondage:
-    """
-    Archive un sondage qui vient de s'achever. Renvoie l'element a ajouter dans la table
-    - sondage_du_jour : le sondage d'aujourd'hui a archiver
-    - compteur vote : obtenu avec _resultat_sondage
-    Ne pas appliquer sur du None
-    """
-    nouveau_ancien_sondage = AncienSondage(propose_par_user_id=sondage_du_jour.propose_par_user_id,
-                                        date_d_archivage=datetime.now().strftime("%Y%m%d%H%M"),
-                                        question=sondage_du_jour.question,
-                                        reponse1=sondage_du_jour.reponse1,
-                                        reponse2=sondage_du_jour.reponse2,
-                                        reponse3=sondage_du_jour.reponse3,
-                                        reponse4=sondage_du_jour.reponse4,
-                                        votes1=compteur_votes[0],
-                                        votes2=compteur_votes[1],
-                                        votes3=compteur_votes[2],
-                                        votes4=compteur_votes[3])
-    return nouveau_ancien_sondage
+    return gagnants, perdants
 
 
 def sondage_suivant() -> None:
@@ -124,6 +105,7 @@ def sondage_suivant() -> None:
     nouveau_sondage_du_jour = Sondage.query.filter_by(autorise=True, archive=False).order_by(Sondage.date_sondage).first()
     if nouveau_sondage_du_jour :
         nouveau_sondage_du_jour.archive = True  # On archive le sondage
+        nouveau_sondage_du_jour.date_publication = date.today ()  # On garde sa date de publication
         db.session.add(nouveau_sondage_du_jour)
         set_global_var("id_sondage_du_jour", nouveau_sondage_du_jour.id)
     else :
@@ -132,10 +114,11 @@ def sondage_suivant() -> None:
     # On traite les résultats de l'ancien
     if id_ancien_sondage_du_jour :  # il y a un sondage du jour
         compteur_votes = _resultat_sondage(id_ancien_sondage_du_jour)  # On récupère le résultat
-        gagnants = _donner_votes_gagnants(compteur_votes)  # On détermine les votes gagnants
+        gagnants, perdants = _donner_votes_gagnants_perdants(compteur_votes)  # On détermine les votes gagnants
         votes = VoteSondage.query.filter_by(sondage_id=id_ancien_sondage_du_jour).all()
         for vote in votes:  # Pour chaque vote, on détermine s'il est gagnant
             vote.gagnant = vote.vote in gagnants
+            vote.perdant = vote.vote in perdants
             db.session.add(vote)
 
             user = vote.utilisateur
@@ -144,9 +127,12 @@ def sondage_suivant() -> None:
 
         sondage_du_jour = Sondage.query.filter_by(id=id_ancien_sondage_du_jour).first()
         sondage_du_jour.gagnants = gagnants
+        sondage_du_jour.perdants = perdants
         db.session.add(sondage_du_jour)
 
     db.session.commit()
+    update_all_scores ()
+
 
 def obtenir_sondages_non_valide() :
     """
@@ -194,4 +180,34 @@ def supprimer_sondage(id_sondage) :
         raise ValueError("Sondage introuvable.")  # Lève une exception si l'ID est invalide
 
     db.session.delete(sondage)  # Supprime le sondage
+    db.session.commit()
+
+
+def scores_sondages (utilisateur):
+    """
+    Calcul les scores globaux et courants aux de l'utilisateur
+    """
+    score_recent = 0
+    score_global = 0
+
+    votes = VoteSondage.query.filter_by(utilisateur=utilisateur).all()
+    for vote in votes:
+        valeur = 0
+        if vote.gagnant:
+            valeur += 1
+        if vote.perdant:
+            valeur += -1
+
+        score_recent += exp(- vote.sondage.age() / 14) * valeur
+
+    return score_recent, score_global
+
+def update_all_scores ():
+    users = Utilisateur.query.all()
+    for user in users:
+        score_recent, score_global = scores_sondages(user)
+        user.score_recent = score_recent
+        user.score_global = score_global
+        db.session.add(user)
+    
     db.session.commit()

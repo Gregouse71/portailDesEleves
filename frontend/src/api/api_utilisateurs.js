@@ -9,14 +9,6 @@ export async function obtenirAssosUtilisateur(id_utilisateur) {
   return data; // au format JSON
 }
 
-export async function obtenirIDActuel() {
-  const res = await fetch(`${API_BASE_URL}/users/id_actuel`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data["id"]; 
-}
-
 export async function obtenirDataUser(id_utilisateur) {
   const res = await fetch(`${API_BASE_URL}/users/obtenir_infos_profil/${id_utilisateur}`,
     { credentials: "include" }

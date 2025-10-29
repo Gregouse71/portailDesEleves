@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { requeteProposerSondage } from './../../api/api_sondages';  // Importation de la fonction proposerSondage
+import { requeteProposerSondage } from './../../../api/api_sondages';  // Importation de la fonction proposerSondage
 import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, InputGroup, Alert } from "react-bootstrap";
 

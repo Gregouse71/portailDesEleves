@@ -11,12 +11,13 @@ import Asso from "./components/pages/Asso";
 import Trombi from "./components/pages/Trombi";
 import TrombiPromo from "./components/pages/TrombiPromo";
 import PlanningAsso from "./components/pages/PlanningAsso";
-import ProposerSondage from "./components/pages/ProposerSondage";
-import GererSondages from "./components/pages/GererSondages";
+import ProposerSondage from "./components/pages/Sondage/ProposerSondage";
+import GererSondages from "./components/pages/Sondage/GererSondages";
 import PageUtilisateur from "./components/pages/PageUtilisateur";
 import AjouterAssociation from "./components/pages/AjouterAssociation";
 import { LayoutProvider } from "./layouts/Layout";
 import FormulaireConnexion from "./components/FormulaireConnexion";
+import ClassementSondage from "./components/pages/Sondage/ClassementSondage";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="get/:promo" element={<TrombiPromo />} />
         </Route>
         <Route path="sondage">
+          <Route path="classement" element={<ClassementSondage />} />
           <Route path="proposer" element={<ProposerSondage />} />
           <Route path="gerer" element={<GererSondages />} />
         </Route>

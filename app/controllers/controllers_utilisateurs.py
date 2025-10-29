@@ -126,28 +126,7 @@ def obtenir_infos_profil(user_id: int):
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
     else:
-        infos_utilisateur = {
-            "id": utilisateur.id,
-            "nom_utilisateur": utilisateur.nom_utilisateur,
-            "prenom": utilisateur.prenom,
-            "nom": utilisateur.nom,
-            "surnom": utilisateur.surnom,
-            "promotion": utilisateur.promotion,
-            "chambre": utilisateur.chambre,
-            "cycle": utilisateur.cycle,
-            "email": utilisateur.email,
-            "telephone": utilisateur.telephone,
-            "date_de_naissance": utilisateur.date_de_naissance,
-            "ville_origine": utilisateur.ville_origine,
-            "sports": utilisateur.sports,
-            "instruments": utilisateur.instruments,
-            "marrain": {"id": utilisateur.marrain.id, "nom_utilisateur": utilisateur.marrain.nom_utilisateur} if utilisateur.marrain else None,
-            "co": {"id": utilisateur.co.id, "nom_utilisateur": utilisateur.co.nom_utilisateur} if utilisateur.co else None,
-            "fillots": [{"id": fillot.id, "nom_utilisateur": fillot.nom_utilisateur} for fillot in utilisateur.fillots],
-            "vote_sondaj_du_jour": utilisateur.vote_sondaj_du_jour,
-            "is_superuser": utilisateur.est_superutilisateur
-        }
-        return jsonify(infos_utilisateur), 200
+        return jsonify(utilisateur.to_dict()), 200
 
 
 @controllers_utilisateurs.route('/assos_utilisateur/<int:user_id>', methods=['GET', 'POST'])

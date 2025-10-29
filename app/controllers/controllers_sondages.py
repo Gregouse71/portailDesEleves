@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
+from sqlalchemy import desc, asc
 
 from app.services import *
 from app.utils.decorators import * 
 from app.services.services_sondages import *
+from app.models.models_utilisateurs import Utilisateur
 
 
 # Creer le blueprint pour les sondages
@@ -91,6 +93,8 @@ def route_proposer_sondage():
 
 # sera execute automatiquement chaque jour a minuit
 @controllers_sondages.route("/sondage_suivant", methods=["POST"])
+@login_required
+@vp_sondaj_required
 def route_sondage_suivant() :
     try :
         sondage_suivant()
@@ -99,6 +103,8 @@ def route_sondage_suivant() :
         return jsonify({'message': f'Erreur lors du passage au sondage suivant : {str(e)}'}), 500
 
 @controllers_sondages.route("/obtenir_sondages_en_attente", methods=["GET"])
+@login_required
+@vp_sondaj_required
 def route_obtenir_sondages_en_attente() :
     try :
         sondages = obtenir_sondages_non_valide()
@@ -106,3 +112,18 @@ def route_obtenir_sondages_en_attente() :
 
     except Exception as e:
         return jsonify({'message': f'Erreur lors du chargement des sondages : {str(e)}'}), 500
+
+
+@controllers_sondages.get("/scores")
+@login_required
+def get_scores_sondages():
+    my_score = current_user.score_recent
+    top_recent = Utilisateur.query.order_by(desc(Utilisateur.score_recent)).limit(10).all()
+    top_recent_neg = Utilisateur.query.order_by(asc(Utilisateur.score_recent)).limit(10).all()
+    top_global = Utilisateur.query.order_by(desc(Utilisateur.score_global)).limit(10).all()
+    top_global_neg = Utilisateur.query.order_by(asc(Utilisateur.score_global)).limit(10).all()
+
+    return jsonify({
+        "recent": [[u.to_dict() for u in top_recent], [u.to_dict() for u in top_recent_neg]],
+        "global": [[u.to_dict() for u in top_global], [u.to_dict() for u in top_global_neg]]
+    }), 200
