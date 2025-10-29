@@ -7,7 +7,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/rezal/site/
-ExecStart=/home/rezal/miniconda3/envs/site/bin/gunicorn --worker-class gevent -w 5 run:app
+ExecStart=/home/rezal/miniconda3/envs/site/bin/gunicorn --worker-class eventlet -w 5 run:app
 Restart=on-failure
 
 [Install]
