@@ -120,10 +120,10 @@ def get_scores_sondages():
     my_score = current_user.score_recent
     top_recent = Utilisateur.query.order_by(desc(Utilisateur.score_recent)).limit(10).all()
     top_recent_neg = Utilisateur.query.order_by(asc(Utilisateur.score_recent)).limit(10).all()
-    top_global = Utilisateur.query.order_by(desc(Utilisateur.score_global)).limit(10).all()
-    top_global_neg = Utilisateur.query.order_by(asc(Utilisateur.score_global)).limit(10).all()
+    top_global_con = Utilisateur.query.order_by(desc(Utilisateur.score_global_con)).limit(10).all()
+    top_global_div = Utilisateur.query.order_by(asc(Utilisateur.score_global_div)).limit(10).all()
 
     return jsonify({
         "recent": [[u.to_dict() for u in top_recent], [u.to_dict() for u in top_recent_neg]],
-        "global": [[u.to_dict() for u in top_global], [u.to_dict() for u in top_global_neg]]
+        "global": [[u.to_dict() for u in top_global_con], [u.to_dict() for u in top_global_div]]
     }), 200

@@ -1,4 +1,4 @@
-from math import exp
+from math import exp, sqrt
 
 # importer les models grace a __init__.py de models
 from app.services import db
@@ -183,31 +183,58 @@ def supprimer_sondage(id_sondage) :
     db.session.commit()
 
 
-def scores_sondages (utilisateur):
+def score_recent_sondages (id: int):
     """
-    Calcul les scores globaux et courants aux de l'utilisateur
+    Calcul le score courant de l'utilisateur : la moyenne pondérée avec coefficients décroissants en exponentielle
     """
     score_recent = 0
-    score_global = 0
 
-    votes = VoteSondage.query.filter_by(utilisateur=utilisateur).all()
+    votes = VoteSondage.query.filter_by(utilisateur_id=id).all()
     for vote in votes:
         valeur = 0
         if vote.gagnant:
             valeur += 1
         if vote.perdant:
-            valeur += -1
+            valeur -= 1
 
         score_recent += exp(- vote.sondage.age() / 14) * valeur
 
-    return score_recent, score_global
+    return score_recent
+
+def score_global_sondages(id: int):
+    """
+    Calcul le score global de l'utilisateur : la borne inf de l'intervalle de confiance
+    """
+
+    votes = VoteSondage.query.filter_by(utilisateur_id=id).with_entities(VoteSondage.gagnant, VoteSondage.perdant).all()
+
+    n = len(votes)
+    total = 0
+    if n == 0:
+        return 0, 0
+    totalcarre = 0
+    for vote in votes:
+        if vote.gagnant:
+            total += 1
+            totalcarre += 1
+        if vote.perdant:
+            total -= 1
+            totalcarre += 1
+
+    avg = total/n
+    sigma = total/n - avg**2  # Formule de Huygens pour l'ecart type
+    return avg - 12.71 * sigma / sqrt(n), avg + 12.71 * sigma / sqrt(n)
+
 
 def update_all_scores ():
     users = Utilisateur.query.all()
     for user in users:
-        score_recent, score_global = scores_sondages(user)
-        user.score_recent = score_recent
-        user.score_global = score_global
+        user.score_recent = score_recent_sondages (user.id)
+        con, div = score_global_sondages (user.id)  # Score consensuel, divergent
+        if user.id == 94:
+            print(con, div)
+        user.score_global_con = con
+        user.score_global_div = div
         db.session.add(user)
-    
+
     db.session.commit()
