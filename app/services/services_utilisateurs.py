@@ -97,18 +97,15 @@ def changer_marrain(marrain:Utilisateur, fillot:Utilisateur):
 # AUTRES
 
 def prochains_anniv():
-    def comp(d, beg, end):
-        if beg.year == end.year:
-            return beg <= date(2000, month=d.month, day=d.day) < end
-        else:
-            # TODO : à faire correctement
-            return beg <= date(2001, month=d.month, day=d.day) < end
+    def must_display(d):
+        date1 = date(year=2000, month=d.month, day=d.day)
+        date2 = date(year=2000, month=date.today().month, day=date.today().day)
 
-    begin = date(year=2000, month=date.today().month, day=date.today().day - 1)
-    end = begin + timedelta(days=7)
+        return (date2 <= date1 <= date2 + timedelta(days=7)
+                or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
 
     users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance).all()
-    ret = sorted([(user.date_de_naissance, user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if comp(user.date_de_naissance, begin, end)])
+    ret = sorted([(user.date_de_naissance, user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if must_display(user.date_de_naissance)])
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
     print (ret)
     return ret
