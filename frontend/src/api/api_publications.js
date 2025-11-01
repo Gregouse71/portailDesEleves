@@ -147,3 +147,26 @@ export async function creerNouveauCommentaire(id_post, comment) {
     throw erreur;
   }
 }
+
+export async function ajouterContenuPublication(assoId, publicationId, file) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch(`${API_BASE_URL}/publications/${assoId}/${publicationId}/add_content`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+      },
+      credentials: "include",
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Erreur lors du téléversement du fichier");
+    }
+    return { success: true, message: data.message, filePath: data.file_path };
+  } catch (error) {
+    console.error("Erreur réseau :", error);
+    return { success: false, message: error.message };
+  }
+}

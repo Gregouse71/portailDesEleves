@@ -10,7 +10,7 @@ from app.models.models_utilisateurs import Utilisateur
 # Gestion de publications
 
 
-def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool):
+def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None):
     """
     Ajoute une publication à l'association
     """
@@ -24,7 +24,8 @@ def add_publication(association: Association, titre: str, contenu: str, is_comme
                                   is_commentable=is_commentable,
                                   a_cacher_to_cycles=a_cacher_to_cycles,
                                   a_cacher_aux_nouveaux=a_cacher_aux_nouveaux,
-                                  is_publication_interne=is_publication_interne
+                                  is_publication_interne=is_publication_interne,
+                                  fichier_joint=fichier_joint
                                   )
         db.session.add(publication)
         db.session.commit()

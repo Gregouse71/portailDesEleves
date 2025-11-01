@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
+import os
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
+from app import db
 from app.services import *
 from app.utils.decorators import *
 from app.services.services_publications import *
@@ -34,7 +38,8 @@ def route_obtenir_publications_asso(association_id: int):
                                           "date_publication": e.date_publication,
                                           "likes": e.likes,
                                           "is_commentable": e.is_commentable,
-                                          "commentaires": [comment.to_dict() for comment in e.commentaires]}
+                                          "commentaires": [comment.to_dict() for comment in e.commentaires],
+                                          "fichier_joint": e.fichier_joint}
                                          for e in publications]}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -207,3 +212,43 @@ def route_modifier_commentaire(comment_id):
             return jsonify({"message": "seul l'auteur peut modifier ce commentaire"}), 403
     else:
         return jsonify({"message": "commentaire non trouvé"}), 404
+
+
+@controllers_publications.route('/<int:association_id>/<int:publication_id>/add_content', methods=['POST'])
+@login_required
+@est_membre_de_asso
+def route_add_content_to_publication(association_id, publication_id):
+    """
+    Ajoute du contenu au dossier de la publication
+    """
+    publication = Publication.query.get(publication_id)
+    if not publication:
+        return jsonify({"success": False, "message": "Publication introuvable"}), 404
+
+    # Définition du dossier d'upload
+    UPLOAD_FOLDER = os.path.join('app', 'upload', 'associations', publication.association.nom_dossier, 'publications')
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    # Vérifier si un fichier a été envoyé
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "Aucun fichier reçu"}), 400
+    file = request.files['file']
+    # Vérifier si l'extension du fichier est autorisée
+    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
+        return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
+    # Vérifier si le dossier d'upload existe, sinon le créer
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    filename = secure_filename(file.filename)
+    name, ext = os.path.splitext(filename)
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{name}_{timestamp}{ext}"
+    
+    file_path_for_save = os.path.join(UPLOAD_FOLDER, filename)
+    fichier_joint_for_db = os.path.join('upload', 'associations', publication.association.nom_dossier, 'publications', filename)
+
+    file.save(file_path_for_save)
+
+    publication.fichier_joint = fichier_joint_for_db
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Fichier ajouté avec succès", "fichier_joint": fichier_joint_for_db}), 200

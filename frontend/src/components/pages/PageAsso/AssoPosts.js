@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { estUtilisateurDansAsso } from "../../../api/api_associations";
-import { creerNouveauCommentaire, creerNouvellePublication, modifierCommentaire, modifierLikeComment, modifierLikePost, modifierPublication, obtenirPublicationsAsso, supprimerCommentaire, supprimerPublication } from "../../../api/api_publications";
+import { ajouterContenuPublication, creerNouveauCommentaire, creerNouvellePublication, modifierCommentaire, modifierLikeComment, modifierLikePost, modifierPublication, obtenirPublicationsAsso, supprimerCommentaire, supprimerPublication } from "../../../api/api_publications";
 import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
 import { BASE_URL } from "../../../api/base";
@@ -34,6 +34,18 @@ function AssoPosts({ asso_id }) {
     const [modifyComment, setModifyComment] = useState("");
     const [idNewComment, setIdNewComment] = useState(null);
     const [newComment, setNewComment] = useState("");
+    const [newPostFile, setNewPostFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    const handleFileUpload = async (publicationId, file) => {
+        try {
+            await ajouterContenuPublication(publicationId, file);
+            const postsData = await obtenirPublicationsAsso(asso_id);
+            setListePosts(postsData.publications);
+        } catch (error) {
+            console.error("Erreur lors du téléversement du fichier:", error);
+        }
+    };
 
     const clearNewPost = () => {
         setNewPost({
@@ -43,7 +55,8 @@ function AssoPosts({ asso_id }) {
             "a_cacher_to_cycles": [],
             "a_cacher_aux_nouveaux": false,
             "is_publication_interne": false
-        })
+        });
+        setNewPostFile(null);
     }
 
     const clearModifyPost = () => {
@@ -156,7 +169,15 @@ function AssoPosts({ asso_id }) {
 
     const validateNewPost = async () => {
         try {
-            await creerNouvellePublication(asso_id, newPost);
+            const newPublication = await creerNouvellePublication(asso_id, newPost);
+            console.log(newPublication)
+            if (newPostFile) {
+                try {
+                    await ajouterContenuPublication(asso_id, newPublication.id_publication, newPostFile);
+                } catch (error) {
+                    console.error("Erreur lors de l'ajout du fichier:", error);
+                }
+            }
             clearNewPost();
             setIsNewPost(false);
             const postsData = await obtenirPublicationsAsso(asso_id);
@@ -253,8 +274,7 @@ function AssoPosts({ asso_id }) {
     }
 
     const handleSetIsGestion = (newState) => {
-        if (!newState)
-        {
+        if (!newState) {
             setIsNewPost(false)
             setIdModifyPost(null)
         }
@@ -275,16 +295,27 @@ function AssoPosts({ asso_id }) {
         fetchData();
     }, [asso_id]);
 
+    useEffect(() => {
+        if (!newPostFile) {
+            setPreviewUrl(null);
+            return;
+        }
+        const objectUrl = URL.createObjectURL(newPostFile);
+        setPreviewUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+
+    }, [newPostFile]);
+
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les publications</h2>
-                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)}/>}
+                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)} />}
             </div>
             {isGestion && !isNewPost && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewPost(true)}>
                     <img src="/assets/icons/plus.svg" alt="Ajouter une publication" />
-                    Ajouter une publication
+                    {" "}Ajouter une publication
                 </Button>
             </div>}
             <div className="d-flex flex-column gap-3">
@@ -292,29 +323,40 @@ function AssoPosts({ asso_id }) {
                 {/* formulaire pour une nouvelle publication */}
                 {isNewPost && <Card>
                     <Card.Body>
+                        <Row>
+                            <Col md="9">
+                                <Form.Group as={Row} className="mb-3">
+                                    <Form.Label column sm="2">Titre</Form.Label>
+                                    <Col sm="10">
+                                        <Form.Control value={newPost.titre} name='titre' type='text' onChange={handleSetNewPost} />
+                                    </Col>
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Check type="checkbox" label="Autoriser les commentaires" checked={newPost.is_commentable} name='is_commentable' onChange={handleSetNewPost} />
+                                    <Form.Check type="checkbox" label="Publication interne" checked={newPost.is_publication_interne} name='is_publication_interne' onChange={handleSetNewPost} />
+                                    <Form.Check type="checkbox" label="Cacher aux 1A" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
+                                </Form.Group>
+                                <Form.Group as={Row} className="mb-3">
+                                    <Form.Label>Cacher aux cycles</Form.Label>
+                                    <Col>
+                                        {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
+                                            <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={newPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetNewPost} />
+                                        ))}
+                                    </Col>
+                                </Form.Group>
+                            </Col>
+                            <Col md="3" className="text-center">
+                                <Image src={previewUrl ? previewUrl : `${BASE_URL}/upload/utilisateurs/09brique.jpg`} fluid alt="Aperçu"/>
+                            </Col>
+                        </Row>
                         <Form>
-                            <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Titre</Form.Label>
-                                <Col sm="10">
-                                    <Form.Control value={newPost.titre} name='titre' type='text' onChange={handleSetNewPost} />
-                                </Col>
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Check type="checkbox" label="Autoriser les commentaires" checked={newPost.is_commentable} name='is_commentable' onChange={handleSetNewPost} />
-                                <Form.Check type="checkbox" label="Publication interne" checked={newPost.is_publication_interne} name='is_publication_interne' onChange={handleSetNewPost} />
-                                <Form.Check type="checkbox" label="Cacher aux 1A" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
-                            </Form.Group>
-                            <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Cacher aux cycles</Form.Label>
-                                <Col sm="10">
-                                    {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
-                                        <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={newPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetNewPost} />
-                                    ))}
-                                </Col>
-                            </Form.Group>
                             <Form.Group className="mb-3">
                                 <Form.Label>Description</Form.Label>
                                 <RichEditor value={newPost.contenu} onChange={handleSetNewPostContent} />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Fichier joint</Form.Label>
+                                <Form.Control type="file" onChange={(e) => setNewPostFile(e.target.files[0])} />
                             </Form.Group>
                             <div className="d-flex gap-2">
                                 <Button variant="success" onClick={validateNewPost}>Ajouter</Button>
@@ -326,12 +368,24 @@ function AssoPosts({ asso_id }) {
 
                 {listePosts.map((post) =>
                     <Card key={post.id}>
-                        <Card.Body>
+                        <Card.Body className="d-flex flex-column">
                             {/* Les publications existantes */}
+                            <div style={{ flex: 1 }}>
+                                {idModifyPost !== post.id && <>
+                                    <Card.Title>{post.titre}</Card.Title>
+                                    {post.fichier_joint ? <Row>
+                                        <Col md="9">
+                                            <RichTextDisplay content={post.contenu} />
+                                        </Col>
+                                        <Col md="3" className="text-center">
+                                            <Image src={`${BASE_URL}/${post.fichier_joint}`} fluid />
+                                        </Col>
+                                    </Row> : <RichTextDisplay content={post.contenu} />}
+                                </>
+                                }
+                            </div>
                             {idModifyPost !== post.id && <>
-                                <Card.Title>{post.titre}</Card.Title>
-                                <RichTextDisplay content={post.contenu} />
-                                <div className="d-flex justify-content-between align-items-center mt-3">
+                                <div className="d-flex justify-content-between align-items-center mt-auto">
                                     <div className="d-flex gap-2">
                                         {!isGestion && <>
                                             <Button variant="primary" onClick={() => handleChangePostLike(post.id)}>
@@ -401,28 +455,40 @@ function AssoPosts({ asso_id }) {
                             {/* Publication en cours d'édition */}
                             {idModifyPost === post.id &&
                                 <Form>
-                                    <Form.Group as={Row} className="mb-3">
-                                        <Form.Label column sm="2">Titre</Form.Label>
-                                        <Col sm="10">
-                                            <Form.Control value={modifyPost.titre} name='titre' type='text' onChange={handleSetModifyPost} />
+                                    <Row>
+                                        <Col md={post.fichier_joint && "9"}>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label column sm="2">Titre</Form.Label>
+                                                <Col sm="10">
+                                                    <Form.Control value={modifyPost.titre} name='titre' type='text' onChange={handleSetModifyPost} />
+                                                </Col>
+                                            </Form.Group>
+                                            <Form.Group className="mb-3">
+                                                <Form.Check type="checkbox" label="Autoriser les commentaires" checked={modifyPost.is_commentable} name='is_commentable' onChange={handleSetModifyPost} />
+                                                <Form.Check type="checkbox" label="Publication interne" checked={modifyPost.is_publication_interne} name='is_publication_interne' onChange={handleSetModifyPost} />
+                                                <Form.Check type="checkbox" label="Cacher aux 1A" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
+                                            </Form.Group>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label>Cacher aux cycles</Form.Label>
+                                                <Col>
+                                                    {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
+                                                        <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={modifyPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetModifyPost} />
+                                                    ))}
+                                                </Col>
+                                            </Form.Group>
                                         </Col>
-                                    </Form.Group>
-                                    <Form.Group className="mb-3">
-                                        <Form.Check type="checkbox" label="Autoriser les commentaires" checked={modifyPost.is_commentable} name='is_commentable' onChange={handleSetModifyPost} />
-                                        <Form.Check type="checkbox" label="Publication interne" checked={modifyPost.is_publication_interne} name='is_publication_interne' onChange={handleSetModifyPost} />
-                                        <Form.Check type="checkbox" label="Cacher aux 1A" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
-                                    </Form.Group>
-                                    <Form.Group as={Row} className="mb-3">
-                                        <Form.Label column sm="2">Cacher aux cycles</Form.Label>
-                                        <Col sm="10">
-                                            {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
-                                                <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={modifyPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetModifyPost} />
-                                            ))}
-                                        </Col>
-                                    </Form.Group>
+                                        {post.fichier_joint &&
+                                            <Col md="3" className="text-center">
+                                                <Image src={`${BASE_URL}/${post.fichier_joint}`} fluid />
+                                            </Col>}
+                                    </Row>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Description</Form.Label>
                                         <RichEditor value={modifyPost.contenu} onChange={handleSetModifyPostContent} />
+                                    </Form.Group>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Fichier joint</Form.Label>
+                                        <Form.Control type="file" onChange={(e) => handleFileUpload(post.id, e.target.files[0])} />
                                     </Form.Group>
                                     <div className="d-flex gap-2">
                                         <Button variant="success" onClick={validateModifyPost}>Valider</Button>
