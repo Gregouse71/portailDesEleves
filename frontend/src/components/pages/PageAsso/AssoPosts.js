@@ -4,7 +4,7 @@ import { ajouterContenuPublication, creerNouveauCommentaire, creerNouvellePublic
 import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
 import { BASE_URL } from "../../../api/base";
-import { Card, Button, Form, Row, Col, Image, InputGroup } from "react-bootstrap";
+import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
 
 function AssoPosts({ asso_id }) {
@@ -43,6 +43,7 @@ function AssoPosts({ asso_id }) {
     const [fileInputKey, setFileInputKey] = useState(Date.now());
     const [modifyFileInputKey, setModifyFileInputKey] = useState(Date.now());
     const [shouldRemoveExistingAttachment, setShouldRemoveExistingAttachment] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleFileUpload = async (publicationId, file, miniatureFile) => {
         try {
@@ -176,6 +177,7 @@ function AssoPosts({ asso_id }) {
     }
 
     const validateNewPost = async () => {
+        setIsLoading(true);
         try {
             const newPublication = await creerNouvellePublication(asso_id, newPost);
             console.log(newPublication)
@@ -193,6 +195,7 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const handleSetIdNewComment = (comment_id) => {
@@ -203,6 +206,7 @@ function AssoPosts({ asso_id }) {
     }
 
     const validateNewComment = async (post_id) => {
+        setIsLoading(true);
         try {
             await creerNouveauCommentaire(post_id, newComment)
             setNewComment("");
@@ -212,6 +216,7 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const handleSetIdModifyPost = async (post_id) => {
@@ -243,6 +248,7 @@ function AssoPosts({ asso_id }) {
     }
 
     const validateModifyPost = async () => {
+        setIsLoading(true);
         try {
             let updatedModifyPost = { ...modifyPost };
 
@@ -267,9 +273,11 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const validateModifyComment = async () => {
+        setIsLoading(true);
         try {
             await modifierCommentaire(idModifyComment, { "contenu": modifyComment })
             setModifyComment("")
@@ -279,6 +287,7 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const handleChangePostLike = async (post_id) => {
@@ -410,7 +419,7 @@ function AssoPosts({ asso_id }) {
                                         <InputGroup>
                                             <Form.Control key={fileInputKey} type="file" onChange={(e) => setNewPostFile(e.target.files[0])} />
                                             {newPostFile &&
-                                                <Button variant="outline-secondary" onClick={() => { setNewPostFile(null); setFileInputKey(Date.now()); }}>
+                                                <Button variant="danger" onClick={() => { setNewPostFile(null); setFileInputKey(Date.now()); }}>
                                                     <img src="/assets/icons/delete.svg" alt="Supprimer la pièce jointe" />
                                                 </Button>
                                             }
@@ -425,7 +434,9 @@ function AssoPosts({ asso_id }) {
                                 </Col>
                             </Row>
                             <div className="d-flex gap-2">
-                                <Button variant="success" onClick={validateNewPost}>Ajouter</Button>
+                                <Button variant="success" onClick={validateNewPost} disabled={isLoading}>
+                                    {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Ajouter"}
+                                </Button>
                                 <Button variant="danger" onClick={() => setIsNewPost(false)}>Annuler</Button>
                             </div>
                         </Form>
@@ -478,7 +489,9 @@ function AssoPosts({ asso_id }) {
                                                 <Form.Control as="textarea" rows={3} value={newComment} placeholder="Écrivez votre commentaire ici" onChange={(e) => setNewComment(e.target.value)} />
                                             </Form.Group>
                                             <div className="d-flex gap-2">
-                                                <Button variant="success" onClick={() => validateNewComment(post.id)}>Valider</Button>
+                                                <Button variant="success" onClick={() => validateNewComment(post.id)} disabled={isLoading}>
+                                                    {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                                                </Button>
                                                 <Button variant="danger" onClick={() => handleSetIdNewComment(null)}>Annuler</Button>
                                             </div>
                                         </Form>
@@ -511,7 +524,9 @@ function AssoPosts({ asso_id }) {
                                                     <Form.Control as="textarea" rows={3} value={modifyComment} placeholder="Écrivez votre commentaire ici" onChange={(e) => setModifyComment(e.target.value)} />
                                                 </Form.Group>
                                                 <div className="d-flex gap-2">
-                                                    <Button variant="success" onClick={() => validateModifyComment(comment.id)}>Valider</Button>
+                                                    <Button variant="success" onClick={() => validateModifyComment()} disabled={isLoading}>
+                                                        {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                                                    </Button>
                                                     <Button variant="danger" onClick={() => handleSetIdModifyComment(null)}>Annuler</Button>
                                                 </div>
                                             </Form>
@@ -567,7 +582,7 @@ function AssoPosts({ asso_id }) {
                                                 {post.fichier_joint && !shouldRemoveExistingAttachment ? (
                                                     <div className="d-flex justify-content-between align-items-center">
                                                         <span className="text-nowrap text-truncate" style={{ maxWidth: 'calc(100% - 50px)' }}>{post.fichier_joint.split('/').pop()}</span>
-                                                        <Button variant="outline-danger" size="sm" onClick={() => setShouldRemoveExistingAttachment(true)}>
+                                                        <Button variant="danger" size="sm" onClick={() => setShouldRemoveExistingAttachment(true)}>
                                                             <img src="/assets/icons/delete.svg" alt="Supprimer le fichier existant" />
                                                         </Button>
                                                     </div>
@@ -581,7 +596,7 @@ function AssoPosts({ asso_id }) {
                                                             }}
                                                         />
                                                         {modifyPostFile && (
-                                                            <Button variant="outline-secondary" onClick={() => { setModifyPostFile(null); setModifyFileInputKey(Date.now()); }}>
+                                                            <Button variant="danger" onClick={() => { setModifyPostFile(null); setModifyFileInputKey(Date.now()); }}>
                                                                 <img src="/assets/icons/delete.svg" alt="Annuler la sélection du nouveau fichier" />
                                                             </Button>
                                                         )}
@@ -597,7 +612,9 @@ function AssoPosts({ asso_id }) {
                                         </Col>
                                     </Row>
                                     <div className="d-flex gap-2">
-                                        <Button variant="success" onClick={validateModifyPost}>Valider</Button>
+                                        <Button variant="success" onClick={validateModifyPost} disabled={isLoading}>
+                                            {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                                        </Button>
                                         <Button variant="danger" onClick={() => setIdModifyPost(null)}>Annuler</Button>
                                     </div>
                                 </Form>}
