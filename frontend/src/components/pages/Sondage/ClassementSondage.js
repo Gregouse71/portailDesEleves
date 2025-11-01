@@ -40,14 +40,14 @@ export default function ClassementSondage() {
             <Col>
                 {data.global[0].map((user) => (
                     <Row key={user.nom_utilisateur}>
-                        {user.nom_utilisateur} : {user.score_recent ? user.score_recent : "0"}
+                        {user.nom_utilisateur} : {user.score_global_con ? user.score_global_con : "0"}
                     </Row>
                 ))}
             </Col>
             <Col>
                 {data.global[1].map((user) => (
                     <Row key={user.nom_utilisateur}>
-                        {user.nom_utilisateur} : {user.score_recent ? user.score_recent : "0"}
+                        {user.nom_utilisateur} : {user.score_global_div ? user.score_global_div : "0"}
                     </Row>
                 ))}
             </Col>

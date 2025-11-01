@@ -80,7 +80,8 @@ class Utilisateur(db.Model, UserMixin) :
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
     score_recent = db.Column(db.Float, nullable=False, default=0)
-    score_global = db.Column(db.Float, nullable=False, default=0)
+    score_global_con = db.Column(db.Float, nullable=False, default=0)
+    score_global_div = db.Column(db.Float, nullable=False, default=0)
     votes = db.relationship('VoteSondage', back_populates='utilisateur')
     # Messages
     messages = db.relationship('Message', back_populates='utilisateur')
@@ -365,5 +366,6 @@ class Utilisateur(db.Model, UserMixin) :
             "vote_sondaj_du_jour": self.vote_sondaj_du_jour,
             "is_superuser": self.est_superutilisateur,
             "score_recent": self.score_recent,
-            "score_global": self.score_global
+            "score_global_con": self.score_global_con,
+            "score_global_div": self.score_global_div
         }
