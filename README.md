@@ -123,14 +123,10 @@ Résumons le rôle de chaque élément :
 
 **La première fois**
 
-Comme expliqué précédemment, pour créer la base de données, le portail doit-être initialisé pour la première fois avec `$ ipython ./init_db.py`. Cela crée les tables à partir des modèles de `models.py`. Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier. 
+Il faut d'abord installer tous les modules nécessaires avec ```conda env create -f environment.yml```. De plus, il faut installer *redis* pour permettre au chat de fonctionner. Comme expliqué précédemment, pour créer la base de données, le portail doit-être initialisé pour la première fois avec `$ ipython ./init_db.py`. Cela crée les tables à partir des modèles de `models.py`. Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier. 
 
 **À chaque fois**
 
-Ensuite, le portail est démarré avec `$ ipython ./run.py`
+Ensuite, le portail est démarré avec ```gunicorn --worker-class eventlet -w 1 run:app -b localhost:5000```. Pour le développement, on peut rajouter ```--reload --log-level debug``` pour voir exactement ce qui se passe et rechager le backend quand on sauvegarde des modification. Si l'utilisation du chat n'est pas essentielle, un simple ```python run.py``` suffit.
 run.py fait appel à `__init__.py` qui crée l'application et démarre la base de donnée (`db = SQLAlchemy()`).  `config.py` contient la configuration utilisée lors de l'initialisation, elle contient le lien à la base (à terme, on utilisera une base sur phpMyAdmin par exemple et pas une base locale), les clefs secrètes, etc. 
-
-
-
-
 

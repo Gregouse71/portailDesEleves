@@ -223,7 +223,7 @@ def score_global_sondages(id: int):
 
     avg = total/n
     sigma = total/n - avg**2  # Formule de Huygens pour l'ecart type
-    return avg - 12.71 * sigma / sqrt(n), avg + 12.71 * sigma / sqrt(n)
+    return avg - 1.96 * sigma / sqrt(n), avg + 1.96 * sigma / sqrt(n)
 
 
 def update_all_scores ():
