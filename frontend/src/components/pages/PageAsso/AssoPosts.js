@@ -4,7 +4,7 @@ import { ajouterContenuPublication, creerNouveauCommentaire, creerNouvellePublic
 import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
 import { BASE_URL } from "../../../api/base";
-import { Card, Button, Form, Row, Col, Image } from "react-bootstrap";
+import { Card, Button, Form, Row, Col, Image, InputGroup } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
 
 function AssoPosts({ asso_id }) {
@@ -35,11 +35,18 @@ function AssoPosts({ asso_id }) {
     const [idNewComment, setIdNewComment] = useState(null);
     const [newComment, setNewComment] = useState("");
     const [newPostFile, setNewPostFile] = useState(null);
+    const [newPostMiniatureFile, setNewPostMiniatureFile] = useState(null);
+    const [modifyPostFile, setModifyPostFile] = useState(null);
+    const [modifyPostMiniatureFile, setModifyPostMiniatureFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [modifyPreviewUrl, setModifyPreviewUrl] = useState(null);
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
+    const [modifyFileInputKey, setModifyFileInputKey] = useState(Date.now());
+    const [shouldRemoveExistingAttachment, setShouldRemoveExistingAttachment] = useState(false);
 
-    const handleFileUpload = async (publicationId, file) => {
+    const handleFileUpload = async (publicationId, file, miniatureFile) => {
         try {
-            await ajouterContenuPublication(publicationId, file);
+            await ajouterContenuPublication(publicationId, file, miniatureFile);
             const postsData = await obtenirPublicationsAsso(asso_id);
             setListePosts(postsData.publications);
         } catch (error) {
@@ -57,6 +64,7 @@ function AssoPosts({ asso_id }) {
             "is_publication_interne": false
         });
         setNewPostFile(null);
+        setNewPostMiniatureFile(null);
     }
 
     const clearModifyPost = () => {
@@ -171,9 +179,9 @@ function AssoPosts({ asso_id }) {
         try {
             const newPublication = await creerNouvellePublication(asso_id, newPost);
             console.log(newPublication)
-            if (newPostFile) {
+            if (newPostFile || newPostMiniatureFile) {
                 try {
-                    await ajouterContenuPublication(asso_id, newPublication.id_publication, newPostFile);
+                    await ajouterContenuPublication(asso_id, newPublication.id_publication, newPostFile, newPostMiniatureFile);
                 } catch (error) {
                     console.error("Erreur lors de l'ajout du fichier:", error);
                 }
@@ -209,10 +217,15 @@ function AssoPosts({ asso_id }) {
     const handleSetIdModifyPost = async (post_id) => {
         if (idModifyPost !== post_id) {
             clearModifyPost();
+            setModifyPostFile(null);
+            setModifyPostMiniatureFile(null);
+            setModifyPreviewUrl(null);
+            setModifyFileInputKey(Date.now()); // Reset key
+            setShouldRemoveExistingAttachment(false); // Reset deletion flag
             const post = listePosts.find(e => e.id === post_id);
             if (post) {
-                const { titre, contenu, is_commentable } = post;
-                setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable }));
+                const { titre, contenu, is_commentable, fichier_joint, miniature } = post;
+                setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable, fichier_joint, miniature }));
             }
             setIdModifyPost(post_id);
         }
@@ -231,7 +244,22 @@ function AssoPosts({ asso_id }) {
 
     const validateModifyPost = async () => {
         try {
-            await modifierPublication(asso_id, idModifyPost, modifyPost);
+            let updatedModifyPost = { ...modifyPost };
+
+            if (shouldRemoveExistingAttachment) {
+                updatedModifyPost.fichier_joint = null;
+            }
+
+            await modifierPublication(asso_id, idModifyPost, updatedModifyPost);
+
+            if (modifyPostFile || modifyPostMiniatureFile) {
+                try {
+                    await ajouterContenuPublication(asso_id, idModifyPost, modifyPostFile, modifyPostMiniatureFile);
+                } catch (error) {
+                    console.error("Erreur lors de l'ajout du fichier:", error);
+                }
+            }
+
             clearModifyPost();
             setIdModifyPost(null);
             const postsData = await obtenirPublicationsAsso(asso_id);
@@ -295,16 +323,35 @@ function AssoPosts({ asso_id }) {
         fetchData();
     }, [asso_id]);
 
+
+
     useEffect(() => {
-        if (!newPostFile) {
+        let fileForPreview = newPostMiniatureFile || newPostFile;
+
+        if (!fileForPreview) {
             setPreviewUrl(null);
             return;
         }
-        const objectUrl = URL.createObjectURL(newPostFile);
+
+        const objectUrl = URL.createObjectURL(fileForPreview);
         setPreviewUrl(objectUrl);
         return () => URL.revokeObjectURL(objectUrl);
 
-    }, [newPostFile]);
+    }, [newPostFile, newPostMiniatureFile]);
+
+    useEffect(() => {
+        let fileForPreview = modifyPostMiniatureFile || modifyPostFile;
+
+        if (!fileForPreview) {
+            setModifyPreviewUrl(null);
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(fileForPreview);
+        setModifyPreviewUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+
+    }, [modifyPostFile, modifyPostMiniatureFile]);
 
     return (
         <>
@@ -324,7 +371,7 @@ function AssoPosts({ asso_id }) {
                 {isNewPost && <Card>
                     <Card.Body>
                         <Row>
-                            <Col md="9">
+                            <Col md={previewUrl ? "9" : "12"}>
                                 <Form.Group as={Row} className="mb-3">
                                     <Form.Label column sm="2">Titre</Form.Label>
                                     <Col sm="10">
@@ -345,19 +392,38 @@ function AssoPosts({ asso_id }) {
                                     </Col>
                                 </Form.Group>
                             </Col>
-                            <Col md="3" className="text-center">
-                                <Image src={previewUrl ? previewUrl : `${BASE_URL}/upload/utilisateurs/09brique.jpg`} fluid alt="Aperçu"/>
-                            </Col>
+                            {previewUrl &&
+                                <Col md="3" className="text-center">
+                                    <Image src={previewUrl} fluid alt="La miniature automatique sera générée à l'envoi" />
+                                </Col>
+                            }
                         </Row>
                         <Form>
                             <Form.Group className="mb-3">
                                 <Form.Label>Description</Form.Label>
                                 <RichEditor value={newPost.contenu} onChange={handleSetNewPostContent} />
                             </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Fichier joint</Form.Label>
-                                <Form.Control type="file" onChange={(e) => setNewPostFile(e.target.files[0])} />
-                            </Form.Group>
+                            <Row>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Pièce jointe</Form.Label>
+                                        <InputGroup>
+                                            <Form.Control key={fileInputKey} type="file" onChange={(e) => setNewPostFile(e.target.files[0])} />
+                                            {newPostFile &&
+                                                <Button variant="outline-secondary" onClick={() => { setNewPostFile(null); setFileInputKey(Date.now()); }}>
+                                                    <img src="/assets/icons/delete.svg" alt="Supprimer la pièce jointe" />
+                                                </Button>
+                                            }
+                                        </InputGroup>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Miniature</Form.Label>
+                                        <Form.Control type="file" onChange={(e) => setNewPostMiniatureFile(e.target.files[0])} />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
                             <div className="d-flex gap-2">
                                 <Button variant="success" onClick={validateNewPost}>Ajouter</Button>
                                 <Button variant="danger" onClick={() => setIsNewPost(false)}>Annuler</Button>
@@ -378,7 +444,9 @@ function AssoPosts({ asso_id }) {
                                             <RichTextDisplay content={post.contenu} />
                                         </Col>
                                         <Col md="3" className="text-center">
-                                            <Image src={`${BASE_URL}/${post.fichier_joint}`} fluid />
+                                            <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                                <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{cursor: 'pointer'}} />
+                                            </a>
                                         </Col>
                                     </Row> : <RichTextDisplay content={post.contenu} />}
                                 </>
@@ -456,7 +524,7 @@ function AssoPosts({ asso_id }) {
                             {idModifyPost === post.id &&
                                 <Form>
                                     <Row>
-                                        <Col md={post.fichier_joint && "9"}>
+                                        <Col md={(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment)) ? "9" : "12"}>
                                             <Form.Group as={Row} className="mb-3">
                                                 <Form.Label column sm="2">Titre</Form.Label>
                                                 <Col sm="10">
@@ -477,19 +545,57 @@ function AssoPosts({ asso_id }) {
                                                 </Col>
                                             </Form.Group>
                                         </Col>
-                                        {post.fichier_joint &&
+                                        {(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment)) &&
                                             <Col md="3" className="text-center">
-                                                <Image src={`${BASE_URL}/${post.fichier_joint}`} fluid />
+                                                {modifyPreviewUrl ?
+                                                    <Image src={modifyPreviewUrl} fluid alt="La miniature automatique sera générée à l'envoi" /> :
+                                                    (post.fichier_joint && !shouldRemoveExistingAttachment &&
+                                                        <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                                            <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                                        </a>)
+                                                }
                                             </Col>}
                                     </Row>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Description</Form.Label>
                                         <RichEditor value={modifyPost.contenu} onChange={handleSetModifyPostContent} />
                                     </Form.Group>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Fichier joint</Form.Label>
-                                        <Form.Control type="file" onChange={(e) => handleFileUpload(post.id, e.target.files[0])} />
-                                    </Form.Group>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Pièce jointe</Form.Label>
+                                                {post.fichier_joint && !shouldRemoveExistingAttachment ? (
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <span className="text-nowrap text-truncate" style={{ maxWidth: 'calc(100% - 50px)' }}>{post.fichier_joint.split('/').pop()}</span>
+                                                        <Button variant="outline-danger" size="sm" onClick={() => setShouldRemoveExistingAttachment(true)}>
+                                                            <img src="/assets/icons/delete.svg" alt="Supprimer le fichier existant" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <InputGroup>
+                                                        <Form.Control
+                                                            key={modifyFileInputKey}
+                                                            type="file"
+                                                            onChange={(e) => {
+                                                                setModifyPostFile(e.target.files[0]);
+                                                            }}
+                                                        />
+                                                        {modifyPostFile && (
+                                                            <Button variant="outline-secondary" onClick={() => { setModifyPostFile(null); setModifyFileInputKey(Date.now()); }}>
+                                                                <img src="/assets/icons/delete.svg" alt="Annuler la sélection du nouveau fichier" />
+                                                            </Button>
+                                                        )}
+                                                    </InputGroup>
+                                                )}
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Miniature</Form.Label>
+                                                <Form.Control type="file" onChange={(e) => setModifyPostMiniatureFile(e.target.files[0])} />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
                                     <div className="d-flex gap-2">
                                         <Button variant="success" onClick={validateModifyPost}>Valider</Button>
                                         <Button variant="danger" onClick={() => setIdModifyPost(null)}>Annuler</Button>

@@ -82,7 +82,9 @@ class Publication(db.Model):
     
     fichier_joint = db.Column(db.String(1000), nullable=True)
 
-    def __init__(self, association: Association, auteur: Utilisateur, titre: str, contenu: str, date_publication: str, is_commentable: bool, a_cacher_to_cycles: list = [], a_cacher_aux_nouveaux: bool = False, is_publication_interne: bool = False, is_publiee_par_utilisateur: bool = False, fichier_joint: str = None):
+    miniature = db.Column(db.String(1000), nullable=True)
+
+    def __init__(self, association: Association, auteur: Utilisateur, titre: str, contenu: str, date_publication: str, is_commentable: bool, a_cacher_to_cycles: list = [], a_cacher_aux_nouveaux: bool = False, is_publication_interne: bool = False, is_publiee_par_utilisateur: bool = False, fichier_joint: str = None, miniature: str = None):
         """
         Crée une nouvelle publication
         """
@@ -111,13 +113,15 @@ class Publication(db.Model):
         
         self.fichier_joint = fichier_joint
 
+        self.miniature = miniature
+
         if self.association.nom == "DE":
             self.is_publiee_par_utilisateur = True
 
         else:
             self.is_publiee_par_utilisateur = is_publiee_par_utilisateur
 
-    def __update__(self, titre: str = None, contenu: str = None, is_commentable: bool = None, a_cacher_to_cycles: list = None, a_cacher_aux_nouveaux: bool = None, is_publication_interne: bool = None, fichier_joint: str = None):
+    def __update__(self, titre: str = None, contenu: str = None, is_commentable: bool = None, a_cacher_to_cycles: list = None, a_cacher_aux_nouveaux: bool = None, is_publication_interne: bool = None, fichier_joint: str = None, miniature: str = None):
         """
         Modifie les valeurs d'une publication.
         Il ne s'agit pas ici de modifier les likes ou les commentaires, 
@@ -197,3 +201,6 @@ class Publication(db.Model):
             
         if fichier_joint != None:
             self.fichier_joint = fichier_joint
+
+        if miniature != None:
+            self.miniature = miniature

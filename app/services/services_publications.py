@@ -2,6 +2,11 @@ from app.services import db
 from app.models import *
 from flask_login import current_user
 from sqlalchemy.orm.attributes import flag_modified
+import os
+import mimetypes
+from werkzeug.utils import secure_filename
+from datetime import datetime
+from pdf2image import convert_from_path
 
 from app.models.models_publications import Publication, Commentaire
 from app.models.models_associations import Association
@@ -9,8 +14,46 @@ from app.models.models_utilisateurs import Utilisateur
 
 # Gestion de publications
 
+def _save_file(file, association_name, is_miniature=False):
+    if not file:
+        return None, None
 
-def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None):
+    UPLOAD_FOLDER = os.path.join('app', 'upload', 'associations', association_name, 'publications')
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+    filename = secure_filename(file.filename)
+    name, ext = os.path.splitext(filename)
+    ext = ext.lower().lstrip('.')
+
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError("Extension de fichier non autorisée")
+
+    if is_miniature and ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise ValueError("Extension de miniature non autorisée. Seules les images sont acceptées.")
+
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{name}_{timestamp}.{ext}"
+    
+    file_path_for_save = os.path.join(UPLOAD_FOLDER, filename)
+    file_path_for_db = os.path.join('upload', 'associations', association_name, 'publications', filename).replace(os.sep, '/')
+
+    file.save(file_path_for_save)
+    return file_path_for_db, file_path_for_save
+
+def _generate_pdf_thumbnail(pdf_path, output_dir, association_name):
+    images = convert_from_path(pdf_path, first_page=1, last_page=1, fmt='png')
+    if images:
+        thumbnail_name = os.path.splitext(os.path.basename(pdf_path))[0] + '_thumb.png'
+        thumbnail_path_for_save = os.path.join(output_dir, thumbnail_name)
+        images[0].save(thumbnail_path_for_save, 'PNG')
+        return os.path.join('upload', 'associations', association_name, 'publications', thumbnail_name).replace(os.sep, '/')
+    return None
+
+def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None):
     """
     Ajoute une publication à l'association
     """
@@ -25,7 +68,8 @@ def add_publication(association: Association, titre: str, contenu: str, is_comme
                                   a_cacher_to_cycles=a_cacher_to_cycles,
                                   a_cacher_aux_nouveaux=a_cacher_aux_nouveaux,
                                   is_publication_interne=is_publication_interne,
-                                  fichier_joint=fichier_joint
+                                  fichier_joint=fichier_joint,
+                                  miniature=miniature
                                   )
         db.session.add(publication)
         db.session.commit()
@@ -33,10 +77,39 @@ def add_publication(association: Association, titre: str, contenu: str, is_comme
     else:
         raise ValueError("L'association n'existe pas")
 
+def add_content_to_publication(publication_id: int, fichier_joint_file, miniature_file):
+    publication = Publication.query.get(publication_id)
+    if not publication:
+        raise ValueError("Publication introuvable")
 
-def modify_publication(publication: Publication, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool):
+    if fichier_joint_file:
+        fichier_joint_path_for_db, fichier_joint_path_for_save = _save_file(fichier_joint_file, publication.association.nom_dossier)
+        publication.fichier_joint = fichier_joint_path_for_db
+        
+        # If no miniature is provided with it, generate one from the new file
+        if not miniature_file:
+            mime_type, _ = mimetypes.guess_type(fichier_joint_path_for_db)
+            if mime_type == 'application/pdf':
+                output_dir = os.path.dirname(fichier_joint_path_for_save)
+                publication.miniature = _generate_pdf_thumbnail(fichier_joint_path_for_save, output_dir, publication.association.nom_dossier)
+            elif mime_type and mime_type.startswith('image'):
+                publication.miniature = fichier_joint_path_for_db
+            else:
+                # New file is not an image/pdf, and no miniature provided.
+                # Remove old miniature.
+                publication.miniature = None
+
+    if miniature_file:
+        miniature_path, _ = _save_file(miniature_file, publication.association.nom_dossier, is_miniature=True)
+        publication.miniature = miniature_path
+
+    db.session.commit()
+
+    return publication.fichier_joint, publication.miniature
+
+def modify_publication(publication: Publication, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None):
     """
-    Ajoute une publication à l'association
+    Modifie une publication de l'association
     """
     publication = Publication.query.get(publication.id)
     if publication:
@@ -46,6 +119,10 @@ def modify_publication(publication: Publication, titre: str, contenu: str, is_co
         publication.a_cacher_to_cycles = a_cacher_to_cycles
         publication.a_cacher_aux_nouveaux = a_cacher_aux_nouveaux
         publication.is_publication_interne = is_publication_interne
+        
+        publication.fichier_joint = fichier_joint
+        publication.miniature = miniature
+
         db.session.commit()
     else:
         raise ValueError("La publication n'existe pas")

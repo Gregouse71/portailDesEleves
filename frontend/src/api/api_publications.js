@@ -148,10 +148,16 @@ export async function creerNouveauCommentaire(id_post, comment) {
   }
 }
 
-export async function ajouterContenuPublication(assoId, publicationId, file) {
+export async function ajouterContenuPublication(assoId, publicationId, file, miniatureFile) {
   try {
     const formData = new FormData();
-    formData.append("file", file);
+    if (file) {
+      formData.append("fichier_joint", file);
+    }
+    if (miniatureFile) {
+      formData.append("miniature", miniatureFile);
+    }
+
     const response = await fetch(`${API_BASE_URL}/publications/${assoId}/${publicationId}/add_content`, {
       method: "POST",
       headers: {
