@@ -359,7 +359,7 @@ class Utilisateur(db.Model, UserMixin) :
             "date_de_naissance": self.date_de_naissance,
             "ville_origine": self.ville_origine,
             "sports": self.sports,
-            "instruments": self.instruments,
+            "instruments": self.instruments if self.instruments is not None else [],
             "marrain": {"id": self.marrain.id, "nom_utilisateur": self.marrain.nom_utilisateur} if self.marrain else None,
             "co": {"id": self.co.id, "nom_utilisateur": self.co.nom_utilisateur} if self.co else None,
             "fillots": [{"id": fillot.id, "nom_utilisateur": fillot.nom_utilisateur} for fillot in self.fillots],

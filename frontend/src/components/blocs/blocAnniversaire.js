@@ -1,21 +1,18 @@
-
-import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 import { obtenirProchainsAnnivs } from '../../api/api_utilisateurs';
 import { Link } from 'react-router-dom';
+import { useQuery } from "@tanstack/react-query";
 
 // "undefined" means the URL will be computed from the `window.location` object
 
 export default function BlocAnniversaire() {
-    const [annivs, setAnnivs] = useState([]);
+    const { data: annivs = [], error, isLoading } = useQuery({
+        queryKey: ['prochainsAnniversaires'],
+        queryFn: obtenirProchainsAnnivs,
+    });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const data = await obtenirProchainsAnnivs();
-            setAnnivs(data.sort((x, y) => new Date(x.date_de_naissance) - new Date(y.date_de_naissance)));
-        };
-        fetchData();
-    }, []);
+    if (isLoading) return <div>Chargement ...</div>;
+    if (error) return <div>Impossible d'obtenir les anniversaires</div>;
 
     return <Card id="bloc-anniversaire" className="bloc-global">
         <Card.Header as="h5" className="text-center">Anniversaires</Card.Header>

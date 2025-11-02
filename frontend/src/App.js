@@ -15,43 +15,45 @@ import ProposerSondage from "./components/pages/Sondage/ProposerSondage";
 import GererSondages from "./components/pages/Sondage/GererSondages";
 import PageUtilisateur from "./components/pages/PageUtilisateur";
 import AjouterAssociation from "./components/pages/AjouterAssociation";
-import { LayoutProvider } from "./layouts/Layout";
+import { Layout, LayoutProvider } from "./layouts/Layout";
 import FormulaireConnexion from "./components/FormulaireConnexion";
 import Search from "./components/pages/Search";
 import ClassementSondage from "./components/pages/Sondage/ClassementSondage";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<FormulaireConnexion />}/>
-      <Route path="/" element={<LayoutProvider />}>
-        <Route path="/" element={<Home />} />
-        <Route path="assos">
-          <Route path="" element={<ListeAssos />} />
-          <Route path="get/:id" element={<Asso />} />
-          <Route path="planning" element={<PlanningAsso />} />
-          <Route path="ajouter" element={<AjouterAssociation />} />
+    <LayoutProvider>
+      <Routes>
+        <Route path="/login" element={<FormulaireConnexion />} />
+        <Route path="/" element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="assos">
+            <Route path="" element={<ListeAssos />} />
+            <Route path="get/:id" element={<Asso />} />
+            <Route path="planning" element={<PlanningAsso />} />
+            <Route path="ajouter" element={<AjouterAssociation />} />
+          </Route>
+          <Route path="trombi">
+            <Route path="" element={<Trombi />} />
+            <Route path="get/:promo" element={<TrombiPromo />} />
+          </Route>
+          <Route path="sondage">
+            <Route path="classement" element={<ClassementSondage />} />
+            <Route path="proposer" element={<ProposerSondage />} />
+            <Route path="gerer" element={<GererSondages />} />
+          </Route>
+          <Route path="utilisateur">
+            <Route path=":id" element={<PageUtilisateur />} />
+          </Route>
+          <Route path="search" element={<Search />} />
         </Route>
-        <Route path="trombi">
-          <Route path="" element={<Trombi />} />
-          <Route path="get/:promo" element={<TrombiPromo />} />
+        <Route path="soifguard">
+          <Route path="accueil" element={<AccueilSoifguard />} />
+          <Route path="" element={<Soifguard />} />
         </Route>
-        <Route path="sondage">
-          <Route path="classement" element={<ClassementSondage />} />
-          <Route path="proposer" element={<ProposerSondage />} />
-          <Route path="gerer" element={<GererSondages />} />
-        </Route>
-        <Route path="utilisateur">
-          <Route path=":id" element={<PageUtilisateur />} />
-        </Route>
-        <Route path="search" element={<Search />} />
-      </Route>
-      <Route path="soifguard">
-        <Route path="accueil" element={<AccueilSoifguard />} />
-        <Route path="" element={<Soifguard />} />
-      </Route>
-      <Route path="/administration" element={<Admin />} />
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+        <Route path="/administration" element={<Admin />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </LayoutProvider>
   );
 }

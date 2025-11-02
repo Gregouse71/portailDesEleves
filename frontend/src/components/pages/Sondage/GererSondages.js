@@ -3,13 +3,14 @@ import { useLayout } from '../../../layouts/Layout';
 import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuivant } from '../../../api/api_sondages';
 import { useNavigate } from "react-router-dom";
 import { Container, Table, Button, Spinner, Card, ListGroup } from "react-bootstrap";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 function GererSondages() {
+    const queryClient = useQueryClient(); 
     const { reloadBlocSondage } = useLayout();
     const [sondagesEnAttente, setSondagesEnAttente] = useState([]);
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-
+    
     const formatDate = (dateString) => {
         if (!dateString || dateString.length !== 12) {
             return "Invalid date";
@@ -30,43 +31,28 @@ function GererSondages() {
         reloadBlocSondage();
     }
 
+    const { data: dataSondage = [], isLoading, error } = useQuery({
+        queryKey: ['sondagesEnAttente'],
+        queryFn: () => obtenirSondagesEnAttente().then(r => {return r.sondages}),
+    });
+
     useEffect(() => {
-        fetchSondages();
-    }, []);
+        if (dataSondage) { setSondagesEnAttente(dataSondage) };
+    }, [dataSondage]);
 
-    async function fetchSondages() {
-        setLoading(true);
-        try {
-            const data = await obtenirSondagesEnAttente();
-            if (data && data.sondages) {
-                setSondagesEnAttente(data.sondages);
-            }
-        } catch (error) {
-            console.error("Erreur lors de la récupération des sondages :", error);
-        } finally {
-            setLoading(false);
+    const mutate_validation = useMutation({
+        mutationFn: async ([id_sondage, del]) => {
+            if (del) await supprimerSondage(id_sondage)
+            else await validerSondage(id_sondage)
+            return sondagesEnAttente.filter(s => s.id !== id_sondage);
+        },
+        onSuccess: (updatedSondages) => {
+            queryClient.setQueryData(['sondagesEnAttente'], updatedSondages);
+            setSondagesEnAttente(updatedSondages);
         }
-    }
+    });
 
-    async function handleValidation(id_sondage) {
-        try {
-            await validerSondage(id_sondage);
-            setSondagesEnAttente(sondagesEnAttente.filter(s => s.id !== id_sondage));
-        } catch (error) {
-            console.error("Erreur lors de la validation du sondage :", error);
-        }
-    }
-
-    async function handleSuppression(id_sondage) {
-        try {
-            await supprimerSondage(id_sondage);
-            setSondagesEnAttente(sondagesEnAttente.filter(s => s.id !== id_sondage));
-        } catch (error) {
-            console.error("Erreur lors de la suppression du sondage :", error);
-        }
-    }
-
-    if (loading) {
+    if (isLoading) {
         return (
             <Container>
                 <h1>Gestion des sondages en attente</h1>
@@ -77,7 +63,7 @@ function GererSondages() {
             </Container>
         );
     }
-
+    
     return (
         <Container>
             <h1>Gestion des sondages en attente</h1>
@@ -114,8 +100,8 @@ function GererSondages() {
                                 <td>{sondage.propose_par_user_id}</td>
                                 <td>{formatDate(sondage.date_sondage)}</td>
                                 <td>
-                                    <Button variant="success" onClick={() => handleValidation(sondage.id)}>Valider</Button>
-                                    <Button variant="danger" onClick={() => handleSuppression(sondage.id)} className="ms-2">Supprimer</Button>
+                                    <Button variant="success" onClick={() => mutate_validation.mutate([sondage.id, false])}>Valider</Button>
+                                    <Button variant="danger" onClick={() => mutate_validation.mutate([sondage.id, true])} className="ms-2">Supprimer</Button>
                                 </td>
                             </tr>
                         ))}

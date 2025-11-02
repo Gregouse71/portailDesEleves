@@ -1,31 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { obtenirListeDesUtilisateurs } from '../../api/api_utilisateurs';
 import { useNavigate, useParams } from 'react-router-dom';
 import UserCard from '../elements/UserCard';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
 import '../../assets/styles/_TrombiPromo.scss';
+import { useQuery } from '@tanstack/react-query';
 
 function TrombiPromo() {
     const [cyclesSelectionnes, setCyclesSelectionnes] = useState(["ic", "ast", "ev", "vs"]); // Les cycles sont pré-cochés
-    const [utilisateurs, setUtilisateurs] = useState([]);
     const navigate = useNavigate();
 
     const cyclesDisponibles = ["ic", "ast", "ev", "vs", "isup"];
     const { promo } = useParams();
 
-    // Charger les utilisateurs lorsque les cycles sélectionnés changent
-    useEffect(() => {
-        const chargerUtilisateurs = async () => {
-            if (cyclesSelectionnes.length === 0) {
-                setUtilisateurs([]); // Vide la liste si aucune case n'est cochée
-                return;
-            }
-            const data = await obtenirListeDesUtilisateurs(promo, cyclesSelectionnes);
-            setUtilisateurs(data);
-        };
-        chargerUtilisateurs();
-    }, [promo, cyclesSelectionnes]);
+    const { data: utilisateurs = [], error } = useQuery({
+        queryKey: ['listePromo', promo, cyclesSelectionnes],
+        queryFn: () => obtenirListeDesUtilisateurs(promo, cyclesSelectionnes),
+    });
 
     const toggleCycle = (cycle) => {
         setCyclesSelectionnes(prev =>

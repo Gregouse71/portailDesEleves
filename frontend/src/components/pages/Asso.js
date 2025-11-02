@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import '../../assets/styles/asso.scss';
 import { chargerAsso, estUtilisateurDansAsso, ajouterContenu, changerPhoto } from './../../api/api_associations';
 import AssoInfo from './PageAsso/AssoInfo';
@@ -8,12 +8,9 @@ import AssoPosts from './PageAsso/AssoPosts';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
+import { useQuery } from '@tanstack/react-query';
 
 function Asso() {
-    const [asso, setAsso] = useState(null);
-    const [isMembreDansAsso, setIsMembreDansAsso] = useState(null);
-    const [isMembreAutorise, setIsMembreAutorise] = useState(null);
-
     const [activeTab, setActiveTab] = useState("info");
 
     const navigate = useNavigate();
@@ -39,22 +36,16 @@ function Asso() {
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const assoData = await chargerAsso(id);
-                const membreData = await estUtilisateurDansAsso(id);
-                setAsso(assoData);
-                setIsMembreDansAsso(membreData.is_membre);
-                setIsMembreAutorise(membreData.autorise);
-            } catch (error) {
-                console.error("Erreur lors du chargement des données:", error);
-            }
-        };
-        fetchData();
-    }, [id]);
+    const { data: asso = null } = useQuery({
+        queryKey: ['asso', id],
+        queryFn: () => {console.log(id); return chargerAsso(id)},
+    });
+    const { data: membreData = {is_membre: false, autorise: false} } = useQuery({
+        queryKey: ['membreData', id],
+        queryFn: () => {console.log(id); return estUtilisateurDansAsso(id)},
+    });
 
-    if (asso === null || isMembreDansAsso === null) return <p>Chargement...</p>;
+    if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
     const bannerStyle = {
         backgroundImage: asso.banniere_path ? `url(${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
@@ -74,7 +65,7 @@ function Asso() {
                 <Col xs={12} className="p-0">
                     <div className="position-relative">
                         <div className="asso-banner rounded-top" style={bannerStyle}>
-                            {isMembreAutorise && (
+                            {membreData.autorise && (
                                 <>
                                     <Button variant="primary" className="position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
                                         <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
@@ -102,7 +93,7 @@ function Asso() {
                     </Col>
                     <Col md={9} className="d-flex align-items-center justify-content-center justify-content-md-start mt-3 mt-md-0">
                         <h2>{asso.nom}</h2>
-                        {isMembreAutorise && isMembreDansAsso && <Badge bg="success" className="ms-3">Vous êtes dans l'asso</Badge>}
+                        {membreData.autorise && membreData.is_membre && <Badge bg="success" className="ms-3">Vous êtes dans l'asso</Badge>}
                     </Col>
                 </Row>
 
@@ -125,7 +116,7 @@ function Asso() {
                             </Nav>
                             <Tab.Content>
                                 <Tab.Pane eventKey="info">
-                                    <AssoInfo asso_id={asso.id} />
+                                    <AssoInfo id={asso.id} />
                                 </Tab.Pane>
                                 <Tab.Pane eventKey="events">
                                     <AssoEvents asso_id={asso.id} />

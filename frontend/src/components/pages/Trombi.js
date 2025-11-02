@@ -1,26 +1,17 @@
-import React, { useEffect, useState } from 'react';
 import { obtenirListeDesPromos } from '../../api/api_utilisateurs';
 import { useNavigate } from 'react-router-dom';
 import { Container, Card } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
 import '../../assets/styles/trombi.scss';
+import { useQuery } from '@tanstack/react-query';
 
 function Trombi() {
-    const [listePromos, setListePromos] = useState(null);
     const navigate = useNavigate();
-    
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                let promoData = await obtenirListeDesPromos();
-                promoData = promoData.filter(p => p !== null).sort((a, b) => b.localeCompare(a));
-                setListePromos(promoData);
-            } catch (error) {
-                console.error("Erreur lors du chargement des données:", error);
-            }
-        };
-        fetchData();
-    }, []);
+
+    const { data: listePromos = null } = useQuery({
+        queryKey: ['listePromos'],
+        queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
+    });
 
 
     if (listePromos === null) {

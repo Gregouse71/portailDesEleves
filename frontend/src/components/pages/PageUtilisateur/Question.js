@@ -1,30 +1,40 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { obtenirQuestionsReponses, modifierQuestionsReponses } from "../../../api/api_utilisateurs";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
 
 export default function TabQuestions({ id, autoriseAModifier }) {
+    const queryClient = useQueryClient();
     const [questionsReponses, setQuestionsReponses] = useState({});
     const [isGestion, setIsGestion] = useState(false);
 
-    useEffect(() => {// Obtention des données utilisateur à afficher
-        const chargerUtilisateur = async () => {
-            const data = await obtenirQuestionsReponses(id);
-            setQuestionsReponses(data);
-        };
-        chargerUtilisateur();
-    }, [id]);
+    const { data: questionData, error } = useQuery({
+        queryKey: ['questionsReponses', id],
+        queryFn: () => obtenirQuestionsReponses(id),
+    });
+
+    useEffect(() => {
+        if (questionData) { setQuestionsReponses(questionData) };
+    }, [questionData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setQuestionsReponses({ ...questionsReponses, [name]: value })
     };
 
-    const validerModifierEvent = () => {
-        modifierQuestionsReponses(id, questionsReponses);
-        setIsGestion(false);
-    }
+    const mutation = useMutation({
+        mutationFn: async () => {
+            await modifierQuestionsReponses(id, questionsReponses);
+            return obtenirQuestionsReponses(id); // fetch updated data
+        },
+        onSuccess: (updatedQuestions) => {
+            queryClient.setQueryData(['questionsReponses', id], updatedQuestions);
+            setQuestionsReponses(updatedQuestions);
+            setIsGestion(false);
+        }
+    });
 
     return (<>
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -48,7 +58,7 @@ export default function TabQuestions({ id, autoriseAModifier }) {
                 )
             })}
             <div className="d-flex gap-2">
-                <Button variant="success" onClick={validerModifierEvent}>Valider</Button>
+                <Button variant="success" onClick={mutation.mutate}>Valider</Button>
                 <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
             </div>
         </Form>}

@@ -1,20 +1,15 @@
-import { useEffect, useState } from "react";
 import { Container, Form, InputGroup } from "react-bootstrap";
 import { Col, Row } from 'react-bootstrap';
 import { obtenirScoresSondages } from "../../../api/api_sondages";
 import UserCard from "../../elements/UserCard";
+import { useQuery } from "@tanstack/react-query";
 
 
 export default function ClassementSondage() {
-    const [data, setData] = useState({ recent: [[], []], global: [[], []] });
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const data = await obtenirScoresSondages();
-            setData(data);
-        };
-        fetchData();
-    }, [])
+    const { data: data, error } = useQuery({
+        queryKey: ['scoresSondages'],
+        queryFn: obtenirScoresSondages,
+    });
 
     return <>
         <Container className="mt-4">

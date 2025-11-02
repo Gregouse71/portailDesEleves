@@ -6,13 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { Card, Button, Form } from "react-bootstrap";
 import UserCard from "../../elements/UserCard";
 import BoutonEditer from "../../elements/BoutonEditer";
+import { useQuery } from "@tanstack/react-query";
 
 function AssoMembres({ asso_id }) {
-    const [isMembreAutorise, setIsMembreAutorise] = useState(false);
     const [listeMembres, setListeMembres] = useState([]);
     const [isGestionMembres, setIsGestionMembres] = useState(false);
     const [isAjoutMembre, setIsAjoutMembre] = useState(false);
-    const [listePromos, setListePromos] = useState(null);
     const [listeNouveauxMembres, setListeNouveauxMembres] = useState([]);
     const [promoAjoutMembre, setPromoAjoutMembre] = useState("");
     const [idAjoutMembre, setIdAjoutMembre] = useState("");
@@ -20,6 +19,23 @@ function AssoMembres({ asso_id }) {
     const [nouveauRole, setNouveauRole] = useState(null);
     const [nouvellePosition, setNouvellePosition] = useState("");
     const navigate = useNavigate();
+
+    const { data: asso = null } = useQuery({
+        queryKey: ['asso', asso_id],
+        queryFn: () => chargerAsso(asso_id),
+    });
+    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
+        queryKey: ['membreData', asso_id],
+        queryFn: () => estUtilisateurDansAsso(asso_id),
+    });
+    const { data: listePromos = null } = useQuery({
+        queryKey: ['listePromos'],
+        queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
+    });
+
+    useEffect(() => {
+        if (asso) { setListeMembres(asso.membres) };
+    }, [asso]);
 
     const handleSetIsGestionMembres = (newState) => {
         if (!newState) {
@@ -106,27 +122,11 @@ function AssoMembres({ asso_id }) {
         }
     }
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const asso = await chargerAsso(asso_id);
-                const membreData = await estUtilisateurDansAsso(asso_id);
-                const promos = await obtenirListeDesPromos();
-                setIsMembreAutorise(membreData.autorise);
-                setListeMembres(asso.membres);
-                setListePromos(promos.sort().reverse());
-            } catch (error) {
-                console.error("Erreur lors du chargement des données:", error);
-            }
-        };
-        fetchData();
-    }, [asso_id]);
-
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les membres</h2>
-                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestionMembres(!isGestionMembres)}/>}
+                {membreData.autorise && <BoutonEditer onClick={() => handleSetIsGestionMembres(!isGestionMembres)} />}
             </div>
             <div className="member-grid">
                 {listeMembres.map((user) => (
@@ -143,8 +143,8 @@ function AssoMembres({ asso_id }) {
                     />
                 ))}
 
-                {isMembreAutorise && isGestionMembres &&
-                    <Card 
+                {membreData.autorise && isGestionMembres &&
+                    <Card
                         className="text-center h-100"
                         onClick={!isAjoutMembre ? () => setIsAjoutMembre(true) : undefined}
                         style={!isAjoutMembre ? { cursor: 'pointer' } : {}}

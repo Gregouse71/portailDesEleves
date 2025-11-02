@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ListGroup, Image } from 'react-bootstrap';
 import { searchUsers } from '../../api/api_utilisateurs';
 import { BASE_URL } from '../../api/base';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
-  const [searchResults, setSearchResults] = useState([]);
   const query = searchParams.get('q');
 
-  useEffect(() => {
-    if (query) {
-      searchUsers(query).then(results => {
-        setSearchResults(results);
-      });
-    }
-  }, [query]);
+  const { data: searchResults = [] } = useQuery({
+    queryKey: ['searchResults', query],
+    queryFn: () => searchUsers(query),
+  });
 
   return (
     <div>
@@ -24,7 +20,7 @@ export default function Search() {
         <ListGroup>
           {searchResults.map(user => (
             <ListGroup.Item key={user.id} as={Link} to={`/utilisateur/${user.id}`} className="d-flex align-items-center">
-              <div style={{height: '100px'}} className='me-3'>
+              <div style={{ height: '100px' }} className='me-3'>
                 <Image src={`${BASE_URL}/upload/utilisateurs/09brique.jpg`} alt="user" className="mw-100 mh-100" />
               </div>
               <div>

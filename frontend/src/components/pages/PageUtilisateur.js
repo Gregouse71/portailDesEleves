@@ -9,9 +9,9 @@ import { useParams } from 'react-router-dom';
 import { verifierSuperutilisateur } from "../../api/api_utilisateurs";
 import { BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav, Tab } from 'react-bootstrap';
+import { useQuery } from '@tanstack/react-query';
 
 function PageUtilisateur() {
-    const [donneesUtilisateur, setDonneesUtilisateur] = useState({});
     const [activeTab, setActiveTab] = useState("info");
     const { userData } = useLayout();
     const [autoriseAModifier, setAutoriseAModifier] = useState(false);
@@ -21,23 +21,17 @@ function PageUtilisateur() {
         setAutoriseAModifier(userData.id == id || userData.is_superuser);
     }, [id, userData]);
 
-    useEffect(() => {// Obtention des données utilisateur à afficher
-        const fetchData = async () => {
-            var data = await obtenirDataUser(id);
-            setDonneesUtilisateur({
-                prenom: data.prenom,
-                nom: data.nom
-            });
-        };
-        fetchData();
-    }, [id]);
+    const { data: donneesUtilisateur = {}, error } = useQuery({
+        queryKey: ['donneesUtilisateur', id],
+        queryFn: () => obtenirDataUser(id),
+    });
 
     if (donneesUtilisateur === null) { return (<p>Chargement...</p>); }
 
     return (
         <Container className="py-4">
             <Card>
-                <Card.Header 
+                <Card.Header
                     style={{
                         backgroundImage: `url(${BASE_URL}/upload/utilisateurs/minesvert.jpg)`,
                         height: '170px',
@@ -45,10 +39,10 @@ function PageUtilisateur() {
                         backgroundPosition: 'center'
                     }}
                 >
-                    <Image 
-                        src={`${BASE_URL}/upload/utilisateurs/09brique.jpg`} 
-                        alt={donneesUtilisateur.nom_utilisateur} 
-                        rounded 
+                    <Image
+                        src={`${BASE_URL}/upload/utilisateurs/09brique.jpg`}
+                        alt={donneesUtilisateur.nom_utilisateur}
+                        rounded
                         style={{
                             position: 'absolute',
                             top: 'calc(170px * 0.2)',
@@ -82,7 +76,7 @@ function PageUtilisateur() {
 
                 <Tab.Content>
                     <Tab.Pane eventKey="info">
-                        <TabInfo id={id} donneesUtilisateur={userData} autoriseAModifier={autoriseAModifier} />
+                        <TabInfo id={id} autoriseAModifier={autoriseAModifier} />
                     </Tab.Pane>
                     <Tab.Pane eventKey="assos">
                         <TabAsso id={id} />

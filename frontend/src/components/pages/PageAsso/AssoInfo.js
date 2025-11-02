@@ -3,44 +3,41 @@ import { chargerAsso, estUtilisateurDansAsso, modifierDescriptionAsso } from "..
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
 import { Button } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-function AssoInfo({ asso_id }) {
+function AssoInfo({ id }) {
+    const queryClient = useQueryClient();
     const [isEdition, setIsEdition] = useState(false);
     const [description, setDescription] = useState("");
     const [newDescription, setNewDescription] = useState("");
     const [isMembreAutorise, setIsMembreAutorise] = useState(false);
 
-    const handleModifierDescription = async () => {
-        if (newDescription !== null) {
-            try {
-                await modifierDescriptionAsso(asso_id, newDescription);
-                setDescription(newDescription);
-                setIsEdition(false);
-            } catch (error) {
-                console.err(error);
-            }
+    const { data: asso = null } = useQuery({
+        queryKey: ['asso', id],
+        queryFn: () => chargerAsso(id),
+    });
+    const { data: membreData = {is_membre: false, autorise: false} } = useQuery({
+        queryKey: ['membreData', id],
+        queryFn: () => estUtilisateurDansAsso(id),
+    });
+
+    useEffect(() => {
+        if (asso) { setDescription(asso.description); setNewDescription(asso.description) };
+    }, [asso]);
+
+    const mutation = useMutation({
+        mutationFn: async () => {modifierDescriptionAsso(id, newDescription);},
+        onSuccess: () => {
+            queryClient.invalidateQueries(['asso', id]);
+            setDescription(newDescription);
+            setIsEdition(false);
         }
-    };
+    });
 
     const annulerModifierDescription = () => {
         setNewDescription(description);
         setIsEdition(false);
     };
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const asso = await chargerAsso(asso_id);
-                const membreData = await estUtilisateurDansAsso(asso_id);
-                setIsMembreAutorise(membreData.autorise);
-                setDescription(asso.description)
-                setNewDescription(asso.description)
-            } catch (error) {
-                console.error("Erreur lors du chargement des données:", error);
-            }
-        };
-        fetchData();
-    }, [asso_id]);
 
     return (
         <>
@@ -48,7 +45,7 @@ function AssoInfo({ asso_id }) {
             <div>
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h2>Description de l'association</h2>
-                    {isMembreAutorise && <BoutonEditer onClick={() => setIsEdition(!isEdition)}/>}
+                    {membreData.autorise && <BoutonEditer onClick={() => setIsEdition(!isEdition)}/>}
                 </div>
                 {/*  */}
                 {!isEdition && <div>
@@ -58,7 +55,7 @@ function AssoInfo({ asso_id }) {
                 {isEdition && <>
                     <RichEditor value={newDescription} onChange={setNewDescription} />
                     <div className="d-flex gap-2 mt-3">
-                        <Button variant="success" onClick={handleModifierDescription}>
+                        <Button variant="success" onClick={mutation.mutate}>
                             <img src="/assets/icons/check-mark.svg" alt="Valider" />
                             Valider
                         </Button>

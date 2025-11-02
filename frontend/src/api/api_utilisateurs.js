@@ -54,12 +54,12 @@ export async function verifierSuperutilisateur() {
     const data = await response.json();
     if (!response.ok) {
       console.error("Erreur lors de la vérification :", data.message);
-      return { is_superuser: false, message: data.message };
+      return false;
     }
-    return { is_superuser: data.is_superuser };
+    return data.is_superuser;
   } catch (error) {
     console.error("Erreur réseau :", error);
-    return { is_superuser: false, message: "Erreur réseau" };
+    return false;
   }
 }
 
