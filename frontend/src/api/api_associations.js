@@ -46,9 +46,9 @@ export async function modifierDescriptionAsso(asso_id, new_desc) {
   }
 }
 
-export async function ajouterMembre(associationId, membreId) {
+export async function ajouterMembre(associationId, mandatId, membreId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_membre/${membreId}`, {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_membre/${mandatId}/${membreId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,9 +63,26 @@ export async function ajouterMembre(associationId, membreId) {
   }
 }
 
-export async function retirerMembre(associationId, membreId) {
+export async function ajouterMandat(associationId, nom) {
   try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/retirer_membre/${membreId}`, {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_mandat/${nom}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include"
+    })
+    return handleResponse(res);
+  }
+  catch (error) {
+    console.error("Erreur réseau :", error);
+    throw error;
+  }
+}
+
+export async function retirerMembre(associationId, mandatId, membreId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/retirer_membre/${mandatId}/${membreId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -80,9 +97,9 @@ export async function retirerMembre(associationId, membreId) {
   }
 }
 
-export async function modifierRoleMembre(associationId, membreId, role) {
+export async function modifierRoleMembre(associationId, mandatId, membreId, role) {
   try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_role_membre/${membreId}`, {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_role_membre/${mandatId}/${membreId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

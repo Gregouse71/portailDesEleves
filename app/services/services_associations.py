@@ -1,6 +1,7 @@
 # importer les models grace a __init__.py de models
 from app.services import db
-from app.models import *
+from app.models.models_associations import Association, AssociationMandat, AssociationMembre
+from app.models.models_utilisateurs import Utilisateur
 from sqlalchemy.orm.attributes import flag_modified
 
 
@@ -25,52 +26,61 @@ def get_association(association_id) -> Association:
         return db.session.get(Association, association_id)
     else:
         return None
+    
+
+def get_mandat(mandat_id) -> AssociationMandat:  
+    """Renvoie un utilisateur depuis son id"""
+    if mandat_id:
+        return AssociationMandat.query.filter_by(id=mandat_id).first()
+    else:
+        return None
 
 
-def add_member(association: Association, utilisateur: Utilisateur, role: str):
+def add_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
     """
-    Ajoute un membre à l'association
-    Renvoie une erreur si l'utilisateur ou l'association n'existe pas
-    Renvoie également une erreur si l'utilisateur est déjà dans l'association
+    Ajoute un membre au mandat de l'association
+    Renvoie une erreur si l'utilisateur ou l'association ou le mandat n'existe pas
+    Renvoie également une erreur si l'utilisateur est déjà dans le mandat
+    """
+    if AssociationMembre.query.filter_by(utilisateur_id=utilisateur.id, mandat_id=mandat.id).first():
+        raise ValueError("L'utilisateur est déjà dans le mandat.")
+    membership = AssociationMembre(utilisateur, mandat)
+    db.session.add(membership)
+    db.session.commit()
+
+
+def add_mandat(association: Association, nom: str):
+    """
+    Crée un nouveau mandat pour l'association
     """
     association = Association.query.get(association.id)
     if association:
-        utilisateur = Utilisateur.query.get(utilisateur.id)
-        if utilisateur:
-            if AssociationMembre.query.filter_by(utilisateur_id=utilisateur.id, association_id=association.id).first():
-                raise ValueError("L'utilisateur est déjà dans l'association.")
-            membership = AssociationMembre(utilisateur, association, role)
-            db.session.add(membership)
-            db.session.commit()
-        else:
-            raise ValueError("L'utilisateur n'existe pas")
+        mandat = AssociationMandat(association, nom)
+        db.session.add(mandat)
+        db.session.commit()
+        return True
     else:
         raise ValueError("L'association n'existe pas")
+    
 
-
-def remove_member(association: Association, utilisateur: Utilisateur):
+def remove_member(mandat: AssociationMandat, utilisateur: Utilisateur):
     """
     Retire un membre de l'association
     Renvoie une erreur si l'utilisateur ou l'association n'existe pas
     Ne renvoie pas d'erreur si l'utilisateur n'est pas membre de l'association
     """
-    association = Association.query.get(association.id)
-    if association:
-        utilisateur = Utilisateur.query.get(utilisateur.id)
-        if utilisateur:
-            membership = AssociationMembre.query.filter_by(
-                utilisateur_id=utilisateur.id,
-                association_id=association.id
-            ).first()
-            if membership:
-                db.session.delete(membership)
-                db.session.commit()
-            else:
-                raise ValueError("L'utilisateur n'est pas dans l'association")
-        else:
-            raise ValueError("L'utilisateur n'existe pas")
+
+    membership = AssociationMembre.query.filter_by(
+        utilisateur_id=utilisateur.id,
+        mandat_id=mandat.id
+    ).first()
+
+    if membership:
+        db.session.delete(membership)
+        db.session.commit()
     else:
-        raise ValueError("L'association n'existe pas")
+        raise ValueError("L'utilisateur n'est pas dans l'association")
+
 
 
 def update_member_role(association: Association, utilisateur: Utilisateur, role: str):

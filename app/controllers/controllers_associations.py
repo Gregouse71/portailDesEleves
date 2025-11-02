@@ -6,8 +6,9 @@ from datetime import datetime
 from app.services import *
 from app.utils.decorators import *
 from app.services.services_utilisateurs import *
-from app.services.services_associations import *
-from app.models import *
+from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat
+
+from app.models.models_associations import Association, AssociationMandat
 
 # TO DO :
 #
@@ -39,10 +40,10 @@ def route_editer_description(association_id: int):
         return jsonify({"message": f"echec dans la modification de la description : {e}"}), 500
 
 
-@controllers_associations.route('/<int:association_id>/ajouter_membre/<int:nouveau_membre_id>', methods=['POST'])
+@controllers_associations.route('/<int:association_id>/ajouter_membre/<int:mandat_id>/<int:nouveau_membre_id>', methods=['POST'])
 @login_required
 @est_membre_de_asso
-def route_ajouter_membre(association_id, nouveau_membre_id):
+def route_ajouter_membre(association_id, mandat_id, nouveau_membre_id):
     """
     Ajoute un membre a l'association
     """
@@ -55,18 +56,40 @@ def route_ajouter_membre(association_id, nouveau_membre_id):
     if not nouveau_membre:
         return jsonify({"message": "Utilisateur non trouve"}), 404
 
+    mandat = get_mandat(mandat_id)
+    if not mandat:
+        return jsonify({"message": "Mandat non trouve"}), 404
+
     try:
-        add_member(association, nouveau_membre, "membre")
+        add_member(mandat, nouveau_membre, "membre")
         return jsonify({"message": "Membre ajoute avec succes"}), 200
 
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'ajout du membre : {str(e)}"}), 500
 
 
-@controllers_associations.route('/<int:association_id>/retirer_membre/<int:membre_id>', methods=['DELETE'])
+@controllers_associations.route('/<int:association_id>/ajouter_mandat/<string:nom>', methods=['POST'])
 @login_required
 @est_membre_de_asso
-def route_retirer_membre(association_id, membre_id):
+def route_ajouter_mandat(association_id, nom):
+    """
+    Ajoute un membre a l'association
+    """
+    association = get_association(association_id)
+
+    if not association:
+        return jsonify({"message": "Association non trouvee"}), 404
+
+    if add_mandat(association, nom):
+        return jsonify({"message": "Mandat créé avec succes"}), 200
+    else:
+        return jsonify({"message": "Impossible de créer le mandat"}), 400
+
+
+@controllers_associations.route('/<int:association_id>/retirer_membre/<int:mandat_id>/<int:membre_id>', methods=['DELETE'])
+@login_required
+@est_membre_de_asso
+def route_retirer_membre(association_id, mandat_id, membre_id):
     """
     Retire un membre de l'association
     """
@@ -79,8 +102,12 @@ def route_retirer_membre(association_id, membre_id):
     if not membre:
         return jsonify({"message": "Utilisateur non trouve"}), 404
 
+    mandat = get_mandat(mandat_id)
+    if not mandat:
+        return jsonify({"message": "Mandat non trouve"}), 404
+
     try:
-        remove_member(association, membre)
+        remove_member(mandat, membre)
         return jsonify({"message": "Membre retire avec succes"}), 200
 
     except Exception as e:
@@ -232,14 +259,25 @@ def route_get_asso(association_id):
 
     if not asso:
         return jsonify({"error": "Association not found"}), 404
-    membres_data = []
-    for membre in asso.membres_actuels:
-        membres_data.append({
-            "nom_utilisateur": membre.utilisateur.nom_utilisateur,
-            "id": membre.utilisateur.id,
-            "role": membre.role,
-            "position": membre.position
-        })
+
+    mandats_data = [
+        {
+            "membres" :[
+                {
+                    "nom_utilisateur": membre.utilisateur.nom_utilisateur,
+                    "id": membre.utilisateur.id,
+                    "role": membre.role,
+                    "position": membre.position
+                }
+            for membre in mandat.membres],
+            "position": mandat.position,
+            "nom": mandat.nom,
+            "actuel": mandat.actuel,
+            "id": mandat.id
+        }
+        for mandat in asso.mandats
+    ]
+
     return jsonify({
         "id": asso.id,
         "nom_dossier": asso.nom_dossier,
@@ -248,7 +286,7 @@ def route_get_asso(association_id):
         "ordre": asso.ordre_importance,
         "banniere_path": asso.banniere_path,
         "description": asso.description,
-        "membres": membres_data
+        "mandats": mandats_data
     })
 
 
@@ -256,7 +294,7 @@ def route_get_asso(association_id):
 @login_required
 def route_est_membre_de_asso(id_association: int):
     try:
-        is_membre = any(m.association_id == id_association for m in current_user.associations_actuelles)
+        is_membre = any(m.association_id == id_association for m in current_user.associations)
         autorise = is_membre or current_user.est_superutilisateur
         return jsonify({"is_membre": is_membre, "autorise": autorise}), 200
     except Exception as e:

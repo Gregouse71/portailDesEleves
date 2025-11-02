@@ -5,7 +5,7 @@ export async function obtenirAssosUtilisateur(id_utilisateur) {
   const res = await fetch(`${API_BASE_URL}/users/assos_utilisateur/${id_utilisateur}`,
     { credentials: "include" }
   );
-  const data = await res.json();
+  const data = await res.json().roles;
   return data; // au format JSON
 }
 

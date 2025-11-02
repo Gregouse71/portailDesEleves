@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function TabAsso({ id }) {
     const navigate = useNavigate();
 
-    const { data: assos = {associations_actuelles: [], associations_anciennes: []}, error } = useQuery({
+    const { data: assos = [], error } = useQuery({
         queryKey: ['assosUser', id],
         queryFn: () => obtenirAssosUtilisateur(id),
     });
@@ -20,21 +20,21 @@ export default function TabAsso({ id }) {
         <Container className="py-4">
             <h2>Assos actuelles</h2>
             <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4 justify-content-center">
-                {assos.associations_actuelles.map((asso) => (
+                {assos.map((asso) => (
                     <Col>
                         <AssoCard asso={asso} />
                     </Col>
                 ))}
             </Row>
         </Container>
-        <Container className="py-4">
+        {/* <Container className="py-4">
             <h2>Assos anciennes</h2>
             <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4 justify-content-center">
                 {assos.associations_anciennes.map((asso) => (
                     <AssoCard asso={asso} />
                 ))}
             </Row>
-        </Container>
+        </Container> */}
     </>);
 }
 

@@ -55,7 +55,7 @@ class Utilisateur(db.Model, UserMixin) :
     chambre = db.Column(db.String(1000), nullable=True)
     sports = db.Column(db.String(1000), nullable=True)
     instruments = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
-   
+
     # Gestion du parrainnage :
     # Une fonction sera prevue pour mofifier son marrain et fillot et faire en sorte que son parrain et fillot soit modifie en consequence. N'est pas mofifiable tel quel
     marrain_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
@@ -72,10 +72,7 @@ class Utilisateur(db.Model, UserMixin) :
     # Exemple = { "trash to co" : "Il pue", "Quelles assos comptes-tu faire ?" : "Le WEIIIII" }
 
     # Liste des assos actuelles
-    associations_actuelles = db.relationship('AssociationMembre', back_populates='utilisateur')
-
-    # Liste des assos anciennes
-    associations_anciennes = db.relationship('AssociationAncienMembre', back_populates='utilisateur')
+    associations = db.relationship('AssociationMembre', back_populates='utilisateur')
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)

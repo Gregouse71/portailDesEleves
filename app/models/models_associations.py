@@ -9,46 +9,6 @@ from app.models.models_utilisateurs import Utilisateur
 # Cette table sert à stocker les relations entre Association et Utilisateur
 
 
-class AssociationMembre(db.Model):
-    __tablename__ = 'membres_association'
-    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), primary_key=True)
-    association_id = db.Column(db.Integer, db.ForeignKey('associations.id'), primary_key=True)
-    role = db.Column(db.String(1000), nullable=True)
-    position = db.Column(db.Integer, nullable=True)
-    utilisateur = db.relationship('Utilisateur', back_populates='associations_actuelles')
-    association = db.relationship('Association', back_populates='membres_actuels')
-
-    def __init__(self, utilisateur: Utilisateur = None, association: 'Association' = None, role: str = "", position: int = 0):
-        self.utilisateur = utilisateur
-        self.association = association
-        self.role = role
-        self.position = position
-
-    def __repr__(self):
-        return f"<AssociationMembre utilisateur_id={self.utilisateur_id} association_id={self.association_id}>"
-
-# new table for former members
-
-
-class AssociationAncienMembre(db.Model):
-    __tablename__ = 'anciens_membres_association'
-    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), primary_key=True)
-    association_id = db.Column(db.Integer, db.ForeignKey('associations.id'), primary_key=True)
-    role = db.Column(db.String(1000), nullable=True)
-    position = db.Column(db.Integer, nullable=True)
-    utilisateur = db.relationship('Utilisateur', back_populates='associations_anciennes')
-    association = db.relationship('Association', back_populates='membres_anciens')
-
-    def __init__(self, utilisateur: Utilisateur = None, association: 'Association' = None, role: str = "", position: int = 0):
-        self.utilisateur = utilisateur
-        self.association = association
-        self.role = role
-        self.position = position
-
-    def __repr__(self):
-        return f"<AssociationAncienMembre utilisateur_id={self.utilisateur_id} association_id={self.association_id}>"
-
-
 class Association(db.Model):
     __tablename__ = 'associations'
     # ID de l'association
@@ -64,19 +24,8 @@ class Association(db.Model):
 
     # Les publications de l'asso
     publications = db.relationship('Publication', back_populates='association')
-
-    # Les membres sont toujours triés par ordre de priorité
-    membres_actuels = db.relationship(
-        'AssociationMembre',
-        back_populates='association',
-        order_by=lambda: (desc(AssociationMembre.position), AssociationMembre.utilisateur.has(Utilisateur.nom_utilisateur))
-    )
-
-    membres_anciens = db.relationship(
-        'AssociationAncienMembre',
-        back_populates='association',
-        order_by=lambda: (desc(AssociationAncienMembre.position), AssociationAncienMembre.utilisateur.has(Utilisateur.nom_utilisateur))
-    )
+    # Mandats de l'asso
+    mandats = db.relationship('AssociationMandat', back_populates='association')
 
     type_association = db.Column(db.String(1000), nullable=True)
     ordre_importance = db.Column(db.Integer, nullable=True)
@@ -152,3 +101,46 @@ class Association(db.Model):
             os.mkdir(f"app/upload/associations/{nom_dossier}")
         except:
             print(f"dossier {nom_dossier} déjà créé !")
+
+
+class AssociationMandat(db.Model):
+    __tablename__ = 'mandats_association'
+    id = db.Column(db.Integer, primary_key=True)
+
+    nom = db.Column(db.String(1000), nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    actuel = db.Column(db.Boolean, nullable=False)
+
+    # Association
+    association_id = db.Column(db.Integer, db.ForeignKey('associations.id'))
+    association = db.relationship('Association', back_populates='mandats')
+
+    # Membres
+    membres = db.relationship('AssociationMembre', back_populates='mandat')
+
+    def __init__(self, asso: Association, nom: str):
+        self.nom = nom
+        self.association = asso
+        self.position = 0
+        self.actuel = False
+
+
+class AssociationMembre(db.Model):
+    __tablename__ = 'membres_association'
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), primary_key=True)
+    mandat_id = db.Column(db.Integer, db.ForeignKey('mandats_association.id'), primary_key=True)
+
+    role = db.Column(db.String(1000), nullable=True)
+    position = db.Column(db.Integer, nullable=True)
+
+    utilisateur = db.relationship('Utilisateur', back_populates='associations')
+    mandat = db.relationship('AssociationMandat', back_populates='membres')
+
+    def __init__(self, utilisateur: Utilisateur, mandat: AssociationMandat, role: str="", position: int=0):
+        self.utilisateur = utilisateur
+        self.mandat = mandat
+        self.role = role
+        self.position = position
+
+    def __repr__(self):
+        return f"<AssociationMembre utilisateur_id={self.utilisateur_id} mandat_id={self.mandat_id}>"

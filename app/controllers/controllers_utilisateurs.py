@@ -139,19 +139,12 @@ def assos_utilisateur(user_id: int):
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
-    roles_actuels = AssociationMembre.query.filter_by(utilisateur_id=user_id).all()
-    roles_anciens = AssociationAncienMembre.query.filter_by(utilisateur_id=user_id).all()
+    roles = AssociationMembre.query.filter_by(utilisateur_id=user_id).all()
 
-    data = {
-        "associations_actuelles": [
-            {"role": role.role, "nom": role.association.nom, "id": role.association_id, "img": role.association.logo_path, "nom_dossier": role.association.nom_dossier}
-            for role in roles_actuels
-        ],
-        "associations_anciennes": [
-            {"role": role.role, "nom": role.association.nom, "id": role.association_id, "img": role.association.logo_path, "nom_dossier": role.association.nom_dossier}
-            for role in roles_anciens
-        ]
-    }
+    data = {"roles" :[
+            {"mandat": role.mandat, "role": role.role, "nom": role.association.nom, "id": role.association_id, "img": role.association.logo_path, "nom_dossier": role.association.nom_dossier}
+            for role in roles
+        ]}
     return jsonify(data)
 
 
