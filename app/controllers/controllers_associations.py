@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 from app.services import *
 from app.utils.decorators import *
@@ -180,6 +181,9 @@ def route_add_content(association_id):
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     filename = secure_filename(file.filename)
+    name, ext = os.path.splitext(filename)
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{name}_{timestamp}{ext}"
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(file_path)
     return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_path": file_path}), 200

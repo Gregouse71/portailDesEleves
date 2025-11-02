@@ -29,7 +29,7 @@ def superutilisateur_required(f):
 
 def est_membre_de_asso(f):
     """
-    l'id de l'asso doit apparaitre dans l'URL sous le nom <association_id>"
+    l'id de l'asso doit apparaitre dans l'URL sous le nom association_id
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):

@@ -1,4 +1,5 @@
 // Configuration de base pour l'api
+
 import { BASE_URL } from "./base_url";
 
 export { BASE_URL };

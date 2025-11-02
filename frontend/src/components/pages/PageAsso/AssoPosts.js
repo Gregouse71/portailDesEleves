@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { estUtilisateurDansAsso } from "../../../api/api_associations";
-import { creerNouveauCommentaire, creerNouvellePublication, modifierCommentaire, modifierLikeComment, modifierLikePost, modifierPublication, obtenirPublicationsAsso, supprimerCommentaire, supprimerPublication } from "../../../api/api_publications";
+import { ajouterContenuPublication, creerNouveauCommentaire, creerNouvellePublication, modifierCommentaire, modifierLikeComment, modifierLikePost, modifierPublication, obtenirPublicationsAsso, supprimerCommentaire, supprimerPublication } from "../../../api/api_publications";
 import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
 import { BASE_URL } from "../../../api/base";
-import { Card, Button, Form, Row, Col, Image } from "react-bootstrap";
+import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
 
 function AssoPosts({ asso_id }) {
@@ -34,6 +34,26 @@ function AssoPosts({ asso_id }) {
     const [modifyComment, setModifyComment] = useState("");
     const [idNewComment, setIdNewComment] = useState(null);
     const [newComment, setNewComment] = useState("");
+    const [newPostFile, setNewPostFile] = useState(null);
+    const [newPostMiniatureFile, setNewPostMiniatureFile] = useState(null);
+    const [modifyPostFile, setModifyPostFile] = useState(null);
+    const [modifyPostMiniatureFile, setModifyPostMiniatureFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [modifyPreviewUrl, setModifyPreviewUrl] = useState(null);
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
+    const [modifyFileInputKey, setModifyFileInputKey] = useState(Date.now());
+    const [shouldRemoveExistingAttachment, setShouldRemoveExistingAttachment] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleFileUpload = async (publicationId, file, miniatureFile) => {
+        try {
+            await ajouterContenuPublication(publicationId, file, miniatureFile);
+            const postsData = await obtenirPublicationsAsso(asso_id);
+            setListePosts(postsData.publications);
+        } catch (error) {
+            console.error("Erreur lors du téléversement du fichier:", error);
+        }
+    };
 
     const clearNewPost = () => {
         setNewPost({
@@ -43,7 +63,9 @@ function AssoPosts({ asso_id }) {
             "a_cacher_to_cycles": [],
             "a_cacher_aux_nouveaux": false,
             "is_publication_interne": false
-        })
+        });
+        setNewPostFile(null);
+        setNewPostMiniatureFile(null);
     }
 
     const clearModifyPost = () => {
@@ -155,8 +177,17 @@ function AssoPosts({ asso_id }) {
     }
 
     const validateNewPost = async () => {
+        setIsLoading(true);
         try {
-            await creerNouvellePublication(asso_id, newPost);
+            const newPublication = await creerNouvellePublication(asso_id, newPost);
+            console.log(newPublication)
+            if (newPostFile || newPostMiniatureFile) {
+                try {
+                    await ajouterContenuPublication(asso_id, newPublication.id_publication, newPostFile, newPostMiniatureFile);
+                } catch (error) {
+                    console.error("Erreur lors de l'ajout du fichier:", error);
+                }
+            }
             clearNewPost();
             setIsNewPost(false);
             const postsData = await obtenirPublicationsAsso(asso_id);
@@ -164,6 +195,7 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const handleSetIdNewComment = (comment_id) => {
@@ -174,6 +206,7 @@ function AssoPosts({ asso_id }) {
     }
 
     const validateNewComment = async (post_id) => {
+        setIsLoading(true);
         try {
             await creerNouveauCommentaire(post_id, newComment)
             setNewComment("");
@@ -183,15 +216,21 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const handleSetIdModifyPost = async (post_id) => {
         if (idModifyPost !== post_id) {
             clearModifyPost();
+            setModifyPostFile(null);
+            setModifyPostMiniatureFile(null);
+            setModifyPreviewUrl(null);
+            setModifyFileInputKey(Date.now()); // Reset key
+            setShouldRemoveExistingAttachment(false); // Reset deletion flag
             const post = listePosts.find(e => e.id === post_id);
             if (post) {
-                const { titre, contenu, is_commentable } = post;
-                setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable }));
+                const { titre, contenu, is_commentable, fichier_joint, miniature } = post;
+                setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable, fichier_joint, miniature }));
             }
             setIdModifyPost(post_id);
         }
@@ -209,8 +248,24 @@ function AssoPosts({ asso_id }) {
     }
 
     const validateModifyPost = async () => {
+        setIsLoading(true);
         try {
-            await modifierPublication(asso_id, idModifyPost, modifyPost);
+            let updatedModifyPost = { ...modifyPost };
+
+            if (shouldRemoveExistingAttachment) {
+                updatedModifyPost.fichier_joint = null;
+            }
+
+            await modifierPublication(asso_id, idModifyPost, updatedModifyPost);
+
+            if (modifyPostFile || modifyPostMiniatureFile) {
+                try {
+                    await ajouterContenuPublication(asso_id, idModifyPost, modifyPostFile, modifyPostMiniatureFile);
+                } catch (error) {
+                    console.error("Erreur lors de l'ajout du fichier:", error);
+                }
+            }
+
             clearModifyPost();
             setIdModifyPost(null);
             const postsData = await obtenirPublicationsAsso(asso_id);
@@ -218,9 +273,11 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const validateModifyComment = async () => {
+        setIsLoading(true);
         try {
             await modifierCommentaire(idModifyComment, { "contenu": modifyComment })
             setModifyComment("")
@@ -230,6 +287,7 @@ function AssoPosts({ asso_id }) {
         } catch (erreur) {
             console.error(erreur);
         }
+        setIsLoading(false);
     }
 
     const handleChangePostLike = async (post_id) => {
@@ -253,8 +311,7 @@ function AssoPosts({ asso_id }) {
     }
 
     const handleSetIsGestion = (newState) => {
-        if (!newState)
-        {
+        if (!newState) {
             setIsNewPost(false)
             setIdModifyPost(null)
         }
@@ -275,16 +332,46 @@ function AssoPosts({ asso_id }) {
         fetchData();
     }, [asso_id]);
 
+
+
+    useEffect(() => {
+        let fileForPreview = newPostMiniatureFile || newPostFile;
+
+        if (!fileForPreview) {
+            setPreviewUrl(null);
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(fileForPreview);
+        setPreviewUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+
+    }, [newPostFile, newPostMiniatureFile]);
+
+    useEffect(() => {
+        let fileForPreview = modifyPostMiniatureFile || modifyPostFile;
+
+        if (!fileForPreview) {
+            setModifyPreviewUrl(null);
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(fileForPreview);
+        setModifyPreviewUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+
+    }, [modifyPostFile, modifyPostMiniatureFile]);
+
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les publications</h2>
-                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)}/>}
+                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)} />}
             </div>
             {isGestion && !isNewPost && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewPost(true)}>
                     <img src="/assets/icons/plus.svg" alt="Ajouter une publication" />
-                    Ajouter une publication
+                    {" "}Ajouter une publication
                 </Button>
             </div>}
             <div className="d-flex flex-column gap-3">
@@ -292,32 +379,64 @@ function AssoPosts({ asso_id }) {
                 {/* formulaire pour une nouvelle publication */}
                 {isNewPost && <Card>
                     <Card.Body>
+                        <Row>
+                            <Col md={previewUrl ? "9" : "12"}>
+                                <Form.Group as={Row} className="mb-3">
+                                    <Form.Label column sm="2">Titre</Form.Label>
+                                    <Col sm="10">
+                                        <Form.Control value={newPost.titre} name='titre' type='text' onChange={handleSetNewPost} />
+                                    </Col>
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Check type="checkbox" label="Autoriser les commentaires" checked={newPost.is_commentable} name='is_commentable' onChange={handleSetNewPost} />
+                                    <Form.Check type="checkbox" label="Publication interne" checked={newPost.is_publication_interne} name='is_publication_interne' onChange={handleSetNewPost} />
+                                    <Form.Check type="checkbox" label="Cacher aux 1A" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
+                                </Form.Group>
+                                <Form.Group as={Row} className="mb-3">
+                                    <Form.Label>Cacher aux cycles</Form.Label>
+                                    <Col>
+                                        {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
+                                            <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={newPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetNewPost} />
+                                        ))}
+                                    </Col>
+                                </Form.Group>
+                            </Col>
+                            {previewUrl &&
+                                <Col md="3" className="text-center">
+                                    <Image src={previewUrl} fluid alt="La miniature automatique sera générée à l'envoi" />
+                                </Col>
+                            }
+                        </Row>
                         <Form>
-                            <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Titre</Form.Label>
-                                <Col sm="10">
-                                    <Form.Control value={newPost.titre} name='titre' type='text' onChange={handleSetNewPost} />
-                                </Col>
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Check type="checkbox" label="Autoriser les commentaires" checked={newPost.is_commentable} name='is_commentable' onChange={handleSetNewPost} />
-                                <Form.Check type="checkbox" label="Publication interne" checked={newPost.is_publication_interne} name='is_publication_interne' onChange={handleSetNewPost} />
-                                <Form.Check type="checkbox" label="Cacher aux 1A" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
-                            </Form.Group>
-                            <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Cacher aux cycles</Form.Label>
-                                <Col sm="10">
-                                    {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
-                                        <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={newPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetNewPost} />
-                                    ))}
-                                </Col>
-                            </Form.Group>
                             <Form.Group className="mb-3">
                                 <Form.Label>Description</Form.Label>
                                 <RichEditor value={newPost.contenu} onChange={handleSetNewPostContent} />
                             </Form.Group>
+                            <Row>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Pièce jointe</Form.Label>
+                                        <InputGroup>
+                                            <Form.Control key={fileInputKey} type="file" onChange={(e) => setNewPostFile(e.target.files[0])} />
+                                            {newPostFile &&
+                                                <Button variant="danger" onClick={() => { setNewPostFile(null); setFileInputKey(Date.now()); }}>
+                                                    <img src="/assets/icons/delete.svg" alt="Supprimer la pièce jointe" />
+                                                </Button>
+                                            }
+                                        </InputGroup>
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Miniature</Form.Label>
+                                        <Form.Control type="file" onChange={(e) => setNewPostMiniatureFile(e.target.files[0])} />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
                             <div className="d-flex gap-2">
-                                <Button variant="success" onClick={validateNewPost}>Ajouter</Button>
+                                <Button variant="success" onClick={validateNewPost} disabled={isLoading}>
+                                    {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Ajouter"}
+                                </Button>
                                 <Button variant="danger" onClick={() => setIsNewPost(false)}>Annuler</Button>
                             </div>
                         </Form>
@@ -326,12 +445,26 @@ function AssoPosts({ asso_id }) {
 
                 {listePosts.map((post) =>
                     <Card key={post.id}>
-                        <Card.Body>
+                        <Card.Body className="d-flex flex-column">
                             {/* Les publications existantes */}
+                            <div style={{ flex: 1 }}>
+                                {idModifyPost !== post.id && <>
+                                    <Card.Title>{post.titre}</Card.Title>
+                                    {post.fichier_joint ? <Row>
+                                        <Col md="9">
+                                            <RichTextDisplay content={post.contenu} />
+                                        </Col>
+                                        <Col md="3" className="text-center">
+                                            <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                                <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{cursor: 'pointer'}} />
+                                            </a>
+                                        </Col>
+                                    </Row> : <RichTextDisplay content={post.contenu} />}
+                                </>
+                                }
+                            </div>
                             {idModifyPost !== post.id && <>
-                                <Card.Title>{post.titre}</Card.Title>
-                                <RichTextDisplay content={post.contenu} />
-                                <div className="d-flex justify-content-between align-items-center mt-3">
+                                <div className="d-flex justify-content-between align-items-center mt-auto">
                                     <div className="d-flex gap-2">
                                         {!isGestion && <>
                                             <Button variant="primary" onClick={() => handleChangePostLike(post.id)}>
@@ -356,7 +489,9 @@ function AssoPosts({ asso_id }) {
                                                 <Form.Control as="textarea" rows={3} value={newComment} placeholder="Écrivez votre commentaire ici" onChange={(e) => setNewComment(e.target.value)} />
                                             </Form.Group>
                                             <div className="d-flex gap-2">
-                                                <Button variant="success" onClick={() => validateNewComment(post.id)}>Valider</Button>
+                                                <Button variant="success" onClick={() => validateNewComment(post.id)} disabled={isLoading}>
+                                                    {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                                                </Button>
                                                 <Button variant="danger" onClick={() => handleSetIdNewComment(null)}>Annuler</Button>
                                             </div>
                                         </Form>
@@ -389,7 +524,9 @@ function AssoPosts({ asso_id }) {
                                                     <Form.Control as="textarea" rows={3} value={modifyComment} placeholder="Écrivez votre commentaire ici" onChange={(e) => setModifyComment(e.target.value)} />
                                                 </Form.Group>
                                                 <div className="d-flex gap-2">
-                                                    <Button variant="success" onClick={() => validateModifyComment(comment.id)}>Valider</Button>
+                                                    <Button variant="success" onClick={() => validateModifyComment()} disabled={isLoading}>
+                                                        {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                                                    </Button>
                                                     <Button variant="danger" onClick={() => handleSetIdModifyComment(null)}>Annuler</Button>
                                                 </div>
                                             </Form>
@@ -401,31 +538,83 @@ function AssoPosts({ asso_id }) {
                             {/* Publication en cours d'édition */}
                             {idModifyPost === post.id &&
                                 <Form>
-                                    <Form.Group as={Row} className="mb-3">
-                                        <Form.Label column sm="2">Titre</Form.Label>
-                                        <Col sm="10">
-                                            <Form.Control value={modifyPost.titre} name='titre' type='text' onChange={handleSetModifyPost} />
+                                    <Row>
+                                        <Col md={(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment)) ? "9" : "12"}>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label column sm="2">Titre</Form.Label>
+                                                <Col sm="10">
+                                                    <Form.Control value={modifyPost.titre} name='titre' type='text' onChange={handleSetModifyPost} />
+                                                </Col>
+                                            </Form.Group>
+                                            <Form.Group className="mb-3">
+                                                <Form.Check type="checkbox" label="Autoriser les commentaires" checked={modifyPost.is_commentable} name='is_commentable' onChange={handleSetModifyPost} />
+                                                <Form.Check type="checkbox" label="Publication interne" checked={modifyPost.is_publication_interne} name='is_publication_interne' onChange={handleSetModifyPost} />
+                                                <Form.Check type="checkbox" label="Cacher aux 1A" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
+                                            </Form.Group>
+                                            <Form.Group as={Row} className="mb-3">
+                                                <Form.Label>Cacher aux cycles</Form.Label>
+                                                <Col>
+                                                    {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
+                                                        <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={modifyPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetModifyPost} />
+                                                    ))}
+                                                </Col>
+                                            </Form.Group>
                                         </Col>
-                                    </Form.Group>
-                                    <Form.Group className="mb-3">
-                                        <Form.Check type="checkbox" label="Autoriser les commentaires" checked={modifyPost.is_commentable} name='is_commentable' onChange={handleSetModifyPost} />
-                                        <Form.Check type="checkbox" label="Publication interne" checked={modifyPost.is_publication_interne} name='is_publication_interne' onChange={handleSetModifyPost} />
-                                        <Form.Check type="checkbox" label="Cacher aux 1A" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
-                                    </Form.Group>
-                                    <Form.Group as={Row} className="mb-3">
-                                        <Form.Label column sm="2">Cacher aux cycles</Form.Label>
-                                        <Col sm="10">
-                                            {["ic", "ast", "ev", "vs", "isup"].map(cycle => (
-                                                <Form.Check inline key={cycle} type="checkbox" name="a_cacher_to_cycles" value={cycle} label={cycle} checked={modifyPost.a_cacher_to_cycles.includes(cycle)} onChange={handleSetModifyPost} />
-                                            ))}
-                                        </Col>
-                                    </Form.Group>
+                                        {(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment)) &&
+                                            <Col md="3" className="text-center">
+                                                {modifyPreviewUrl ?
+                                                    <Image src={modifyPreviewUrl} fluid alt="La miniature automatique sera générée à l'envoi" /> :
+                                                    (post.fichier_joint && !shouldRemoveExistingAttachment &&
+                                                        <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                                            <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                                        </a>)
+                                                }
+                                            </Col>}
+                                    </Row>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Description</Form.Label>
                                         <RichEditor value={modifyPost.contenu} onChange={handleSetModifyPostContent} />
                                     </Form.Group>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Pièce jointe</Form.Label>
+                                                {post.fichier_joint && !shouldRemoveExistingAttachment ? (
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <span className="text-nowrap text-truncate" style={{ maxWidth: 'calc(100% - 50px)' }}>{post.fichier_joint.split('/').pop()}</span>
+                                                        <Button variant="danger" size="sm" onClick={() => setShouldRemoveExistingAttachment(true)}>
+                                                            <img src="/assets/icons/delete.svg" alt="Supprimer le fichier existant" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <InputGroup>
+                                                        <Form.Control
+                                                            key={modifyFileInputKey}
+                                                            type="file"
+                                                            onChange={(e) => {
+                                                                setModifyPostFile(e.target.files[0]);
+                                                            }}
+                                                        />
+                                                        {modifyPostFile && (
+                                                            <Button variant="danger" onClick={() => { setModifyPostFile(null); setModifyFileInputKey(Date.now()); }}>
+                                                                <img src="/assets/icons/delete.svg" alt="Annuler la sélection du nouveau fichier" />
+                                                            </Button>
+                                                        )}
+                                                    </InputGroup>
+                                                )}
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Miniature</Form.Label>
+                                                <Form.Control type="file" onChange={(e) => setModifyPostMiniatureFile(e.target.files[0])} />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
                                     <div className="d-flex gap-2">
-                                        <Button variant="success" onClick={validateModifyPost}>Valider</Button>
+                                        <Button variant="success" onClick={validateModifyPost} disabled={isLoading}>
+                                            {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                                        </Button>
                                         <Button variant="danger" onClick={() => setIdModifyPost(null)}>Annuler</Button>
                                     </div>
                                 </Form>}

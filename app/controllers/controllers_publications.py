@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
+import os
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
+from app import db
 from app.services import *
 from app.utils.decorators import *
 from app.services.services_publications import *
@@ -34,7 +38,9 @@ def route_obtenir_publications_asso(association_id: int):
                                           "date_publication": e.date_publication,
                                           "likes": e.likes,
                                           "is_commentable": e.is_commentable,
-                                          "commentaires": [comment.to_dict() for comment in e.commentaires]}
+                                          "commentaires": [comment.to_dict() for comment in e.commentaires],
+                                          "fichier_joint": e.fichier_joint,
+                                          "miniature": e.miniature}
                                          for e in publications]}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -51,14 +57,17 @@ def route_creer_publication(association_id: int):
         asso = Association.query.get(association_id)
         if asso:
             data = request.json
-            id_publication = add_publication(association=asso,
-                                             titre=data["titre"],
-                                             contenu=data["contenu"],
-                                             is_commentable=data["is_commentable"],
-                                             a_cacher_to_cycles=data["a_cacher_to_cycles"],
-                                             a_cacher_aux_nouveaux=data["a_cacher_aux_nouveaux"],
-                                             is_publication_interne=data["is_publication_interne"]
-                                             )
+            id_publication = add_publication(
+                association=asso,
+                titre=data["titre"],
+                contenu=data["contenu"],
+                is_commentable=data["is_commentable"],
+                a_cacher_to_cycles=data["a_cacher_to_cycles"],
+                a_cacher_aux_nouveaux=data["a_cacher_aux_nouveaux"],
+                is_publication_interne=data["is_publication_interne"],
+                fichier_joint=data.get("fichier_joint"),
+                miniature=data.get("miniature")
+            )
             return jsonify({"message": "événement créé avec succès", "id_publication": id_publication}), 201
         else:
             return jsonify({"message": "association non trouvée"}), 404
@@ -119,13 +128,17 @@ def route_modifier_publication(association_id, publication_id):
         if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise):
             # Les non baptisés n'ont pas le droit de modifier les posts cachés
             return jsonify({"message": "publication non trouvé"}), 404
-        modify_publication(publication,
-                           data["titre"],
-                           data["contenu"],
-                           data["is_commentable"],
-                           data["a_cacher_to_cycles"],
-                           data["a_cacher_aux_nouveaux"],
-                           data["is_publication_interne"])
+        modify_publication(
+            publication,
+            data["titre"],
+            data["contenu"],
+            data["is_commentable"],
+            data["a_cacher_to_cycles"],
+            data["a_cacher_aux_nouveaux"],
+            data["is_publication_interne"],
+            data.get("fichier_joint"),
+            data.get("miniature")
+        )
         return jsonify({"message": "publication modifiée avec succès"}), 200
     else:
         return jsonify({"message": "publication non trouvée"}), 404
@@ -207,3 +220,26 @@ def route_modifier_commentaire(comment_id):
             return jsonify({"message": "seul l'auteur peut modifier ce commentaire"}), 403
     else:
         return jsonify({"message": "commentaire non trouvé"}), 404
+
+
+@controllers_publications.route('/<int:association_id>/<int:publication_id>/add_content', methods=['POST'])
+@login_required
+@est_membre_de_asso
+def route_add_content_to_publication(association_id, publication_id):
+    """
+    Ajoute du contenu au dossier de la publication
+    """
+    try:
+        fichier_joint_file = request.files.get('fichier_joint')
+        miniature_file = request.files.get('miniature')
+
+        fichier_joint_path, miniature_path = add_content_to_publication(
+            publication_id=publication_id,
+            fichier_joint_file=fichier_joint_file,
+            miniature_file=miniature_file
+        )
+
+        return jsonify({"success": True, "message": "Fichiers ajoutés avec succès", "fichier_joint": fichier_joint_path, "miniature": miniature_path}), 200
+    except ValueError as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
