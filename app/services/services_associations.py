@@ -85,6 +85,15 @@ def del_mandat(mandat: int):
     db.session.commit()
     return True
 
+def modifier_mandat(mandat: AssociationMandat, nom: str, position: int):
+    try:
+        mandat.nom = nom
+        mandat.position = position
+        db.session.add(mandat)
+        db.session.commit()
+        return True
+    except:
+        return None
 
 def remove_member(mandat: AssociationMandat, utilisateur: Utilisateur):
     """

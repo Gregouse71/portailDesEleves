@@ -119,6 +119,26 @@ def route_supprimer_mandat(association_id: int, mandat_id: int):
         return jsonify({"message": "Impossible de supprimer le mandat"}), 400
 
 
+@controllers_associations.route('/<int:association_id>/modifier_mandat/<int:mandat_id>/<string:nom>/<int:position>', methods=['PATCH'])
+@login_required
+@est_membre_de_asso
+def route_modifier_mandat(association_id, mandat_id, nom: str, position: int):
+    """
+    Modifie le nom et la position du mandat
+    """
+    association = get_association(association_id)
+    if not association:
+        return jsonify({"message": "Association non trouvee"}), 404
+    mandat = get_mandat(mandat_id)
+    if not mandat:
+        return jsonify({"message": "Mandat non trouve"}), 404
+
+    if modifier_mandat(mandat, nom, position):
+        return jsonify({"message": "Mandat modifie avec succes"}), 200
+    else:
+        return jsonify({"message": f"Erreur lors de la modification du mandat"}), 500
+
+
 @controllers_associations.route('/<int:association_id>/retirer_membre/<int:mandat_id>/<int:membre_id>', methods=['DELETE'])
 @login_required
 @est_membre_de_asso

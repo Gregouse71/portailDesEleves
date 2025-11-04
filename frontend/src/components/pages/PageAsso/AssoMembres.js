@@ -4,7 +4,7 @@ import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modi
 import { obtenirListeDesPromos, chargerUtilisateursParPromo } from "../../../api/api_utilisateurs";
 import { BASE_URL } from "../../../api/base";
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Form } from "react-bootstrap";
+import { Card, Button, Form, Row } from "react-bootstrap";
 import UserCard from "../../elements/UserCard";
 import BoutonEditer from "../../elements/BoutonEditer";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -197,9 +197,24 @@ function AssoMembres({ asso_id }) {
         }
     }
 
+    const handleModifyMandat = async (mandatId, nom, position)=> {
+        try {
+            await modifierMandat(asso_id, mandatId, nom, position);
+            queryClient.invalidateQueries(['asso', asso_id]);
+        } catch (erreur) {
+            console.error(erreur);
+        }
+    }
+
     const setNomMandat = async (i, nom) => {
         let newListe = [...listeMandats];
         newListe[i] = { ...newListe[i], "nom": nom };
+        setListeMandats(newListe);
+    }
+
+    const setPositionMandat = async (i, pos) => {
+        let newListe = [...listeMandats];
+        newListe[i] = { ...newListe[i], "position": pos };
         setListeMandats(newListe);
     }
 

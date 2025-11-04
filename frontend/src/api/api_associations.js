@@ -115,6 +115,23 @@ export async function supprimerMandat(associationId, mandatId) {
   }
 }
 
+export async function modifierMandat(associationId, mandatId, nom, position) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_mandat/${mandatId}/${nom}/${position}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include"
+    })
+    return handleResponse(res);
+  }
+  catch (error) {
+    console.error("Erreur réseau :", error);
+    throw error;
+  }
+}
+
 export async function retirerMembre(associationId, mandatId, membreId) {
   try {
     const res = await fetch(`${API_BASE_URL}/associations/${associationId}/retirer_membre/${mandatId}/${membreId}`, {
