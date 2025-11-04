@@ -80,6 +80,23 @@ export async function ajouterMandat(associationId, nom) {
   }
 }
 
+export async function supprimerMandat(associationId, mandatId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/supprimer_mandat/${mandatId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include"
+    })
+    return handleResponse(res);
+  }
+  catch (error) {
+    console.error("Erreur réseau :", error);
+    throw error;
+  }
+}
+
 export async function retirerMembre(associationId, mandatId, membreId) {
   try {
     const res = await fetch(`${API_BASE_URL}/associations/${associationId}/retirer_membre/${mandatId}/${membreId}`, {

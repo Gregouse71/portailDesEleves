@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierPositionMembre, modifierRoleMembre, retirerMembre } from "../../../api/api_associations";
+import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../../api/api_associations";
 import { obtenirListeDesPromos, chargerUtilisateursParPromo } from "../../../api/api_utilisateurs";
 import { BASE_URL } from "../../../api/base";
 import { useNavigate } from "react-router-dom";
@@ -101,7 +101,7 @@ function AssoMembres({ asso_id }) {
     }
 
     const handleAjoutMembre = async (mandatId, userId) => {
-        if (idAjoutMembre != null) {
+        if (idAjoutMembre != null && mandatAjoutMembre != "") {
             try {
                 await ajouterMembre(asso_id, mandatId, userId);
                 setIsAjoutMembre(false);
@@ -139,15 +139,36 @@ function AssoMembres({ asso_id }) {
         setIsAjoutMandat(false);
     }
 
+    const handleDelMandat = async (id) => {
+        try {
+            await supprimerMandat(asso_id, id);
+            queryClient.invalidateQueries(['asso', asso_id]);
+        } catch (erreur) {
+            console.error(erreur);
+        }
+    }
+
+    const setNomMandat = async (i, nom) => {
+        let newListe = [...listeMandats];
+        newListe[i] = { ...newListe[i], "nom": nom };
+        setListeMandats(newListe);
+    }
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les membres</h2>
                 {membreData.autorise && <BoutonEditer onClick={() => handleSetIsGestionMembres(!isGestionMembres)} />}
             </div>
-            {listeMandats.map((mandat) => (
+            {listeMandats.map((mandat, i) => (
                 <div className="member-grid">
-                    <h4>{mandat.nom}</h4>
+                    {!isGestionMembres ?
+                        <h4>{mandat.nom}</h4>
+                        :
+                        <><Form.Control value={listeMandats[i].nom} onChange={(e) => setNomMandat(i, e.target.value)} />
+                            <Button variant="danger" onClick={() => handleDelMandat(mandat.id)}>Supprimer</Button></>
+                    }
+
                     {mandat.membres.map((user) => (
                         <UserCard user={user} isGestion={isGestionMembres} isModifying={idMembreModifier === user.id}
                             f1={() => handleRetirerMembre(mandat.id, user.id)}

@@ -61,7 +61,19 @@ def add_mandat(association: Association, nom: str):
         return True
     else:
         raise ValueError("L'association n'existe pas")
-    
+
+
+def del_mandat(mandat: int):
+    """
+    Supprime le mandat
+    """
+    membres = AssociationMembre.query.filter_by(mandat_id = mandat.id).all ()
+    for m in membres:
+        db.session.delete(m)
+    db.session.delete(mandat)
+    db.session.commit()
+    return True
+
 
 def remove_member(mandat: AssociationMandat, utilisateur: Utilisateur):
     """
@@ -129,24 +141,3 @@ def update_member_position(association: Association, utilisateur: Utilisateur, p
             raise ValueError("L'utilisateur n'existe pas")
     else:
         raise ValueError("L'association n'existe pas")
-
-
-def passation(association: Association, new_members=list, new_roles=list):  # nouveaux membres et rôles dans l'ordre
-    """
-        Pour faire la passation de l'asso
-        envoie tous les anciens membres de l'asso dans anciens_membres puis ajoute tous les nouveaux
-    """
-    association = Association.query.get(association.id)
-    if association:
-        current_memberships = list(association.membres_actuels)
-        for membership in current_memberships:
-            ancien_membre = AssociationAncienMembre(
-                utilisateur=membership.utilisateur,
-                association=membership.association,
-                role=membership.role
-            )
-            db.session.add(ancien_membre)
-            db.session.delete(membership)
-        for utilisateur, role in zip(new_members, new_roles):
-            add_member(association, utilisateur, role)
-        db.session.commit()

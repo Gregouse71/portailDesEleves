@@ -6,7 +6,7 @@ from datetime import datetime
 from app.services import *
 from app.utils.decorators import *
 from app.services.services_utilisateurs import *
-from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat
+from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat
 
 from app.models.models_associations import Association, AssociationMandat
 
@@ -84,6 +84,23 @@ def route_ajouter_mandat(association_id, nom):
         return jsonify({"message": "Mandat créé avec succes"}), 200
     else:
         return jsonify({"message": "Impossible de créer le mandat"}), 400
+
+
+@controllers_associations.route('/<int:association_id>/supprimer_mandat/<int:mandat_id>', methods=['POST'])
+@login_required
+@est_membre_de_asso
+def route_supprimer_mandat(association_id: int, mandat_id: int):
+    """
+    Ajoute un membre a l'association
+    """
+    mandat = get_mandat(mandat_id)
+
+    if not mandat:
+        return jsonify({"message": "Mandat non trouvee"}), 404
+    if del_mandat(mandat):
+        return jsonify({"message": "Mandat supprimé avec succes"}), 200
+    else:
+        return jsonify({"message": "Impossible de supprimer le mandat"}), 400
 
 
 @controllers_associations.route('/<int:association_id>/retirer_membre/<int:mandat_id>/<int:membre_id>', methods=['DELETE'])
