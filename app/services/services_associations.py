@@ -49,13 +49,13 @@ def add_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
     db.session.commit()
 
 
-def add_mandat(association: Association, nom: str):
+def add_mandat(association: Association, nom: str, position: int):
     """
     Crée un nouveau mandat pour l'association
     """
     association = Association.query.get(association.id)
     if association:
-        mandat = AssociationMandat(association, nom)
+        mandat = AssociationMandat(association, nom, position)
         db.session.add(mandat)
         db.session.commit()
         return True
@@ -74,32 +74,14 @@ def del_mandat(mandat: int):
     db.session.commit()
     return True
 
-def modifier_mandat(mandat: AssociationMandat, nom: str, position: int):
+def modifier_mandat(mandat: AssociationMandat, nom: str, position: int, actuel: bool):
     """
     Modifie le nom et la position du mandat
     """
     try:
         mandat.nom = nom
         mandat.position = position
-        db.session.add(mandat)
-        db.session.commit()
-        return True
-    except:
-        return None
-
-def set_main_mandat(mandat: AssociationMandat):
-    """
-    Défini le mandat comme étant le mandat actuel de l'association
-    """
-    try:
-        mandats_autre = AssociationMandat.query.filter_by(association_id=mandat.association_id).all()
-        print(mandats_autre)
-        for m in mandats_autre:
-            if m != mandat:
-                print(m)
-                m.actuel = False
-                db.session.add(m)
-        mandat.actuel = True
+        mandat.actuel = actuel
         db.session.add(mandat)
         db.session.commit()
         return True

@@ -63,14 +63,15 @@ export async function ajouterMembre(associationId, mandatId, membreId) {
   }
 }
 
-export async function ajouterMandat(associationId, nom) {
+export async function ajouterMandat(associationId, nom, position) {
   try {
     const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_mandat/${nom}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include"
+      credentials: "include",
+      body: JSON.stringify({ position })
     })
     return handleResponse(res);
   }
@@ -80,7 +81,7 @@ export async function ajouterMandat(associationId, nom) {
   }
 }
 
-export async function modifierMandat(associationId, mandatId, nom, pos) {
+export async function modifierMandat(associationId, mandatId, nom, pos, actuel) {
   try {
     const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_mandat/${mandatId}`, {
       method: "PATCH",
@@ -88,24 +89,7 @@ export async function modifierMandat(associationId, mandatId, nom, pos) {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ "nom": nom, "position": pos })
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
-
-export async function setMainMandat(associationId, mandatId) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/set_main_mandat/${mandatId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include"
+      body: JSON.stringify({ "nom": nom, "position": pos, "actuel": actuel })
     })
     return handleResponse(res);
   }

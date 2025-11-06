@@ -6,7 +6,7 @@ from datetime import datetime
 from app.services import *
 from app.utils.decorators import *
 from app.services.services_utilisateurs import *
-from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position, set_main_mandat
+from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position
 
 from app.models.models_associations import Association, AssociationMandat
 
@@ -79,8 +79,10 @@ def route_ajouter_mandat(association_id, nom):
 
     if not association:
         return jsonify({"message": "Association non trouvee"}), 404
+    
+    position = request.json.get('position')
 
-    if add_mandat(association, nom):
+    if add_mandat(association, nom, position):
         return jsonify({"message": "Mandat créé avec succes"}), 200
     else:
         return jsonify({"message": "Impossible de créer le mandat"}), 400
@@ -97,7 +99,8 @@ def route_modifier_mandat(association_id, mandat_id):
     try:
         nom = request.json.get('nom')
         pos = request.json.get('position')
-        modifier_mandat(mandat, nom, pos) # This function needs to be created in services
+        actuel = request.json.get('actuel')
+        modifier_mandat(mandat, nom, pos, actuel) # This function needs to be created in services
         return jsonify({"message": "Nom du mandat modifie avec succes"}), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la modification du nom du mandat : {str(e)}"}), 500
@@ -118,24 +121,6 @@ def route_supprimer_mandat(association_id: int, mandat_id: int):
         return jsonify({"message": "Mandat supprimé avec succes"}), 200
     else:
         return jsonify({"message": "Impossible de supprimer le mandat"}), 400
-
-@controllers_associations.route('/<int:association_id>/set_main_mandat/<int:mandat_id>', methods=['POST'])
-@login_required
-@est_membre_de_asso
-def route_modifier_mandat_principal(association_id, mandat_id):
-    """
-    Modifie le role d'un membre de l'association
-    """
-    mandat = get_mandat(mandat_id)
-    if not mandat or mandat.association_id != association_id:
-        return jsonify({"message": "Mandat non trouve"}), 404
-
-    try:
-        set_main_mandat(mandat)
-        return jsonify({"message": "Mandat modifie avec succes"}), 200
-
-    except Exception as e:
-        return jsonify({"message": f"Erreur lors de la modification du mandat : {str(e)}"}), 500
 
 
 @controllers_associations.route('/<int:association_id>/retirer_membre/<int:mandat_id>/<int:membre_id>', methods=['DELETE'])

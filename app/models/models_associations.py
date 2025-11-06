@@ -118,10 +118,10 @@ class AssociationMandat(db.Model):
     # Membres
     membres = db.relationship('AssociationMembre', back_populates='mandat')
 
-    def __init__(self, asso: Association, nom: str):
+    def __init__(self, asso: Association, nom: str, position: int = 0):
         self.nom = nom
         self.association = asso
-        self.position = 0
+        self.position = position
         self.actuel = False
 
 

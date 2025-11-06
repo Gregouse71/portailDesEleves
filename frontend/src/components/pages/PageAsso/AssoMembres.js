@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
-import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, setMainMandat, supprimerMandat } from "../../../api/api_associations";
+import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../../api/api_associations";
 import { obtenirListeDesPromos, chargerUtilisateursParPromo } from "../../../api/api_utilisateurs";
-import { BASE_URL } from "../../../api/base";
-import { useNavigate } from "react-router-dom";
-import { Card, Button, Form, Row } from "react-bootstrap";
+import { Card, Button, Form, Row, Col } from "react-bootstrap";
 import UserCard from "../../elements/UserCard";
 import BoutonEditer from "../../elements/BoutonEditer";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 function AssoMembres({ asso_id }) {
     const queryClient = useQueryClient();
-    const navigate = useNavigate();
 
-    const [listeMandats, setListeMandats] = useState([]);
     const [isGestionMembres, setIsGestionMembres] = useState(false);
     const [isAjoutMembre, setIsAjoutMembre] = useState(false);
 
@@ -29,7 +25,7 @@ function AssoMembres({ asso_id }) {
     const [idMembreModifier, setIdMembreModifier] = useState(null);
     const [nouveauRole, setNouveauRole] = useState("");
     const [nouvellePosition, setNouvellePosition] = useState("");
-    const [editingMandatId, setEditingMandatId] = useState(null);
+    const [editingMandat, setEditingMandat] = useState(null);
 
     const { data: asso = { mandats: [] } } = useQuery({
         queryKey: ['asso', asso_id],
@@ -43,13 +39,6 @@ function AssoMembres({ asso_id }) {
         queryKey: ['listePromos'],
         queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
     });
-
-    useEffect(() => {
-        if (asso && asso.mandats) {
-            const sortedMandats = [...asso.mandats].sort((a, b) => b.id - a.id);
-            setListeMandats(sortedMandats);
-        };
-    }, [asso]);
 
     const handlePromoChange = async (selectedOption) => {
         setPromoAjoutMembre(selectedOption);
@@ -68,8 +57,8 @@ function AssoMembres({ asso_id }) {
 
     useEffect(() => {
         if (isAjoutMembre) {
-            if (listeMandats && listeMandats.length > 0 && !mandatAjoutMembre) {
-                const latestMandat = listeMandats[0];
+            if (asso.mandats && asso.mandats.length > 0 && !mandatAjoutMembre) {
+                const latestMandat = asso.mandats[0];
                 setMandatAjoutMembre({ value: latestMandat.id, label: latestMandat.nom });
             }
             if (listePromos && listePromos.length > 0 && !promoAjoutMembre) {
@@ -83,7 +72,7 @@ function AssoMembres({ asso_id }) {
             setMandatAjoutMembre(null);
             setListeNouveauxMembres([]);
         }
-    }, [isAjoutMembre, listeMandats, listePromos]);
+    }, [isAjoutMembre, asso.mandats, listePromos]);
 
 
     const handleSetIsGestionMembres = (newState) => {
@@ -91,6 +80,7 @@ function AssoMembres({ asso_id }) {
             setIdMembreModifier(null);
             setIsAjoutMembre(false);
             setIsAjoutMandat(false);
+            setEditingMandat(null);
         }
         setIsGestionMembres(newState);
     }
@@ -105,7 +95,7 @@ function AssoMembres({ asso_id }) {
     };
 
     const handleMembreChange = async (mandatId, membreId) => {
-        const memberToModify = listeMandats.flatMap(m => m.membres).find(u => u.id === membreId);
+        const memberToModify = asso.mandats.flatMap(m => m.membres).find(u => u.id === membreId);
         if (!memberToModify) return;
 
         const originalRole = memberToModify.role || "";
@@ -162,7 +152,8 @@ function AssoMembres({ asso_id }) {
     const handleNouveauMandat = async (nom) => {
         if (nom) {
             try {
-                await ajouterMandat(asso_id, nom);
+                const maxPosition = asso.mandats.reduce((max, mandat) => Math.max(max, mandat.position), 0);
+                await ajouterMandat(asso_id, nom, maxPosition + 1);
                 queryClient.invalidateQueries(['asso', asso_id]);
                 setNomNouveauMandat("");
             } catch (erreur) {
@@ -172,25 +163,30 @@ function AssoMembres({ asso_id }) {
         setIsAjoutMandat(false);
     }
 
-    const handleEditMandat = async (mandatId, newName, newPos) => {
-        if (editingMandatId === mandatId) {
-            // Save logic
+    const handleEditMandat = (mandat) => {
+        setEditingMandat({ ...mandat });
+    }
+
+    const handleCancelEditMandat = () => {
+        setEditingMandat(null);
+    }
+
+    const handleSaveMandat = async () => {
+        if (editingMandat) {
             try {
-                await modifierMandat(asso_id, mandatId, newName, newPos);
+                await modifierMandat(asso_id, editingMandat.id, editingMandat.nom, editingMandat.position, editingMandat.actuel);
+                if (editingMandat.actuel) {
+                    const otherMandats = asso.mandats.filter(m => m.id !== editingMandat.id && m.actuel);
+                    for (const other of otherMandats) {
+                        await modifierMandat(asso_id, other.id, other.nom, other.position, false);
+                    }
+                }
                 queryClient.invalidateQueries(['asso', asso_id]);
-                setEditingMandatId(null);
+                setEditingMandat(null);
             } catch (error) {
                 console.error(error);
             }
-        } else {
-            // Enable editing
-            setEditingMandatId(mandatId);
         }
-    }
-
-    const handleSetMainMandat = async (mandatId) => {
-        setMainMandat(asso_id, mandatId);
-        queryClient.invalidateQueries(['asso', asso_id]);
     }
 
     const handleDelMandat = async (id) => {
@@ -202,17 +198,11 @@ function AssoMembres({ asso_id }) {
         }
     }
 
-    const setNomMandat = async (i, nom) => {
-        let newListe = [...listeMandats];
-        newListe[i] = { ...newListe[i], "nom": nom };
-        setListeMandats(newListe);
-    }
-
-    const setPosMandat = async (i, pos) => {
-        let newListe = [...listeMandats];
-        newListe[i] = { ...newListe[i], "position": pos };
-        setListeMandats(newListe);
-    }
+    const sortedMandats = [...asso.mandats].sort((a, b) => {
+        if (a.actuel) return -1;
+        if (b.actuel) return 1;
+        return b.position - a.position;
+    });
 
     return (
         <div>
@@ -244,12 +234,12 @@ function AssoMembres({ asso_id }) {
                                     <Form.Group className="mb-3 text-start">
                                         <Form.Label>Mandat</Form.Label>
                                         <Select
-                                            options={listeMandats.map(m => ({ value: m.id, label: m.nom }))}
+                                            options={asso.mandats.map(m => ({ value: m.id, label: m.nom }))}
                                             value={mandatAjoutMembre}
                                             onChange={setMandatAjoutMembre}
                                             placeholder="Choisir un mandat..."
-                                            menuPortalTarget={document.body} 
-                                            styles={{ menuPortal: base => ({ ...base, zIndex: 1 }) }}
+                                            menuPortalTarget={document.body}
+                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                         />
                                     </Form.Group>
                                     <Form.Group className="mb-3 text-start">
@@ -259,8 +249,8 @@ function AssoMembres({ asso_id }) {
                                             value={promoAjoutMembre}
                                             onChange={handlePromoChange}
                                             placeholder="Choisir une promo..."
-                                            menuPortalTarget={document.body} 
-                                            styles={{ menuPortal: base => ({ ...base, zIndex: 1 }) }}
+                                            menuPortalTarget={document.body}
+                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                         />
                                     </Form.Group>
                                     <Form.Group className="mb-3 text-start">
@@ -271,8 +261,8 @@ function AssoMembres({ asso_id }) {
                                             onChange={setIdAjoutMembre}
                                             placeholder="Choisir un utilisateur..."
                                             isDisabled={!promoAjoutMembre || listeNouveauxMembres.length === 0}
-                                            menuPortalTarget={document.body} 
-                                            styles={{ menuPortal: base => ({ ...base, zIndex: 1 }) }}
+                                            menuPortalTarget={document.body}
+                                            styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                         />
                                     </Form.Group>
                                     <Button variant="primary" onClick={handleAjoutMembre} disabled={!idAjoutMembre || !mandatAjoutMembre}>Ajouter</Button>
@@ -300,41 +290,86 @@ function AssoMembres({ asso_id }) {
                 </div>
             )}
 
-            {listeMandats.sort((a, b) => (b.actuel - a.actuel) * 100 + b.position - a.position ).map((mandat, i) => (
-                <div key={mandat.id} className="mb-4">
-                    {!isGestionMembres ?
-                        <h4 className="mb-3">{mandat.nom}</h4>
-                        :
-                        <div className="d-flex align-items-center mb-3">
-                            <Form.Control value={listeMandats[i].nom} onChange={(e) => setNomMandat(i, e.target.value)} className="me-2" disabled={editingMandatId !== mandat.id} />
-                            <Form.Control value={listeMandats[i].position} onChange={(e) => setPosMandat(i, e.target.value)} className="me-2" disabled={editingMandatId !== mandat.id} />
-                            <Button
-                                variant={editingMandatId === mandat.id ? "success" : "primary"}
-                                onClick={() => handleEditMandat(mandat.id, listeMandats[i].nom, listeMandats[i].position)}
-                                className="me-2 text-nowrap"
-                            >
-                                {editingMandatId === mandat.id ? "Valider" : "Modifier"}
-                            </Button>
-                            <Button variant="tertiary" className="text-nowrap" onClick={() => handleSetMainMandat(mandat.id)}>Mandat principal</Button>
-                            <Button variant="danger" className="text-nowrap" onClick={() => handleDelMandat(mandat.id)}>Supprimer le mandat</Button>
+            {sortedMandats.map((mandat) => (
+                <Card key={mandat.id} className="mb-4">
+                    <Card.Header>
+                        <Row className="align-items-center">
+                            <Col xs={12} md>
+                                {editingMandat && editingMandat.id === mandat.id ? (
+                                    <Form className="w-100">
+                                        <Row className="align-items-end">
+                                            <Col>
+                                                <Form.Group>
+                                                    <Form.Label>Nom</Form.Label>
+                                                    <Form.Control
+                                                        type="text"
+                                                        value={editingMandat.nom}
+                                                        onChange={(e) => setEditingMandat({ ...editingMandat, nom: e.target.value })}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                            <Col>
+                                                <Form.Group>
+                                                    <Form.Label>Priorité d'affichage</Form.Label>
+                                                    <Form.Control
+                                                        type="number"
+                                                        value={editingMandat.position}
+                                                        onChange={(e) => setEditingMandat({ ...editingMandat, position: parseInt(e.target.value) || 0 })}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                            <Col className="d-flex align-items-end pb-1">
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Mandat actuel"
+                                                    checked={editingMandat.actuel}
+                                                    onChange={(e) => setEditingMandat({ ...editingMandat, actuel: e.target.checked })}
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </Form>
+                                ) : (
+                                    <Card.Title className="m-0">{mandat.nom}</Card.Title>
+                                )}
+                            </Col>
+                            {isGestionMembres && (
+                                <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
+                                    {editingMandat && editingMandat.id === mandat.id ? (
+                                        <>
+                                            <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
+                                            <Button variant="secondary" onClick={handleCancelEditMandat}>Annuler</Button>
+                                        </>
+                                    ) : (
+                                        <Button variant="primary" onClick={() => handleEditMandat(mandat)}>Editer</Button>
+                                    )}
+                                </Col>
+                            )}
+                        </Row>
+                    </Card.Header>
+                    <Card.Body>
+                        <div className="member-grid">
+                            {mandat.membres.map((user) => (
+                                <UserCard user={user} isGestion={isGestionMembres} isModifying={idMembreModifier === user.id}
+                                    key={user.id}
+                                    f1={() => handleRetirerMembre(mandat.id, user.id)}
+                                    t1="Supprimer ce membre"
+                                    f2={() => { handleModifierParametres(user.id, user.role, user.position) }}
+                                    t2="Modifier les paramètres"
+                                    values={[
+                                        { label: "Rôle", value: nouveauRole, onChange: (e) => setNouveauRole(e.target.value) },
+                                        { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) }
+                                    ]}
+                                    validate={() => handleMembreChange(mandat.id, user.id)}
+                                />
+                            ))}
                         </div>
-                    }
-                    <div className="member-grid">
-                        {mandat.membres.map((user) => (
-                            <UserCard user={user} isGestion={isGestionMembres} isModifying={idMembreModifier === user.id}
-                                f1={() => handleRetirerMembre(mandat.id, user.id)}
-                                t1="Supprimer ce membre"
-                                f2={() => { handleModifierParametres(user.id, user.role, user.position) }}
-                                t2="Modifier les paramètres"
-                                values={[
-                                    { label: "Rôle", value: nouveauRole, onChange: (e) => setNouveauRole(e.target.value) },
-                                    { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) }
-                                ]}
-                                validate={() => handleMembreChange(mandat.id, user.id)}
-                            />
-                        ))}
-                    </div>
-                </div>
+                        {isGestionMembres && editingMandat && editingMandat.id === mandat.id && (
+                            <div className="d-flex justify-content-end mt-3">
+                                <Button variant="danger" onClick={() => handleDelMandat(mandat.id)}>Supprimer le mandat</Button>
+                            </div>
+                        )}
+                    </Card.Body>
+                </Card>
             ))}
         </div>
     )
