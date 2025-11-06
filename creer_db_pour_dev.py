@@ -60,17 +60,21 @@ with app.app_context():
     for prenom, nom, promotion, cycle in utilisateurs:
         nom_utilisateur = f"{promotion}{unicodedata.normalize('NFKD', nom).encode('ascii', 'ignore').decode().lower()}"
         email = f"{nom_utilisateur}@example.com" 
-        utilisateur = Utilisateur(
-            nom_utilisateur=nom_utilisateur, 
-            prenom=prenom, 
-            nom=nom,  
-            promotion=promotion, 
-            email=email, 
-            cycle=cycle,
-            mot_de_passe_en_clair="1234",
-            date_de_naissance=date(year=2025, month=9 + i//30, day=i%29 + 1)
-        )
-        db.session.add(utilisateur)
+        existing_user = Utilisateur.query.filter_by(nom_utilisateur=nom_utilisateur).first()
+        if existing_user:
+            print(f"L'utilisateur {nom_utilisateur} existe déjà.")
+        else:
+            utilisateur = Utilisateur(
+                nom_utilisateur=nom_utilisateur, 
+                prenom=prenom, 
+                nom=nom,  
+                promotion=promotion, 
+                email=email, 
+                cycle=cycle,
+                mot_de_passe_en_clair="1234",
+                date_de_naissance=date(year=2025, month=9 + i//30, day=i%29 + 1)
+            )
+            db.session.add(utilisateur)
         i += 1
 
     db.session.commit()

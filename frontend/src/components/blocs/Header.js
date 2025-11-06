@@ -51,29 +51,31 @@ export default function Header() {
         <Navbar.Brand href="#" onClick={() => navigate("/")}><em>Le nouveau</em> portail des élèves</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
+          <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
             <NavDropdown title="Menu" id="basic-nav-dropdown">
               <NavDropdown.Item onClick={() => navigate("/")}>Accueil</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/assos")}>Assos</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/assos/planning")}>Planning associatif</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
             </NavDropdown>
-            <div className="d-grid d-md-flex gap-2 mt-2 mt-md-0 ms-md-3">
+
+            <div className="d-flex flex-column flex-md-row gap-2">
               {hasPermission && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
               {isSuperUser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}
             </div>
-          </Nav>
-          <Nav className="ms-auto d-flex align-items-center">
-            <Form className="d-flex me-2" onSubmit={handleSearchSubmit}>
+
+            <div className="d-none d-md-block flex-grow-1"></div>
+
+            <Form className="d-flex" onSubmit={handleSearchSubmit}>
               <FormControl
                 type="search"
                 placeholder="Rechercher"
-                className="me-2"
                 aria-label="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </Form>
+
             <NavDropdown title={userData ? userData.nom_utilisateur : "Chargement..."} id="user-nav-dropdown" align="end">
               <NavDropdown.Item onClick={() => navigate(`utilisateur/${userData.id}`)}>Ma page</NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleLogout()}>Se déconnecter</NavDropdown.Item>
