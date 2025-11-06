@@ -44,7 +44,7 @@ def add_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
     """
     if AssociationMembre.query.filter_by(utilisateur_id=utilisateur.id, mandat_id=mandat.id).first():
         raise ValueError("L'utilisateur est déjà dans le mandat.")
-    membership = AssociationMembre(utilisateur, mandat)
+    membership = AssociationMembre(utilisateur, mandat, role)
     db.session.add(membership)
     db.session.commit()
 
@@ -61,6 +61,17 @@ def add_mandat(association: Association, nom: str):
         return True
     else:
         raise ValueError("L'association n'existe pas")
+
+
+def update_mandat_name(mandat: AssociationMandat, nom: str):
+    """
+    Modifie le nom d'un mandat
+    """
+    if mandat:
+        mandat.nom = nom
+        db.session.commit()
+    else:
+        raise ValueError("Le mandat n'existe pas")
 
 
 def del_mandat(mandat: int):
@@ -95,42 +106,38 @@ def remove_member(mandat: AssociationMandat, utilisateur: Utilisateur):
 
 
 
-def update_member_role(association: Association, utilisateur: Utilisateur, role: str):
+def update_member_role(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
     """
     Modifie le role d'un membre de l'association
     Renvoie une erreur si l'utilisateur ou l'association n'existe pas
     Ne renvoie pas d'erreur si l'utilisateur n'est pas membre de l'association
     """
-    association = Association.query.get(association.id)
-    if association:
-        utilisateur = Utilisateur.query.get(utilisateur.id)
+    if mandat:
         if utilisateur:
             membership = AssociationMembre.query.filter_by(
                 utilisateur_id=utilisateur.id,
-                association_id=association.id
+                mandat_id=mandat.id
             ).first()
             if membership:
                 membership.role = role
                 db.session.commit()
             else:
-                raise ValueError("L'utilisateur n'est pas dans l'association")
+                raise ValueError("L'utilisateur n'est pas dans le mandat")
         else:
             raise ValueError("L'utilisateur n'existe pas")
     else:
-        raise ValueError("L'association n'existe pas")
+        raise ValueError("Le mandat n'existe pas")
 
 
-def update_member_position(association: Association, utilisateur: Utilisateur, position: int):
+def update_member_position(mandat: AssociationMandat, utilisateur: Utilisateur, position: int):
     """
     Modifie la position de l'utilisateur das l'association
     """
-    association = Association.query.get(association.id)
-    if association:
-        utilisateur = Utilisateur.query.get(utilisateur.id)
+    if mandat:
         if utilisateur:
             membership = AssociationMembre.query.filter_by(
                 utilisateur_id=utilisateur.id,
-                association_id=association.id
+                mandat_id=mandat.id
             ).first()
             if membership:
                 membership.position = position
@@ -140,4 +147,4 @@ def update_member_position(association: Association, utilisateur: Utilisateur, p
         else:
             raise ValueError("L'utilisateur n'existe pas")
     else:
-        raise ValueError("L'association n'existe pas")
+        raise ValueError("Le mandat n'existe pas")
