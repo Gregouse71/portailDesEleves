@@ -63,17 +63,6 @@ def add_mandat(association: Association, nom: str):
         raise ValueError("L'association n'existe pas")
 
 
-def update_mandat_name(mandat: AssociationMandat, nom: str):
-    """
-    Modifie le nom d'un mandat
-    """
-    if mandat:
-        mandat.nom = nom
-        db.session.commit()
-    else:
-        raise ValueError("Le mandat n'existe pas")
-
-
 def del_mandat(mandat: int):
     """
     Supprime le mandat
@@ -86,9 +75,31 @@ def del_mandat(mandat: int):
     return True
 
 def modifier_mandat(mandat: AssociationMandat, nom: str, position: int):
+    """
+    Modifie le nom et la position du mandat
+    """
     try:
         mandat.nom = nom
         mandat.position = position
+        db.session.add(mandat)
+        db.session.commit()
+        return True
+    except:
+        return None
+
+def set_main_mandat(mandat: AssociationMandat):
+    """
+    Défini le mandat comme étant le mandat actuel de l'association
+    """
+    try:
+        mandats_autre = AssociationMandat.query.filter_by(association_id=mandat.association_id).all()
+        print(mandats_autre)
+        for m in mandats_autre:
+            if m != mandat:
+                print(m)
+                m.actuel = False
+                db.session.add(m)
+        mandat.actuel = True
         db.session.add(mandat)
         db.session.commit()
         return True

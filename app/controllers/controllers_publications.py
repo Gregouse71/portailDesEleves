@@ -23,7 +23,7 @@ def route_obtenir_publications_asso(association_id: int):
         query = Publication.query.filter(Publication.id_association == association_id)
         if not (current_user.est_superutilisateur):
             # publications internes
-            if not any(member.association_id == association_id for member in current_user.associations_actuelles):
+            if not any(mandat.association_id == association_id for mandat in current_user.associations):
                 query = query.filter(Publication.is_publication_interne.is_(False))
             # publications sensibles
             if not current_user.est_baptise:

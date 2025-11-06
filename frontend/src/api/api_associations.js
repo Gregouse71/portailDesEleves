@@ -80,15 +80,32 @@ export async function ajouterMandat(associationId, nom) {
   }
 }
 
-export async function modifierNomMandat(associationId, mandatId, nom) {
+export async function modifierMandat(associationId, mandatId, nom, pos) {
   try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_nom_mandat/${mandatId}`, {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_mandat/${mandatId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ nom })
+      body: JSON.stringify({ "nom": nom, "position": pos })
+    })
+    return handleResponse(res);
+  }
+  catch (error) {
+    console.error("Erreur réseau :", error);
+    throw error;
+  }
+}
+
+export async function setMainMandat(associationId, mandatId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/set_main_mandat/${mandatId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include"
     })
     return handleResponse(res);
   }
@@ -115,22 +132,6 @@ export async function supprimerMandat(associationId, mandatId) {
   }
 }
 
-export async function modifierMandat(associationId, mandatId, nom, position) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_mandat/${mandatId}/${nom}/${position}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include"
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
 
 export async function retirerMembre(associationId, mandatId, membreId) {
   try {

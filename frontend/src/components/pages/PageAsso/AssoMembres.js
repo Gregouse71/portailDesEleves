@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
-import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierNomMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../../api/api_associations";
+import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, setMainMandat, supprimerMandat } from "../../../api/api_associations";
 import { obtenirListeDesPromos, chargerUtilisateursParPromo } from "../../../api/api_utilisateurs";
 import { BASE_URL } from "../../../api/base";
 import { useNavigate } from "react-router-dom";
@@ -172,11 +172,11 @@ function AssoMembres({ asso_id }) {
         setIsAjoutMandat(false);
     }
 
-    const handleEditMandatName = async (mandatId, newName) => {
+    const handleEditMandat = async (mandatId, newName, newPos) => {
         if (editingMandatId === mandatId) {
             // Save logic
             try {
-                await modifierNomMandat(asso_id, mandatId, newName);
+                await modifierMandat(asso_id, mandatId, newName, newPos);
                 queryClient.invalidateQueries(['asso', asso_id]);
                 setEditingMandatId(null);
             } catch (error) {
@@ -186,20 +186,16 @@ function AssoMembres({ asso_id }) {
             // Enable editing
             setEditingMandatId(mandatId);
         }
-    };
+    }
+
+    const handleSetMainMandat = async (mandatId) => {
+        setMainMandat(asso_id, mandatId);
+        queryClient.invalidateQueries(['asso', asso_id]);
+    }
 
     const handleDelMandat = async (id) => {
         try {
             await supprimerMandat(asso_id, id);
-            queryClient.invalidateQueries(['asso', asso_id]);
-        } catch (erreur) {
-            console.error(erreur);
-        }
-    }
-
-    const handleModifyMandat = async (mandatId, nom, position)=> {
-        try {
-            await modifierMandat(asso_id, mandatId, nom, position);
             queryClient.invalidateQueries(['asso', asso_id]);
         } catch (erreur) {
             console.error(erreur);
@@ -212,7 +208,7 @@ function AssoMembres({ asso_id }) {
         setListeMandats(newListe);
     }
 
-    const setPositionMandat = async (i, pos) => {
+    const setPosMandat = async (i, pos) => {
         let newListe = [...listeMandats];
         newListe[i] = { ...newListe[i], "position": pos };
         setListeMandats(newListe);
@@ -304,20 +300,22 @@ function AssoMembres({ asso_id }) {
                 </div>
             )}
 
-            {listeMandats.map((mandat, i) => (
+            {listeMandats.sort((a, b) => (b.actuel - a.actuel) * 100 + b.position - a.position ).map((mandat, i) => (
                 <div key={mandat.id} className="mb-4">
                     {!isGestionMembres ?
                         <h4 className="mb-3">{mandat.nom}</h4>
                         :
                         <div className="d-flex align-items-center mb-3">
                             <Form.Control value={listeMandats[i].nom} onChange={(e) => setNomMandat(i, e.target.value)} className="me-2" disabled={editingMandatId !== mandat.id} />
+                            <Form.Control value={listeMandats[i].position} onChange={(e) => setPosMandat(i, e.target.value)} className="me-2" disabled={editingMandatId !== mandat.id} />
                             <Button
                                 variant={editingMandatId === mandat.id ? "success" : "primary"}
-                                onClick={() => handleEditMandatName(mandat.id, listeMandats[i].nom)}
+                                onClick={() => handleEditMandat(mandat.id, listeMandats[i].nom, listeMandats[i].position)}
                                 className="me-2 text-nowrap"
                             >
-                                {editingMandatId === mandat.id ? "Valider" : "Changer le nom"}
+                                {editingMandatId === mandat.id ? "Valider" : "Modifier"}
                             </Button>
+                            <Button variant="tertiary" className="text-nowrap" onClick={() => handleSetMainMandat(mandat.id)}>Mandat principal</Button>
                             <Button variant="danger" className="text-nowrap" onClick={() => handleDelMandat(mandat.id)}>Supprimer le mandat</Button>
                         </div>
                     }
