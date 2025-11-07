@@ -40,7 +40,8 @@ def route_obtenir_publications_asso(association_id: int):
                                           "is_commentable": e.is_commentable,
                                           "commentaires": [comment.to_dict() for comment in e.commentaires],
                                           "fichier_joint": e.fichier_joint,
-                                          "miniature": e.miniature}
+                                          "miniature": e.miniature,
+                                          "tags": e.tags}
                                          for e in publications]}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -66,7 +67,8 @@ def route_creer_publication(association_id: int):
                 a_cacher_aux_nouveaux=data["a_cacher_aux_nouveaux"],
                 is_publication_interne=data["is_publication_interne"],
                 fichier_joint=data.get("fichier_joint"),
-                miniature=data.get("miniature")
+                miniature=data.get("miniature"),
+                tags=data.get("tags")
             )
             return jsonify({"message": "événement créé avec succès", "id_publication": id_publication}), 201
         else:
@@ -137,7 +139,8 @@ def route_modifier_publication(association_id, publication_id):
             data["a_cacher_aux_nouveaux"],
             data["is_publication_interne"],
             data.get("fichier_joint"),
-            data.get("miniature")
+            data.get("miniature"),
+            data.get("tags")
         )
         return jsonify({"message": "publication modifiée avec succès"}), 200
     else:

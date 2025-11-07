@@ -5,7 +5,13 @@ import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
 import { BASE_URL } from "../../../api/base";
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
+import Select from 'react-select';
 import BoutonEditer from "../../elements/BoutonEditer";
+
+const tagOptions = [
+    { value: 'Vendôme', label: 'Vendôme' },
+    { value: 'Palum', label: 'Palum' }
+];
 
 function AssoPosts({ asso_id }) {
     const { userData } = useLayout();
@@ -19,7 +25,8 @@ function AssoPosts({ asso_id }) {
         "is_commentable": true,
         "a_cacher_to_cycles": [],
         "a_cacher_aux_nouveaux": false,
-        "is_publication_interne": false
+        "is_publication_interne": false,
+        "tags": []
     })
     const [idModifyPost, setIdModifyPost] = useState(null);
     const [modifyPost, setModifyPost] = useState({
@@ -28,7 +35,8 @@ function AssoPosts({ asso_id }) {
         "is_commentable": true,
         "a_cacher_to_cycles": [],
         "a_cacher_aux_nouveaux": false,
-        "is_publication_interne": false
+        "is_publication_interne": false,
+        "tags": []
     })
     const [idModifyComment, setIdModifyComment] = useState(null);
     const [modifyComment, setModifyComment] = useState("");
@@ -62,7 +70,8 @@ function AssoPosts({ asso_id }) {
             "is_commentable": true,
             "a_cacher_to_cycles": [],
             "a_cacher_aux_nouveaux": false,
-            "is_publication_interne": false
+            "is_publication_interne": false,
+            "tags": []
         });
         setNewPostFile(null);
         setNewPostMiniatureFile(null);
@@ -75,7 +84,8 @@ function AssoPosts({ asso_id }) {
             "is_commentable": true,
             "a_cacher_to_cycles": [],
             "a_cacher_aux_nouveaux": false,
-            "is_publication_interne": false
+            "is_publication_interne": false,
+            "tags": []
         })
     }
 
@@ -118,6 +128,13 @@ function AssoPosts({ asso_id }) {
         });
     };
 
+    const handleSetNewPostTags = (selectedOptions) => {
+        setNewPost(prevState => ({
+            ...prevState,
+            tags: selectedOptions ? selectedOptions.map(option => option.value) : []
+        }));
+    };
+
     const handleSetNewPostContent = (value) => {
         setNewPost(prevState => ({
             ...prevState,
@@ -135,7 +152,7 @@ function AssoPosts({ asso_id }) {
                 };
             }
             if (name === 'a_cacher_to_cycles') {
-                const currentCycles = newPost.a_cacher_to_cycles;
+                const currentCycles = prevState.a_cacher_to_cycles;
                 const updatedCycles = checked ? [...currentCycles, value] : currentCycles.filter(cycle => cycle !== value);
                 return {
                     ...prevState,
@@ -147,6 +164,13 @@ function AssoPosts({ asso_id }) {
                 [name]: value
             };
         });
+    };
+
+    const handleSetModifyPostTags = (selectedOptions) => {
+        setModifyPost(prevState => ({
+            ...prevState,
+            tags: selectedOptions ? selectedOptions.map(option => option.value) : []
+        }));
     };
 
     const handleSetModifyPostContent = (value) => {
@@ -229,8 +253,8 @@ function AssoPosts({ asso_id }) {
             setShouldRemoveExistingAttachment(false); // Reset deletion flag
             const post = listePosts.find(e => e.id === post_id);
             if (post) {
-                const { titre, contenu, is_commentable, fichier_joint, miniature } = post;
-                setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable, fichier_joint, miniature }));
+                const { titre, contenu, is_commentable, fichier_joint, miniature, tags } = post;
+                setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable, fichier_joint, miniature, tags: tags || [] }));
             }
             setIdModifyPost(post_id);
         }
@@ -433,6 +457,21 @@ function AssoPosts({ asso_id }) {
                                     </Form.Group>
                                 </Col>
                             </Row>
+                            <Form.Group as={Row} className="mb-3">
+                                <Form.Label column sm="2">Tags</Form.Label>
+                                <Col sm="10">
+                                    <Select
+                                        isMulti
+                                        name="tags"
+                                        options={tagOptions}
+                                        className="basic-multi-select"
+                                        classNamePrefix="select"
+                                        value={newPost.tags.map(tag => ({ value: tag, label: tag }))}
+                                        onChange={handleSetNewPostTags}
+                                        placeholder="Sélectionnez un ou plusieurs tags"
+                                    />
+                                </Col>
+                            </Form.Group>
                             <div className="d-flex gap-2">
                                 <Button variant="success" onClick={validateNewPost} disabled={isLoading}>
                                     {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Ajouter"}
@@ -611,6 +650,21 @@ function AssoPosts({ asso_id }) {
                                             </Form.Group>
                                         </Col>
                                     </Row>
+                                    <Form.Group as={Row} className="mb-3">
+                                        <Form.Label column sm="2">Tags</Form.Label>
+                                        <Col sm="10">
+                                            <Select
+                                                isMulti
+                                                name="tags"
+                                                options={tagOptions}
+                                                className="basic-multi-select"
+                                                classNamePrefix="select"
+                                                value={modifyPost.tags.map(tag => ({ value: tag, label: tag }))}
+                                                onChange={handleSetModifyPostTags}
+                                                placeholder="Sélectionnez un ou plusieurs tags"
+                                            />
+                                        </Col>
+                                    </Form.Group>
                                     <div className="d-flex gap-2">
                                         <Button variant="success" onClick={validateModifyPost} disabled={isLoading}>
                                             {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}

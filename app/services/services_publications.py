@@ -53,7 +53,7 @@ def _generate_pdf_thumbnail(pdf_path, output_dir, association_name):
         return os.path.join('upload', 'associations', association_name, 'publications', thumbnail_name).replace(os.sep, '/')
     return None
 
-def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None):
+def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None, tags: list = None):
     """
     Ajoute une publication à l'association
     """
@@ -69,7 +69,8 @@ def add_publication(association: Association, titre: str, contenu: str, is_comme
                                   a_cacher_aux_nouveaux=a_cacher_aux_nouveaux,
                                   is_publication_interne=is_publication_interne,
                                   fichier_joint=fichier_joint,
-                                  miniature=miniature
+                                  miniature=miniature,
+                                  tags=tags
                                   )
         db.session.add(publication)
         db.session.commit()
@@ -107,7 +108,7 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
 
     return publication.fichier_joint, publication.miniature
 
-def modify_publication(publication: Publication, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None):
+def modify_publication(publication: Publication, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None, tags: list = None):
     """
     Modifie une publication de l'association
     """
@@ -122,6 +123,7 @@ def modify_publication(publication: Publication, titre: str, contenu: str, is_co
         
         publication.fichier_joint = fichier_joint
         publication.miniature = miniature
+        publication.tags = tags
 
         db.session.commit()
     else:

@@ -84,7 +84,9 @@ class Publication(db.Model):
 
     miniature = db.Column(db.String(1000), nullable=True)
 
-    def __init__(self, association: Association, auteur: Utilisateur, titre: str, contenu: str, date_publication: str, is_commentable: bool, a_cacher_to_cycles: list = [], a_cacher_aux_nouveaux: bool = False, is_publication_interne: bool = False, is_publiee_par_utilisateur: bool = False, fichier_joint: str = None, miniature: str = None):
+    tags = db.Column(db.JSON, nullable=True)
+
+    def __init__(self, association: Association, auteur: Utilisateur, titre: str, contenu: str, date_publication: str, is_commentable: bool, a_cacher_to_cycles: list = [], a_cacher_aux_nouveaux: bool = False, is_publication_interne: bool = False, is_publiee_par_utilisateur: bool = False, fichier_joint: str = None, miniature: str = None, tags: list = None):
         """
         Crée une nouvelle publication
         """
@@ -115,13 +117,15 @@ class Publication(db.Model):
 
         self.miniature = miniature
 
+        self.tags = tags if tags is not None else []
+
         if self.association.nom == "DE":
             self.is_publiee_par_utilisateur = True
 
         else:
             self.is_publiee_par_utilisateur = is_publiee_par_utilisateur
 
-    def __update__(self, titre: str = None, contenu: str = None, is_commentable: bool = None, a_cacher_to_cycles: list = None, a_cacher_aux_nouveaux: bool = None, is_publication_interne: bool = None, fichier_joint: str = None, miniature: str = None):
+    def __update__(self, titre: str = None, contenu: str = None, is_commentable: bool = None, a_cacher_to_cycles: list = None, a_cacher_aux_nouveaux: bool = None, is_publication_interne: bool = None, fichier_joint: str = None, miniature: str = None, tags: list = None):
         """
         Modifie les valeurs d'une publication.
         Il ne s'agit pas ici de modifier les likes ou les commentaires, 
@@ -204,3 +208,6 @@ class Publication(db.Model):
 
         if miniature != None:
             self.miniature = miniature
+
+        if tags != None:
+            self.tags = tags
