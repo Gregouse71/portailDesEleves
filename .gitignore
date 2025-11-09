@@ -7,3 +7,4 @@
 instance/*
 portail/*
 frontend/src/api/base_url.js
+config.py
