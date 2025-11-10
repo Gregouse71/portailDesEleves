@@ -19,6 +19,8 @@ import { Layout, LayoutProvider } from "./layouts/Layout";
 import FormulaireConnexion from "./components/FormulaireConnexion";
 import Search from "./components/pages/Search";
 import ClassementSondage from "./components/pages/Sondage/ClassementSondage";
+import Vendomes from "./components/pages/Vendomes";
+import Palums from "./components/pages/Palums";
 
 export default function App() {
   return (
@@ -46,6 +48,8 @@ export default function App() {
             <Route path=":id" element={<PageUtilisateur />} />
           </Route>
           <Route path="search" element={<Search />} />
+          <Route path="vendomes" element={<Vendomes />} />
+          <Route path="palums" element={<Palums />} />
         </Route>
         <Route path="soifguard">
           <Route path="accueil" element={<AccueilSoifguard />} />

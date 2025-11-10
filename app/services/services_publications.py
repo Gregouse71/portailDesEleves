@@ -7,6 +7,7 @@ import mimetypes
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from pdf2image import convert_from_path
+from sqlalchemy import desc
 
 from app.models.models_publications import Publication, Commentaire
 from app.models.models_associations import Association
@@ -307,3 +308,34 @@ def remove_like_from_comment(utilisateur: Utilisateur, commentaire: Commentaire)
             raise ValueError("L'utilisateur n'existe pas")
     else:
         raise ValueError("Le commentaire n'existe pas")
+
+
+def get_publications_by_tag(tag: str):
+    """
+    Renvoie toutes les publications avec un tag spécifique,
+    en tenant compte des permissions de l'utilisateur actuel.
+    """
+    query = Publication.query.filter(Publication.tags.contains([tag]))
+
+    if not current_user.est_superutilisateur:
+        # Filter out internal publications if user is not a member of the associated association
+        # This part needs to be carefully handled as Publication might not have an association
+        # or the association might not be in current_user.associations
+        # For now, I'll assume that if id_association is None, it's a global publication
+        # and if it has an id_association, it needs to be checked.
+        query = query.filter(
+            (Publication.id_association == None) |
+            (Publication.is_publication_interne.is_(False)) |
+            (Publication.id_association.in_([mandat.association_id for mandat in current_user.associations]))
+        )
+
+        # Filter out sensitive publications if user is not 'baptise'
+        if not current_user.est_baptise:
+            query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
+
+        # Filter out cycle-specific publications
+        query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
+
+    publications = query.order_by(desc(Publication.date_publication)).all()
+    return publications
+

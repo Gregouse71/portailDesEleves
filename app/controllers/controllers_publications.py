@@ -12,6 +12,30 @@ from app.services.services_publications import *
 controllers_publications = Blueprint('controllers_publications', __name__)
 
 
+@controllers_publications.route("/tag/<tag>")
+@login_required
+def route_get_publications_by_tag(tag: str):
+    """
+    Renvoie toutes les publications avec un tag spécifique.
+    """
+    try:
+        publications = get_publications_by_tag(tag)
+        return jsonify({"publications": [{"id": e.id,
+                                          "auteur": e.auteur.nom_utilisateur if e.auteur else None,
+                                          "titre": e.titre,
+                                          "contenu": e.contenu,
+                                          "date_publication": e.date_publication,
+                                          "likes": e.likes,
+                                          "is_commentable": e.is_commentable,
+                                          "commentaires": [comment.to_dict() for comment in e.commentaires],
+                                          "fichier_joint": e.fichier_joint,
+                                          "miniature": e.miniature,
+                                          "tags": e.tags}
+                                         for e in publications]}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+
 @controllers_publications.route("obtenir_publications_asso/<int:association_id>")
 @login_required
 def route_obtenir_publications_asso(association_id: int):

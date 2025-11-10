@@ -488,7 +488,16 @@ function AssoPosts({ asso_id }) {
                             {/* Les publications existantes */}
                             <div style={{ flex: 1 }}>
                                 {idModifyPost !== post.id && <>
-                                    <Card.Title>{post.titre}</Card.Title>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <Card.Title>{post.titre}</Card.Title>
+                                        {post.tags && post.tags.length > 0 && (
+                                            <div className="d-flex gap-1">
+                                                {post.tags.map(tag => (
+                                                    <span key={tag} className="badge bg-info">{tag}</span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                     {post.fichier_joint ? <Row>
                                         <Col md="9">
                                             <RichTextDisplay content={post.contenu} />

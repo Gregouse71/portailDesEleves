@@ -59,6 +59,11 @@ export default function Header() {
               <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
             </NavDropdown>
 
+            <NavDropdown title="Services" id="services-nav-dropdown">
+              <NavDropdown.Item onClick={() => navigate("/vendomes")}>Vendômes</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => navigate("/palums")}>Palums</NavDropdown.Item>
+            </NavDropdown>
+
             <div className="d-flex flex-column flex-md-row gap-2">
               {hasPermission && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
               {isSuperUser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}

@@ -40,6 +40,15 @@
 
 .asso-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Adjusted for 5 cards per row */
   gap: 1rem;
+}
+
+.post-card {
+  .card-title {
+    font-size: 1rem; /* Reduced text size */
+  }
+  .card-text {
+    font-size: 0.85rem; /* Reduced text size */
+  }
 }
