@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 
 export default function ClassementSondage() {
-    const { data: data, error } = useQuery({
+    const { data: data = {recent: [[], []], global: [[], []]}  } = useQuery({
         queryKey: ['scoresSondages'],
         queryFn: obtenirScoresSondages,
     });
@@ -31,7 +31,7 @@ export default function ClassementSondage() {
                 ))}
             </Col>
             <h2>Classement global</h2>
-            Calculé avec de coefficients en exponentielle décroissante sur les votes par date.
+            Calculé grâce à l'intervalle de confiance à 95% d'une gaussienne.
             <Col>
                 {data.global[0].map((user) => (
                     <Row key={user.nom_utilisateur}>
@@ -46,8 +46,6 @@ export default function ClassementSondage() {
                     </Row>
                 ))}
             </Col>
-
-
         </Container>
     </>;
 }
