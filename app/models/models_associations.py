@@ -89,6 +89,36 @@ class Association(db.Model):
             self.nom = nom
         if description != None:
             self.description = description
+    
+    def to_dict(self):
+        mandats_data = [
+            {
+                "membres" :[
+                    {
+                        "nom_utilisateur": membre.utilisateur.nom_utilisateur,
+                        "id": membre.utilisateur.id,
+                        "role": membre.role,
+                        "position": membre.position
+                    }
+                for membre in mandat.membres],
+                "position": mandat.position,
+                "nom": mandat.nom,
+                "actuel": mandat.actuel,
+                "id": mandat.id
+            }
+            for mandat in self.mandats
+        ]
+        
+        return {
+            "id": self.id,
+            "nom_dossier": self.nom_dossier,
+            "nom": self.nom,
+            "img": self.logo_path,
+            "ordre": self.ordre_importance,
+            "banniere_path": self.banniere_path,
+            "description": self.description,
+            "mandats": mandats_data
+        }
 
     def create_association_folder(self):
         """

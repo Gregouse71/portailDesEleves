@@ -1,24 +1,35 @@
 import { Card } from "react-bootstrap"
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../api/base";
+import { useQuery } from "@tanstack/react-query";
+import { chargerAsso } from "../../api/api_associations";
 
-export default function AssoCard({ asso }) {
+export default function AssoCard({ asso_id, mandat, role }) {
     const navigate = useNavigate();
 
-    return (<Card
-        className="h-100 text-center"
-        onClick={() => navigate(`/assos/get/${asso.id}`)}
-        style={{ cursor: 'pointer' }}
-    >
-        <Card.Img
-            variant="top"
-            src={`${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}`}
-            alt={asso.nom}
-            style={{ height: '120px', objectFit: 'cover' }}
-        />
-        <Card.Body>
-            <Card.Title>{asso.nom}</Card.Title>
-            {asso.role && <Card.Text>{asso.role}</Card.Text>}
-        </Card.Body>
-    </Card>);
+    const { data: asso, isLoading } = useQuery({
+        queryKey: ['asso', asso_id],
+        queryFn: () => chargerAsso(asso_id),
+    });
+
+    return (isLoading
+        ? <div>Loading ...</div>
+        : <Card
+            className="h-100 text-center"
+            onClick={() => navigate(`/assos/get/${asso.id}`)}
+            style={{ cursor: 'pointer' }}
+        >
+            <Card.Img
+                variant="top"
+                src={`${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}`
+                }
+                alt={asso.nom}
+                style={{ height: '120px', objectFit: 'cover' }}
+            />
+            < Card.Body >
+                <Card.Title>{asso.nom}</Card.Title>
+                {mandat && <Card.Text>Mandat : {mandat}</Card.Text>}
+                {role && <Card.Text>Role : {role}</Card.Text>}
+            </Card.Body >
+        </Card >);
 }

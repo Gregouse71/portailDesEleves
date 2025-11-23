@@ -5,7 +5,7 @@ export async function obtenirAssosUtilisateur(id_utilisateur) {
   const res = await fetch(`${API_BASE_URL}/users/assos_utilisateur/${id_utilisateur}`,
     { credentials: "include" }
   );
-  const data = await res.json().roles;
+  const data = await res.json();
   return data; // au format JSON
 }
 
@@ -44,24 +44,6 @@ export async function modifierInfos(id_utilisateur, new_info) {
   });
 }
 
-
-export async function verifierSuperutilisateur() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/users/verifier_superutilisateur`, {
-      method: "GET",
-      credentials: "include",
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      console.error("Erreur lors de la vérification :", data.message);
-      return false;
-    }
-    return data.is_superuser;
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    return false;
-  }
-}
 
 export async function obtenirIdUserParNom(nom_utilisateur) {
   const res = await fetch(`${API_BASE_URL}/users/obtenir_id_par_nomutilisateur/${nom_utilisateur}`,

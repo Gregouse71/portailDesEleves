@@ -141,10 +141,10 @@ def assos_utilisateur(user_id: int):
 
     roles = AssociationMembre.query.filter_by(utilisateur_id=user_id).all()
 
-    data = {"roles" :[
-            {"mandat": role.mandat, "role": role.role, "nom": role.association.nom, "id": role.association_id, "img": role.association.logo_path, "nom_dossier": role.association.nom_dossier}
-            for role in roles
-        ]}
+    data = {
+        "actuel": [{"role": role.role, "mandat": role.mandat.nom, "asso_id": role.mandat.association_id} for role in roles if role.mandat.actuel],
+        "ancien": [{"role": role.role, "mandat": role.mandat.nom, "asso_id": role.mandat.association_id} for role in roles if not role.mandat.actuel]    
+    }
     return jsonify(data)
 
 

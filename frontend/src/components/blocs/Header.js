@@ -1,20 +1,25 @@
 import { useNavigate } from 'react-router-dom';
 import { useLayout } from '../../layouts/Layout';
 import { seDeconnecter } from '../../api/api_global';
-import { verifierSuperutilisateur, searchUsers } from '../../api/api_utilisateurs';
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { verifierPermission } from '../../api/api_soifguard';
 import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
-
 import '../../assets/styles/header.scss';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Header() {
   const { userData } = useLayout();
   const navigate = useNavigate();
-  const [hasPermission, setHasPermission] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+
+  const { data: octoPermission = false } = useQuery({
+    queryKey: ['permOcto'],
+    queryFn: () => verifierPermission("octo"),
+  });
+  const { data: bieroPermission = false } = useQuery({
+    queryKey: ['permBiero'],
+    queryFn: () => verifierPermission("biero"),
+  });
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -22,23 +27,6 @@ export default function Header() {
       navigate(`/search?q=${searchQuery}`);
     }
   };
-
-  const { data: isSuperUser = false, error } = useQuery({
-    queryKey: ['estSuperutilisateur'],
-    queryFn: verifierSuperutilisateur,
-  });
-
-  useEffect(() => {
-    async function checkPermissions() {
-      const octoPermission = await verifierPermission("octo");
-      const bieroPermission = await verifierPermission("biero");
-
-      if (octoPermission || bieroPermission) {
-        setHasPermission(true);
-      }
-    }
-    checkPermissions()
-  }, []);
 
   async function handleLogout() {
     await seDeconnecter();
@@ -65,8 +53,8 @@ export default function Header() {
             </NavDropdown>
 
             <div className="d-flex flex-column flex-md-row gap-2">
-              {hasPermission && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
-              {isSuperUser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}
+              {(octoPermission || bieroPermission) && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
+              {userData.is_superuser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}
             </div>
 
             <div className="d-none d-md-block flex-grow-1"></div>

@@ -6,7 +6,6 @@ import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
 import { useParams } from 'react-router-dom';
-import { verifierSuperutilisateur } from "../../api/api_utilisateurs";
 import { BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav, Tab } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';

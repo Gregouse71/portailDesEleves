@@ -162,7 +162,7 @@ def obtenir_sondage_du_jour_et_votes():
     """
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
     if id_sondage_du_jour:
-        sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour)
+        sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour).first()
         question_du_jour = sondage_du_jour.question
         reponses_brut = sondage_du_jour.reponses
         compteur_votes = _resultat_sondage(id_sondage_du_jour)

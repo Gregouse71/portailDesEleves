@@ -7,6 +7,7 @@ import { BASE_URL } from "../../../api/base";
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
 import BoutonEditer from "../../elements/BoutonEditer";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const tagOptions = [
     { value: 'Vendôme', label: 'Vendôme' },
@@ -14,9 +15,9 @@ const tagOptions = [
 ];
 
 function AssoPosts({ asso_id }) {
+    const queryClient = useQueryClient();
     const { userData } = useLayout();
     const [isGestion, setIsGestion] = useState(false);
-    const [isMembreAutorise, setIsMembreAutorise] = useState(false);
     const [isNewPost, setIsNewPost] = useState(false);
     const [listePosts, setListePosts] = useState([]);
     const [newPost, setNewPost] = useState({
@@ -56,8 +57,7 @@ function AssoPosts({ asso_id }) {
     const handleFileUpload = async (publicationId, file, miniatureFile) => {
         try {
             await ajouterContenuPublication(publicationId, file, miniatureFile);
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (error) {
             console.error("Erreur lors du téléversement du fichier:", error);
         }
@@ -183,8 +183,7 @@ function AssoPosts({ asso_id }) {
     const removePost = async (post_id) => {
         try {
             await supprimerPublication(asso_id, post_id);
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -193,8 +192,7 @@ function AssoPosts({ asso_id }) {
     const removeComment = async (post_id) => {
         try {
             await supprimerCommentaire(post_id);
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -204,7 +202,6 @@ function AssoPosts({ asso_id }) {
         setIsLoading(true);
         try {
             const newPublication = await creerNouvellePublication(asso_id, newPost);
-            console.log(newPublication)
             if (newPostFile || newPostMiniatureFile) {
                 try {
                     await ajouterContenuPublication(asso_id, newPublication.id_publication, newPostFile, newPostMiniatureFile);
@@ -214,8 +211,7 @@ function AssoPosts({ asso_id }) {
             }
             clearNewPost();
             setIsNewPost(false);
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -235,8 +231,7 @@ function AssoPosts({ asso_id }) {
             await creerNouveauCommentaire(post_id, newComment)
             setNewComment("");
             setIdNewComment(null)
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -292,8 +287,7 @@ function AssoPosts({ asso_id }) {
 
             clearModifyPost();
             setIdModifyPost(null);
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -306,8 +300,7 @@ function AssoPosts({ asso_id }) {
             await modifierCommentaire(idModifyComment, { "contenu": modifyComment })
             setModifyComment("")
             setIdModifyComment(null)
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -317,8 +310,7 @@ function AssoPosts({ asso_id }) {
     const handleChangePostLike = async (post_id) => {
         try {
             await modifierLikePost(post_id)
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -327,8 +319,7 @@ function AssoPosts({ asso_id }) {
     const handleChangeCommentLike = async (comment_id) => {
         try {
             await modifierLikeComment(comment_id)
-            const postsData = await obtenirPublicationsAsso(asso_id);
-            setListePosts(postsData.publications);
+            queryClient.invalidateQueries(['publicationData', asso_id])
         } catch (erreur) {
             console.error(erreur);
         }
@@ -342,21 +333,19 @@ function AssoPosts({ asso_id }) {
         setIsGestion(newState)
     }
 
+    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
+        queryKey: ['membreData', asso_id],
+        queryFn: () => estUtilisateurDansAsso(asso_id),
+    });
+
+    const { data: postsData } = useQuery({
+        queryKey: ['publicationData', asso_id],
+        queryFn: () => obtenirPublicationsAsso(asso_id),
+    });
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const membreData = await estUtilisateurDansAsso(asso_id);
-                const postsData = await obtenirPublicationsAsso(asso_id);
-                setIsMembreAutorise(membreData.autorise);
-                setListePosts(postsData.publications);
-            } catch (error) {
-                console.error("Erreur lors du chargement des données:", error);
-            }
-        };
-        fetchData();
-    }, [asso_id]);
-
-
+        if (postsData) { setListePosts(postsData.publications) };
+    }, [postsData]);
 
     useEffect(() => {
         let fileForPreview = newPostMiniatureFile || newPostFile;
@@ -390,7 +379,7 @@ function AssoPosts({ asso_id }) {
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les publications</h2>
-                {isMembreAutorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)} />}
+                {membreData.autorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)} />}
             </div>
             {isGestion && !isNewPost && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewPost(true)}>
@@ -504,7 +493,7 @@ function AssoPosts({ asso_id }) {
                                         </Col>
                                         <Col md="3" className="text-center">
                                             <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
-                                                <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{cursor: 'pointer'}} />
+                                                <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
                                             </a>
                                         </Col>
                                     </Row> : <RichTextDisplay content={post.contenu} />}

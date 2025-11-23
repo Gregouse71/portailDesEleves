@@ -10,20 +10,7 @@ import BoutonEditer from "../../elements/BoutonEditer";
 export default function TabInfo({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
-
-    const { data: userData = {
-        promotion: 2,
-        date_de_naissance: "0",
-        chambre: "0",
-        ville_origine: "",
-        instruments: [],
-        co: null,
-        marrain: null,
-        fillots: []
-    }, error } = useQuery({
-        queryKey: ['donneesUtilisateur', id],
-        queryFn: () => obtenirDataUser(id),
-    });
+    const { userData } = useLayout();
 
     const [userInfos, setUserInfos] = useState(
         {
@@ -93,7 +80,6 @@ export default function TabInfo({ id, autoriseAModifier }) {
             if (userInfos.fillots) setSelectedF(userInfos.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
         };
         fetchOptions();
-        console.log("a", id, userData?.promotion)
     }, [userData?.promotion, parrains, coUsers, fillots]);
 
     const mutation = useMutation({
@@ -108,12 +94,9 @@ export default function TabInfo({ id, autoriseAModifier }) {
             if (marrain?.id !== newMarrainId) await changerMarrain(newMarrainId, id);
 
             await selectionnerFillots(id, selectedF.map(f => f.value));
-
-            return obtenirDataUser(id); // fetch updated data
         },
         onSuccess: (updatedUser) => {
-            queryClient.setQueryData(['donneesUtilisateur', id], updatedUser);
-            setUserInfos(updatedUser);
+            queryClient.invalidateQueries(['donneesUtilisateur', id]);
             setIsGestion(false);
         }
     });
@@ -138,7 +121,6 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     const ajouterInstru = () => {
-        console.log(userInfos)
         setUserInfos({ ...userInfos, instruments: [...userInfos.instruments, ["Piano", "1 an"]] });
     };
 

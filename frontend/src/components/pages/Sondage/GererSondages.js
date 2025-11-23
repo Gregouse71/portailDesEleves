@@ -6,8 +6,8 @@ import { Container, Table, Button, Spinner, Card, ListGroup } from "react-bootst
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 function GererSondages() {
-    const queryClient = useQueryClient(); 
-    const { reloadBlocSondage } = useLayout();
+    const queryClient = useQueryClient();
+    const { userData } = useLayout();
     const [sondagesEnAttente, setSondagesEnAttente] = useState([]);
     const navigate = useNavigate();
     
@@ -28,7 +28,8 @@ function GererSondages() {
 
     const suivantEtReload = async () => {
         await sondageSuivant();
-        reloadBlocSondage();
+        queryClient.invalidateQueries('sondage_du_jour')
+        queryClient.invalidateQueries(['donneesUtilisateur', userData.id]);
     }
 
     const { data: dataSondage = [], isLoading, error } = useQuery({

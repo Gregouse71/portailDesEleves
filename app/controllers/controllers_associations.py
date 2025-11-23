@@ -282,7 +282,7 @@ def route_get_assos():
     else:
         assos = Association.query.filter_by(a_cacher_aux_nouveaux=False)
 
-    return jsonify([{"id": asso.id, "nom": asso.nom, "nom_dossier": asso.nom_dossier, "img": asso.logo_path, "ordre": asso.ordre_importance} for asso in assos])
+    return jsonify([asso.id for asso in assos])
 
 
 @controllers_associations.route('/<int:association_id>', methods=['GET'])
@@ -296,34 +296,7 @@ def route_get_asso(association_id):
     if not asso:
         return jsonify({"error": "Association not found"}), 404
 
-    mandats_data = [
-        {
-            "membres" :[
-                {
-                    "nom_utilisateur": membre.utilisateur.nom_utilisateur,
-                    "id": membre.utilisateur.id,
-                    "role": membre.role,
-                    "position": membre.position
-                }
-            for membre in mandat.membres],
-            "position": mandat.position,
-            "nom": mandat.nom,
-            "actuel": mandat.actuel,
-            "id": mandat.id
-        }
-        for mandat in asso.mandats
-    ]
-
-    return jsonify({
-        "id": asso.id,
-        "nom_dossier": asso.nom_dossier,
-        "nom": asso.nom,
-        "img": asso.logo_path,
-        "ordre": asso.ordre_importance,
-        "banniere_path": asso.banniere_path,
-        "description": asso.description,
-        "mandats": mandats_data
-    })
+    return jsonify(asso.to_dict())
 
 
 @controllers_associations.route("route_est_membre_de_asso/<int:id_association>", methods=["GET"])

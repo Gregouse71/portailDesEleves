@@ -1,64 +1,33 @@
 // src/components/blocs/BlocSondage.jsx
-import { useEffect, useState } from 'react';
-import { obtenirDataUser, verifierSuperutilisateur } from '../../api/api_utilisateurs';
 import { obtenirSondageDuJour, voterSondage } from '../../api/api_sondages';
-import { obtenirIdUser } from '../../api/api_global';
 import { useLayout } from './../../layouts/Layout';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, ProgressBar } from 'react-bootstrap';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export default function BlocSondage({ reloadSondage }) {
-    const [sondage, setSondage] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const { reloadBlocSondage } = useLayout();
-    const [voteUser, setVoteUser] = useState(null);
+export default function BlocSondage() {
+    const queryClient = useQueryClient();
+    const { userData } = useLayout();
     const navigate = useNavigate();
 
-    const { data: isSuperUser = false, error, isLoading } = useQuery({
-        queryKey: ['estSuperutilisateur'],
-        queryFn: verifierSuperutilisateur,
+    const { data: sondage = { is_sondage: false } } = useQuery({
+        queryKey: ['sondage_du_jour'],
+        queryFn: obtenirSondageDuJour,
     });
 
     const voterEtReload = async (id_vote) => {
         try {
             await voterSondage(id_vote);  // Attendre la fin du vote
-            reloadBlocSondage();  // Recharger le sondage
+            queryClient.invalidateQueries(['donneesUtilisateur', userData.id]);
         } catch (error) {
             console.error("Erreur lors du vote et du rechargement du sondage", error);
         }
     };
 
-    useEffect(() => {
-        async function fetchSondageAndVote() {
-            setLoading(true);
-            try {
-                const id_user = await obtenirIdUser();
-                if (id_user) {
-                    const data_user = await obtenirDataUser(id_user);
-                    if (data_user) {
-                        setVoteUser(data_user.vote_sondaj_du_jour);
-                    }
-                }
-                const data_sondage = await obtenirSondageDuJour();
-                setSondage(data_sondage);
-            } catch (error) {
-                console.error("Erreur lors de la récupération des données du sondage ou du vote :", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchSondageAndVote();
-    }, [reloadSondage]);
-
-    if (loading) {
-        return <div>Chargement...</div>;
-    }
-
     let content;
 
     if (sondage.is_sondage) {
-        if (voteUser === null) {
+        if (userData.vote_sondaj_du_jour === null) {
             content = (
                 <>
                     <p className="h3 fw-bold">{sondage.question}</p>
@@ -109,9 +78,6 @@ export default function BlocSondage({ reloadSondage }) {
         );
     }
 
-    if (error) return <div>Impossible d'obtenir les anniversaires</div>;
-
-    console.log(isSuperUser);
     return (
         <Card className="bloc-global mb-3">
             <Card.Header as="h5" className="text-center">Sondage du jour</Card.Header>
@@ -131,7 +97,7 @@ export default function BlocSondage({ reloadSondage }) {
                 >
                     <img src="/assets/icons/stats.svg" alt="classement" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
                 </Button>
-                {isSuperUser && <Button
+                {userData.is_superuser && <Button
                     variant="light"
                     onClick={() => navigate("/sondage/gerer")}
                 >

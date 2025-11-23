@@ -267,9 +267,9 @@ def get_negatif_max(asso:str) :
     Donne le neagtif maximal autorisé pour octo ou biero
     """
     if asso == 'octo' :
-        return jsonify({"asso": asso, "max": get_global_var("max_negatif_octo")}), 200
+        return jsonify(get_global_var("max_negatif_octo")), 200
     elif asso == 'biero' :
-        return jsonify({"asso": asso, "max": get_global_var("max_negatif_biero")}), 200
+        return jsonify(get_global_var("max_negatif_biero")), 200
     else :
         return jsonify({"message": "erreur : asso doit etre octo ou biero"}), 400
 

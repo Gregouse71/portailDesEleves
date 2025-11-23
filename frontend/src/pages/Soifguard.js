@@ -1,12 +1,12 @@
 import "../assets/styles/soifguard.scss";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  getListeConsos, 
-  ajouterConsoOcto, 
-  ajouterConsoBiero, 
-  switchCotisationOcto, 
-  switchCotisationBiero, 
+import {
+  getListeConsos,
+  ajouterConsoOcto,
+  ajouterConsoBiero,
+  switchCotisationOcto,
+  switchCotisationBiero,
   supprimerConsoOcto,
   supprimerConsoBiero,
   obtenirDetteMaxi,
@@ -17,8 +17,9 @@ import {
   //modifierPrixConsoBiero,
 } from "../api/api_soifguard";
 import {
-  chargerUtilisateursParPromo, 
+  chargerUtilisateursParPromo,
 } from "../api/api_utilisateurs"
+import { useQuery } from "@tanstack/react-query";
 
 export default function SoifGuard() {
   const navigate = useNavigate();
@@ -32,29 +33,30 @@ export default function SoifGuard() {
   const [prix, setPrix] = useState("");
   const [prixCotisant, setPrixCotisant] = useState("");
   const [gestionConsos, setGestionConsos] = useState(false);
-  // affichage de la dette
-  const [detteMaxiOcto, setDetteMaxiOcto] = useState(null);
-  const [detteMaxiBiero, setDetteMaxiBiero] = useState(null);
+  
   // Encaissement
   // Etat pour l'utilisateur sélectionné
-  const [selectedUser, setSelectedUser] = useState(null);  
+  const [selectedUser, setSelectedUser] = useState(null);
   // pour la conso
   const [selectedConso, setSelectedConso] = useState(null); // Etat pour la consommation sélectionnée
 
   // pour les permissions de lancer octo ou biero
-  const [octoPermission, setOctoPermission] = useState(false);
-  const [bieroPermission, setBieroPermission] = useState(false);
-
-  
-
-  // Fonction pour charger les valeurs des dettes maximales
-  // La modification de cette dette se fera dans un menu à part pour administrer l'association
-  const chargerDetteMaxi = async () => {
-    const detteOcto = await obtenirDetteMaxi("octo");
-    const detteBiero = await obtenirDetteMaxi("biero");
-    setDetteMaxiOcto(detteOcto.max);
-    setDetteMaxiBiero(detteBiero.max);
-  };
+  const { data: octoPermission = false } = useQuery({
+    queryKey: ['permOcto'],
+    queryFn: () => verifierPermission("octo"),
+  });
+  const { data: bieroPermission = false } = useQuery({
+    queryKey: ['permBiero'],
+    queryFn: () => verifierPermission("biero"),
+  });
+  const { data: detteMaxiOcto = false } = useQuery({
+    queryKey: ['permOcto'],
+    queryFn: () => obtenirDetteMaxi("octo"),
+  });
+  const { data: detteMaxiBiero = false } = useQuery({
+    queryKey: ['permBiero'],
+    queryFn: () => obtenirDetteMaxi("biero"),
+  });
 
   // Charger les utilisateurs d'une promo
   const chargerUtilisateurs = async () => {
@@ -62,30 +64,14 @@ export default function SoifGuard() {
     const data = await chargerUtilisateursParPromo(promo);
     setUtilisateurs(data);
   };
-  
- 
-  
+
+
+
   // Fonction pour jouer le son
   const jouerSon = () => {
     const audio = new Audio("/assets/sons/encaisser.mp3");
     audio.play();
   };
-
-  // Verification des permissions pour lancer octo ou biero
-  useEffect(() => {
-      async function checkPermissions() {
-        const octo = await verifierPermission("octo");
-        const biero = await verifierPermission("biero");
-        setOctoPermission(octo);
-        setBieroPermission(biero);
-      }
-      checkPermissions();
-    }, []);
-
-  // Appel de la fonction lors du chargement du composant
-  useEffect(() => {
-    chargerDetteMaxi(); // Charger la dette maximale à l'initialisation
-  }, []); // Vide, donc s'exécute une seule fois au montage du composant
 
   // gestion de selections
   const handleSelectUser = (userId) => {
@@ -94,12 +80,12 @@ export default function SoifGuard() {
   const handleSelectConso = (consoId) => {
     setSelectedConso(consoId); // Met à jour la conso sélectionnée
   };
-  
-  
+
+
   useEffect(() => {
     // Vérifie si un utilisateur et une conso sont sélectionnés
     const encaisserEtRafraichir = async () => {
-      if (selectedUser && selectedConso) { 
+      if (selectedUser && selectedConso) {
         // Encaissement
         if (categorie === 'octo') {
           await encaisserOcto(selectedUser, selectedConso);
@@ -108,21 +94,21 @@ export default function SoifGuard() {
           await encaisserBiero(selectedUser, selectedConso);
           jouerSon();
         }
-  
+
         setSelectedUser(null);
         setSelectedConso(null);
-  
+
         // Recharger les utilisateurs après l'encaissement
         const data = await chargerUtilisateursParPromo(promo);
         console.log("Utilisateurs mis à jour :", data); // DEBUG
         setUtilisateurs(data);
       }
     };
-  
+
     encaisserEtRafraichir();
-  }, [selectedUser, selectedConso, categorie, promo]); 
-  
-  
+  }, [selectedUser, selectedConso, categorie, promo]);
+
+
 
   // Charger les consos
   const chargerConsos = async (type) => {
@@ -131,7 +117,7 @@ export default function SoifGuard() {
     setConsos(data.consos || []);
   };
 
-  
+
 
   // Toggle cotisation et mise à jour immédiate de l'affichage
   const toggleCotisation = async (idUtilisateur, estCotisant) => {
@@ -154,7 +140,7 @@ export default function SoifGuard() {
   // Ajout d'une conso
   const ajouterConso = async () => {
     if (!nomConso || !prix) return alert("Veuillez remplir tous les champs obligatoires.");
-    
+
     const prixCotisantValue = prixCotisant === "" ? null : parseFloat(prixCotisant);
     const prixValue = parseFloat(prix);
 
@@ -178,12 +164,12 @@ export default function SoifGuard() {
     } else if (categorie === "biero") {
       await supprimerConsoBiero(id_conso);
     }
-  
+
     // Recharge la liste des consos après suppression
     chargerConsos(categorie);
   };
 
-  
+
   return (
     <div className="soifguard-container">
       {/* HEADER */}
@@ -207,29 +193,29 @@ export default function SoifGuard() {
           )
         ) : null}
 
-      <div className="header-buttons">
-        {/* Bouton Octo : affiché seulement si l'utilisateur a la permission */}
-        {octoPermission && (
-          <button 
-            onClick={() => chargerConsos("octo")} 
-            className={categorie === "octo" ? "octo-active" : ""}
-          >
-            Octo
-          </button>
-        )}
+        <div className="header-buttons">
+          {/* Bouton Octo : affiché seulement si l'utilisateur a la permission */}
+          {octoPermission && (
+            <button
+              onClick={() => chargerConsos("octo")}
+              className={categorie === "octo" ? "octo-active" : ""}
+            >
+              Octo
+            </button>
+          )}
 
-        {/* Bouton Biero : affiché seulement si l'utilisateur a la permission */}
-        {bieroPermission && (
-          <button 
-            onClick={() => chargerConsos("biero")} 
-            className={categorie === "biero" ? "biero-active" : ""}
-          >
-            Biero
-          </button>
-        )}
-      </div>
+          {/* Bouton Biero : affiché seulement si l'utilisateur a la permission */}
+          {bieroPermission && (
+            <button
+              onClick={() => chargerConsos("biero")}
+              className={categorie === "biero" ? "biero-active" : ""}
+            >
+              Biero
+            </button>
+          )}
+        </div>
 
-        
+
       </div>
 
       {/* CONTENU PRINCIPAL */}
@@ -286,7 +272,7 @@ export default function SoifGuard() {
               <p>Aucun utilisateur chargé.</p>
             )}
           </div>
-          
+
 
         </div>
 
@@ -315,12 +301,12 @@ export default function SoifGuard() {
                   >
                     <strong>{conso.nom_conso}</strong> - {parseFloat(conso.prix).toFixed(2)}€
                     {conso.prix_cotisant !== null && <span> ({parseFloat(conso.prix_cotisant).toFixed(2)}€ cotisant)</span>}
-                    
+
                     {/* Affichage des boutons de modification et suppression */}
                     {gestionConsos && (
                       <>
-                        <button 
-                          className="soifguard-btn-remove" 
+                        <button
+                          className="soifguard-btn-remove"
                           onClick={(e) => {
                             e.stopPropagation();  // Empêcher le clic sur le bouton de sélectionner la conso
                             supprimerConso(conso.id);
@@ -352,13 +338,13 @@ export default function SoifGuard() {
             <h2>Ajouter une consommation</h2>
             <label>Nom de la conso :</label>
             <input type="text" value={nomConso} onChange={(e) => setNomConso(e.target.value)} />
-            
+
             <label>Prix :</label>
             <input type="number" value={prix} onChange={(e) => setPrix(e.target.value)} />
-            
+
             <label>Prix cotisant (optionnel) :</label>
             <input type="number" value={prixCotisant} onChange={(e) => setPrixCotisant(e.target.value)} />
-            
+
             <button onClick={ajouterConso}>Ajouter</button>
           </div>
         </div>

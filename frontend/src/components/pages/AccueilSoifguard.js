@@ -1,30 +1,25 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifierPermission } from "../../api/api_soifguard";
+import { useQuery } from "@tanstack/react-query";
 
 function AccueilSoifguard() {
   const navigate = useNavigate();
-  const [hasPermission, setHasPermission] = useState(false);
 
-  useEffect(() => {
-    async function checkPermissions() {
-      const octoPermission = await verifierPermission("octo");
-      const bieroPermission = await verifierPermission("biero");
-
-      if (octoPermission || bieroPermission) {
-        setHasPermission(true);
-      }
-    }
-
-    checkPermissions();
-  }, []);
+  const { data: octoPermission = false } = useQuery({
+    queryKey: ['permOcto'],
+    queryFn: () => verifierPermission("octo"),
+  });
+  const { data: bieroPermission = false } = useQuery({
+    queryKey: ['permBiero'],
+    queryFn: () => verifierPermission("biero"),
+  });
 
   return (
     <div>
       <h1>Soifguard</h1>
       <p>Soifguard est le logiciel qui gère les comptes de l'octo et de la biéro</p>
 
-      {hasPermission ? (
+      {octoPermission || bieroPermission ? (
         <button onClick={() => navigate("/soifguard")}>
           Lancer SoifGuard
         </button>

@@ -38,11 +38,11 @@ function Asso() {
 
     const { data: asso = null } = useQuery({
         queryKey: ['asso', id],
-        queryFn: () => {console.log(id); return chargerAsso(id)},
+        queryFn: () => { return chargerAsso(id) },
     });
-    const { data: membreData = {is_membre: false, autorise: false} } = useQuery({
+    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
         queryKey: ['membreData', id],
-        queryFn: () => {console.log(id); return estUtilisateurDansAsso(id)},
+        queryFn: () => { return estUtilisateurDansAsso(id) },
     });
 
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;

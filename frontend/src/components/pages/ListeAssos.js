@@ -1,19 +1,15 @@
-import { verifierSuperutilisateur } from '../../api/api_utilisateurs';
 import { chargerListeAssos } from '../../api/api_associations';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../api/base';
 import { Container, Card } from 'react-bootstrap';
 import AssoCard from '../elements/AssoCard';
 import { useQuery } from '@tanstack/react-query';
 import '../../assets/styles/asso.scss';
+import { useLayout } from '../../layouts/Layout';
 
 export default function ListeAssos() {
   const navigate = useNavigate();
+  const { userData } = useLayout();
 
-  const { data: isSuperUser = false } = useQuery({
-    queryKey: ['estSuperutilisateur'],
-    queryFn: verifierSuperutilisateur,
-  });
   const { data: assos = [] } = useQuery({
     queryKey: ['listeAssos'],
     queryFn: chargerListeAssos,
@@ -24,10 +20,10 @@ export default function ListeAssos() {
       <h1 className="mb-3">Associations</h1>
       <p className="text-muted">Ici tu peux retrouver toutes les associations des Mines</p>
       <div className="asso-grid">
-        {assos.map((asso) => (
-          <AssoCard key={asso.id} asso={asso} />
+        {assos.map((asso_id) => (
+          <AssoCard key={asso_id} asso_id={asso_id} />
         ))}
-        {isSuperUser && (
+        {userData.is_superuser && (
           <Card
             className="h-100 text-center hover-overlay"
             onClick={() => navigate("/assos/ajouter")}
