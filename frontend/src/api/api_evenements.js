@@ -66,3 +66,19 @@ export async function obtenirEvenementsAsso(id_asso) {
     throw erreur;
   }
 }
+
+export async function getEvenementsMois(date) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/evenements/obtenir_evenements/${date}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    })
+    return handleResponse(res);
+  } catch (erreur) {
+    console.error("Erreur réseau :", erreur)
+    throw erreur;
+  }
+}
