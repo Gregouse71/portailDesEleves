@@ -138,7 +138,7 @@ def route_obtenir_evenements(date: str):
     """
     try:
         evenements = get_evenements_par_date(date)
-        return jsonify({"evenements": [e.to_dict() for e in evenements]}), 200
+        return jsonify([e.to_dict() for e in evenements]), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 

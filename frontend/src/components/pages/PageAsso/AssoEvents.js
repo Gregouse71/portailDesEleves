@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     creerNouvelEvenement,
     modifierEvenement,
@@ -7,10 +7,11 @@ import {
 } from "../../../api/api_evenements";
 import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { Card, Button, Form, Row, Col } from "react-bootstrap";
-import BoutonEditer from "../../elements/BoutonEditer"; 
+import BoutonEditer from "../../elements/BoutonEditer";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 function AssoEvents({ asso_id }) {
-    const [isMembreAutorise, setIsMembreAutorise] = useState(false);
+    const queryClient = useQueryClient();
     const [isGestionEvents, setIsGestionEvents] = useState(false);
     const [listeEvents, setListeEvents] = useState([]);
     const [isNewEvent, setIsNewEvent] = useState(false);
@@ -131,9 +132,7 @@ function AssoEvents({ asso_id }) {
             await creerNouvelEvenement(asso_id, newEvent);
             clearNewEvent();
             setIsNewEvent(false);
-            const events = await obtenirEvenementsAsso(asso_id);
-            const sortedEvents = sortEvents(events.evenements)
-            setListeEvents(sortedEvents);
+            queryClient.invalidateQueries(['eventsData', asso_id]);
         } catch (error) {
             console.error(error);
         }
@@ -219,9 +218,7 @@ function AssoEvents({ asso_id }) {
             await modifierEvenement(asso_id, idEventModifier, newEvent);
             clearModiferEvent();
             setIdEventModifier(null);
-            const events = await obtenirEvenementsAsso(asso_id);
-            const sortedEvents = sortEvents(events.evenements);
-            setListeEvents(sortedEvents);
+            queryClient.invalidateQueries(['eventsData', asso_id]);
         } catch (error) {
             console.error(error);
         }
@@ -262,9 +259,7 @@ function AssoEvents({ asso_id }) {
     const removeEvent = async (event_id) => {
         try {
             await supprimerEvenement(asso_id, event_id);
-            const events = await obtenirEvenementsAsso(asso_id);
-            const sortedEvents = sortEvents(events.evenements);
-            setListeEvents(sortedEvents);
+            queryClient.invalidateQueries(['eventsData', asso_id]);
         } catch (erreur) {
             console.error(erreur);
         }
@@ -310,26 +305,27 @@ function AssoEvents({ asso_id }) {
         });
     }
 
+    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
+        queryKey: ['membreData', asso_id],
+        queryFn: () => estUtilisateurDansAsso(asso_id),
+        enabled: !!asso_id,
+    });
+
+    const { data: eventsData } = useQuery({
+        queryKey: ['eventsData', asso_id],
+        queryFn: () => obtenirEvenementsAsso(asso_id),
+        enabled: !!asso_id,
+    });
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const membreData = await estUtilisateurDansAsso(asso_id);
-                const eventsData = await obtenirEvenementsAsso(asso_id);
-                const sortedEvents = sortEvents(eventsData.evenements)
-                setIsMembreAutorise(membreData.autorise);
-                setListeEvents(sortedEvents);
-            } catch (error) {
-                console.error("Erreur lors du chargement des données:", error);
-            }
-        };
-        fetchData();
-    }, [asso_id]);
+        if (eventsData) { setListeEvents(sortEvents(eventsData.evenements)) };
+    }, [eventsData]);
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les événements</h2>
-                {isMembreAutorise && <BoutonEditer onClick={() => handleIsGestionEvents(!isGestionEvents)}/>}
+                {membreData.autorise && <BoutonEditer onClick={() => handleIsGestionEvents(!isGestionEvents)} />}
             </div>
             {isGestionEvents && !isNewEvent && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewEvent(true)}>

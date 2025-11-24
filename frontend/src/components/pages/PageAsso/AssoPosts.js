@@ -336,11 +336,13 @@ function AssoPosts({ asso_id }) {
     const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
         queryKey: ['membreData', asso_id],
         queryFn: () => estUtilisateurDansAsso(asso_id),
+        enabled: !!asso_id,
     });
 
     const { data: postsData } = useQuery({
         queryKey: ['publicationData', asso_id],
         queryFn: () => obtenirPublicationsAsso(asso_id),
+        enabled: !!asso_id,
     });
 
     useEffect(() => {

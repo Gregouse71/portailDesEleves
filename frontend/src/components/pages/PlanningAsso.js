@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Container, Spinner, Alert, ListGroup, Row, Col } from 'react-bootstrap';
 import { getEvenementsMois } from '../../api/api_evenements';
@@ -11,10 +10,10 @@ const PlanningAsso = () => {
     const month = today.getMonth() + 1;
     const date = `${year}${month.toString().padStart(2, '0')}`;
 
-    const { data: events, isLoading: isLoadingEvents, isError: isErrorEvents, error: errorEvents } = useQuery({queryKey: ['evenements', date], queryFn: () => getEvenementsMois(date)});
+    const { data: events, isLoading: isLoadingEvents, isError: isErrorEvents, error: errorEvents } = useQuery({ queryKey: ['evenements', date], queryFn: () => getEvenementsMois(date) });
 
     const GetAssoInfo = ({ assoId }) => {
-        const { data: asso, isLoading, isError, error } = useQuery({queryKey: ['association', assoId], queryFn: () => chargerAsso(assoId)});
+        const { data: asso, isLoading, isError, error } = useQuery({ queryKey: ['association', assoId], queryFn: () => chargerAsso(assoId) });
 
         if (isLoading) {
             return <Spinner animation="border" size="sm" />;
@@ -36,7 +35,7 @@ const PlanningAsso = () => {
         const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
         const date = new Date(dateString);
         return date.toLocaleDateString('fr-FR', options);
-      };
+    };
 
     if (isLoadingEvents) {
         return <Spinner animation="border" />;
@@ -45,7 +44,7 @@ const PlanningAsso = () => {
     if (isErrorEvents) {
         return <Alert variant="danger">{errorEvents.message}</Alert>;
     }
-    if (!events || !events.evenements || events.evenements.length === 0) {
+    if (!events || events.length === 0) {
         return (
             <Container>
                 <h1 className="my-4">Événements à venir</h1>
@@ -66,7 +65,7 @@ const PlanningAsso = () => {
                         <Col md={3}>Description</Col>
                     </Row>
                 </ListGroup.Item>
-                {events.evenements.map(event => (
+                {events.map(event => (
                     <ListGroup.Item key={event.id}>
                         <Row className="align-items-start">
                             <Col md={2}>{formatDate(event.date_de_debut)}</Col>

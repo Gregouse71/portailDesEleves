@@ -9,6 +9,7 @@ import { obtenirDataUser } from '../api/api_utilisateurs';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import BlocEvents from '../components/blocs/blocEvents';
 
 const LayoutContext = createContext();
 
@@ -64,6 +65,7 @@ export function Layout() {
             <Container fluid className="main-content-global">
                 <Row>
                     <Col md={2} className=" left order-2 order-md-1">
+                        <BlocEvents />
                         <BlocSondage />
                     </Col>
                     <Col md={8} className="mb-3 order-1 order-md-2">
