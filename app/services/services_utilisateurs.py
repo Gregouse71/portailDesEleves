@@ -98,6 +98,8 @@ def changer_marrain(marrain:Utilisateur, fillot:Utilisateur):
 
 def prochains_anniv():
     def must_display(d):
+        if d is None:
+            return False
         date1 = date(year=2000, month=d.month, day=d.day)
         date2 = date(year=2000, month=date.today().month, day=date.today().day)
 
@@ -107,5 +109,4 @@ def prochains_anniv():
     users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance).all()
     ret = sorted([(user.date_de_naissance, user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if must_display(user.date_de_naissance)])
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
-    print (ret)
     return ret

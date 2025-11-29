@@ -119,7 +119,7 @@ class Publication(db.Model):
 
         self.tags = tags if tags is not None else []
 
-        if self.association.nom == "DE":
+        if self.association and self.association.nom == "DE":
             self.is_publiee_par_utilisateur = True
 
         else:

@@ -47,6 +47,7 @@ class Utilisateur(db.Model, UserMixin) :
     mot_de_passe = db.Column(db.String(255), nullable=False)
 
     # Modifiable par l'utilisateur
+    photo = db.Column(db.String(1000), nullable=True) # le nom du fichier
     email = db.Column(db.String(1000), nullable=False)
     date_de_naissance = db.Column(db.Date(), nullable=True)
     surnom = db.Column(db.String(1000), nullable=True)
@@ -59,7 +60,7 @@ class Utilisateur(db.Model, UserMixin) :
     # Gestion du parrainnage :
     # Une fonction sera prevue pour mofifier son marrain et fillot et faire en sorte que son parrain et fillot soit modifie en consequence. N'est pas mofifiable tel quel
     marrain_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
-    marrain = db.relationship('Utilisateur', remote_side=[id], back_populates='fillots', foreign_keys=[marrain_id])
+    marrain = db.relationship('Utilisateur', remote_side=[id], back_populates='fillots', foreign_keys=[marrain_id], post_update=True)
     fillots = db.relationship('Utilisateur', back_populates='marrain', foreign_keys=[marrain_id])
     est_baptise = db.Column(db.Boolean, nullable=False)
 
@@ -351,6 +352,7 @@ class Utilisateur(db.Model, UserMixin) :
             "promotion": self.promotion,
             "chambre": self.chambre,
             "cycle": self.cycle,
+            "photo": self.photo,
             "email": self.email,
             "telephone": self.telephone,
             "date_de_naissance": self.date_de_naissance,
