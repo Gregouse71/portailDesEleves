@@ -52,7 +52,7 @@ export default function BlocEvents() {
     };
 
     return (
-        <Card id="bloc-events" className="bloc-global">
+        <Card id="bloc-events" className="bloc-global mb-3">
             <Card.Header as="h5" className="text-center">Événements</Card.Header>
             <Card.Body>
                 {Object.keys(eventsByDate).map((key) => (<div key={key}>
