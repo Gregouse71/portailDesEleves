@@ -92,6 +92,22 @@ def valider_dict_fillots(dictionnaire: dict) -> bool :
     return True
 
 def valider_date_AAAAMMJJHHMM(date_str: str) -> bool:
-    return re.fullmatch(r"\d{12}", date_str)
+    return re.fullmatch(r"^\d{12}$", date_str)
 
 
+def valider_instruments(instruments: list) -> bool:
+    """
+    Validates that instruments is a list of objects,
+    where each object has a 'name' (string) and an optional 'niveau' (string).
+    """
+    if not isinstance(instruments, list):
+        return False
+    for item in instruments:
+        if not isinstance(item, dict):
+            return False
+        if 'name' not in item or not isinstance(item['name'], str) or not valider_chaines_de_base(item['name']):
+            return False
+        if 'niveau' in item and item['niveau'] is not None:
+            if not isinstance(item['niveau'], str) or not valider_chaines_de_base(item['niveau']):
+                return False
+    return True

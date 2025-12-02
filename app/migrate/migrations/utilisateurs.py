@@ -1,5 +1,6 @@
 import sqlite3
 import unicodedata
+import os
 from app import db
 from app.models.models_utilisateurs import Utilisateur
 from werkzeug.security import generate_password_hash
@@ -22,22 +23,39 @@ def migrate_users():
     print(f"Found {len(trombi_userprofiles)} user profiles in old database.")
 
     # Fetch instruments from old database
-    old_db_cursor.execute("SELECT bm.eleve_id, bi.nom FROM bda_maitrise bm JOIN bda_instrument bi ON bm.instrument_id = bi.id")
+    old_db_cursor.execute("SELECT bm.eleve_id, bi.nom, bm.niveau FROM bda_maitrise bm JOIN bda_instrument bi ON bm.instrument_id = bi.id")
     bda_maitrise_data = old_db_cursor.fetchall()
     instruments_by_user = {}
-    for eleve_id, instrument_nom in bda_maitrise_data:
+    for eleve_id, instrument_nom, niveau in bda_maitrise_data:
         if eleve_id not in instruments_by_user:
             instruments_by_user[eleve_id] = []
-        instruments_by_user[eleve_id].append(instrument_nom)
+        instruments_by_user[eleve_id].append({"name": instrument_nom, "niveau": niveau})
 
     # Fetch questions and responses from old database
     old_db_cursor.execute("SELECT tur.userprofile_id, tq.enonce, tr.contenu FROM trombi_userprofile_reponses tur JOIN trombi_reponse tr ON tur.reponse_id = tr.id JOIN trombi_question tq ON tr.question_id = tq.id")
     trombi_qa_data = old_db_cursor.fetchall()
     questions_reponses_by_user = {}
+    
+    question_mapping = {
+        "Ta devise ?": "010Ta devise ?",
+        "Tes hobbies ?": "020Tes hobbies ?",
+        "Quelles assoces comptes-tu faire ?": "030Quelles assoces comptes-tu faire ?",
+        "Tes sports ?": "040Tes sports ?",
+        "Raconte une blague :": "050Raconte une blague :",
+        "Trash ton co :": "060Trash ton co :",
+        "Et ton parrain, comment tu l'aimes ?": "070Et ton parrain, comment tu l'aimes ?",
+        "Et ton fillot ?": "080Et ton fillot ?",
+        "Champagne ou Ricard ?": "090Champagne ou Ricard ?",
+        "Ton top 5 du moment ?": "100Ton top 5 du moment :",
+    }
+
     for userprofile_id, question_enonce, reponse_contenu in trombi_qa_data:
         if userprofile_id not in questions_reponses_by_user:
             questions_reponses_by_user[userprofile_id] = {}
-        questions_reponses_by_user[userprofile_id][question_enonce] = reponse_contenu
+        
+        new_question_enonce = question_mapping.get(question_enonce)
+        if new_question_enonce:
+            questions_reponses_by_user[userprofile_id][new_question_enonce] = reponse_contenu
 
     # Fetch parrain-fillot relationships
     old_db_cursor.execute("SELECT from_userprofile_id, to_userprofile_id FROM trombi_userprofile_parrains")
@@ -46,6 +64,21 @@ def migrate_users():
 
     # Create a dictionary to map user_id to user profile
     user_profiles = {profile[1]: profile for profile in trombi_userprofiles}
+
+    def capitalize_name(name_raw):
+        if not name_raw:
+            return "Inconnu"
+        
+        name_raw = ''.join([i for i in name_raw if not i.isdigit()])
+        lowercase_particles = {"de", "du", "la", "le", "des", "van", "von", "d", "l"}
+        words = unicodedata.normalize('NFC', name_raw).split()
+        capitalized_words = []
+        for word in words:
+            if word.lower() in lowercase_particles:
+                capitalized_words.append(word.lower())
+            else:
+                capitalized_words.append(word.capitalize())
+        return ' '.join(capitalized_words)
 
     for auth_user in auth_users:
         user_id = auth_user[0]
@@ -81,13 +114,28 @@ def migrate_users():
                 nom_raw = nom_raw.encode('latin-1').decode('utf-8')
             except (UnicodeEncodeError, UnicodeDecodeError):
                 pass
+            
+            prenom = capitalize_name(prenom_raw)
+            nom = capitalize_name(nom_raw)
+
+            email = auth_user[4] if auth_user[4] else f"{auth_user[1]}@placeholder.com"
+
+            if (prenom == "Inconnu" or nom == "Inconnu") and "@" in email:
+                try:
+                    email_prefix = email.split('@')[0]
+                    if '.' in email_prefix:
+                        prenom_from_email, nom_from_email = email_prefix.split('.')
+                        prenom = capitalize_name(prenom_from_email.replace('_', ' '))
+                        nom = capitalize_name(nom_from_email.replace('_', ' '))
+                except:
+                    pass
 
             new_user = Utilisateur(
                 nom_utilisateur=auth_user[1].lower(),
-                prenom=' '.join(word.capitalize() for word in unicodedata.normalize('NFC', prenom_raw).split()) if prenom_raw else "Inconnu",
-                nom=' '.join(word.capitalize() for word in unicodedata.normalize('NFC', nom_raw).split()) if nom_raw else "Inconnu",
+                prenom=prenom,
+                nom=nom,
                 promotion=str(profile[6]) if profile[6] else None,
-                email=auth_user[4] if auth_user[4] else f"{auth_user[1]}@placeholder.com",
+                email=email,
                 cycle=cycle,
                 mot_de_passe_en_clair="password",
             )
@@ -96,7 +144,20 @@ def migrate_users():
             new_user.id = auth_user[0]
             new_user.mot_de_passe = auth_user[5] # Already hashed
             new_user.est_superutilisateur = bool(auth_user[8])
-            new_user.photo = profile[39] # image_url
+            
+            photo_filename_jpg = f"{auth_user[1].lower()}.jpg"
+            photo_path_jpg = os.path.join('app', 'upload', 'utilisateurs', photo_filename_jpg)
+
+            photo_filename_png = f"{auth_user[1].lower()}.png"
+            photo_path_png = os.path.join('app', 'upload', 'utilisateurs', photo_filename_png)
+
+            if os.path.exists(photo_path_jpg):
+                new_user.photo = photo_filename_jpg
+            elif os.path.exists(photo_path_png):
+                new_user.photo = photo_filename_png
+            else:
+                new_user.photo = None
+
             try:
                 new_user.date_de_naissance = datetime.strptime(profile[5], '%Y-%m-%d').date() if profile[5] else None
             except ValueError:
@@ -115,28 +176,6 @@ def migrate_users():
             new_user.instruments = instruments_by_user.get(user_id, [])
             new_user.questions_reponses_du_portail = questions_reponses_by_user.get(user_id, {})
             
-            # TODO: Consider other unmapped fields from trombi_userprofile if necessary:
-            # - option (varchar(128))
-            # - a_la_meuh (INTEGER)
-            # - est_une_fille (INTEGER)
-            # - adresse_ailleurs (varchar(512))
-            # - solde_minesmarket (float)
-            # - solde_freshbox (float)
-            # - solde_mineshake (float)
-            # - solde_bda (float)
-            # - solde_paindemine (float)
-            # - victoires_sondages (INTEGER)
-            # - participations_sondages (INTEGER)
-            # - score_victoires_sondages (float)
-            # - score_defaites_sondages (float)
-            # - centre (varchar(100))
-            # - date_debut_stage (date)
-            # - date_fin_stage (date)
-            # - latitude (double)
-            # - longitude (double)
-            # - ville (varchar(500))
-            # - token (varchar(512))
-
             # Add the new user to the new database
             db.session.add(new_user)
         else:

@@ -6,6 +6,7 @@ from datetime import date
 
 # verification du format des donnees :
 from ..utils.verification_format import *
+from ..utils.verification_format import valider_instruments
 
 
 default_questions = { # Les trois premiers caractères servent à l'odonnancement
@@ -305,7 +306,7 @@ class Utilisateur(db.Model, UserMixin) :
                 else :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
             elif key=="instruments" :
-                if value==None or valider_chaines_de_base(value) :
+                if value==None or valider_instruments(value) :
                     self.instruments = value
                 else :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")

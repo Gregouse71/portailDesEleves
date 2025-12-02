@@ -98,7 +98,8 @@ class Association(db.Model):
                         "nom_utilisateur": membre.utilisateur.nom_utilisateur,
                         "id": membre.utilisateur.id,
                         "role": membre.role,
-                        "position": membre.position
+                        "position": membre.position,
+                        "photo": membre.utilisateur.photo
                     }
                 for membre in mandat.membres],
                 "position": mandat.position,

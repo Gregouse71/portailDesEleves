@@ -25,3 +25,15 @@ body {
     padding: 10px;
     margin-top: 10px;
 }
+
+/* Quill editor font size */
+.ql-snow .ql-picker.ql-size .ql-picker-label::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item::before {
+  content: attr(data-value) !important;
+}
+
+/* Override for 'Normal' size display */
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="13px"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"]::before {
+  content: 'Normal' !important;
+}

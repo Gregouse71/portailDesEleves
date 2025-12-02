@@ -14,6 +14,20 @@ def migrate_publications():
     bde_asso = Association.query.filter_by(nom="BDE").first()
     admin_user = Utilisateur.query.get(1)
 
+    # Get or create Vendôme association
+    vendome_asso = Association.query.filter_by(nom="Vendôme").first()
+    if not vendome_asso:
+        vendome_asso = Association(
+            nom="Vendôme",
+            description="L'association des Vendômes",
+            a_cacher_aux_nouveaux=False,
+            ordre_importance=1,
+            type_association='normale'
+        )
+        db.session.add(vendome_asso)
+        db.session.commit()
+        print("Created Vendôme association.")
+
     # Migrate association_news
     old_db_cursor.execute("SELECT * FROM association_news")
     news = old_db_cursor.fetchall()
@@ -35,12 +49,12 @@ def migrate_publications():
             print(f"Migrated association news {row[0]}")
 
     # Migrate vendome_vendome
-    if bde_asso and admin_user:
+    if vendome_asso and admin_user:
         old_db_cursor.execute("SELECT * FROM vendome_vendome")
         vendomes = old_db_cursor.fetchall()
         for row in vendomes:
             new_pub = Publication(
-                association=bde_asso,
+                association=vendome_asso,
                 auteur=admin_user,
                 titre=row[1],
                 contenu="",
@@ -74,3 +88,4 @@ def migrate_publications():
 
     # Close the connection to the old database
     old_db_conn.close()
+

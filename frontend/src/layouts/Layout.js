@@ -6,7 +6,7 @@ import BlocAnniversaire from '../components/blocs/blocAnniversaire';
 import '../assets/styles/layout.scss';
 import { obtenirIdUser, estAuthentifie } from '../api/api_global';
 import { obtenirDataUser } from '../api/api_utilisateurs';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BlocEvents from '../components/blocs/blocEvents';
@@ -15,6 +15,7 @@ const LayoutContext = createContext();
 
 export function LayoutProvider({ children }) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const { data: id } = useQuery({
         queryKey: ['id'],
@@ -38,9 +39,11 @@ export function LayoutProvider({ children }) {
 
     useEffect(() => {
         estAuthentifie().then(auth => {
-            if (!auth) navigate("/login");
+            if (!auth && location.pathname !== "/login") {
+                navigate("/login");
+            }
         });
-    }, [navigate, userData]);
+    }, [navigate, location.pathname]);
 
     return (
         <LayoutContext.Provider value={{ userData }}>

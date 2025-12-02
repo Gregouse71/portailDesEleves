@@ -53,7 +53,7 @@ def migrate_associations():
     all_assos = Association.query.all()
     mandat_map = {}
     for asso in all_assos:
-        mandat = AssociationMandat(asso=asso, nom="Membres", actuel=True)
+        mandat = AssociationMandat(asso=asso, nom="P24", actuel=True)
         db.session.add(mandat)
         mandat_map[asso.id] = mandat
     

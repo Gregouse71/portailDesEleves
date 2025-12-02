@@ -39,7 +39,7 @@ function PageUtilisateur() {
                     }}
                 >
                     <Image
-                        src={donneesUtilisateur.photo ? `${BASE_URL}/upload/utilisateurs/${donneesUtilisateur.photo}` : `${BASE_URL}/upload/utilisateurs/09brique.jpg`}
+                        src={`${BASE_URL}/upload/utilisateurs/${donneesUtilisateur.photo}`}
                         alt={donneesUtilisateur.nom_utilisateur}
                         rounded
                         style={{

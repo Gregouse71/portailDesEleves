@@ -20,7 +20,7 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
                 </>}
                 <Card.Img
                     variant="top"
-                    src={user.photo ? `${BASE_URL}/upload/utilisateurs/${user.photo}` : `${BASE_URL}/upload/utilisateurs/09brique.jpg`}
+                    src={user.photo ? `${BASE_URL}/upload/utilisateurs/${user.photo}` : ''}
                     alt={`${user.nom_utilisateur}`}
                     onClick={() => navigate(`/utilisateur/${user.id}`)}
                     style={{ cursor: "pointer" }}

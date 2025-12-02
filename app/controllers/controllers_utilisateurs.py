@@ -34,7 +34,8 @@ def obtenir_liste_utilisateurs(promo: int, cycles: str):
         Utilisateur.surnom,
         Utilisateur.nom,
         Utilisateur.promotion,
-        Utilisateur.cycle
+        Utilisateur.cycle,
+        Utilisateur.photo
     ).filter(
         Utilisateur.promotion == str(promo),
         Utilisateur.cycle.in_(str_cycles)
@@ -48,7 +49,8 @@ def obtenir_liste_utilisateurs(promo: int, cycles: str):
             "surnom": u.surnom,
             "nom": u.nom,
             "promotion": u.promotion,
-            "cycle": u.cycle
+            "cycle": u.cycle,
+            "photo": u.photo
         }
         for u in utilisateurs
     ]
@@ -393,7 +395,8 @@ def search_users(query):
                 "nom_utilisateur": user.nom_utilisateur,
                 "prenom": user.prenom,
                 "nom": user.nom,
-                "promotion": user.promotion
+                "promotion": user.promotion,
+                "photo": user.photo
             }
             for user in users
         ]

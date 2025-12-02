@@ -541,7 +541,7 @@ function AssoPosts({ asso_id }) {
                                     <Card.Body>
                                         {comment.id !== idModifyComment && <>
                                             <div className="d-flex align-items-center gap-3">
-                                                <Image src={comment.auteur.photo ? `${BASE_URL}/upload/utilisateurs/${comment.auteur.photo}` : `${BASE_URL}/upload/utilisateurs/09brique.jpg`} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
+                                                <Image src={comment.auteur.photo ? `${BASE_URL}/upload/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
                                                 <p className="mb-0">{comment.contenu}</p>
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center mt-2">
