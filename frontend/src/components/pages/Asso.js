@@ -5,13 +5,16 @@ import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 
 function Asso() {
-    const [activeTab, setActiveTab] = useState("info");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlTab = searchParams.get("tab");
+    const validTabs = ["info", "events", "members", "posts"];
+    const [activeTab, setActiveTab] = useState(validTabs.includes(urlTab) ? urlTab : "info");
 
     const navigate = useNavigate();
     const { id } = useParams();
