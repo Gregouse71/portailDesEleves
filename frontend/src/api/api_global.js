@@ -30,3 +30,15 @@ export async function seConnecter(username, password) {
   const data = await res.json();
   return data.connecte; // Flask renvoie { "connecte": true/false }
 }
+
+export async function resetMotDePasse(username) {
+  const res = await fetch(`${API_BASE_URL}/login/reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // Important pour gérer les cookies de session
+    body: JSON.stringify({ username }),
+  });
+
+  const data = await res.json();
+  return data.sent; // Flask renvoie { "connecte": true/false }
+}

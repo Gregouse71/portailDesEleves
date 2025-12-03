@@ -1,6 +1,6 @@
 import { Card } from "react-bootstrap"
 import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "../../api/base";
+import { BASE_URL, UPLOAD_BASE_URL } from "../../api/base";
 import { useQuery } from "@tanstack/react-query";
 import { chargerAsso } from "../../api/api_associations";
 
@@ -21,7 +21,7 @@ export default function AssoCard({ asso_id, mandat, role }) {
         >
             <Card.Img
                 variant="top"
-                src={`${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}`
+                src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`
                 }
                 alt={asso.nom}
                 style={{ height: '120px', objectFit: 'cover' }}

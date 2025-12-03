@@ -95,7 +95,7 @@ class Association(db.Model):
             {
                 "membres" :[
                     {
-                        "nom_utilisateur": membre.utilisateur.nom_utilisateur,
+                        "nom_utilisateur": f"{membre.utilisateur.prenom} {membre.utilisateur.nom}",
                         "id": membre.utilisateur.id,
                         "role": membre.role,
                         "position": membre.position,

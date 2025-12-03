@@ -6,7 +6,7 @@ import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BASE_URL } from '../../api/base';
+import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 
@@ -51,7 +51,7 @@ function Asso() {
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
     const bannerStyle = {
-        backgroundImage: asso.banniere_path ? `url(${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
+        backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
         backgroundColor: 'lightgrey'
     };
 
@@ -88,7 +88,7 @@ function Asso() {
                     <Col md={3} className="text-center text-md-start">
                         <div style={{ position: "relative", zIndex: 1 }}>
                             <Image
-                                src={asso.img ? `${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
+                                src={asso.img ? `${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
                                 alt={asso.nom}
                                 className="asso-logo rounded-3"
                             />

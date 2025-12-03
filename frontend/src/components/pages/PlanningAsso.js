@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Container, Spinner, Alert, ListGroup, Row, Col } from 'react-bootstrap';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from '../../api/api_associations';
-import { BASE_URL } from '../../api/base';
+import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
 
 const PlanningAsso = () => {
     const today = new Date();
@@ -25,7 +25,7 @@ const PlanningAsso = () => {
 
         return (
             <div className="d-flex align-items-center">
-                <img src={`${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '40px', height: '40px' }} />
+                <img src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '40px', height: '40px' }} />
                 <span>{asso.nom}</span>
             </div>
         );

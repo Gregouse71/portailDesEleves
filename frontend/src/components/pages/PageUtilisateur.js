@@ -6,7 +6,7 @@ import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
 import { useParams } from 'react-router-dom';
-import { BASE_URL } from '../../api/base';
+import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav, Tab } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 
@@ -32,14 +32,14 @@ function PageUtilisateur() {
             <Card>
                 <Card.Header
                     style={{
-                        backgroundImage: `url(${BASE_URL}/upload/utilisateurs/minesvert.jpg)`,
+                        backgroundImage: `url(${UPLOAD_BASE_URL}/utilisateurs/minesvert.jpg)`,
                         height: '170px',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
                     }}
                 >
                     <Image
-                        src={`${BASE_URL}/upload/utilisateurs/${donneesUtilisateur.photo}`}
+                        src={`${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.photo}`}
                         alt={donneesUtilisateur.nom_utilisateur}
                         rounded
                         style={{
@@ -69,7 +69,7 @@ function PageUtilisateur() {
                         <Nav.Link eventKey="assos">Associations</Nav.Link>
                     </Nav.Item>
                     <Nav.Item>
-                        <Nav.Link eventKey="questions">Questions du portail</Nav.Link>
+                        <Nav.Link eventKey="questions">Questions/Réponses</Nav.Link>
                     </Nav.Item>
                 </Nav>
 

@@ -3,7 +3,7 @@ import { Alert, Card, Spinner } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from "../../api/api_associations";
-import { BASE_URL } from "../../api/base";
+import { BASE_URL, UPLOAD_BASE_URL } from "../../api/base";
 import { Link } from "react-router-dom";
 
 export default function BlocEvents() {
@@ -45,7 +45,7 @@ export default function BlocEvents() {
         
         return (<>
             <div>
-                <img src={`${BASE_URL}/upload/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
+                <img src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
                 <Link to={`/assos/get/${event.id_association}?tab=events`}>{event.nom}</Link>
             </div>
         </>);

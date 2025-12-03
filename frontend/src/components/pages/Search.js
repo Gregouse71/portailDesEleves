@@ -1,7 +1,7 @@
 import { useSearchParams, Link } from 'react-router-dom';
 import { ListGroup, Image } from 'react-bootstrap';
 import { searchUsers } from '../../api/api_utilisateurs';
-import { BASE_URL } from '../../api/base';
+import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Search() {
@@ -21,7 +21,7 @@ export default function Search() {
           {searchResults.map(user => (
             <ListGroup.Item key={user.id} as={Link} to={`/utilisateur/${user.id}`} className="d-flex align-items-center">
               <div style={{ height: '100px' }} className='me-3'>
-                <Image src={user.photo ? `${BASE_URL}/upload/utilisateurs/${user.photo}` : ''} alt="user" className="mw-100 mh-100" />
+                <Image src={user.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${user.photo}` : ''} alt="user" className="mw-100 mh-100" />
               </div>
               <div>
                 <p className="mb-0">{user.prenom} {user.nom}</p>

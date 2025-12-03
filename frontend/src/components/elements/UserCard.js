@@ -1,7 +1,7 @@
 // TODO REMOVE THIS CLASS !!!
 
 import { Card, Button, Form } from "react-bootstrap";
-import { BASE_URL } from "../../api/base";
+import { BASE_URL, UPLOAD_BASE_URL } from "../../api/base";
 import { useNavigate } from "react-router-dom";
 
 export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2, values, validate }) {
@@ -20,7 +20,7 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
                 </>}
                 <Card.Img
                     variant="top"
-                    src={user.photo ? `${BASE_URL}/upload/utilisateurs/${user.photo}` : ''}
+                    src={user.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${user.photo}` : ''}
                     alt={`${user.nom_utilisateur}`}
                     onClick={() => navigate(`/utilisateur/${user.id}`)}
                     style={{ cursor: "pointer" }}

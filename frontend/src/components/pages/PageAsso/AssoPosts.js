@@ -3,7 +3,7 @@ import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { ajouterContenuPublication, creerNouveauCommentaire, creerNouvellePublication, modifierCommentaire, modifierLikeComment, modifierLikePost, modifierPublication, obtenirPublicationsAsso, supprimerCommentaire, supprimerPublication } from "../../../api/api_publications";
 import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
-import { BASE_URL } from "../../../api/base";
+import { BASE_URL, UPLOAD_BASE_URL } from "../../../api/base";
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
 import BoutonEditer from "../../elements/BoutonEditer";
@@ -532,7 +532,7 @@ function AssoPosts({ asso_id }) {
                                     <Card.Body>
                                         {comment.id !== idModifyComment && <>
                                             <div className="d-flex align-items-center gap-3">
-                                                <Image src={comment.auteur.photo ? `${BASE_URL}/upload/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
+                                                <Image src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
                                                 <p className="mb-0">{comment.contenu}</p>
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center mt-2">

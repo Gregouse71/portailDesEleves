@@ -2,24 +2,31 @@ import "../assets/styles/formulaire_connexion.scss"
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { seConnecter } from "../api/api_global";
+import { resetMotDePasse, seConnecter } from "../api/api_global";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 
 export default function FormulaireConnexion() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [identifiant, setIdentifiant] = useState(""); // Pour le reset mot de passe
   const [erreur, setErreur] = useState(null);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     const success = await seConnecter(username, password);
-    
+
     if (success) {
       navigate("/home"); // Redirige si connexion réussie
     } else {
       setErreur("Identifiants incorrects");
     }
+  }
+
+  async function handleReset(e) {
+    e.preventDefault();
+    console.log("A")
+    const success = await resetMotDePasse(identifiant);
   }
 
   return (
@@ -39,6 +46,10 @@ export default function FormulaireConnexion() {
         <Button variant="primary" type="submit">
           Se connecter
         </Button>
+      </Form>
+      <Form onSubmit={handleReset}>
+        <Form.Control type="text" placeholder="Identifiant" value={identifiant} onChange={e => setIdentifiant(e.target.Value)} />
+        <Button type="submit">Nouveau mot de passe</Button>
       </Form>
     </Container>
   );

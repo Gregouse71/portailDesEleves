@@ -4,6 +4,8 @@ from flask_login import current_user # necessaire pour tester l'authentification
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
 
+from app.services.services_login import send_reset_mail
+
 # Création du Blueprint "users"
 controllers_login = Blueprint('controllers_login', __name__)
 from ..models import db, Utilisateur
@@ -29,7 +31,6 @@ def current_user_id():
         return jsonify({"id_utilisateur": current_user.id}), 200
     else :
         return jsonify({"id_utilisateur": None}), 405
-   
 
 
 # route pour se connecter, executee par React
@@ -46,7 +47,7 @@ def connexion():
         return jsonify({"connecte":True}), 200
     else :
         return jsonify({"connecte":False}), 401
-        
+
 
 # se deconnecter    
 @controllers_login.route('deconnexion', methods=['POST'])
@@ -54,6 +55,14 @@ def connexion():
 def deconnexion():
     logout_user()
     if current_user.is_authenticated :
-        return jsonify({'connecte':True}),500
+        return jsonify({'connecte':True}), 500
     else :
-        return jsonify({'connecte':False}),200
+        return jsonify({'connecte':False}), 200
+
+
+@controllers_login.route('reset', methods=['POST'])
+def reset_mail():
+    data = request.get_json()
+    username = data.get('username')
+    print(send_reset_mail(username))
+    return jsonify({'sent': True}), 200
