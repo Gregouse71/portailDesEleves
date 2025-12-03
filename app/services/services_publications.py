@@ -326,7 +326,7 @@ def get_publications_by_tag(tag: str):
         query = query.filter(
             (Publication.id_association == None) |
             (Publication.is_publication_interne.is_(False)) |
-            (Publication.id_association.in_([mandat.association_id for mandat in current_user.associations]))
+            (Publication.id_association.in_([role.mandat.association_id for role in current_user.associations]))
         )
 
         # Filter out sensitive publications if user is not 'baptise'

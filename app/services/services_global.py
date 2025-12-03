@@ -11,7 +11,7 @@ def get_global_var(key):
     if var :
         return var.value
     else :
-        raise KeyError(f"Pas de variable globale de nom {key}")
+        return None
 
 
 def set_global_var(key, value):

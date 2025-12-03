@@ -13,4 +13,4 @@ def more_chat_message(last_sent: int):
     Renvoie plus de messages à afficher, le dernier vu étant *last_sent*
     """
     messages = Message.query.filter(Message.id < last_sent).order_by(asc(Message.date)).limit(100)
-    return jsonify([message.to_dict(current_user.id) for message in messages])
+    return jsonify([message.to_dict() for message in messages])

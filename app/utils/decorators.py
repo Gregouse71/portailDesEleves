@@ -35,8 +35,9 @@ def est_membre_de_asso(f):
     def decorated_function(*args, **kwargs):
         association_id = kwargs.get("association_id")
         if not association_id:
-            return jsonify({"message": "l'URL doit contenir l'id de l'association."}), 400      
-        if current_user.est_superutilisateur or (association_id in current_user.associations_actuelles.keys()):
+            return jsonify({"message": "l'URL doit contenir l'id de l'association."}), 400
+        is_membre = any(role.mandat.association_id == association_id for role in current_user.associations)
+        if current_user.est_superutilisateur or is_membre:
             return f(*args, **kwargs)
         return jsonify({"message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
     return decorated_function

@@ -303,7 +303,7 @@ def route_get_asso(association_id):
 @login_required
 def route_est_membre_de_asso(id_association: int):
     try:
-        is_membre = any(m.association_id == id_association for m in current_user.associations)
+        is_membre = any(role.mandat.association_id == id_association for role in current_user.associations)
         autorise = is_membre or current_user.est_superutilisateur
         return jsonify({"is_membre": is_membre, "autorise": autorise}), 200
     except Exception as e:
