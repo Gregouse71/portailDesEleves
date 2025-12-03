@@ -38,8 +38,9 @@ export function LayoutProvider({ children }) {
     });
 
     useEffect(() => {
+        const path = location.pathname
         estAuthentifie().then(auth => {
-            if (!auth && location.pathname !== "/login") {
+            if (!auth && !path.startsWith("/login") && !path.startsWith("/reset")) {
                 navigate("/login");
             }
         });

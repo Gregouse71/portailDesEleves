@@ -42,3 +42,15 @@ export async function resetMotDePasse(username) {
   const data = await res.json();
   return data.sent; // Flask renvoie { "connecte": true/false }
 }
+
+export async function setNouveauMDP(token, password) {
+  const res = await fetch(`${API_BASE_URL}/login/new`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // Important pour gérer les cookies de session
+    body: JSON.stringify({ token, password }),
+  });
+
+  const data = await res.json();
+  return data.set; // Flask renvoie { "connecte": true/false }
+}

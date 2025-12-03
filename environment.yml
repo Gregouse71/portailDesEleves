@@ -18,3 +18,5 @@ dependencies:
   - pymysql
   - mariadb
   - gunicorn
+  - pyjwt
+  - argon2-cffi

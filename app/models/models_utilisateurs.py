@@ -1,10 +1,10 @@
 from app import db
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from flask_login import UserMixin # pour faire le lien entre la class utilisateur et flask_login
-from werkzeug.security import generate_password_hash # Pour hacher les mdp 
 from datetime import date
 
 # verification du format des donnees :
+from app.utils.divers_utils import ph
 from ..utils.verification_format import *
 from ..utils.verification_format import valider_instruments
 
@@ -131,7 +131,7 @@ class Utilisateur(db.Model, UserMixin) :
             self.email = email
         else :
             raise ValueError("Mail invalide")
-        self.mot_de_passe = generate_password_hash(mot_de_passe_en_clair)
+        self.mot_de_passe = ph.hash(mot_de_passe_en_clair)
         self.nombre_participations_sondaj = 0 
         self.nombre_victoires_sondaj = 0
         self.meilleur_score_2048 = 0

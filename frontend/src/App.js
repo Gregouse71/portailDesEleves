@@ -21,12 +21,14 @@ import Search from "./components/pages/Search";
 import ClassementSondage from "./components/pages/Sondage/ClassementSondage";
 import Vendomes from "./components/pages/Vendomes";
 import Palums from "./components/pages/Palums";
+import NouveauMDP from "./components/NouveauMDP";
 
 export default function App() {
   return (
     <LayoutProvider>
       <Routes>
         <Route path="/login" element={<FormulaireConnexion />} />
+        <Route path="/reset/:token" element={<NouveauMDP />} />
         <Route path="/" element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="assos">

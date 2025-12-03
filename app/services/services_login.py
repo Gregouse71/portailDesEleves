@@ -1,26 +1,71 @@
 import smtplib
-from email.message import EmailMessage
+from email.mime.text import MIMEText
+from datetime import datetime, timedelta, timezone
+from config import Config
+import jwt
+from argon2 import exceptions
 
+from app.utils.divers_utils import ph
 from app.models.models_utilisateurs import Utilisateur
 
-mailFile = "mail.html"
+key = Config.SECRET_KEY_MAIL
+algorithm = Config.ALGORITHM
+
+mailBody = """
+<html>
+    <p>Tu as reçu ce mail car tu as effectué une demande de réinitialisation de ton mot de passe sur le portail des élèves des Mines !</p>
+    <p>Ton identifiant est {1}. Clique <a href="https://10.100.1.20/reset/{0}">ici</a> pour réinitialiser ton mot de passe. Le lien expirera dans 15min.</p>
+    <p>Si tu n'es pas à l'origine de cette demande, contact le VP Geek pour lui signaler.</p>
+    
+    <div>En cas de problème, contact moi à <a href="mailto:webmaster-bde@mines-paristech.fr">webmaster-bde@mines-paristech.fr</a></div>
+    <div>Le VP Geek BDE, Adria</div>
+</html>
+"""
 
 def send_reset_mail(username: str):
+    """
+    Envoie le mail pour renouveler le mot de passe de l'utilisateur
+    """
     user = Utilisateur.query.filter_by(nom_utilisateur=username).first()
     if not user:
         return False
 
-    msg = EmailMessage()
-    with open(mailFile) as f:
-        msg.set_content(f.read())
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode = {"sub": username, "exp": expire}
+    encoded_jwt = jwt.encode(to_encode, key, algorithm=algorithm)
 
-    msg["Subject"] = "Réinitialisation de mot de passe"
-    msg["From"] = "no-reply@eleves.mines-paris.eu"
-    msg["To"] = user.email
+    msg = MIMEText (mailBody.format (encoded_jwt, user.username), 'html')
+    msg['Subject'] = "Réinitialisation de mot de passe"
+    msg['From'] = "no-reply@eleves.mines-paris.eu"
+    msg['To'] = user.email
     
-    print("Sent mail")
-    
+    print("Sent mail :")
+    print(msg)
+
     s = smtplib.SMTP('localhost')
-    s.send_message(msg)
-    s.quit()
+    server.sendmail(sender, to, msg.as_string())
+    server.quit()
+    return True
+
+def check_pw(user: Utilisateur, password:str):
+    """
+    Vérifie que c'est bien le mot de passe de l'utilisateur
+    """
+    try:
+        ph.verify(user.mot_de_passe, password)
+        return True
+    except exceptions.VerifyMismatchError:
+        return False
+
+def set_new_password(token: str, password: str):
+    """
+    Change le mot de passe de l'utilisateur
+    """
+    try:
+        payload = jwt.decode(token, key, algorithms=[algorithm])
+    except jwt.ExpiredSignatureError:
+        return False
+
+    user = Utilisateur.query.filter_by(nom_utilisateur=payload.uid).first()
+    user.mot_de_passe = ph.hash(password)
     return True

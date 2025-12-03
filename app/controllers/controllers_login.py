@@ -4,7 +4,7 @@ from flask_login import current_user # necessaire pour tester l'authentification
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
 
-from app.services.services_login import send_reset_mail
+from app.services.services_login import send_reset_mail, set_new_password, check_pw
 
 # Création du Blueprint "users"
 controllers_login = Blueprint('controllers_login', __name__)
@@ -39,14 +39,13 @@ def connexion():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    # Recherche l'utilisateur par son nom d'utilisateur
+
     utilisateur = Utilisateur.query.filter_by(nom_utilisateur=username).first()
-    # Verification du mot de passe
-    if utilisateur and password == "1234":#  check_password_hash(utilisateur.mot_de_passe, password):
+    if utilisateur and check_pw(utilisateur, password):
         login_user(utilisateur)  # Connecte l'utilisateur
-        return jsonify({"connecte":True}), 200
+        return jsonify({"connecte": True}), 200
     else :
-        return jsonify({"connecte":False}), 401
+        return jsonify({"connecte": False}), 401
 
 
 # se deconnecter    
@@ -66,3 +65,14 @@ def reset_mail():
     username = data.get('username')
     print(send_reset_mail(username))
     return jsonify({'sent': True}), 200
+
+
+@controllers_login.route('new', methods=['POST'])
+def new_password():
+    data = request.get_json()
+    token = data.get('token')
+    password = data.get('password')
+    if set_new_password(token, password):
+        return jsonify({'set': True}), 200
+    else:
+        return jsonify({'set': False}), 403
