@@ -1,7 +1,7 @@
 import "../assets/styles/formulaire_connexion.scss"
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { seConnecter } from "../api/api_global";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 
@@ -39,6 +39,7 @@ export default function FormulaireConnexion() {
           Se connecter
         </Button>
       </Form>
+      <Link to={'/reset'}>Mot de passe oublié</Link>
     </Container>
   );
 }

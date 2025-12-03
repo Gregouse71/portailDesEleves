@@ -38,9 +38,6 @@ def send_reset_mail(username: str):
     msg['Subject'] = "Réinitialisation de mot de passe"
     msg['From'] = "no-reply@eleves.mines-paris.eu"
     msg['To'] = user.email
-    
-    print("Sent mail :")
-    print(msg)
 
     s = smtplib.SMTP('localhost')
     server.sendmail(sender, to, msg.as_string())

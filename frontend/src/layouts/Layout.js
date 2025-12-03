@@ -40,7 +40,7 @@ export function LayoutProvider({ children }) {
     useEffect(() => {
         const path = location.pathname
         estAuthentifie().then(auth => {
-            if (!auth && !path.startsWith("/login") && !path.startsWith("/reset")) {
+            if (!auth && !path.startsWith("/login") && !path.startsWith("/reset") && !path.startsWith("/oublie")) {
                 navigate("/login");
             }
         });
