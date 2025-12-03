@@ -14,7 +14,7 @@ function TrombiPromo() {
     const cyclesDisponibles = ["ic", "ast", "ev", "vs", "isup"];
     const { promo } = useParams();
 
-    const { data: utilisateurs = [], error } = useQuery({
+    const { data: utilisateurs = [] } = useQuery({
         queryKey: ['listePromo', promo, cyclesSelectionnes],
         queryFn: () => obtenirListeDesUtilisateurs(promo, cyclesSelectionnes),
     });

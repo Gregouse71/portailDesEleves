@@ -54,15 +54,6 @@ function AssoPosts({ asso_id }) {
     const [shouldRemoveExistingAttachment, setShouldRemoveExistingAttachment] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleFileUpload = async (publicationId, file, miniatureFile) => {
-        try {
-            await ajouterContenuPublication(publicationId, file, miniatureFile);
-            queryClient.invalidateQueries(['publicationData', asso_id])
-        } catch (error) {
-            console.error("Erreur lors du téléversement du fichier:", error);
-        }
-    };
-
     const clearNewPost = () => {
         setNewPost({
             "titre": "",

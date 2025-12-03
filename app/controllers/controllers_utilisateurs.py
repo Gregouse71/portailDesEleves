@@ -242,7 +242,7 @@ def route_changer_co():
     Prend un JSON avec "user_id" and "co_id".
     """
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = int(data.get('user_id'))
     co_id = data.get('co_id')
 
     user = get_utilisateur(user_id)
@@ -275,7 +275,7 @@ def route_selectionner_fillots():
     Prend un JSON avec "user_id" et "fillots_ids".
     """
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = int(data.get('user_id'))
     fillots_id_list = data.get('fillots_ids')
 
     if not user_id or fillots_id_list is None:
@@ -345,7 +345,7 @@ def route_changer_marrain():
     Si "marrain_id" est null ou absent, le marrain est supprimé.
     """
     data = request.get_json()
-    fillot_id = data.get('fillot_id')
+    fillot_id = int(data.get('fillot_id'))
     marrain_id = data.get('marrain_id') # Can be null
 
     if not fillot_id:

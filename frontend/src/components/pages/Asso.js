@@ -11,7 +11,7 @@ import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-boots
 import { useQuery } from '@tanstack/react-query';
 
 function Asso() {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const urlTab = searchParams.get("tab");
     const validTabs = ["info", "events", "members", "posts"];
     const [activeTab, setActiveTab] = useState(validTabs.includes(urlTab) ? urlTab : "info");

@@ -1,5 +1,5 @@
 import "../../assets/styles/events.scss"
-import { Alert, Card, Col, ListGroup, Row, Spinner } from 'react-bootstrap';
+import { Alert, Card, Spinner } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from "../../api/api_associations";

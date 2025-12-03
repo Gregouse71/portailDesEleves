@@ -1,12 +1,11 @@
-import { Container, Form, InputGroup } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { Col, Row } from 'react-bootstrap';
 import { obtenirScoresSondages } from "../../../api/api_sondages";
-import UserCard from "../../elements/UserCard";
 import { useQuery } from "@tanstack/react-query";
 
 
 export default function ClassementSondage() {
-    const { data: data = {recent: [[], []], global: [[], []]}  } = useQuery({
+    const { data = {recent: [[], []], global: [[], []]}  } = useQuery({
         queryKey: ['scoresSondages'],
         queryFn: obtenirScoresSondages,
     });

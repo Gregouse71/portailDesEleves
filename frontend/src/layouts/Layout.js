@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import Header from '../components/blocs/Header';
 import BlocSondage from '../components/blocs/blocSondage';
 import BlocChat from '../components/blocs/blocChat';
@@ -8,7 +8,7 @@ import { obtenirIdUser, estAuthentifie } from '../api/api_global';
 import { obtenirDataUser } from '../api/api_utilisateurs';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import BlocEvents from '../components/blocs/blocEvents';
 
 const LayoutContext = createContext();

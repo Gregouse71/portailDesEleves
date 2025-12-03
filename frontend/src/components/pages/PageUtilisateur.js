@@ -17,10 +17,10 @@ function PageUtilisateur() {
     const { id } = useParams();
 
     useEffect(() => {
-        setAutoriseAModifier(userData.id == id || userData.is_superuser);
+        setAutoriseAModifier(userData.id === id || userData.is_superuser);
     }, [id, userData]);
 
-    const { data: donneesUtilisateur = {}, error } = useQuery({
+    const { data: donneesUtilisateur = {} } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
     });

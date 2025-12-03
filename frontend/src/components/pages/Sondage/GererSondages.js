@@ -32,7 +32,7 @@ function GererSondages() {
         queryClient.invalidateQueries(['donneesUtilisateur', userData.id]);
     }
 
-    const { data: dataSondage = [], isLoading, error } = useQuery({
+    const { data: dataSondage = [], isLoading } = useQuery({
         queryKey: ['sondagesEnAttente'],
         queryFn: () => obtenirSondagesEnAttente().then(r => {return r.sondages}),
     });
