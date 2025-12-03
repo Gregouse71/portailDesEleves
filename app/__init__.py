@@ -63,7 +63,7 @@ def create_app():
     
     #permet d'avoir accès au fichier upload 
     #ne pas supprimer
-    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'upload')
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
     @app.route('/upload/<path:filename>')
     def serve_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)

@@ -129,7 +129,7 @@ class Association(db.Model):
         nom_dossier = re.sub(r'\W+', '', self.nom).lower()
         self.nom_dossier = nom_dossier
         try:
-            os.mkdir(f"app/upload/associations/{nom_dossier}")
+            os.mkdir(f"upload/associations/{nom_dossier}")
         except:
             print(f"dossier {nom_dossier} déjà créé !")
 

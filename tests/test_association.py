@@ -27,9 +27,9 @@ def test_creer_utilisateur():
             bde.id = 1
             bds.id = 2          
             bda.id = 3
-            bde.logo_path = "app/upload/associations/bde/Capture_decran_2024-08-16_162358.png"
-            bds.logo_path = "app/upload/associations/bds/logo_jump.png"
-            bda.logo_path = "app/upload/associations/bda/channels4_profile (2).jpg"
+            bde.logo_path = "upload/associations/bde/Capture_decran_2024-08-16_162358.png"
+            bds.logo_path = "upload/associations/bds/logo_jump.png"
+            bda.logo_path = "upload/associations/bda/channels4_profile (2).jpg"
 
             db.session.add(jules)
             db.session.add(achille)

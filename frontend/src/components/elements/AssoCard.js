@@ -28,8 +28,8 @@ export default function AssoCard({ asso_id, mandat, role }) {
             />
             < Card.Body >
                 <Card.Title>{asso.nom}</Card.Title>
-                {mandat && <Card.Text>Mandat : {mandat}</Card.Text>}
-                {role && <Card.Text>Role : {role}</Card.Text>}
+                {mandat && <Card.Text>{mandat}</Card.Text>}
+                {role && <Card.Text>{role}</Card.Text>}
             </Card.Body >
         </Card >);
 }

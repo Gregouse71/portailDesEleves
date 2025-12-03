@@ -19,7 +19,7 @@ def _save_file(file, association_name, is_miniature=False):
     if not file:
         return None, None
 
-    UPLOAD_FOLDER = os.path.join('app', 'upload', 'associations', association_name, 'publications')
+    UPLOAD_FOLDER = os.path.join('upload', 'associations', association_name, 'publications')
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
     ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 

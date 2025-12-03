@@ -26,7 +26,7 @@ server {
         }
 
         location /upload {
-                alias /home/rezal/site/app/upload;
+                alias /home/rezal/site/upload;
         }
 
         root /var/www/html/site;

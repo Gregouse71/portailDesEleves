@@ -15,7 +15,7 @@ export default function TabAsso({ id }) {
 
     return (<>
         <Container className="py-4">
-            <h2>Assos actuelles</h2>
+            <h2>Associations actuelles</h2>
             <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4 justify-content-center">
                 {assos.actuel.map((asso) =>  (
                     <Col>
@@ -25,7 +25,7 @@ export default function TabAsso({ id }) {
             </Row>
         </Container>
         <Container className="py-4">
-            <h2>Assos anciennes</h2>
+            <h2>Anciennes associations</h2>
             <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4 justify-content-center">
                 {assos.ancien.map((asso) => (
                     <Col>

@@ -146,10 +146,10 @@ def migrate_users():
             new_user.est_superutilisateur = bool(auth_user[8])
             
             photo_filename_jpg = f"{auth_user[1].lower()}.jpg"
-            photo_path_jpg = os.path.join('app', 'upload', 'utilisateurs', photo_filename_jpg)
+            photo_path_jpg = os.path.join('upload', 'utilisateurs', photo_filename_jpg)
 
             photo_filename_png = f"{auth_user[1].lower()}.png"
-            photo_path_png = os.path.join('app', 'upload', 'utilisateurs', photo_filename_png)
+            photo_path_png = os.path.join('upload', 'utilisateurs', photo_filename_png)
 
             if os.path.exists(photo_path_jpg):
                 new_user.photo = photo_filename_jpg

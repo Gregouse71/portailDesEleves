@@ -71,7 +71,7 @@ class Vendome(db.Model):
         """
         Crée un dossier pour le vendome
         """
-        folder_name=f'app/uploads/vendomes/vendome_{self.date_parution}'
+        folder_name=f'uploads/vendomes/vendome_{self.date_parution}'
 
         if self.particularite:
             folder_name=+f'_{self.particularite}'

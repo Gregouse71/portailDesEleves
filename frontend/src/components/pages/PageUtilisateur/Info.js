@@ -104,7 +104,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         newInstruments[index] = { ...newInstruments[index], [field]: value };
         setUserInfos({ ...userInfos, instruments: newInstruments });
     };
-    
+
     const ajouterInstru = () => {
         const newInstruments = [...(userInfos.instruments || []), { name: "Piano", niveau: "Débutant" }];
         setUserInfos({ ...userInfos, instruments: newInstruments });
@@ -116,7 +116,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
     return (<>
         <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Informations personnelles</h2>
+            <h2>Informations</h2>
             {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)} />}
         </div>
 
@@ -145,12 +145,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
         {!isGestion ?
             <>
-                <p>Promo : {userInfos.promotion}</p>
-                <p>Ville d'origine : {userInfos.ville_origine}</p>
-                <p>Chambre : {userInfos.chambre}</p>
+                <p><b>Promo :</b> {userInfos.promotion}</p>
+                <p><b>Ville d'origine :</b> {userInfos.ville_origine}</p>
+                <p><b>Chambre :</b> {userInfos.chambre}</p>
                 {userInfos.instruments && userInfos.instruments.length > 0 &&
                     <p>
-                        Instruments :{' '}
+                        <b>Instruments :</b>{' '}
                         {userInfos.instruments.map((instrument, index) => (
                             <span key={index}>
                                 {instrument.name}{instrument.niveau ? ` (${instrument.niveau})` : ''}
@@ -160,16 +160,15 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     </p>
                 }
                 <div>
-                    <h3>Relations</h3>
                     {userInfos.co &&
-                        <p>Co : <Link to={`/utilisateur/${userInfos.co.id}`}>{userInfos.co.nom_utilisateur}</Link></p>
+                        <p><b>Co :</b> <Link to={`/utilisateur/${userInfos.co.id}`}>{userInfos.co.nom_utilisateur}</Link></p>
                     }
                     {userInfos.marrain &&
-                        <p>Marrain : <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></p>
+                        <p><b>Marrain :</b> <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></p>
                     }
                     {userInfos.fillots && userInfos.fillots.length > 0 &&
                         <p>
-                            Fillots :{' '}
+                            <b>Fillots :</b>{' '}
                             {userInfos.fillots.map((fillot, index) => (
                                 <span key={fillot.id}>
                                     <Link to={`/utilisateur/${fillot.id}`}>{fillot.nom_utilisateur}</Link>
@@ -225,8 +224,6 @@ export default function TabInfo({ id, autoriseAModifier }) {
                         <Button variant="outline-primary" size="sm" onClick={ajouterInstru}>Ajouter instrument</Button>
                     </Col>
                 </Form.Group>
-
-                <h3 className="mt-3">Relations</h3>
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Co</Form.Label>
                     <Col sm="10">

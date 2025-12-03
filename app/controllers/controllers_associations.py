@@ -231,7 +231,7 @@ def route_add_content(association_id):
     if not asso:
         return jsonify({"success": False, "message": "Association introuvable"}), 404
     # Définition du dossier d'upload
-    UPLOAD_FOLDER = os.path.join('app', 'upload', 'associations', asso.nom_dossier)
+    UPLOAD_FOLDER = os.path.join('upload', 'associations', asso.nom_dossier)
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
     # Vérifier si un fichier a été envoyé
     if 'file' not in request.files:
