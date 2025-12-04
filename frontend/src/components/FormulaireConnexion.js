@@ -3,43 +3,88 @@ import "../assets/styles/formulaire_connexion.scss"
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { seConnecter } from "../api/api_global";
-import { Container, Form, Button, Alert } from "react-bootstrap";
+import { Container, Form, Button, Alert, Card } from "react-bootstrap";
+
+const VP_GEEK_EMAIL = "webmaster-bde@mines-paristech.fr";
+const PORTAL_TITLE = "Portail des élèves";
 
 export default function FormulaireConnexion() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [erreur, setErreur] = useState(null);
-  const navigate = useNavigate();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [erreur, setErreur] = useState(null);
+    const navigate = useNavigate();
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const success = await seConnecter(username, password);
-
-    if (success) {
-      navigate("/home"); // Redirige si connexion réussie
-    } else {
-      setErreur("Identifiants incorrects");
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const success = await seConnecter(username, password);
+        if (success) {
+            navigate("/home");
+        } else {
+            setErreur("Identifiants incorrects");
+        }
     }
-  }
 
-  return (
-    <Container className="connexion-main-container d-flex flex-column align-items-center justify-content-center vh-100">
-      <h2 className="m-4">Connexion</h2>
-      {erreur && <Alert variant="danger">{erreur}</Alert>}
-      <Form onSubmit={handleSubmit} className="connexion-form border rounded p-4 d-flex flex-column">
-        <Form.Group className="mb-3" controlId="formBasicEmail">
-          <Form.Label>Nom d'utilisateur</Form.Label>
-          <Form.Control type="text" placeholder="Entrer le nom d'utilisateur" value={username} onChange={(e) => setUsername(e.target.value)} />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formBasicPassword">
-          <Form.Label>Mot de passe</Form.Label>
-          <Form.Control type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </Form.Group>
-        <Button variant="primary" type="submit">
-          Se connecter
-        </Button>
-      </Form>
-      <Link to={'/oublie'}>Mot de passe oublié</Link>
-    </Container>
-  );
+    return (
+        <Container className="connexion-main-container d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
+            <Card className="shadow-lg p-4 mb-4" style={{ maxWidth: '450px', width: '100%' }}>
+                <Card.Body>
+                    <h1 className="text-center mb-4 fs-3">
+                        Identification au <br />
+                        <strong className="text-primary">{PORTAL_TITLE}</strong>
+                    </h1>
+                    {erreur && <Alert variant="danger">{erreur}</Alert>}
+                    <Form onSubmit={handleSubmit} className="d-flex flex-column">
+                        <Form.Group className="mb-3" controlId="formBasicUsername">
+                            <Form.Label>Nom d'utilisateur</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Entrer le nom d'utilisateur"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                                autoFocus // Keep the autofocus feature from the original HTML
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-4" controlId="formBasicPassword">
+                            <Form.Label>Mot de passe</Form.Label>
+                            <Form.Control
+                                type="password"
+                                placeholder="Mot de passe"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+
+                        <div className="d-grid gap-2 mb-3">
+                            <Button variant="primary" type="submit" size="lg">
+                                Se connecter
+                            </Button>
+                        </div>
+
+                        <Link to={'/oublie'} className="text-center text-muted mt-2">
+                            J'ai oublié mon mot de passe
+                        </Link>
+
+                    </Form>
+                </Card.Body>
+            </Card>
+
+            <div className="text-center mt-3 text-secondary" style={{ maxWidth: '500px' }}>
+                <p className="fs-6">
+                    Accès au <strong>{PORTAL_TITLE}</strong> de l'École des <strong>Mines de Paris</strong>.
+                </p>
+                <p className="small mb-1">
+                    En cas de problèmes d'identification, contactez le
+                    <a href={`mailto:${VP_GEEK_EMAIL}`} className="ms-1">VP Geek ({VP_GEEK_EMAIL})</a>.
+                </p>
+                <p className="small">
+                    Si vous souhaitez vous désinscrire du site et/ou retirer vos données, contactez également le
+                    <a href={`mailto:${VP_GEEK_EMAIL}`} className="ms-1">VP Geek ({VP_GEEK_EMAIL})</a>.
+                </p>
+            </div>
+
+        </Container>
+    );
 }

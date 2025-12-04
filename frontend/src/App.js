@@ -23,6 +23,7 @@ import Vendomes from "./components/pages/Vendomes";
 import Palums from "./components/pages/Palums";
 import NouveauMDP from "./components/NouveauMDP";
 import MDPoublie from "./components/MDPoublie";
+import ProtectedRoute from "./Protected";
 
 export default function App() {
   return (
@@ -31,35 +32,37 @@ export default function App() {
         <Route path="/login" element={<FormulaireConnexion />} />
         <Route path="/reset/:token" element={<NouveauMDP />} />
         <Route path="/oublie" element={<MDPoublie />} />
-        <Route path="/" element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="assos">
-            <Route path="" element={<ListeAssos />} />
-            <Route path="get/:id" element={<Asso />} />
-            <Route path="planning" element={<PlanningAsso />} />
-            <Route path="ajouter" element={<AjouterAssociation />} />
+        <Route element={<ProtectedRoute/>}>
+          <Route path="/" element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="assos">
+              <Route path="" element={<ListeAssos />} />
+              <Route path="get/:id" element={<Asso />} />
+              <Route path="planning" element={<PlanningAsso />} />
+              <Route path="ajouter" element={<AjouterAssociation />} />
+            </Route>
+            <Route path="trombi">
+              <Route path="" element={<Trombi />} />
+              <Route path="get/:promo" element={<TrombiPromo />} />
+            </Route>
+            <Route path="sondage">
+              <Route path="classement" element={<ClassementSondage />} />
+              <Route path="proposer" element={<ProposerSondage />} />
+              <Route path="gerer" element={<GererSondages />} />
+            </Route>
+            <Route path="utilisateur">
+              <Route path=":id" element={<PageUtilisateur />} />
+            </Route>
+            <Route path="search" element={<Search />} />
+            <Route path="vendomes" element={<Vendomes />} />
+            <Route path="palums" element={<Palums />} />
           </Route>
-          <Route path="trombi">
-            <Route path="" element={<Trombi />} />
-            <Route path="get/:promo" element={<TrombiPromo />} />
+          <Route path="soifguard">
+            <Route path="accueil" element={<AccueilSoifguard />} />
+            <Route path="" element={<Soifguard />} />
           </Route>
-          <Route path="sondage">
-            <Route path="classement" element={<ClassementSondage />} />
-            <Route path="proposer" element={<ProposerSondage />} />
-            <Route path="gerer" element={<GererSondages />} />
-          </Route>
-          <Route path="utilisateur">
-            <Route path=":id" element={<PageUtilisateur />} />
-          </Route>
-          <Route path="search" element={<Search />} />
-          <Route path="vendomes" element={<Vendomes />} />
-          <Route path="palums" element={<Palums />} />
+          <Route path="/administration" element={<Admin />} />
         </Route>
-        <Route path="soifguard">
-          <Route path="accueil" element={<AccueilSoifguard />} />
-          <Route path="" element={<Soifguard />} />
-        </Route>
-        <Route path="/administration" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </LayoutProvider>
