@@ -39,7 +39,7 @@ export default function FormulaireConnexion() {
           Se connecter
         </Button>
       </Form>
-      <Link to={'/reset'}>Mot de passe oublié</Link>
+      <Link to={'/oublie'}>Mot de passe oublié</Link>
     </Container>
   );
 }

@@ -40,8 +40,8 @@ def send_reset_mail(username: str):
     msg['To'] = user.email
 
     s = smtplib.SMTP('localhost')
-    server.sendmail(sender, to, msg.as_string())
-    server.quit()
+    s.sendmail("no-reply@eleves.mines-paris.eu", user.email, msg.as_string())
+    s.quit()
     return True
 
 def check_pw(user: Utilisateur, password:str):
@@ -63,6 +63,7 @@ def set_new_password(token: str, password: str):
     except jwt.ExpiredSignatureError:
         return False
 
-    user = Utilisateur.query.filter_by(nom_utilisateur=payload.uid).first()
+    uid = payload.get("sub")
+    user = Utilisateur.query.filter_by(nom_utilisateur=uid).first()
     user.mot_de_passe = ph.hash(password)
     return True
