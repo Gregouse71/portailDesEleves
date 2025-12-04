@@ -51,7 +51,7 @@ def check_pw(user: Utilisateur, password:str):
     try:
         ph.verify(user.mot_de_passe, password)
         return True
-    except exceptions.VerifyMismatchError:
+    except (exceptions.VerifyMismatchError, exceptions.InvalidHash):
         return False
 
 def set_new_password(token: str, password: str):

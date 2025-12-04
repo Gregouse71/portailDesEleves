@@ -35,7 +35,7 @@ def test_creer_utilisateur():
 
             def proposer_sondage(question, id_user) :
                 """Ajouter un sondage dans la bdd"""
-                proposition =  Sondage(question=question, reponse1="reponse1", reponse2="reponse2", reponse3="reponse3", reponse4="reponse4", propose_par_user_id=id_user, date_sondage=datetime.now().strftime("%Y%m%d%H%M"), status=False)
+                proposition =  Sondage(question=question, reponse1="reponse1", reponse2="reponse2", reponse3="reponse3", reponse4="reponse4", propose_par_user_id=id_user, date_proposition=datetime.now(), status=False)
                 db.session.add(proposition)
                 db.session.commit()
                 return proposition
@@ -73,7 +73,7 @@ def test_creer_utilisateur():
                         db.session.add(nouveau_ancien_sondage)
                     db.session.delete(sondage_du_jour)
                 # on met un nouveau sondage du jour
-                nouveau_sondage_du_jour = Sondage.query.filter(Sondage.status == True).order_by(Sondage.date_sondage).first()
+                nouveau_sondage_du_jour = Sondage.query.filter(Sondage.status == True).order_by(Sondage.date_proposition).first()
                 if nouveau_sondage_du_jour :
                     set_global_var("id_sondage_du_jour", nouveau_sondage_du_jour.id)
                 else :

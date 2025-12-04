@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useLayout } from '../../../layouts/Layout';
 import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuivant } from '../../../api/api_sondages';
 import { useNavigate } from "react-router-dom";
@@ -8,9 +8,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 function GererSondages() {
     const queryClient = useQueryClient();
     const { userData } = useLayout();
-    const [sondagesEnAttente, setSondagesEnAttente] = useState([]);
     const navigate = useNavigate();
-    
+
     const formatDate = (dateString) => {
         if (!dateString || dateString.length !== 12) {
             return "Invalid date";
@@ -28,28 +27,35 @@ function GererSondages() {
 
     const suivantEtReload = async () => {
         await sondageSuivant();
-        queryClient.invalidateQueries('sondage_du_jour')
-        queryClient.invalidateQueries(['donneesUtilisateur', userData.id]);
+        queryClient.invalidateQueries({ queryKey: ['sondage_du_jour'] });
+        queryClient.invalidateQueries({ queryKey: ['donneesUtilisateur', userData.id] });
     }
 
-    const { data: dataSondage = [], isLoading } = useQuery({
+    const { data: sondagesEnAttente = [], isLoading } = useQuery({
         queryKey: ['sondagesEnAttente'],
-        queryFn: () => obtenirSondagesEnAttente().then(r => {return r.sondages}),
+        queryFn: () => obtenirSondagesEnAttente().then(r => r.sondages),
     });
 
-    useEffect(() => {
-        if (dataSondage) { setSondagesEnAttente(dataSondage) };
-    }, [dataSondage]);
-
     const mutate_validation = useMutation({
-        mutationFn: async ([id_sondage, del]) => {
+        mutationFn: async ({ id_sondage, del }) => {
             if (del) await supprimerSondage(id_sondage)
             else await validerSondage(id_sondage)
-            return sondagesEnAttente.filter(s => s.id !== id_sondage);
+            return id_sondage;
         },
-        onSuccess: (updatedSondages) => {
+        onMutate: async ({ id_sondage }) => {
+            await queryClient.cancelQueries({ queryKey: ['sondagesEnAttente'] });
+            const previousSondages = queryClient.getQueryData(['sondagesEnAttente']);
+
+            const updatedSondages = previousSondages.filter(s => s.id !== id_sondage);
             queryClient.setQueryData(['sondagesEnAttente'], updatedSondages);
-            setSondagesEnAttente(updatedSondages);
+
+            return { previousSondages };
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['sondagesEnAttente'] });
+        },
+        onError: (err, variables, context) => {
+            queryClient.setQueryData(['sondagesEnAttente'], context.previousSondages);
         }
     });
 
@@ -64,7 +70,7 @@ function GererSondages() {
             </Container>
         );
     }
-    
+
     return (
         <Container>
             <h1>Gestion des sondages en attente</h1>
@@ -99,10 +105,23 @@ function GererSondages() {
                                     </ListGroup>
                                 </td>
                                 <td>{sondage.propose_par_user_id}</td>
-                                <td>{formatDate(sondage.date_sondage)}</td>
+                                <td>{formatDate(sondage.date_proposition)}</td>
                                 <td>
-                                    <Button variant="success" onClick={() => mutate_validation.mutate([sondage.id, false])}>Valider</Button>
-                                    <Button variant="danger" onClick={() => mutate_validation.mutate([sondage.id, true])} className="ms-2">Supprimer</Button>
+                                    <Button
+                                        variant="success"
+                                        onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: false })}
+                                        disabled={mutate_validation.isLoading} // Optional: disable buttons during mutation
+                                    >
+                                        Valider
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: true })}
+                                        className="ms-2"
+                                        disabled={mutate_validation.isLoading}
+                                    >
+                                        Supprimer
+                                    </Button>
                                 </td>
                             </tr>
                         ))}

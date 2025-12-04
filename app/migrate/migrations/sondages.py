@@ -16,23 +16,23 @@ def migrate_sondages():
         reponses = [row[3], row[4]]
         new_sondage = Sondage(
             propose_par_user_id=row[1],
-            date_sondage=datetime.now().strftime('%Y%m%d%H%M'),
+            date_proposition = datetime.now(),
             question=row[2],
             reponses=reponses,
             autorise=bool(row[7])
         )
         new_sondage.id = row[0]
         new_sondage.archive = bool(row[5])
-        
+
         # Handle date_publication gracefully
         if row[6] and row[6] != '0000-00-00':
             try:
-                new_sondage.date_publication = datetime.strptime(row[6], '%Y-%m-%d').date()
+                new_sondage.date_publication = datetime.strptime(row[6], '%Y-%m-%d')
             except ValueError:
                 new_sondage.date_publication = None # Set to None if parsing fails
         else:
             new_sondage.date_publication = None
-            
+
         db.session.add(new_sondage)
         print(f"Migrated sondage {row[0]}")
 

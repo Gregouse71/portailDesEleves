@@ -32,24 +32,21 @@ class Sondage(db.Model):
     reponses = db.Column(MutableList.as_mutable(db.JSON), nullable=False)
     # donnees du sondage
     propose_par_user_id = db.Column(db.Integer, nullable=False)
-    date_sondage = db.Column(db.String(20), nullable=False) # au format AAAAMMJJHHMM
     autorise = db.Column(db.Boolean, nullable=False, default=False) # False : non autorise, True : en attente de publciation ou sondage du jour
     archive = db.Column(db.Boolean, nullable=False, default=False)
+    date_proposition = db.Column(db.Date(), nullable=False)
     date_publication = db.Column(db.Date(), nullable=True)
 
     votes = db.relationship('VoteSondage', back_populates='sondage')
     gagnants = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
     perdants = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
 
-    def __init__(self, propose_par_user_id:int, date_sondage:str, question:str, reponses: list[str], autorise:bool=False) :
+    def __init__(self, propose_par_user_id:int, date_proposition: datetime.date, question:str, reponses: list[str], autorise:bool=False) :
         """
         Cree un nouveau sondage
         """
         self.propose_par_user_id = propose_par_user_id
-        if valider_date_AAAAMMJJHHMM(date_sondage):
-            self.date_sondage = date_sondage
-        else :
-            raise ValueError("Fomat invalide de date")
+        self.date_proposition = date_proposition
         self.question = question
         self.reponses = reponses
 

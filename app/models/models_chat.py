@@ -16,9 +16,7 @@ class Message(db.Model):
     utilisateur = db.relationship('Utilisateur', back_populates='messages')
 
 
-    def __init__(
-        self, text: str, author: Utilisateur, date: datetime
-    ):
+    def __init__(self, text: str, author: Utilisateur, date: datetime):
         """
         Crée une nouvelle association
         """
@@ -29,12 +27,11 @@ class Message(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
-    
+
     def to_dict(self):
-        print(self)
         return {
             "text": self.text,
-            "time": self.date.strftime ("%H:%M"),
+            "time": self.date.strftime ("%d/%m/%Y %H:%M"),
             "author": self.utilisateur.nom_utilisateur,
             "author_id": self.utilisateur.id,
             "id": self.id

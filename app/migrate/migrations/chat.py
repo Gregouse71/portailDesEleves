@@ -16,7 +16,7 @@ def migrate_chat():
         author = Utilisateur.query.get(row[1])
         if author:
             new_message = Message(
-                text=row[4],
+                text=row[4][:1000],
                 author=author,
                 date=datetime.strptime(row[6], '%Y-%m-%d %H:%M:%S')
             )

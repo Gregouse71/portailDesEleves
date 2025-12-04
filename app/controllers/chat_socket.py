@@ -13,10 +13,12 @@ from datetime import datetime
 @socketio.on('connect')
 def join():
     if current_user.is_authenticated:
-        messages = Message.query.order_by(desc(Message.date)).limit(100)
-        for message in messages[::-1]:
-            to_send = message.to_dict()
-            emit ("message", to_send)
+        # messages = Message.query.order_by(desc(Message.id)).limit(100).all()
+        # for message in messages[::-1]: # Ils sont envoyés dans l'ordre de réception : les plus anciens d'abord
+        #     to_send = message.to_dict()
+        #     to_send["sound"] = False
+        #     emit ("message", to_send)
+        return True
     else:
         return False  # not allowed here
 
@@ -24,10 +26,10 @@ def join():
 @socketio.on('message')
 def handle_message(data):
     if current_user.is_authenticated:
-        print (data)
         message = Message (data["text"], current_user, datetime.now ())
         message.save ()
         to_send = message.to_dict()
+        to_send["sound"] = True
         emit ("message", to_send, broadcast=True)
     else:
         return False

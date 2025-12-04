@@ -17,7 +17,7 @@ def proposer_sondage(question:str, reponses:list, utilisateur:Utilisateur) :
     """
     Ajouter un sondage dans la bdd. La liste des reponses possibles est au format ["reponse1", "reponse2", "reponse3"], de taille entre 2 et 4
     """
-    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_sondage=datetime.now().strftime("%Y%m%d%H%M"))
+    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_proposition=datetime.now())
     db.session.add(proposition)
     db.session.commit()
 
@@ -102,7 +102,7 @@ def sondage_suivant() -> None:
     """
     id_ancien_sondage_du_jour = get_global_var("id_sondage_du_jour")
     # on met un nouveau sondage du jour
-    nouveau_sondage_du_jour = Sondage.query.filter_by(autorise=True, archive=False).order_by(Sondage.date_sondage).first()
+    nouveau_sondage_du_jour = Sondage.query.filter_by(autorise=True, archive=False).order_by(Sondage.date_proposition).first()
     if nouveau_sondage_du_jour :
         nouveau_sondage_du_jour.archive = True  # On archive le sondage
         nouveau_sondage_du_jour.date_publication = date.today ()  # On garde sa date de publication
@@ -139,7 +139,7 @@ def obtenir_sondages_non_valide() :
     Renvoie les sondages non valides sous forme de liste de dictionnaires, classés par ordre décroissant de date
     """
     # Récupérer les sondages non validés triés par date décroissante
-    sondages_non_valides = Sondage.query.filter_by(autorise=False).order_by(Sondage.date_sondage.desc()).all()
+    sondages_non_valides = Sondage.query.filter_by(autorise=False, archive=False).order_by(Sondage.date_proposition.desc()).all()
     sondages_data = []
     for sondage in sondages_non_valides:
         sondages_data.append({
@@ -147,7 +147,7 @@ def obtenir_sondages_non_valide() :
             "question": sondage.question,
             "reponses": sondage.reponses,
             "propose_par_user_id": sondage.propose_par_user_id,
-            "date_sondage": sondage.date_sondage,
+            "date_proposition": sondage.date_proposition,
             "status": sondage.autorise
         })
     return sondages_data

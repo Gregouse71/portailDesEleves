@@ -1,10 +1,12 @@
 import sqlite3
 import unicodedata
 import os
-from app import db
-from app.models.models_utilisateurs import Utilisateur
 from werkzeug.security import generate_password_hash
 from datetime import datetime
+from sqlalchemy import text
+
+from app import db
+from app.models.models_utilisateurs import Utilisateur
 
 def migrate_users():
     print("Migrating users...")
@@ -64,6 +66,7 @@ def migrate_users():
 
     # Create a dictionary to map user_id to user profile
     user_profiles = {profile[1]: profile for profile in trombi_userprofiles}
+    db.session.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
 
     def capitalize_name(name_raw):
         if not name_raw:
@@ -85,7 +88,7 @@ def migrate_users():
         profile = user_profiles.get(user_id)
 
         if profile:
-            print(f"Migrating user {auth_user[1]}")
+            print(f"Migrating user {auth_user[1]} with co {profile[16]}")
             # Determine cycle
             cycle = 'ic'
             if profile[10]:  # est_ast
@@ -178,11 +181,12 @@ def migrate_users():
             
             # Add the new user to the new database
             db.session.add(new_user)
+            db.session.commit()
         else:
             print(f"No profile found for user {auth_user[1]}")
 
     # Commit the changes for all users
-    db.session.commit()
+    db.session.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
 
     # Now establish parrain-fillot relationships
     # print("Establishing parrain-fillot relationships...")

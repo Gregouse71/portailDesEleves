@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 
 from app.models.models_chat import Message
 
@@ -12,5 +12,9 @@ def more_chat_message(last_sent: int):
     """
     Renvoie plus de messages à afficher, le dernier vu étant *last_sent*
     """
-    messages = Message.query.filter(Message.id < last_sent).order_by(asc(Message.date)).limit(100)
-    return jsonify([message.to_dict() for message in messages])
+    if last_sent == 0:
+        messages = Message.query.order_by(desc(Message.id)).limit(100).all()
+    else:
+        messages = Message.query.filter(Message.id < last_sent).order_by(desc(Message.id)).limit(100).all()
+    print(messages[0].id, "   ", messages[-1].id)
+    return jsonify([message.to_dict() for message in messages[::-1]])

@@ -10,10 +10,18 @@ export default function BlocChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [socket, setSocket] = useState(null);
+
+  // Refs for Scroll Management
   const messageDisplayRef = useRef(null);
-  const isAtBottomRef = useRef(true); // Ref to track if user is at the bottom
+  const isAtBottomRef = useRef(true);
+  const scrollHeightBeforeUpdateRef = useRef(0);
+  const shouldCorrectScrollRef = useRef(false);
+  const isInitialLoadRef = useRef(true);
+
+  // Ref for Intersection Observer
+  const firstMessageRef = useRef(null);
+
   const { userData } = useLayout();
-  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     const newSocket = io(`${SOCKET_BASE_URL}`, {
@@ -22,16 +30,18 @@ export default function BlocChat() {
     });
     setSocket(newSocket);
 
-    const initialLoadTimer = setTimeout(() => {
-      isInitialLoad.current = false;
-    }, 2000);
-
     newSocket.on("connect", () => {
       console.log("Connected to server");
     });
 
     newSocket.on("message", (message) => {
-      if (!isInitialLoad.current && message.text.trim().toLowerCase() === "piche" && message.author_id !== userData.id) {
+      const messageDisplay = messageDisplayRef.current;
+      // Check scroll position before state update to see if we should auto-scroll
+      if (messageDisplay) {
+        isAtBottomRef.current = messageDisplay.scrollHeight - messageDisplay.scrollTop <= messageDisplay.clientHeight + 1;
+      }
+
+      if (message.sound && message.text.trim().toLowerCase() === "piche" && message.author_id !== userData.id) {
         const audio = new Audio('/assets/sons/piche.wav');
         audio.play();
       }
@@ -46,18 +56,84 @@ export default function BlocChat() {
     });
 
     return () => {
-      clearTimeout(initialLoadTimer);
       newSocket.disconnect();
     };
   }, [userData.id]);
 
-  // Auto-scroll to bottom when new messages arrive, but only if user was already at the bottom
+  useEffect(() => {
+    async function fetchInitialMessages() {
+      const initial_messages = await obtenirPlusDeMessages(0);
+      if (initial_messages && initial_messages.length > 0) {
+        setMessages(initial_messages);
+      }
+    }
+    fetchInitialMessages();
+  }, []);
+
   useEffect(() => {
     const messageDisplay = messageDisplayRef.current;
-    if (messageDisplay && isAtBottomRef.current) {
-      messageDisplay.scrollTop = messageDisplay.scrollHeight;
+    if (messageDisplay && messages.length > 0) {
+      if (isInitialLoadRef.current) {
+        // Force scroll to bottom only on the first load
+        messageDisplay.scrollTop = messageDisplay.scrollHeight;
+        isInitialLoadRef.current = false;
+        console.log("Initial scroll to bottom performed.");
+      } else if (isAtBottomRef.current) {
+        // Auto-scroll when new messages arrive (socket updates)
+        messageDisplay.scrollTop = messageDisplay.scrollHeight;
+      }
     }
   }, [messages]);
+
+  useEffect(() => {
+    const messageDisplay = messageDisplayRef.current;
+    if (shouldCorrectScrollRef.current && messageDisplay) {
+      const scrollHeightAfter = messageDisplay.scrollHeight;
+      const scrollOffset = scrollHeightAfter - scrollHeightBeforeUpdateRef.current;
+      messageDisplay.scrollTop = scrollOffset;
+
+      shouldCorrectScrollRef.current = false;
+    }
+  }, [messages.length]);
+
+  useEffect(() => {
+    const messageDisplay = messageDisplayRef.current;
+    const oldestMessage = firstMessageRef.current;
+
+    if (oldestMessage && messageDisplay && !isInitialLoadRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (entry.isIntersecting) {
+            observer.unobserve(oldestMessage);
+
+            async function fetchNewMessages() {
+              // Record height before API call
+              scrollHeightBeforeUpdateRef.current = messageDisplay.scrollHeight;
+
+              const new_messages = await obtenirPlusDeMessages(messages[0].id);
+
+              if (new_messages && new_messages.length > 0) {
+                // Set flag and update state
+                shouldCorrectScrollRef.current = true;
+                setMessages([...new_messages, ...messages]);
+              }
+            }
+            fetchNewMessages();
+          }
+        },
+        { root: messageDisplay, threshold: 0.1 }
+      );
+
+      observer.observe(oldestMessage);
+
+      return () => {
+        if (oldestMessage) {
+          observer.unobserve(oldestMessage);
+        }
+      };
+    }
+  }, [messages.length, messages, isInitialLoadRef.current]);
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -70,27 +146,17 @@ export default function BlocChat() {
     const message = { text: input };
     socket.emit("message", message);
     setInput("");
-    // After sending a message, always scroll to the bottom
+
     const messageDisplay = messageDisplayRef.current;
     if (messageDisplay) {
+      isAtBottomRef.current = true;
       messageDisplay.scrollTop = messageDisplay.scrollHeight;
     }
   };
 
   const handleScroll = e => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    // Check if user is at the very bottom (with a small tolerance)
-    isAtBottomRef.current = scrollHeight - scrollTop <= clientHeight + 1; // +1 for tolerance
-
-    if (scrollTop === 0) {
-      async function fecthNewMessages() {
-        if (messages.length > 0) {
-          const new_messages = await obtenirPlusDeMessages(messages[0].id)
-          setMessages(new_messages.concat(messages))
-        }
-      };
-      fecthNewMessages();
-    }
+    isAtBottomRef.current = scrollHeight - scrollTop <= clientHeight + 1;
   }
 
   return (
@@ -99,7 +165,7 @@ export default function BlocChat() {
       <Card.Body>
         <div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
           {messages.map((msg, idx) => (
-            <div key={idx} className="p-1 rounded-lg chat-message">
+            <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="p-1 rounded-lg chat-message">
               <span className="text-muted">{msg.time}</span>{" "}
               <span className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}>
                 {msg.author}
