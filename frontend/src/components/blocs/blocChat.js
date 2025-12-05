@@ -133,7 +133,7 @@ export default function BlocChat() {
         }
       };
     }
-  }, [messages.length, messages, isInitialLoadRef.current]);
+  }, [messages.length, messages, isInitialLoadRef]);
 
   const sendMessage = () => {
     if (!input.trim()) return;

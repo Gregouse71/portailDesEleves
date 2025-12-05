@@ -30,7 +30,7 @@ export default function Header() {
 
   async function handleLogout() {
     await seDeconnecter();
-    navigate("/direction");  // Rediriger après déconnexion
+    navigate("/login");  // Rediriger après déconnexion
   }
 
   return (

@@ -1,9 +1,10 @@
 import "../assets/styles/formulaire_connexion.scss"
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { seConnecter } from "../api/api_global";
 import { Container, Form, Button, Alert, Card } from "react-bootstrap";
+import { useQueryClient } from "@tanstack/react-query";
 
 const VP_GEEK_EMAIL = "webmaster-bde@mines-paristech.fr";
 const PORTAL_TITLE = "Portail des élèves";
@@ -13,12 +14,17 @@ export default function FormulaireConnexion() {
     const [password, setPassword] = useState("");
     const [erreur, setErreur] = useState(null);
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || "/";
 
     async function handleSubmit(e) {
         e.preventDefault();
         const success = await seConnecter(username, password);
         if (success) {
-            navigate("/home");
+            queryClient.setQueryData(['isAuthenticated'], true);
+            navigate(from, { replace: true });
         } else {
             setErreur("Identifiants incorrects");
         }

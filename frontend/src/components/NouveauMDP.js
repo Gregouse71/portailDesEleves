@@ -185,8 +185,7 @@ export default function NouveauMDP() {
           </Form>
         </Card.Body>
       </Card>
-      
-      {/* Optional: Link back to login/home */}
+
       <Link to={'/login'} className="text-center text-muted mt-3">
         &#x2190; Annuler et retourner à la connexion
       </Link>

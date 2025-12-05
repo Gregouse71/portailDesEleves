@@ -1,12 +1,12 @@
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext } from 'react';
 import Header from '../components/blocs/Header';
 import BlocSondage from '../components/blocs/blocSondage';
 import BlocChat from '../components/blocs/blocChat';
 import BlocAnniversaire from '../components/blocs/blocAnniversaire';
 import '../assets/styles/layout.scss';
-import { obtenirIdUser, estAuthentifie } from '../api/api_global';
+import { obtenirIdUser } from '../api/api_global';
 import { obtenirDataUser } from '../api/api_utilisateurs';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import BlocEvents from '../components/blocs/blocEvents';
@@ -14,9 +14,6 @@ import BlocEvents from '../components/blocs/blocEvents';
 const LayoutContext = createContext();
 
 export function LayoutProvider({ children }) {
-    const navigate = useNavigate();
-    const location = useLocation();
-
     const { data: id } = useQuery({
         queryKey: ['id'],
         queryFn: obtenirIdUser
@@ -36,15 +33,6 @@ export function LayoutProvider({ children }) {
         queryFn: () => obtenirDataUser(id),
         enabled: !!id
     });
-
-    useEffect(() => {
-        const path = location.pathname
-        estAuthentifie().then(auth => {
-            if (!auth && !path.startsWith("/login") && !path.startsWith("/reset") && !path.startsWith("/oublie")) {
-                navigate("/login");
-            }
-        });
-    }, [navigate, location.pathname]);
 
     return (
         <LayoutContext.Provider value={{ userData }}>

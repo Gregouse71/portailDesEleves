@@ -15,7 +15,7 @@ export default function ProtectedRoute() {
     if (isLoading) {
         return <div>Loading...</div>;
     }
-    console.log(isAuthenticated)
+
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
