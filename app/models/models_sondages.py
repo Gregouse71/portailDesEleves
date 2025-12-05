@@ -25,7 +25,7 @@ class Sondage(db.Model):
     Un sondage ne peut parraitre que si son tag "est_valide" est a True
     La route pour appeler la fonction qui modifiera ca sera protegee par le decorateur @vp_sondaj_required
    """
-    __tablename__ = 'sondages'
+    __tablename__ = 'sondages_sondage'
     id = db.Column(db.Integer, primary_key=True)  # Clef primaire
     question = db.Column(db.String(1000), nullable=False)
     # reponses possibles
@@ -58,9 +58,9 @@ class Sondage(db.Model):
 
 
 class VoteSondage(db.Model):
-    __tablename__ = 'votes'
-    sondage_id = db.Column(db.Integer, db.ForeignKey('sondages.id'), primary_key=True)
-    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), primary_key=True)
+    __tablename__ = 'sondages_vote'
+    sondage_id = db.Column(db.Integer, db.ForeignKey('sondages_sondage.id'), primary_key=True)
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), primary_key=True)
 
     sondage = db.relationship('Sondage', back_populates='votes')
     utilisateur = db.relationship('Utilisateur', back_populates='votes')

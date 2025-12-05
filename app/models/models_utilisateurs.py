@@ -31,7 +31,7 @@ default_questions = { # Les trois premiers caractères servent à l'odonnancemen
 
 
 class Utilisateur(db.Model, UserMixin) :
-    __tablename__ = 'utilisateurs'
+    __tablename__ = 'utilisateurs_utilisateur'
     # Initialise lors de l'ajout d'une promotion. Ne dois pas etre modifiable par l'utilisateur
     id = db.Column(db.Integer, primary_key=True)  # Clef primaire
     nom_utilisateur = db.Column(db.String(100), nullable=False, unique=True)
@@ -60,13 +60,13 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Gestion du parrainnage :
     # Une fonction sera prevue pour mofifier son marrain et fillot et faire en sorte que son parrain et fillot soit modifie en consequence. N'est pas mofifiable tel quel
-    marrain_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
+    marrain_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
     marrain = db.relationship('Utilisateur', remote_side=[id], back_populates='fillots', foreign_keys=[marrain_id], post_update=True)
     fillots = db.relationship('Utilisateur', back_populates='marrain', foreign_keys=[marrain_id])
     est_baptise = db.Column(db.Boolean, nullable=False)
 
     # Gestion des colocations - meme commentaire
-    co_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
+    co_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
     co = db.relationship('Utilisateur', remote_side=[id], uselist=False, foreign_keys=[co_id], post_update=True)
 
     # Questions du portail - modifiable avec un formulaire

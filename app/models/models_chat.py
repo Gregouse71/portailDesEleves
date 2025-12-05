@@ -5,14 +5,14 @@ from flask import jsonify
 from app.models.models_utilisateurs import Utilisateur
 
 class Message(db.Model):
-    __tablename__ = 'messages'
+    __tablename__ = 'chat_messages'
     # ID du message
     id = db.Column(db.Integer, primary_key=True)
 
     # Éléments ajoutés à la création de l'association — Modifiables par les membres de l'association
     text = db.Column(db.String(1000), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
-    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'))
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
     utilisateur = db.relationship('Utilisateur', back_populates='messages')
 
 

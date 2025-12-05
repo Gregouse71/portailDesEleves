@@ -30,7 +30,7 @@ def est_valide_liste_de_jours(liste_jours):
 
 
 class Evenement (db.Model):
-    __tablename__ = 'evenements'
+    __tablename__ = 'evenements_evenement'
     # ID de l'évènement
     id = db.Column(db.Integer, primary_key=True)
     # ID de l'association organisatrice

@@ -10,7 +10,7 @@ from app.models.models_utilisateurs import Utilisateur
 
 
 class Association(db.Model):
-    __tablename__ = 'associations'
+    __tablename__ = 'associations_association'
     # ID de l'association
     id = db.Column(db.Integer, primary_key=True)
 
@@ -135,7 +135,7 @@ class Association(db.Model):
 
 
 class AssociationMandat(db.Model):
-    __tablename__ = 'mandats_association'
+    __tablename__ = 'associations_mandat'
     id = db.Column(db.Integer, primary_key=True)
 
     nom = db.Column(db.String(1000), nullable=False)
@@ -143,7 +143,7 @@ class AssociationMandat(db.Model):
     actuel = db.Column(db.Boolean, nullable=False)
 
     # Association
-    association_id = db.Column(db.Integer, db.ForeignKey('associations.id'))
+    association_id = db.Column(db.Integer, db.ForeignKey('associations_association.id'))
     association = db.relationship('Association', back_populates='mandats')
 
     # Membres
@@ -157,9 +157,9 @@ class AssociationMandat(db.Model):
 
 
 class AssociationMembre(db.Model):
-    __tablename__ = 'membres_association'
-    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), primary_key=True)
-    mandat_id = db.Column(db.Integer, db.ForeignKey('mandats_association.id'), primary_key=True)
+    __tablename__ = 'associations_membre'
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), primary_key=True)
+    mandat_id = db.Column(db.Integer, db.ForeignKey('associations_mandat.id'), primary_key=True)
 
     role = db.Column(db.String(1000), nullable=True)
     position = db.Column(db.Integer, nullable=True)

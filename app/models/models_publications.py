@@ -9,14 +9,14 @@ from app.models.models_utilisateurs import Utilisateur
 
 
 class Commentaire(db.Model):
-    __tablename__ = 'commentaires'
+    __tablename__ = 'publications_commentaire'
     # ID du commentaire
     id = db.Column(db.Integer, primary_key=True)
     # L'auteur du commentaire
-    id_auteur = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'))
+    id_auteur = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
     auteur = db.relationship('Utilisateur', back_populates='commentaires')
     # La publication
-    id_publication = db.Column(db.Integer, db.ForeignKey('publications.id'))
+    id_publication = db.Column(db.Integer, db.ForeignKey('publications_publication.id'))
     publication = db.relationship('Publication', back_populates='commentaires')
 
     contenu = db.Column(db.String(10000), nullable=False)
@@ -48,16 +48,16 @@ class Commentaire(db.Model):
 
 
 class Publication(db.Model):
-    __tablename__ = 'publications'
+    __tablename__ = 'publications_publication'
     # ID de la publication
     id = db.Column(db.Integer, primary_key=True)
 
     # Identification de l'association publiant le post
-    id_association = db.Column(db.Integer, db.ForeignKey('associations.id'), nullable=True)
+    id_association = db.Column(db.Integer, db.ForeignKey('associations_association.id'), nullable=True)
     association = db.relationship('Association', back_populates='publications')
 
     # Identification de l'auteur du post, ne doit pas etre modifie
-    id_auteur = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
+    id_auteur = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
     auteur = db.relationship('Utilisateur', back_populates='publications')
 
     # Surtout utile pour la DE, par défaut vaut False pour les autres associations
