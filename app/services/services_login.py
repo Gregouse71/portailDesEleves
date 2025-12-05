@@ -14,7 +14,7 @@ algorithm = Config.ALGORITHM
 mailBody = """
 <html>
     <p>Tu as reçu ce mail car tu as effectué une demande de réinitialisation de ton mot de passe sur le portail des élèves des Mines !</p>
-    <p>Ton identifiant est {1}. Clique <a href="https://10.100.1.20/reset/{0}">ici</a> pour réinitialiser ton mot de passe. Le lien expirera dans 15min.</p>
+    <p>Ton identifiant est {1}. Clique <a href="https://eleves.rezal-mdm.com/reset/{0}">ici</a> pour réinitialiser ton mot de passe. Le lien expirera dans 15min.</p>
     <p>Si tu n'es pas à l'origine de cette demande, contact le VP Geek pour lui signaler.</p>
     
     <div>En cas de problème, contact moi à <a href="mailto:webmaster-bde@mines-paristech.fr">webmaster-bde@mines-paristech.fr</a></div>
