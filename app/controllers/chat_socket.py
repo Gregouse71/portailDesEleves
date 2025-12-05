@@ -27,7 +27,9 @@ def join():
 def handle_message(data):
     if current_user.is_authenticated:
         message = Message (data["text"], current_user, datetime.now ())
-        message.save ()
+        db.session.add(message)
+        db.session.commit()
+        
         to_send = message.to_dict()
         to_send["sound"] = True
         emit ("message", to_send, broadcast=True)

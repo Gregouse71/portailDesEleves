@@ -23,10 +23,6 @@ class Message(db.Model):
         self.text = text
         self.utilisateur = author
         self.date = date
-    
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
 
     def to_dict(self):
         return {

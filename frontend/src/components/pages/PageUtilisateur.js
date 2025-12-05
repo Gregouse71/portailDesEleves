@@ -20,12 +20,12 @@ function PageUtilisateur() {
         setAutoriseAModifier(userData.id === id || userData.is_superuser);
     }, [id, userData]);
 
-    const { data: donneesUtilisateur = {} } = useQuery({
+    const { data: donneesUtilisateur, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
     });
 
-    if (donneesUtilisateur === null) { return (<p>Chargement...</p>); }
+    if (isLoading) { return (<p>Chargement...</p>); }
 
     return (
         <Container className="py-4">

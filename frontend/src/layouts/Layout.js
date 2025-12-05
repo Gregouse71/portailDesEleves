@@ -28,7 +28,7 @@ export function LayoutProvider({ children }) {
         co: null,
         marrain: null,
         fillots: []
-    } } = useQuery({
+    }, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
         enabled: !!id
@@ -36,7 +36,7 @@ export function LayoutProvider({ children }) {
 
     return (
         <LayoutContext.Provider value={{ userData }}>
-            {children}
+            {!isLoading && children}
         </LayoutContext.Provider>
     );
 }

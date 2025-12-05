@@ -5,6 +5,7 @@ from config import Config
 import jwt
 from argon2 import exceptions
 
+from app.services import db
 from app.utils.divers_utils import ph
 from app.models.models_utilisateurs import Utilisateur
 
@@ -34,7 +35,7 @@ def send_reset_mail(username: str):
     to_encode = {"sub": username, "exp": expire}
     encoded_jwt = jwt.encode(to_encode, key, algorithm=algorithm)
 
-    msg = MIMEText (mailBody.format (encoded_jwt, user.username), 'html')
+    msg = MIMEText (mailBody.format (encoded_jwt, user.nom_utilisateur), 'html')
     msg['Subject'] = "Réinitialisation de mot de passe"
     msg['From'] = "no-reply@eleves.mines-paris.eu"
     msg['To'] = user.email
@@ -66,4 +67,5 @@ def set_new_password(token: str, password: str):
     uid = payload.get("sub")
     user = Utilisateur.query.filter_by(nom_utilisateur=uid).first()
     user.mot_de_passe = ph.hash(password)
+    db.session.commit()
     return True
