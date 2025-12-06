@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { obtenirDataUser } from '../../api/api_utilisateurs';
 
 import { useLayout } from '../../layouts/Layout';
@@ -6,19 +6,14 @@ import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
 import { useParams } from 'react-router-dom';
-import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
+import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav, Tab } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 
 function PageUtilisateur() {
     const [activeTab, setActiveTab] = useState("info");
     const { userData } = useLayout();
-    const [autoriseAModifier, setAutoriseAModifier] = useState(false);
     const { id } = useParams();
-
-    useEffect(() => {
-        setAutoriseAModifier(userData.id === id || userData.is_superuser);
-    }, [id, userData]);
 
     const { data: donneesUtilisateur, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
@@ -26,6 +21,8 @@ function PageUtilisateur() {
     });
 
     if (isLoading) { return (<p>Chargement...</p>); }
+
+    const autoriseAModifier = userData.id == id || userData.is_superuser;
 
     return (
         <Container className="py-4">
@@ -88,4 +85,5 @@ function PageUtilisateur() {
         </Container>
     );
 }
+
 export default PageUtilisateur;

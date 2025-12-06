@@ -19,13 +19,12 @@ export default function AssoCard({ asso_id, mandat, role }) {
             onClick={() => navigate(`/assos/get/${asso.id}`)}
             style={{ cursor: 'pointer' }}
         >
-            <Card.Img
+            {asso.img !== null && <Card.Img
                 variant="top"
-                src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`
-                }
+                src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`}
                 alt={asso.nom}
                 style={{ height: '120px', objectFit: 'cover' }}
-            />
+            />}
             < Card.Body >
                 <Card.Title>{asso.nom}</Card.Title>
                 {mandat && <Card.Text>{mandat}</Card.Text>}
