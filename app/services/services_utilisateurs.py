@@ -26,32 +26,35 @@ def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     Supprime le lien de colocation entre les deux utilisateurs. 
     Leve si les deux utilisateurs ne sont pas co
     """
-    if utilisateur1.co == utilisateur2 and utilisateur2.co == utilisateur1 : # les deux sont co
-            utilisateur1.co = None
-            utilisateur2.co = None
+    if utilisateur2 in utilisateur1.cos and utilisateur1 in utilisateur2.cos:
+        utilisateur1.cos.remove(utilisateur2)
+        utilisateur2.cos.remove(utilisateur1)
     else :
-        raise ErreurDeLienUtilisateurs("Erreur : les deux utilisateurs ne sont pas co.") # sinon erreur
+        raise ErreurDeLienUtilisateurs("Erreur : les deux utilisateurs ne sont pas co.")
+
+def ajouter_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
+    """
+    Ajoute un lien de colocation entre deux utilisateurs.
+    """
+    if utilisateur2 not in utilisateur1.cos:
+        utilisateur1.cos.append(utilisateur2)
+    if utilisateur1 not in utilisateur2.cos:
+        utilisateur2.cos.append(utilisateur1)
+    db.session.commit()
+
+def changer_co(utilisateur:Utilisateur, liste_cos:list[Utilisateur]) :
+    """
+    Change la liste des cos d'un utilisateur.
+    """
+    # Supprimer les anciennes relations
+    for co in utilisateur.cos:
+        co.cos.remove(utilisateur)
     
-
-def creer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
-    """
-    Crée un lien de colocation entre deux utilisateurs en modifiant leurs attributs.
-    Si l'un des deux utilisateurs avait deja un co, le lien precedent est detruit. 
-    """
-    # Verifier que les deux utilisateurs ne sont pas deja co
-    if utilisateur1.co_id == utilisateur2.id and utilisateur2.co_id == utilisateur1.id:
-        return
-
-    # Casser les anciennes relations
-    if utilisateur1.co:
-        utilisateur1.co.co = None
-    if utilisateur2.co:
-        utilisateur2.co.co = None
-
-    # Mettre en place la nouvelle relation
-    utilisateur1.co = utilisateur2
-    utilisateur2.co = utilisateur1
-
+    # Ajouter les nouvelles relations
+    utilisateur.cos = liste_cos
+    for co in liste_cos:
+        co.cos.append(utilisateur)
+    
     db.session.commit()
 
 # PARRAINAGE

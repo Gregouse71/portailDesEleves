@@ -29,6 +29,10 @@ default_questions = { # Les trois premiers caractères servent à l'odonnancemen
 }
 
 
+cos_association = db.Table('cos_association',
+    db.Column('user_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id')),
+    db.Column('co_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
+)
 
 class Utilisateur(db.Model, UserMixin) :
     __tablename__ = 'utilisateurs_utilisateur'
@@ -65,9 +69,13 @@ class Utilisateur(db.Model, UserMixin) :
     fillots = db.relationship('Utilisateur', back_populates='marrain', foreign_keys=[marrain_id])
     est_baptise = db.Column(db.Boolean, nullable=False)
 
-    # Gestion des colocations - meme commentaire
-    co_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
-    co = db.relationship('Utilisateur', remote_side=[id], uselist=False, foreign_keys=[co_id], post_update=True)
+    # Gestion des colocations
+    cos = db.relationship('Utilisateur',
+                          secondary=cos_association,
+                          primaryjoin=(cos_association.c.user_id == id),
+                          secondaryjoin=(cos_association.c.co_id == id),
+                          backref=db.backref('co_of', lazy='dynamic'),
+                          lazy='dynamic')
 
     # Questions du portail - modifiable avec un formulaire
     questions_reponses_du_portail = db.Column(MutableDict.as_mutable(db.JSON), nullable=True)
@@ -209,8 +217,8 @@ class Utilisateur(db.Model, UserMixin) :
             Le marrain de l'utilisateur
         - fillots : liste d'Utilisateurs
             Les fillots de l'utilisateur
-        - co_id : int 
-            L'id du co. None pour les PAMs
+        - cos : list 
+            La liste des cos de l'utilisateur
         - co_nom : Utilisateur
             Le co de l'utilisateur
 
@@ -330,9 +338,9 @@ class Utilisateur(db.Model, UserMixin) :
             elif key=="mot_de_passe_non_hache" : 
                 if value != None :
                     self.mot_de_passe = generate_password_hash(value)
-            elif key == "co" :
+            elif key == "cos" :
                 if value != None :
-                    self.co = value
+                    self.cos = value
             elif key == "marrain" :
                 if value != None :
                     self.marrain = value
@@ -361,7 +369,7 @@ class Utilisateur(db.Model, UserMixin) :
             "sports": self.sports,
             "instruments": self.instruments if self.instruments is not None else [],
             "marrain": {"id": self.marrain.id, "nom_utilisateur": f"{self.marrain.prenom} {self.marrain.nom}"} if self.marrain else None,
-            "co": {"id": self.co.id, "nom_utilisateur": f"{self.co.prenom} {self.co.nom}"} if self.co else None,
+            "cos": [{"id": co.id, "nom_utilisateur": f"{co.prenom} {co.nom}"} for co in self.cos],
             "fillots": [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in self.fillots],
             "vote_sondaj_du_jour": self.vote_sondaj_du_jour,
             "is_superuser": self.est_superutilisateur,

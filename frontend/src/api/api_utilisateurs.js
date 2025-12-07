@@ -53,10 +53,12 @@ export async function obtenirIdUserParNom(nom_utilisateur) {
   return data; // au format JSON 
 }
 
-export async function chargerUtilisateursParPromo(promo) {
-  const res = await fetch(`${API_BASE_URL}/users/charger_utilisateurs_par_promo/${promo}`,
-    { credentials: "include" }
-  );
+export async function chargerUtilisateurs(promo = null) {
+  let url = `${API_BASE_URL}/users/charger_utilisateurs`;
+  if (promo) {
+    url += `/${promo}`;
+  }
+  const res = await fetch(url, { credentials: "include" });
   const data = await res.json();
   return data; // Retourne la liste des utilisateurs au format JSON
 }
@@ -109,20 +111,20 @@ export async function changerMarrain(marrain_id, fillot_id) {
   return handleResponse(response);
 }
 
-export async function changerCo(user_id, co_id) {
+export async function changerCo(user_id, co_ids) {
   const response = await fetch(`${API_BASE_URL}/users/changer_co`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ user_id: user_id, co_id: co_id }),
+    body: JSON.stringify({ user_id: user_id, co_ids: co_ids }),
   });
   return handleResponse(response);
 }
 
-export async function supprimerCo() {
-  const response = await fetch(`${API_BASE_URL}/users/supprimer_co`, {
+export async function supprimerCo(co_id) {
+  const response = await fetch(`${API_BASE_URL}/users/supprimer_co/${co_id}`, {
     method: "DELETE",
     credentials: "include",
   });

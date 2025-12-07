@@ -17,7 +17,7 @@ import {
   //modifierPrixConsoBiero,
 } from "../api/api_soifguard";
 import {
-  chargerUtilisateursParPromo,
+  chargerUtilisateurs,
 } from "../api/api_utilisateurs"
 import { useQuery } from "@tanstack/react-query";
 
@@ -59,9 +59,9 @@ export default function SoifGuard() {
   });
 
   // Charger les utilisateurs d'une promo
-  const chargerUtilisateurs = async () => {
+  const chargerUtilisateursPromo = async () => {
     if (!promo) return;
-    const data = await chargerUtilisateursParPromo(promo);
+    const data = await chargerUtilisateurs(promo);
     setUtilisateurs(data);
   };
 
@@ -99,7 +99,7 @@ export default function SoifGuard() {
         setSelectedConso(null);
 
         // Recharger les utilisateurs après l'encaissement
-        const data = await chargerUtilisateursParPromo(promo);
+        const data = await chargerUtilisateurs(promo);
         console.log("Utilisateurs mis à jour :", data); // DEBUG
         setUtilisateurs(data);
       }
@@ -233,7 +233,7 @@ export default function SoifGuard() {
                 <option value="21">Promo 21</option>
               </select>
             )}
-            <button onClick={chargerUtilisateurs} disabled={gestionCotisations}>Charger Utilisateurs</button>
+            <button onClick={chargerUtilisateursPromo} disabled={gestionCotisations}>Charger Utilisateurs</button>
             <button onClick={() => setGestionCotisations(!gestionCotisations)}>
               {gestionCotisations ? "Sauvegarder et quitter" : "Gérer Cotisations"}
             </button>

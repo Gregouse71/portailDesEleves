@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../../api/api_associations";
-import { obtenirListeDesPromos, chargerUtilisateursParPromo } from "../../../api/api_utilisateurs";
+import { obtenirListeDesPromos, chargerUtilisateurs } from "../../../api/api_utilisateurs";
 import { Card, Button, Form, Row, Col } from "react-bootstrap";
 import UserCard from "../../elements/UserCard";
 import BoutonEditer from "../../elements/BoutonEditer";
@@ -47,7 +47,7 @@ function AssoMembres({ asso_id }) {
 
         if (selectedOption) {
             try {
-                const listeMembres = await chargerUtilisateursParPromo(selectedOption.value);
+                const listeMembres = await chargerUtilisateurs(selectedOption.value);
                 setListeNouveauxMembres(listeMembres);
             } catch (erreur) {
                 console.error(erreur);

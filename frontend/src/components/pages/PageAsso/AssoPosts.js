@@ -3,7 +3,7 @@ import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { ajouterContenuPublication, creerNouveauCommentaire, creerNouvellePublication, modifierCommentaire, modifierLikeComment, modifierLikePost, modifierPublication, obtenirPublicationsAsso, supprimerCommentaire, supprimerPublication } from "../../../api/api_publications";
 import { useLayout } from "../../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "../../elements/RichEditor";
-import { BASE_URL, UPLOAD_BASE_URL } from "../../../api/base";
+import { UPLOAD_BASE_URL } from "../../../api/base";
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
 import BoutonEditer from "../../elements/BoutonEditer";
@@ -330,9 +330,10 @@ function AssoPosts({ asso_id }) {
         enabled: !!asso_id,
     });
 
-    const { data: postsData } = useQuery({
-        queryKey: ['publicationData', asso_id],
+    const { data: postsData, publications } = useQuery({
+        queryKey: ['publicationData', asso_id, 'publications'],
         queryFn: () => obtenirPublicationsAsso(asso_id),
+        staleTime: 1000 * 60 * 5, // 5 minutes
         enabled: !!asso_id,
     });
 
@@ -480,13 +481,13 @@ function AssoPosts({ asso_id }) {
                                             </div>
                                         )}
                                     </div>
-                                    {post.fichier_joint ? <Row>
+                                    {post.fichier_joint && post.association ? <Row>
                                         <Col md="9">
                                             <RichTextDisplay content={post.contenu} />
                                         </Col>
                                         <Col md="3" className="text-center">
-                                            <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
-                                                <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                            <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                                <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
                                             </a>
                                         </Col>
                                     </Row> : <RichTextDisplay content={post.contenu} />}
@@ -590,13 +591,13 @@ function AssoPosts({ asso_id }) {
                                                 </Col>
                                             </Form.Group>
                                         </Col>
-                                        {(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment)) &&
+                                        {(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment && post.association)) &&
                                             <Col md="3" className="text-center">
                                                 {modifyPreviewUrl ?
                                                     <Image src={modifyPreviewUrl} fluid alt="La miniature automatique sera générée à l'envoi" /> :
-                                                    (post.fichier_joint && !shouldRemoveExistingAttachment &&
-                                                        <a href={`${BASE_URL}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
-                                                            <Image src={`${BASE_URL}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                                    (post.fichier_joint && !shouldRemoveExistingAttachment && post.association &&
+                                                        <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                                            <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
                                                         </a>)
                                                 }
                                             </Col>}

@@ -12,9 +12,13 @@ def migrate_associations():
     old_db_cursor.execute("SELECT * FROM association_association")
     associations = old_db_cursor.fetchall()
     for row in associations:
+        nom_asso = row[1]
+        if nom_asso == "Vendōme":
+            nom_asso = "Vendôme"
+        
         new_asso = Association(
-            nom=row[1],
-            description=row[7],
+            nom=nom_asso,
+            description=row[7].replace('\r\n', '\n').strip() if row[7] else None,
             a_cacher_aux_nouveaux=bool(row[5]),
             ordre_importance=row[4]
         )
@@ -93,6 +97,75 @@ def migrate_associations():
                 db.session.add(membre)
 
     db.session.commit()
+
+    # Migrate Vendome files
+    import os
+    import shutil
+
+    print("Starting Vendome file migration...")
+
+    # Create vendome association folder
+    vendome_upload_path = os.path.join('upload', 'associations', 'vendôme')
+    if not os.path.exists(vendome_upload_path):
+        os.makedirs(vendome_upload_path)
+    print(f"Created/Ensured vendome upload directory: {vendome_upload_path}")
+
+    # Copy files from old_media/vendome
+    old_vendome_path = os.path.join('upload', 'old_media', 'vendome')
+    if os.path.exists(old_vendome_path):
+        print(f"Copying files from {old_vendome_path} to {vendome_upload_path}...")
+        for item in os.listdir(old_vendome_path):
+            s = os.path.join(old_vendome_path, item)
+            d = os.path.join(vendome_upload_path, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, dirs_exist_ok=True)
+                print(f"  Copied directory: {item}")
+            else:
+                shutil.copy2(s, d)
+                print(f"  Copied file: {item}")
+    else:
+        print(f"Source directory {old_vendome_path} does not exist. Skipping.")
+
+    # Copy files from old_media/vendome2
+    old_vendome2_path = os.path.join('upload', 'old_media', 'vendome2')
+    if os.path.exists(old_vendome2_path):
+        print(f"Copying files from {old_vendome2_path} to {vendome_upload_path}...")
+        for item in os.listdir(old_vendome2_path):
+            s = os.path.join(old_vendome2_path, item)
+            d = os.path.join(vendome_upload_path, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, dirs_exist_ok=True)
+                print(f"  Copied directory: {item}")
+            else:
+                shutil.copy2(s, d)
+                print(f"  Copied file: {item}")
+    else:
+        print(f"Source directory {old_vendome2_path} does not exist. Skipping.")
+
+    print("Vendome file migration finished.")
+
+    # Migrate Palum files
+    print("Starting Palum file migration...")
+    bde_upload_path = os.path.join('upload', 'associations', 'bde')
+    if not os.path.exists(bde_upload_path):
+        os.makedirs(bde_upload_path)
+    print(f"Created/Ensured bde upload directory: {bde_upload_path}")
+
+    old_palum_path = os.path.join('upload', 'old_media', 'palum')
+    if os.path.exists(old_palum_path):
+        print(f"Copying files from {old_palum_path} to {bde_upload_path}...")
+        for item in os.listdir(old_palum_path):
+            s = os.path.join(old_palum_path, item)
+            d = os.path.join(bde_upload_path, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, dirs_exist_ok=True)
+                print(f"  Copied directory: {item}")
+            else:
+                shutil.copy2(s, d)
+                print(f"  Copied file: {item}")
+    else:
+        print(f"Source directory {old_palum_path} does not exist. Skipping.")
+    print("Palum file migration finished.")
 
     # Close the connection to the old database
     old_db_conn.close()

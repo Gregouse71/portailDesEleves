@@ -8,6 +8,26 @@ from sqlalchemy import text
 from app import db
 from app.models.models_utilisateurs import Utilisateur
 
+def update_user_photos():
+    print("Updating user photos...")
+    users = Utilisateur.query.all()
+    for user in users:
+        photo_filename_jpg = f"{user.nom_utilisateur.lower()}.jpg"
+        photo_path_jpg = os.path.join('upload', 'utilisateurs', photo_filename_jpg)
+
+        photo_filename_png = f"{user.nom_utilisateur.lower()}.png"
+        photo_path_png = os.path.join('upload', 'utilisateurs', photo_filename_png)
+
+        if os.path.exists(photo_path_jpg):
+            user.photo = photo_filename_jpg
+        elif os.path.exists(photo_path_png):
+            user.photo = photo_filename_png
+        else:
+            user.photo = None
+    db.session.commit()
+    print("User photos updated.")
+
+
 def migrate_users():
     print("Migrating users...")
     # Connect to the old database
@@ -66,7 +86,7 @@ def migrate_users():
 
     # Create a dictionary to map user_id to user profile
     user_profiles = {profile[1]: profile for profile in trombi_userprofiles}
-    db.session.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+    db.session.execute(text("PRAGMA foreign_keys = OFF;"))
 
     def capitalize_name(name_raw):
         if not name_raw:
@@ -88,7 +108,7 @@ def migrate_users():
         profile = user_profiles.get(user_id)
 
         if profile:
-            print(f"Migrating user {auth_user[1]} with co {profile[16]}")
+            print(f"Migrating user {auth_user[1]}")
             # Determine cycle
             cycle = 'ic'
             if profile[10]:  # est_ast
@@ -148,18 +168,7 @@ def migrate_users():
             new_user.mot_de_passe = auth_user[5] # Already hashed
             new_user.est_superutilisateur = bool(auth_user[8])
             
-            photo_filename_jpg = f"{auth_user[1].lower()}.jpg"
-            photo_path_jpg = os.path.join('upload', 'utilisateurs', photo_filename_jpg)
-
-            photo_filename_png = f"{auth_user[1].lower()}.png"
-            photo_path_png = os.path.join('upload', 'utilisateurs', photo_filename_png)
-
-            if os.path.exists(photo_path_jpg):
-                new_user.photo = photo_filename_jpg
-            elif os.path.exists(photo_path_png):
-                new_user.photo = photo_filename_png
-            else:
-                new_user.photo = None
+            # The photo is set by update_user_photos() after the migration
 
             try:
                 new_user.date_de_naissance = datetime.strptime(profile[5], '%Y-%m-%d').date() if profile[5] else None
@@ -171,7 +180,6 @@ def migrate_users():
             new_user.chambre = profile[13]
             new_user.sports = profile[15]
 
-            new_user.co_id = profile[16]
             new_user.est_baptise = est_baptise
             new_user.meilleur_score_2048 = profile[31]
             new_user.solde_octo = profile[20]
@@ -185,8 +193,22 @@ def migrate_users():
         else:
             print(f"No profile found for user {auth_user[1]}")
 
+    # Now establish co relationships
+    print("Establishing co relationships...")
+    old_db_cursor.execute("SELECT from_userprofile_id, to_userprofile_id FROM trombi_userprofile_co")
+    co_relationships = old_db_cursor.fetchall()
+    for from_user_id, to_user_id in co_relationships:
+        user = Utilisateur.query.get(from_user_id)
+        co = Utilisateur.query.get(to_user_id)
+        if user and co:
+            if co not in user.cos:
+                user.cos.append(co)
+            if user not in co.cos:
+                co.cos.append(user)
+    db.session.commit()
+
     # Commit the changes for all users
-    db.session.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+    db.session.execute(text("PRAGMA foreign_keys = ON;"))
 
     # Now establish parrain-fillot relationships
     # print("Establishing parrain-fillot relationships...")
@@ -205,3 +227,4 @@ def migrate_users():
     # Close the connection to the old database
     old_db_conn.close()
     print("Users migration finished.")
+    update_user_photos() # Call the new function to update user photos

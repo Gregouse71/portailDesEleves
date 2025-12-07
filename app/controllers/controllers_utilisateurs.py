@@ -66,13 +66,17 @@ def obtenir_liste_des_promos():
     return jsonify(promotions_list)
 
 
-@controllers_utilisateurs.route('/charger_utilisateurs_par_promo/<int:promo>', methods=['GET'])
+@controllers_utilisateurs.route('/charger_utilisateurs', defaults={'promo': None})
+@controllers_utilisateurs.route('/charger_utilisateurs/<int:promo>', methods=['GET'])
 @login_required
-def charger_utilisateurs_par_promo(promo: int):
+def charger_utilisateurs(promo: int):
     """
-    Charge la liste des utilisateurs d'une promo donnée pour Soifguard
+    Charge la liste des utilisateurs d'une promo donnée ou de tous les utilisateurs si aucune promo n'est spécifiée.
     """
-    utilisateurs = Utilisateur.query.filter_by(promotion=promo).all()
+    if promo:
+        utilisateurs = Utilisateur.query.filter_by(promotion=promo).all()
+    else:
+        utilisateurs = Utilisateur.query.all()
 
     liste_utilisateurs = [
         {
@@ -201,14 +205,14 @@ def set_user_infos(user_id: int):
     return jsonify({"message": "Reponses patchées"}), 200
 
 
-@controllers_utilisateurs.route('/supprimer_co', methods=['DELETE'])
+@controllers_utilisateurs.route('/supprimer_co/<int:co_id>', methods=['DELETE'])
 @login_required
-def route_supprimer_co():
+def route_supprimer_co(co_id: int):
     """
-    Supprime le lien de co de l'utilisateur connecte et de son co
+    Supprime un co de l'utilisateur connecte et de son co
     """
     utilisateur = current_user
-    co = get_utilisateur(current_user.co_id)
+    co = get_utilisateur(co_id)
     if not co:
         return jsonify({"message": "Co non trouvé"}), 404
     try:
@@ -218,18 +222,17 @@ def route_supprimer_co():
         return jsonify({"message": f"Erreur lors de la suppression du lien de co : {str(e)}"}), 500
 
 
-@controllers_utilisateurs.route('/creer_co/<int:new_co_id>', methods=["POST"])
+@controllers_utilisateurs.route('/ajouter_co/<int:new_co_id>', methods=["POST"])
 @login_required
-def route_creer_co(new_co_id: int):
+def route_ajouter_co(new_co_id: int):
     """
     Cree un lien de colocation entre deux utilisateurs en modifiant leurs attributs.
-    Si l'un des deux utilisateurs avait deja un co, le lien precedent est detruit. 
     """
     co = get_utilisateur(new_co_id)
     if not co:
         return jsonify({"message": "Utilisateur Co non trouve"}), 404
     try:
-        creer_co(current_user, co)
+        ajouter_co(current_user, co)
         return jsonify({"message": "Lien de co cree avec succes"}), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la creation du lien de co : {str(e)}"}), 500
@@ -239,11 +242,11 @@ def route_creer_co(new_co_id: int):
 def route_changer_co():
     """
     Change le co d'un utilisateur.
-    Prend un JSON avec "user_id" and "co_id".
+    Prend un JSON avec "user_id" and "co_ids".
     """
     data = request.get_json()
     user_id = int(data.get('user_id'))
-    co_id = data.get('co_id')
+    co_ids = data.get('co_ids')
 
     user = get_utilisateur(user_id)
     if not user:
@@ -252,15 +255,13 @@ def route_changer_co():
     if not (user_id == current_user.id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
 
-    if co_id:
-        co = get_utilisateur(co_id)
-        if not co:
-            return jsonify({"message": "Co non trouvé"}), 404
-        creer_co(user, co)
-    elif user.co_id:
-        co = get_utilisateur(user.co_id)
-        if co:
-            supprimer_co(user, co)
+    if co_ids:
+        cos = [get_utilisateur(co_id) for co_id in co_ids]
+        if None in cos:
+            return jsonify({"message": "Un ou plusieurs cos n'ont pas été trouvés"}), 404
+        changer_co(user, cos)
+    else:
+        changer_co(user, [])
     
     return jsonify({"message": "Co mis à jour avec succès"}), 200
 

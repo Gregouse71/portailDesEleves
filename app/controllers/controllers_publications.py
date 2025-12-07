@@ -30,7 +30,8 @@ def route_get_publications_by_tag(tag: str):
                                           "commentaires": [comment.to_dict() for comment in e.commentaires],
                                           "fichier_joint": e.fichier_joint,
                                           "miniature": e.miniature,
-                                          "tags": e.tags}
+                                          "tags": e.tags,
+                                          "association": {"id": e.association.id, "nom": e.association.nom, "nom_dossier": e.association.nom_dossier} if e.association else None}
                                          for e in publications]}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -65,7 +66,8 @@ def route_obtenir_publications_asso(association_id: int):
                                           "commentaires": [comment.to_dict() for comment in e.commentaires],
                                           "fichier_joint": e.fichier_joint,
                                           "miniature": e.miniature,
-                                          "tags": e.tags}
+                                          "tags": e.tags,
+                                          "association": {"id": e.association.id, "nom": e.association.nom, "nom_dossier": e.association.nom_dossier} if e.association else None}
                                          for e in publications]}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

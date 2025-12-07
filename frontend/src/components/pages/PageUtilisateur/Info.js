@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Select from "react-select";
 import { Link } from "react-router-dom";
-import { chargerUtilisateursParPromo, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
+import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
 
@@ -27,17 +27,16 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const promo = Number(userInfos?.promotion);
     const { data: parrains } = useQuery({
         queryKey: ["promoUsers", promo - 1],
-        queryFn: () => chargerUtilisateursParPromo(promo - 1),
+        queryFn: () => chargerUtilisateurs(promo - 1),
         enabled: !!promo, // only run if promo is defined
     });
     const { data: coUsers } = useQuery({
-        queryKey: ["promoUsers", promo],
-        queryFn: () => chargerUtilisateursParPromo(promo),
-        enabled: !!promo,
+        queryKey: ["allUsers"],
+        queryFn: () => chargerUtilisateurs(),
     });
     const { data: fillots } = useQuery({
         queryKey: ["promoUsers", promo + 1],
-        queryFn: () => chargerUtilisateursParPromo(promo + 1),
+        queryFn: () => chargerUtilisateurs(promo + 1),
         enabled: !!promo,
     });
 
@@ -55,7 +54,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
     const [selectedP, setSelectedP] = useState(null);
     const [optionsP, setOptionsP] = useState([]);
-    const [selectedC, setSelectedC] = useState(null);
+    const [selectedC, setSelectedC] = useState([]);
     const [optionsC, setOptionsC] = useState([]);
     const [selectedF, setSelectedF] = useState([]);
     const [optionsF, setOptionsF] = useState([]);
@@ -68,7 +67,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
             if (coUsers) setOptionsC(coUsers.map(u => ({ value: u.id, label: u.nom_utilisateur })));
             if (fillots) setOptionsF(fillots.map(u => ({ value: u.id, label: u.nom_utilisateur })));
 
-            if (userInfos.co) setSelectedC({ value: userInfos.co.id, label: userInfos.co.nom_utilisateur });
+            if (userInfos.cos) setSelectedC(userInfos.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
             if (userInfos.marrain) setSelectedP({ value: userInfos.marrain.id, label: userInfos.marrain.nom_utilisateur });
             if (userInfos.fillots) setSelectedF(userInfos.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
         };
@@ -77,11 +76,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
     const mutation = useMutation({
         mutationFn: async (updatedInfos) => {
-            const { co, marrain, fillots, ...otherInfos } = updatedInfos;
+            const { cos, marrain, fillots, ...otherInfos } = updatedInfos;
             await modifierInfos(id, otherInfos);
 
-            const newCoId = selectedC?.value ?? null;
-            if (co?.id !== newCoId) await changerCo(id, newCoId);
+            const newCoIds = selectedC.map(c => c.value);
+            await changerCo(id, newCoIds);
 
             const newMarrainId = selectedP?.value ?? null;
             if (marrain?.id !== newMarrainId) await changerMarrain(newMarrainId, id);
@@ -160,8 +159,15 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     </p>
                 }
                 <div>
-                    {userInfos.co &&
-                        <p><b>Co :</b> <Link to={`/utilisateur/${userInfos.co.id}`}>{userInfos.co.nom_utilisateur}</Link></p>
+                    {userInfos.cos && userInfos.cos.length > 0 &&
+                        <p><b>Cos :</b>{' '}
+                            {userInfos.cos.map((co, index) => (
+                                <span key={co.id}>
+                                    <Link to={`/utilisateur/${co.id}`}>{co.nom_utilisateur}</Link>
+                                    {index < userInfos.cos.length - 1 ? ', ' : ''}
+                                </span>
+                            ))}
+                        </p>
                     }
                     {userInfos.marrain &&
                         <p><b>Marrain :</b> <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></p>
@@ -228,6 +234,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Form.Label column sm="2">Co</Form.Label>
                     <Col sm="10">
                         <Select
+                            isMulti
                             options={optionsC}
                             value={selectedC}
                             onChange={setSelectedC}

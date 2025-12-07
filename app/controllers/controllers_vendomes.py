@@ -12,7 +12,7 @@ from app.services.services_vendomes import main_vendome, ajouter_vendome_a_bdd
 # Creer le blueprint pour les utilisateurs
 controllers_vendomes = Blueprint('controllers_vendomes', __name__)
 
-UPLOAD_VENDOME_FOLDER= 'app/uploads/vendomes'
+UPLOAD_VENDOME_FOLDER= 'uploads/vendomes'
 controllers_vendomes.config['UPLOAD_VENDOME_FOLDER'] = UPLOAD_VENDOME_FOLDER
 
 @controllers_vendomes.route('/upload_vendome', methods=['POST'])
@@ -27,7 +27,7 @@ def upload_file():
     # Ajouter le vendome à la base de données
     ajouter_vendome_a_bdd(nom, date_parution, cache_aux_1A, edition_speciale, particularite, vendome_liste)
     
-    vendome_folder= f'app/uploads/vendomes/vendome_{date_parution}'
+    vendome_folder= f'uploads/vendomes/vendome_{date_parution}'
     if particularite:
         vendome_folder+=f'_{particularite}'
 
