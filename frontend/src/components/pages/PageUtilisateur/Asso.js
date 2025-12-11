@@ -16,23 +16,19 @@ export default function TabAsso({ id }) {
     return (<>
         <Container className="py-4">
             <h2>Associations actuelles</h2>
-            <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4 justify-content-center">
+            <div className="asso-grid">
                 {assos.actuel.map((asso) =>  (
-                    <Col>
-                        <AssoCard asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} />
-                    </Col>
+                    <AssoCard key={asso.asso_id} asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} />
                 ))}
-            </Row>
+            </div>
         </Container>
         <Container className="py-4">
             <h2>Anciennes associations</h2>
-            <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4 justify-content-center">
+            <div className="asso-grid">
                 {assos.ancien.map((asso) => (
-                    <Col>
-                        <AssoCard asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} />
-                    </Col>
+                    <AssoCard key={asso.asso_id} asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} />
                 ))}
-            </Row>
+            </div>
         </Container>
     </>);
 }

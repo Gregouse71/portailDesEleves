@@ -66,7 +66,7 @@ def migrate_publications():
                     association=asso,
                     auteur=auteur,
                     titre=row[1],
-                    contenu=row[3].replace('\r\n', '\n'),
+                    contenu=row[3].replace('\\r\\n', '\n'),
                     date_publication=date_pub.strftime('%Y-%m-%d %H:%M:%S.%f'),
                     is_commentable=True,
                     a_cacher_aux_nouveaux=bool(row[4])

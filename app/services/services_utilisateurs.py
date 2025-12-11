@@ -3,9 +3,8 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from itertools import groupby
-from math import exp
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurDeLienUtilisateurs(Exception):
@@ -109,7 +108,15 @@ def prochains_anniv():
         return (date2 <= date1 <= date2 + timedelta(days=7)
                 or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
 
-    users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance).all()
+    current_year_suffix = datetime.today().year % 100
+    promos_to_consider = []
+    for i in range(4):
+        promo_suffix = (current_year_suffix - i + 100) % 100
+        promos_to_consider.append(f"{promo_suffix:02d}")
+
+    users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance)\
+        .filter(Utilisateur.promotion.in_(promos_to_consider))\
+        .all()
 
     ret = sorted([(user.date_de_naissance.replace(year=2000), user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if must_display(user.date_de_naissance)])
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]

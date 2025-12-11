@@ -1,4 +1,6 @@
 import sqlite3
+import os
+import shutil
 from app import db
 from app.models.models_associations import Association, AssociationMandat, AssociationMembre
 from app.models.models_utilisateurs import Utilisateur
@@ -18,12 +20,28 @@ def migrate_associations():
         
         new_asso = Association(
             nom=nom_asso,
-            description=row[7].replace('\r\n', '\n').strip() if row[7] else None,
+            description=row[7].replace('\\r\\n', '\n').strip() if row[7] else None,
             a_cacher_aux_nouveaux=bool(row[5]),
             ordre_importance=row[4]
         )
         new_asso.id = row[0]
         db.session.add(new_asso)
+
+        # Migrate icon
+        old_icon_path_rel = row[6]
+        if old_icon_path_rel:
+            old_icon_path_rel = old_icon_path_rel.strip().lstrip('/')
+            old_icon_path_full = os.path.join('upload', 'old_media', old_icon_path_rel)
+            
+            if os.path.exists(old_icon_path_full):
+                filename = os.path.basename(old_icon_path_full)
+                new_folder = os.path.join('upload', 'associations', new_asso.nom_dossier)
+                new_icon_path_full = os.path.join(new_folder, filename)
+                
+                shutil.copy2(old_icon_path_full, new_icon_path_full)
+                
+                new_asso.logo_path = filename
+                db.session.add(new_asso)
 
     # Migrate bde_liste
     old_db_cursor.execute("SELECT * FROM bde_liste")
@@ -71,6 +89,7 @@ def migrate_associations():
         asso_id = row[2]
         user_id = row[1]
         role = row[3]
+        ordre = row[4]
 
         utilisateur = Utilisateur.query.get(user_id)
         
@@ -86,22 +105,21 @@ def migrate_associations():
             if existing_membre:
                 # Update the role if the entry already exists
                 existing_membre.role = role
+                existing_membre.position = ordre
                 db.session.add(existing_membre)
             else:
                 # Create a new entry if it does not exist
                 membre = AssociationMembre(
                     utilisateur=utilisateur,
                     mandat=mandat,
-                    role=role
+                    role=role,
+                    position=ordre
                 )
                 db.session.add(membre)
 
     db.session.commit()
 
     # Migrate Vendome files
-    import os
-    import shutil
-
     print("Starting Vendome file migration...")
 
     # Create vendome association folder

@@ -277,7 +277,7 @@ def route_creer_asso():
 @controllers_associations.route('/assos', methods=['GET'])
 @login_required
 def route_get_assos():
-    if current_user.est_baptise:
+    if current_user.est_baptise or current_user.est_superutilisateur:
         assos = Association.query.all()
     else:
         assos = Association.query.filter_by(a_cacher_aux_nouveaux=False)
@@ -288,7 +288,7 @@ def route_get_assos():
 @controllers_associations.route('/<int:association_id>', methods=['GET'])
 @login_required
 def route_get_asso(association_id):
-    if current_user.est_baptise:
+    if current_user.est_baptise or current_user.est_superutilisateur:
         asso = Association.query.filter_by(id=association_id).first()
     else:
         asso = Association.query.filter_by(a_cacher_aux_nouveaux=False, id=association_id).first()

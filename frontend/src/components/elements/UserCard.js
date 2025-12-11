@@ -26,8 +26,9 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
                     style={{ cursor: "pointer" }}
                 />
             </div>
-            <Card.Body>
+            <Card.Body className="px-2">
                 <Card.Title className="h6 bold">{user.nom_utilisateur}</Card.Title>
+                <hr />
                 {!isModifying && <Card.Text>{user.role}</Card.Text>}
                 {isModifying && <>
                     {values.map((elt) =>

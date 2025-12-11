@@ -145,11 +145,32 @@ def assos_utilisateur(user_id: int):
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
-    roles = AssociationMembre.query.filter_by(utilisateur_id=user_id).all()
+    roles = AssociationMembre.query.filter_by(utilisateur_id=user_id).join(AssociationMembre.mandat).join(AssociationMandat.association).all()
+
+    current_user_is_baptise = current_user.est_baptise or current_user.est_superutilisateur
+    print("current_user_is_baptise", current_user_is_baptise)
+
+    actuel_assos = []
+    ancien_assos = []
+
+    for role in roles:
+        # Check if the association should be hidden from non-baptized users
+        if role.mandat.association.a_cacher_aux_nouveaux and not current_user_is_baptise:
+            continue  # Skip this association
+
+        asso_data = {
+            "role": role.role,
+            "mandat": role.mandat.nom,
+            "asso_id": role.mandat.association_id
+        }
+        if role.mandat.actuel:
+            actuel_assos.append(asso_data)
+        else:
+            ancien_assos.append(asso_data)
 
     data = {
-        "actuel": [{"role": role.role, "mandat": role.mandat.nom, "asso_id": role.mandat.association_id} for role in roles if role.mandat.actuel],
-        "ancien": [{"role": role.role, "mandat": role.mandat.nom, "asso_id": role.mandat.association_id} for role in roles if not role.mandat.actuel]    
+        "actuel": actuel_assos,
+        "ancien": ancien_assos
     }
     return jsonify(data)
 

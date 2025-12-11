@@ -330,7 +330,7 @@ def get_publications_by_tag(tag: str):
         )
 
         # Filter out sensitive publications if user is not 'baptise'
-        if not current_user.est_baptise:
+        if not (current_user.est_baptise or current_user.est_superutilisateur):
             query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
 
         # Filter out cycle-specific publications

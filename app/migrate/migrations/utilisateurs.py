@@ -34,6 +34,14 @@ def migrate_users():
     old_db_conn = sqlite3.connect('instance/old_database.db')
     old_db_cursor = old_db_conn.cursor()
 
+    def format_promotion(promo):
+        if promo is None:
+            return None
+        promo_str = str(promo)
+        if promo_str.isdigit() and len(promo_str) == 1:
+            return f"0{promo_str}"
+        return promo_str
+
     # Fetch all users from the old database
     old_db_cursor.execute("SELECT * FROM auth_user")
     auth_users = old_db_cursor.fetchall()
@@ -157,7 +165,7 @@ def migrate_users():
                 nom_utilisateur=auth_user[1].lower(),
                 prenom=prenom,
                 nom=nom,
-                promotion=str(profile[6]) if profile[6] else None,
+                promotion=format_promotion(profile[6]),
                 email=email,
                 cycle=cycle,
                 mot_de_passe_en_clair="password",

@@ -10,6 +10,8 @@ def migrate_evenements():
     old_db_conn = sqlite3.connect('instance/old_database.db')
     old_db_cursor = old_db_conn.cursor()
 
+    # --- Migrate Periodic Events from schedule_event ---
+    
     # Create a mapping from calendar_id to association_id
     calendar_to_asso = {}
     old_db_cursor.execute("SELECT * FROM schedule_calendar")
@@ -19,43 +21,71 @@ def migrate_evenements():
         if asso:
             calendar_to_asso[cal[0]] = asso.id
 
-    # Migrate schedule_event
-    old_db_cursor.execute("SELECT * FROM schedule_event")
-    events = old_db_cursor.fetchall()
-    for row in events:
+    # Select only periodic events
+    old_db_cursor.execute("SELECT * FROM schedule_event WHERE rule_id IS NOT NULL")
+    periodic_events = old_db_cursor.fetchall()
+    for row in periodic_events:
         asso_id = calendar_to_asso.get(row[8])
         if asso_id:
-            periodic = row[10] is not None
-            
-            if periodic:
-                old_db_cursor.execute("SELECT * FROM schedule_rule WHERE id=?", (row[10],))
-                rule = old_db_cursor.fetchone()
+            old_db_cursor.execute("SELECT * FROM schedule_rule WHERE id=?", (row[10],))
+            rule = old_db_cursor.fetchone()
+            if rule:
                 params = json.loads(rule[4])
                 jours = params.get('byday')
                 
+                try:
+                    heure_debut = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f').time()
+                    heure_fin = datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S.%f').time()
+                except ValueError:
+                    heure_debut = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S').time()
+                    heure_fin = datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S').time()
+
                 new_event = Evenement(
                     id_association=asso_id,
                     nom=row[3],
-                    description=row[4],
-                    lieu="",
+                    description=row[4].replace('\\r\\n', '\n').strip() if row[4] else None,
+                    lieu="",  # 'lieu' is not available in schedule_event
                     evenement_periodique=True,
                     jours_de_la_semaine=jours,
-                    heure_de_debut=datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f').time(),
-                    heure_de_fin=datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S.%f').time()
+                    heure_de_debut=heure_debut,
+                    heure_de_fin=heure_fin
                 )
-            else:
+                if not Evenement.query.get(row[0]):
+                    new_event.id = row[0]
+                    db.session.add(new_event)
+
+    # --- Migrate Non-Periodic Events from evenement_evenement ---
+    old_db_cursor.execute("SELECT * FROM evenement_evenement")
+    non_periodic_events = old_db_cursor.fetchall()
+    for row in non_periodic_events:
+        # schema: id, createur_id, association_id, titre, description, date_debut, date_fin, lieu, billetterie_id
+        asso_id = row[2]
+        asso = Association.query.get(asso_id)
+        if asso:
+            try:
+                date_debut = datetime.strptime(row[5], '%Y-%m-%d %H:%M:%S')
+                date_fin = datetime.strptime(row[6], '%Y-%m-%d %H:%M:%S')
+            except (ValueError, TypeError):
+                try:
+                    date_debut = datetime.strptime(row[5], '%Y-%m-%d %H:%M:%S.%f')
+                    date_fin = datetime.strptime(row[6], '%Y-%m-%d %H:%M:%S.%f')
+                except (ValueError, TypeError):
+                    date_debut = None
+                    date_fin = None
+
+            if date_debut and date_fin:
                 new_event = Evenement(
                     id_association=asso_id,
                     nom=row[3],
-                    description=row[4],
-                    lieu="",
+                    description=row[4].replace('\\r\\n', '\n').strip() if row[4] else None,
+                    lieu=row[7],
                     evenement_periodique=False,
-                    date_de_debut=datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f'),
-                    date_de_fin=datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S.%f')
+                    date_de_debut=date_debut,
+                    date_de_fin=date_fin
                 )
-            
-            new_event.id = row[0]
-            db.session.add(new_event)
+                if not Evenement.query.get(row[0]):
+                    new_event.id = row[0]
+                    db.session.add(new_event)
 
     db.session.commit()
 

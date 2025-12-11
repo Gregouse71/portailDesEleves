@@ -348,7 +348,11 @@ function AssoMembres({ asso_id }) {
                     </Card.Header>
                     <Card.Body>
                         <div className="member-grid">
-                            {mandat.membres.map((user) => (
+                            {[...mandat.membres].sort((a, b) => {
+                                if (a.position === null) return 1;
+                                if (b.position === null) return -1;
+                                return b.position - a.position;
+                            }).map((user) => (
                                 <UserCard user={user} isGestion={isGestionMembres} isModifying={idMembreModifier === user.id}
                                     key={user.id}
                                     f1={() => handleRetirerMembre(mandat.id, user.id)}

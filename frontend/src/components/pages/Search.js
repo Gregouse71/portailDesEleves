@@ -18,7 +18,7 @@ export default function Search() {
       <h1>Résultats de recherche pour "{query}"</h1>
       {searchResults.length > 0 ? (
         <ListGroup>
-          {searchResults.map(user => (
+          {searchResults.sort((a, b) => b.promotion - a.promotion).map(user => (
             <ListGroup.Item key={user.id} as={Link} to={`/utilisateur/${user.id}`} className="d-flex align-items-center">
               <div style={{ height: '100px' }} className='me-3'>
                 <Image src={user.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${user.photo}` : ''} alt="user" className="mw-100 mh-100" />

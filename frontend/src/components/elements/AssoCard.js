@@ -21,14 +21,15 @@ export default function AssoCard({ asso_id, mandat, role }) {
         >
             {asso.img !== null && <Card.Img
                 variant="top"
+                className="mt-3 object-fit-contain"
                 src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`}
                 alt={asso.nom}
-                style={{ height: '120px', objectFit: 'cover' }}
+                style={{ height: '120px' }}
             />}
-            < Card.Body >
+            < Card.Body className="px-2">
                 <Card.Title>{asso.nom}</Card.Title>
-                {mandat && <Card.Text>{mandat}</Card.Text>}
-                {role && <Card.Text>{role}</Card.Text>}
+                {role && <> <hr /><Card.Text>{role}</Card.Text></>}
             </Card.Body >
+            {mandat && <Card.Footer><Card.Text>{mandat}</Card.Text></Card.Footer>}
         </Card >);
 }

@@ -19,7 +19,7 @@
     height: 150px;
     border: 6px solid $light;
     background-color: $light;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .nav-tabs .nav-link {
@@ -34,14 +34,14 @@
 
 .member-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.5rem;
 }
 
 .asso-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Adjusted for 5 cards per row */
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .post-card {
