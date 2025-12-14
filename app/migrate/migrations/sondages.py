@@ -82,3 +82,9 @@ def migrate_sondages():
         db.session.add(s)
         db.session.commit()
         print(f"Migrated sondage {s} : {s.gagnants} {s.perdants}")
+        
+    users = Utilisateur.query.all()
+    for u in users:
+        u.nombre_votes = VoteSondage.query.filter_by(utilisateur_id=u.id).count()
+        db.session.add(u)
+    db.session.commit()

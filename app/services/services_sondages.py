@@ -211,17 +211,15 @@ def score_global_sondages(id: int):
     total = 0
     if n == 0:
         return 0, 0
-    totalcarre = 0
+
     for vote in votes:
         if vote.gagnant:
             total += 1
-            totalcarre += 1
         if vote.perdant:
             total += -1
-            totalcarre += 1
 
     avg = total/n
-    sigma = total/n - avg**2  # Formule de Huygens pour l'ecart type
+    sigma = 1 - avg**2  # Formule de Huygens pour l'ecart type. La somme des carrés vaut tjrs 1
     return avg - 1.96 * sigma / sqrt(n), avg + 1.96 * sigma / sqrt(n)
 
 
