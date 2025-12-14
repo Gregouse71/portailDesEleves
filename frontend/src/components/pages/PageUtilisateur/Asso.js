@@ -1,7 +1,7 @@
 import '../../../assets/styles/liste_assos.scss';
 import '../../../assets/styles/asso.scss';
 
-import { Row, Col, Container } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { obtenirAssosUtilisateur } from "../../../api/api_utilisateurs";
 import AssoCard from "../../elements/AssoCard";
 import { useQuery } from "@tanstack/react-query";

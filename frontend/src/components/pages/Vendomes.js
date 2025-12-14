@@ -1,6 +1,5 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Container, Row, Col, Spinner, Alert } from 'react-bootstrap';
+import { Container, Spinner, Alert } from 'react-bootstrap';
 import { getPublicationsByTag } from '../../api/api_publications';
 import PostCard from '../elements/PostCard';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout

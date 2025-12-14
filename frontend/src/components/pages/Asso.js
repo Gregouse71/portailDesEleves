@@ -6,7 +6,7 @@ import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
+import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 

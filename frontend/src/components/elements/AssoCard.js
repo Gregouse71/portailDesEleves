@@ -1,6 +1,6 @@
 import { Card } from "react-bootstrap"
 import { useNavigate } from "react-router-dom";
-import { BASE_URL, UPLOAD_BASE_URL } from "../../api/base";
+import { UPLOAD_BASE_URL } from "../../api/base";
 import { useQuery } from "@tanstack/react-query";
 import { chargerAsso } from "../../api/api_associations";
 

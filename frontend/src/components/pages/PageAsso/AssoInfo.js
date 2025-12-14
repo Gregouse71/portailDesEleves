@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { chargerAsso, estUtilisateurDansAsso, modifierDescriptionAsso } from "../../../api/api_associations";
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
 import { Button } from "react-bootstrap";
@@ -10,7 +10,6 @@ function AssoInfo({ id }) {
     const [isEdition, setIsEdition] = useState(false);
     const [description, setDescription] = useState("");
     const [newDescription, setNewDescription] = useState("");
-    const [isMembreAutorise, setIsMembreAutorise] = useState(false);
 
     const { data: asso = null } = useQuery({
         queryKey: ['asso', id],

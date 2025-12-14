@@ -1,7 +1,7 @@
 import { useSearchParams, Link } from 'react-router-dom';
 import { ListGroup, Image } from 'react-bootstrap';
 import { searchUsers } from '../../api/api_utilisateurs';
-import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
+import { UPLOAD_BASE_URL } from '../../api/base';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Search() {

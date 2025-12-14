@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Container, Spinner, Alert, ListGroup, Row, Col } from 'react-bootstrap';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from '../../api/api_associations';
-import { BASE_URL, UPLOAD_BASE_URL } from '../../api/base';
+import { UPLOAD_BASE_URL } from '../../api/base';
 
 const PlanningAsso = () => {
     const today = new Date();

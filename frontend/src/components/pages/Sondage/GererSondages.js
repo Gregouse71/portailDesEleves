@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useLayout } from '../../../layouts/Layout';
 import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuivant } from '../../../api/api_sondages';
 import { useNavigate } from "react-router-dom";

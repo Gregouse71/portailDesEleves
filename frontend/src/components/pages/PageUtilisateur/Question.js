@@ -10,7 +10,7 @@ export default function TabQuestions({ id, autoriseAModifier }) {
     const [questionsReponses, setQuestionsReponses] = useState({});
     const [isGestion, setIsGestion] = useState(false);
 
-    const { data: questionData, error } = useQuery({
+    const { data: questionData } = useQuery({
         queryKey: ['questionsReponses', id],
         queryFn: () => obtenirQuestionsReponses(id),
     });
