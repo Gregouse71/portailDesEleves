@@ -73,6 +73,8 @@ function GererSondages() {
     return (
         <Container>
             <h1>Gestion des sondages en attente</h1>
+            <Button variant="primary" onClick={() => suivantEtReload()} className="mt-3">Passer au sondage suivant</Button>
+            <Button variant="secondary" onClick={() => navigate("/")} className="mt-3 ms-2">Retour</Button>
             {sondagesEnAttente.length === 0 ? (
                 <Card>
                     <Card.Body>
@@ -127,8 +129,6 @@ function GererSondages() {
                     </tbody>
                 </Table>
             )}
-            <Button variant="primary" onClick={() => suivantEtReload()} className="mt-3">Passer au sondage suivant</Button>
-            <Button variant="secondary" onClick={() => navigate("/")} className="mt-3 ms-2">Retour</Button>
         </Container>
     );
 }

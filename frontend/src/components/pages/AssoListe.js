@@ -20,9 +20,6 @@ export default function ListeAssos() {
       <h1 className="mb-3">Associations</h1>
       <p className="text-muted">Ici tu peux retrouver toutes les associations des Mines</p>
       <div className="asso-grid">
-        {assos.map((asso_id) => (
-          <AssoCard key={asso_id} asso_id={asso_id} />
-        ))}
         {userData.is_superuser && (
           <Card
             className="h-100 text-center hover-overlay"
@@ -35,6 +32,9 @@ export default function ListeAssos() {
             </Card.Body>
           </Card>
         )}
+        {assos.map((asso_id) => (
+          <AssoCard key={asso_id} asso_id={asso_id} />
+        ))}
       </div>
     </Container>
   );

@@ -1,0 +1,26 @@
+.user-link-text {
+    color: var(--text-color, #333);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--primary-color, #005a9e);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    &:visited,
+    &:active {
+        color: var(--text-color, #333);
+    }
+}
+
+.anniv-date-header {
+    font-weight: bold;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+
+    color: var(--primary-color, #005a9e);
+
+    border-bottom: 1px solid;
+    padding-bottom: 0.25rem;
+}

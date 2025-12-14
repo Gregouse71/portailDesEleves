@@ -47,7 +47,7 @@ export default function PostCard({ post }) {
             />
             <Card.Body>
                 <Card.Title>{post.titre}</Card.Title>
-                <Card.Text>{new Date(post.date_publication).toLocaleDateString()}</Card.Text>
+                <Card.Text><em>{new Date(post.date_publication).toLocaleDateString()}</em></Card.Text>
             </Card.Body>
         </Card>
     );
