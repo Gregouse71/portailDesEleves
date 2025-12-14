@@ -2,6 +2,7 @@ import sqlite3
 from app import db
 from app.models.models_sondages import Sondage, VoteSondage
 from app.models.models_utilisateurs import Utilisateur
+from app.services.services_sondages import _resultat_sondage, _donner_votes_gagnants_perdants
 from datetime import datetime
 
 def migrate_sondages():
@@ -66,3 +67,18 @@ def migrate_sondages():
 
     # Close the connection to the old database
     old_db_conn.close()
+
+    sondages = Sondage.query.all()
+    for s in sondages:
+        compteur_votes = _resultat_sondage(s.id)  # On récupère le résultat
+        gagnants, perdants = _donner_votes_gagnants_perdants(compteur_votes)  # On détermine les votes gagnants
+        votes = VoteSondage.query.filter_by(sondage_id=s.id).all()
+        for vote in votes:  # Pour chaque vote, on détermine s'il est gagnant
+            vote.gagnant = vote.vote - 1 in gagnants # /!\ L'indexation n'est pas la même dans la table vote ou sondage
+            vote.perdant = vote.vote - 1 in perdants
+            db.session.add(vote)
+        s.gagnants = gagnants
+        s.perdants = perdants
+        db.session.add(s)
+        db.session.commit()
+        print(f"Migrated sondage {s} : {s.gagnants} {s.perdants}")
