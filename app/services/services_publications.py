@@ -315,7 +315,7 @@ def get_publications_by_tag(tag: str):
     Renvoie toutes les publications avec un tag spécifique,
     en tenant compte des permissions de l'utilisateur actuel.
     """
-    query = Publication.query.filter(Publication.tags.contains([tag]))
+    query = Publication.query.filter(Publication.tags.contains(tag))
 
     if not current_user.est_superutilisateur:
         # Filter out internal publications if user is not a member of the associated association

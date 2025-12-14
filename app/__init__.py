@@ -14,6 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_apscheduler import APScheduler
+import json
 
 # from flask_session import Session
 from config import Config
@@ -38,6 +39,11 @@ def create_app():
     app = Flask(__name__)
     # Chargement de la configuration
     app.config.from_object(Config)
+
+    # Permet de stocker les caractères UTF dans les objets JSON
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False)
+    }
 
     # Active CORS pour toutes les routes de l'application
     CORS(app, origins="*", supports_credentials=True)

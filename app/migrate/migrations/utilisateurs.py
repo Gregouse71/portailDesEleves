@@ -94,7 +94,7 @@ def migrate_users():
 
     # Create a dictionary to map user_id to user profile
     user_profiles = {profile[1]: profile for profile in trombi_userprofiles}
-    db.session.execute(text("PRAGMA foreign_keys = OFF;"))
+    db.session.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
 
     def capitalize_name(name_raw):
         if not name_raw:
@@ -216,7 +216,7 @@ def migrate_users():
     db.session.commit()
 
     # Commit the changes for all users
-    db.session.execute(text("PRAGMA foreign_keys = ON;"))
+    db.session.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
 
     # Now establish parrain-fillot relationships
     # print("Establishing parrain-fillot relationships...")
