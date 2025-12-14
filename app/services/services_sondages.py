@@ -196,7 +196,7 @@ def score_recent_sondages (id: int):
             valeur += 1
         if vote.perdant:
             valeur -= 1
-
+        
         score_recent += exp(- vote.sondage.age() / 14) * valeur
 
     return score_recent
@@ -205,7 +205,6 @@ def score_global_sondages(id: int):
     """
     Calcul le score global de l'utilisateur : la borne inf de l'intervalle de confiance
     """
-
     votes = VoteSondage.query.filter_by(utilisateur_id=id).with_entities(VoteSondage.gagnant, VoteSondage.perdant).all()
 
     n = len(votes)
@@ -218,7 +217,7 @@ def score_global_sondages(id: int):
             total += 1
             totalcarre += 1
         if vote.perdant:
-            total -= 1
+            total += -1
             totalcarre += 1
 
     avg = total/n
@@ -231,8 +230,7 @@ def update_all_scores ():
     for user in users:
         user.score_recent = score_recent_sondages (user.id)
         con, div = score_global_sondages (user.id)  # Score consensuel, divergent
-        if user.id == 94:
-            print(con, div)
+
         user.score_global_con = con
         user.score_global_div = div
         db.session.add(user)

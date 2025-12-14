@@ -54,6 +54,8 @@ class Sondage(db.Model):
     def age (self):
         if not self.archive:
             return -1
+        if self.date is None:
+            return 1e6
         return (date.today() - self.date_publication).days
 
 

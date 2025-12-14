@@ -4,7 +4,7 @@ from app.migrate.migrations.chat import migrate_chat
 from app.migrate.migrations.divers import migrate_divers
 from app.migrate.migrations.evenements import migrate_evenements
 from app.migrate.migrations.publications import migrate_publications
-from app.migrate.migrations.sondages import migrate_sondages, calculate_wins
+from app.migrate.migrations.sondages import migrate_sondages
 
 def migrate_all():
     migrate_users()
@@ -20,7 +20,6 @@ def migrate_all():
     migrate_publications()
     print("Publications migrated.")
     migrate_sondages()
-    calculate_wins ()
     print("Sondages migrated.")
     print("Migration finished.")
 

@@ -13,7 +13,7 @@ export default function AssoCard({ asso_id, mandat, role }) {
     });
 
     return (isLoading
-        ? <div>Loading ...</div>
+        ? <div> Chargement ...</div>
         : <Card
             className="h-100 text-center"
             onClick={() => navigate(`/assos/get/${asso.id}`)}
