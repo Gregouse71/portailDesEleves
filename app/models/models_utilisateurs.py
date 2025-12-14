@@ -29,7 +29,7 @@ default_questions = { # Les trois premiers caractères servent à l'odonnancemen
 }
 
 
-cos_association = db.Table('cos_association',
+cos_association = db.Table('utilisateurs_cos',
     db.Column('user_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id')),
     db.Column('co_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
 )
