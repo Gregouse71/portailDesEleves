@@ -3,7 +3,7 @@ import { Alert, Card, Spinner } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from "../../api/api_associations";
-import { BASE_URL, UPLOAD_BASE_URL } from "../../api/base";
+import { UPLOAD_BASE_URL } from "../../api/base";
 import { Link } from "react-router-dom";
 
 export default function BlocEvents() {

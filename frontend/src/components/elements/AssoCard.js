@@ -1,6 +1,6 @@
 import { Card } from "react-bootstrap"
 import { useNavigate } from "react-router-dom";
-import { BASE_URL, UPLOAD_BASE_URL } from "../../api/base";
+import { UPLOAD_BASE_URL } from "../../api/base";
 import { useQuery } from "@tanstack/react-query";
 import { chargerAsso } from "../../api/api_associations";
 
@@ -13,7 +13,7 @@ export default function AssoCard({ asso_id, mandat, role }) {
     });
 
     return (isLoading
-        ? <div>Loading ...</div>
+        ? <div> Chargement ...</div>
         : <Card
             className="h-100 text-center"
             onClick={() => navigate(`/assos/get/${asso.id}`)}

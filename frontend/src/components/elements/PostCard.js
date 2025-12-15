@@ -1,21 +1,13 @@
 import { Card } from "react-bootstrap"
-import { useNavigate } from "react-router-dom";
 import { UPLOAD_BASE_URL } from "../../api/base";
 
 export default function PostCard({ post }) {
-    const navigate = useNavigate();
 
     // Function to determine if the file is an image or PDF
     const isImage = (filePath) => {
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
         const ext = (filePath.substring(filePath.lastIndexOf('.'))).toLowerCase();
         return imageExtensions.includes(ext);
-    };
-
-    const isPdf = (filePath) => {
-        const pdfExtensions = ['.pdf'];
-        const ext = (filePath.substring(filePath.lastIndexOf('.'))).toLowerCase();
-        return pdfExtensions.includes(ext);
     };
 
     const handleCardClick = () => {
@@ -55,7 +47,7 @@ export default function PostCard({ post }) {
             />
             <Card.Body>
                 <Card.Title>{post.titre}</Card.Title>
-                <Card.Text>{new Date(post.date_publication).toLocaleDateString()}</Card.Text>
+                <Card.Text><em>{new Date(post.date_publication).toLocaleDateString()}</em></Card.Text>
             </Card.Body>
         </Card>
     );

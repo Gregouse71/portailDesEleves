@@ -4,7 +4,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Soifguard from "./pages/Soifguard";
 import Admin from "./pages/Admin";
-import ListeAssos from "./components/pages/ListeAssos";
+import ListeAssos from "./components/pages/AssoListe";
 import Home from "./components/pages/Home";
 import AccueilSoifguard from "./components/pages/AccueilSoifguard";
 import Asso from "./components/pages/Asso";
@@ -14,7 +14,7 @@ import PlanningAsso from "./components/pages/PlanningAsso";
 import ProposerSondage from "./components/pages/Sondage/ProposerSondage";
 import GererSondages from "./components/pages/Sondage/GererSondages";
 import PageUtilisateur from "./components/pages/PageUtilisateur";
-import AjouterAssociation from "./components/pages/AjouterAssociation";
+import AjouterAssociation from "./components/pages/AssoAjouter";
 import { Layout, LayoutProvider } from "./layouts/Layout";
 import FormulaireConnexion from "./components/FormulaireConnexion";
 import Search from "./components/pages/Search";

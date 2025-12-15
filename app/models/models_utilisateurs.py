@@ -29,7 +29,7 @@ default_questions = { # Les trois premiers caractères servent à l'odonnancemen
 }
 
 
-cos_association = db.Table('cos_association',
+cos_association = db.Table('utilisateurs_cos',
     db.Column('user_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id')),
     db.Column('co_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
 )
@@ -86,6 +86,7 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
+    nombre_votes = db.Column(db.Integer, default=0)
     score_recent = db.Column(db.Float, nullable=False, default=0)
     score_global_con = db.Column(db.Float, nullable=False, default=0)
     score_global_div = db.Column(db.Float, nullable=False, default=0)
@@ -375,5 +376,6 @@ class Utilisateur(db.Model, UserMixin) :
             "is_superuser": self.est_superutilisateur,
             "score_recent": self.score_recent,
             "score_global_con": self.score_global_con,
-            "score_global_div": self.score_global_div
+            "score_global_div": self.score_global_div,
+            "nombre_votes": self.nombre_votes
         }

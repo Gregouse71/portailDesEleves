@@ -330,7 +330,7 @@ function AssoPosts({ asso_id }) {
         enabled: !!asso_id,
     });
 
-    const { data: postsData, publications } = useQuery({
+    const { data: postsData } = useQuery({
         queryKey: ['publicationData', asso_id, 'publications'],
         queryFn: () => obtenirPublicationsAsso(asso_id),
         staleTime: 1000 * 60 * 5, // 5 minutes

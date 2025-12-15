@@ -1,5 +1,4 @@
-import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Card } from 'react-bootstrap';
 
 function Home() {
   const mailingLists = [
