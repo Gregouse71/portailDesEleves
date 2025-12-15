@@ -67,7 +67,7 @@ class Publication(db.Model):
 
     contenu = db.Column(db.Text, nullable=True)
 
-    date_publication = db.Column(db.String(100), nullable=True)
+    date_publication = db.Column(db.DateTime, nullable=True)
 
     likes = db.Column(db.JSON, nullable=True)
 
@@ -211,3 +211,19 @@ class Publication(db.Model):
 
         if tags != None:
             self.tags = tags
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "auteur": self.auteur.nom_utilisateur if self.auteur else None,
+            "titre": self.titre,
+            "contenu": self.contenu,
+            "date_publication": self.date_publication,
+            "likes": self.likes,
+            "is_commentable": self.is_commentable,
+            "commentaires": [comment.to_dict() for comment in self.commentaires],
+            "fichier_joint": self.fichier_joint,
+            "miniature": self.miniature,
+            "tags": self.tags,
+            "association": {"id": self.association.id, "nom": self.association.nom, "nom_dossier": self.association.nom_dossier} if self.association else None
+        }
