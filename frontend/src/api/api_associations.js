@@ -186,7 +186,7 @@ export async function ajouterContenu(associationId, file) {
     if (!response.ok) {
       throw new Error(data.message || "Erreur lors du téléversement du fichier");
     }
-    return { success: true, message: data.message, filePath: data.file_path };
+    return { success: true, message: data.message, fileName: data.file_name };
   } catch (error) {
     console.error("Erreur réseau :", error);
     return { success: false, message: error.message };

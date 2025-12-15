@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from app import db
 from app.models.models_publications import Publication
 from app.models.models_associations import Association
@@ -93,11 +94,11 @@ def migrate_publications():
                 date_pub = process_date(row[3], default_date, vendome_date_formats)
                 
                 # CLEAN PATHS: Remove 'vendome/' prefix to match new folder structure
-                fichier_clean = row[2].replace('vendome/', '') if row[2] else None
+                fichier_clean = os.path.basename(row[2]) if row[2] else None
                 
                 # --- NEW: Handle Thumbnail ---
                 # Based on your DB, the thumbnail is at index 4
-                thumbnail_clean = row[4].replace('vendome/', '') if row[4] else None
+                thumbnail_clean = os.path.basename(row[4]) if row[4] else None
 
                 new_pub = Publication(
                     association=vendome_asso,
@@ -129,7 +130,7 @@ def migrate_publications():
             for row in palums:
                 date_pub = process_date(row[2], default_date, news_date_formats)
 
-                thumbnail_clean = row[4].replace('palum/', '') if row[4] else None
+                thumbnail_clean = os.path.basename(row[4]) if row[4] else None
                 
                 new_pub = Publication(
                     association=bde_asso,
@@ -140,7 +141,7 @@ def migrate_publications():
                     is_commentable=True,
                     a_cacher_aux_nouveaux=False,
                     miniature=thumbnail_clean,
-                    fichier_joint=row[1].replace('palum/', '') if row[1] else None,
+                    fichier_joint=os.path.basename(row[1]) if row[1] else None,
                     tags=["Palum"]
                 )
                 db.session.add(new_pub)

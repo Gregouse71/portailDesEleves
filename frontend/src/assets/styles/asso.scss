@@ -34,21 +34,21 @@
 
 .member-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /*6 cards per row*/
   gap: 0.5rem;
 }
 
 .asso-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Adjusted for 5 cards per row */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /*5 cards per row*/
   gap: 0.5rem;
 }
 
 .post-card {
   .card-title {
-    font-size: 1rem; /* Reduced text size */
+    font-size: 1rem;
   }
   .card-text {
-    font-size: 0.85rem; /* Reduced text size */
+    font-size: 0.85rem;
   }
 }

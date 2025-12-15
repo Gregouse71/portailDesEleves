@@ -28,8 +28,8 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
             </div>
             <Card.Body className="px-2">
                 <Card.Title className="h6 bold">{user.nom_utilisateur}</Card.Title>
-                <hr />
-                {!isModifying && <Card.Text>{user.role}</Card.Text>}
+                {user.role ? <hr/> : null}
+                {!isModifying && <Card.Text className="small">{user.role}</Card.Text>}
                 {isModifying && <>
                     {values.map((elt) =>
                         <Form.Group className="mb-2">

@@ -3,6 +3,7 @@ from app.models import *
 from flask_login import current_user
 from sqlalchemy.orm.attributes import flag_modified
 import os
+import shutil
 import mimetypes
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -19,9 +20,12 @@ def _save_file(file, association_name, is_miniature=False):
     if not file:
         return None, None
 
-    UPLOAD_FOLDER = os.path.join('upload', 'associations', association_name, 'publications')
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-    ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    if is_miniature:
+        UPLOAD_FOLDER = os.path.join('upload', 'associations', association_name, 'thumbnails')
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    else:
+        UPLOAD_FOLDER = os.path.join('upload', 'associations', association_name, 'publications')
+        ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
     filename = secure_filename(file.filename)
     name, ext = os.path.splitext(filename)
@@ -30,9 +34,6 @@ def _save_file(file, association_name, is_miniature=False):
     if ext not in ALLOWED_EXTENSIONS:
         raise ValueError("Extension de fichier non autorisée")
 
-    if is_miniature and ext not in ALLOWED_IMAGE_EXTENSIONS:
-        raise ValueError("Extension de miniature non autorisée. Seules les images sont acceptées.")
-
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
@@ -40,10 +41,9 @@ def _save_file(file, association_name, is_miniature=False):
     filename = f"{name}_{timestamp}.{ext}"
     
     file_path_for_save = os.path.join(UPLOAD_FOLDER, filename)
-    file_path_for_db = os.path.join('upload', 'associations', association_name, 'publications', filename).replace(os.sep, '/')
 
     file.save(file_path_for_save)
-    return file_path_for_db, file_path_for_save
+    return filename, file_path_for_save
 
 def _generate_pdf_thumbnail(pdf_path, output_dir, association_name):
     images = convert_from_path(pdf_path, first_page=1, last_page=1, fmt='png')
@@ -51,7 +51,7 @@ def _generate_pdf_thumbnail(pdf_path, output_dir, association_name):
         thumbnail_name = os.path.splitext(os.path.basename(pdf_path))[0] + '_thumb.png'
         thumbnail_path_for_save = os.path.join(output_dir, thumbnail_name)
         images[0].save(thumbnail_path_for_save, 'PNG')
-        return os.path.join('upload', 'associations', association_name, 'publications', thumbnail_name).replace(os.sep, '/')
+        return thumbnail_name
     return None
 
 def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None, tags: list = None):
@@ -92,9 +92,16 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
         if not miniature_file:
             mime_type, _ = mimetypes.guess_type(fichier_joint_path_for_db)
             if mime_type == 'application/pdf':
-                output_dir = os.path.dirname(fichier_joint_path_for_save)
+                output_dir = os.path.join('upload', 'associations', publication.association.nom_dossier, 'thumbnails')
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
                 publication.miniature = _generate_pdf_thumbnail(fichier_joint_path_for_save, output_dir, publication.association.nom_dossier)
             elif mime_type and mime_type.startswith('image'):
+                thumbnail_dir = os.path.join('upload', 'associations', publication.association.nom_dossier, 'thumbnails')
+                if not os.path.exists(thumbnail_dir):
+                    os.makedirs(thumbnail_dir)
+                
+                shutil.copy(fichier_joint_path_for_save, os.path.join(thumbnail_dir, fichier_joint_path_for_db))
                 publication.miniature = fichier_joint_path_for_db
             else:
                 # New file is not an image/pdf, and no miniature provided.

@@ -69,11 +69,10 @@ export default function BlocSondage() {
     } else {
         content = (
             <>
-                <p className="h4 fw-bold text-center">Pas de sondage aujourd'hui</p>
-                <Button variant='light border' onClick={() => navigate("/sondage/proposer")} style={{ cursor: "pointer" }}>
-                    <img src="/assets/icons/plus.svg" alt="Bouton en forme de plus" style={{ width: "70px", transition: "transform 0.2s ease" }} />
-                    <p className="h6 text-center">Proposer un nouveau sondage</p>
-                </Button>
+                <Card.Text className='text-center'>
+                    <p>Pas de sondage pour le moment...</p>
+                    <p>Propose vite un nouveau sondage !</p>
+                </Card.Text>
             </>
         );
     }

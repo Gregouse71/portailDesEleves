@@ -30,9 +30,13 @@ function Asso() {
 
         if (file) {
             try {
-                await ajouterContenu(id, file);
-                await changerPhoto(id, type_photo, file.name);
-                navigate(0);
+                const result = await ajouterContenu(id, file);
+                if (result.success) {
+                    await changerPhoto(id, type_photo, result.fileName);
+                    navigate(0);
+                } else {
+                    alert(`Erreur lors du téléversement : ${result.message}`);
+                }
             } catch (error) {
                 alert(`Erreur lors du téléversement : ${error.message}`);
             }

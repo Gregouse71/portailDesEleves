@@ -199,7 +199,7 @@ def route_modifier_position_membre(association_id, mandat_id, membre_id):
         return jsonify({"message": f"Erreur lors de la modification de la position du membre : {str(e)}"}), 500
 
 
-@controllers_associations.route('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<string:new_path>', methods=['POST'])
+@controllers_associations.route('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<path:new_path>', methods=['POST'])
 @login_required
 @est_membre_de_asso
 def route_modifier_logo_banniere(association_id: int, logo_banniere: str, new_path: str):
@@ -249,7 +249,7 @@ def route_add_content(association_id):
     filename = f"{name}_{timestamp}{ext}"
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(file_path)
-    return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_path": file_path}), 200
+    return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": filename}), 200
 
 
 @controllers_associations.route('/route_creer_asso', methods=["POST"])
