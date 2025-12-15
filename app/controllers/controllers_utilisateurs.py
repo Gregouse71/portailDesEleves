@@ -148,7 +148,6 @@ def assos_utilisateur(user_id: int):
     roles = AssociationMembre.query.filter_by(utilisateur_id=user_id).join(AssociationMembre.mandat).join(AssociationMandat.association).all()
 
     current_user_is_baptise = current_user.est_baptise or current_user.est_superutilisateur
-    print("current_user_is_baptise", current_user_is_baptise)
 
     actuel_assos = []
     ancien_assos = []

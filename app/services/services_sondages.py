@@ -132,6 +132,7 @@ def sondage_suivant() -> None:
 
     db.session.commit()
     update_all_scores ()
+    print("Done")
 
 
 def obtenir_sondages_non_valide() :
@@ -199,7 +200,14 @@ def score_recent_sondages (id: int):
         
         score_recent += exp(- vote.sondage.age() / 14) * valeur
 
-    return score_recent
+    return 100 * score_recent
+
+def _wilson(total, n):
+    z = 1.64485 # 1.0 = 85%, 1.6 = 95%
+    avg = total/n
+
+    T1 = z/2 * sqrt( (avg*(1 - avg) + z**2/4/n) / n) 
+    return 100 * (avg + z**2/2/n + T1) / (1 + z**2/n) # Formule de Wilson (tirée de l'ancien portail)
 
 def score_global_sondages(id: int):
     """
@@ -208,19 +216,19 @@ def score_global_sondages(id: int):
     votes = VoteSondage.query.filter_by(utilisateur_id=id).with_entities(VoteSondage.gagnant, VoteSondage.perdant).all()
 
     n = len(votes)
-    total = 0
+    total_gagant = 0
+    total_perdant = 0
     if n == 0:
         return 0, 0
 
     for vote in votes:
         if vote.gagnant:
-            total += 1
+            total_gagant += 1
         if vote.perdant:
-            total += -1
+            total_perdant += 1
 
-    avg = total/n
-    sigma = 1 - avg**2  # Formule de Huygens pour l'ecart type. La somme des carrés vaut tjrs 1
-    return avg - 1.96 * sigma / sqrt(n), avg + 1.96 * sigma / sqrt(n)
+    return _wilson(total_gagant, n), _wilson(total_perdant, n)
+    # return avg - 1.96 * sigma / sqrt(n), avg + 1.96 * sigma / sqrt(n)
 
 
 def update_all_scores ():
@@ -232,5 +240,4 @@ def update_all_scores ():
         user.score_global_con = con
         user.score_global_div = div
         db.session.add(user)
-
-    db.session.commit()
+        db.session.commit()

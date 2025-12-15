@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { obtenirScoresSondages } from "../../../api/api_sondages";
 import { useQuery } from "@tanstack/react-query";
 import 'katex/dist/katex.min.css';
-import { InlineMath, BlockMath } from 'react-katex';
+import { BlockMath } from 'react-katex';
 
 // Constants for styling the top ranks
 const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
 
 const RECENT_FORMULA = 'S_r = \\sum_{i=1}^N w_i V_i \\quad \\text{où } w_i = e^{-\\lambda t_i} \\quad \\text{et } V_i = \\begin{cases} 1 \\quad \\text{si le vote est gagnant}\\\\ -1 \\quad \\text{sinon} \\end{cases}';
-const GLOBAL_FORMULA = '\\text{Score Global } \\approx \\bar{X} \\pm z_\\alpha \\sqrt{\\frac{1 - \\bar{X}^2}{N}} \\quad \\text{où } \\begin{cases}\\bar{X} = \\frac{1}{N} \\sum_{i=1}^N V_i\\\\z_\\alpha = 1.96\\end{cases}';
+const GLOBAL_FORMULA = 'S_g = \\bar{X} \\pm z_\\alpha \\sqrt{\\frac{1 - \\bar{X}^2}{N}} \\quad \\text{où } \\begin{cases}\\bar{X} = \\frac{1}{N} \\sum_{i=1}^N V_i\\\\z_\\alpha = 1.96\\end{cases}';
 
 // ----------------------------------------------------------------------
 // Reusable Component for Rendering a Single List (Updated)
@@ -27,8 +27,8 @@ function RankingList({ title, data, scoreKey, isNegative = false, isVotes = fals
                 {data.map((user, index) => {
                     const rank = index + 1;
                     const score = user[scoreKey] !== undefined && user[scoreKey] !== null
-                        ? (isVotes ? user[scoreKey] : user[scoreKey].toFixed(3))
-                        : (isVotes ? "0" : "0.000");
+                        ? (isVotes ? user[scoreKey] : user[scoreKey].toFixed())
+                        : "0";
 
                     const colorStyle = index < 3 ? { backgroundColor: RANK_COLORS[index], fontWeight: 'bold' } : {};
 
@@ -74,7 +74,7 @@ function RankingList({ title, data, scoreKey, isNegative = false, isVotes = fals
 const getCurrentUserVoteCount = (maxVotesArray, currentUsername) => {
     const currentUserStats = maxVotesArray.find(user => user.nom_utilisateur === currentUsername);
     // Assuming the vote count key is 'max_votes' inside the user object
-    return currentUserStats ? currentUserStats.max_votes : 0;
+    return currentUserStats ? currentUserStats.nombre_votes : 0;
 };
 
 // ----------------------------------------------------------------------
@@ -182,7 +182,7 @@ export default function ClassementSondage() {
                             <RankingList
                                 title="Top participants"
                                 data={max_votes}
-                                scoreKey="max_votes"
+                                scoreKey="nombre_votes"
                                 isVotes={true}
                             />
                         </Col>
