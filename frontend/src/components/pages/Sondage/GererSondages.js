@@ -11,7 +11,6 @@ function GererSondages() {
     const navigate = useNavigate();
 
     const formatDate = (dateString) => {
-        console.log("dateString received by formatDate:", dateString);
         if (!dateString) {
             return "No date provided";
         }
