@@ -115,7 +115,7 @@ class Association(db.Model):
             "nom_dossier": self.nom_dossier,
             "nom": self.nom,
             "img": self.logo_path,
-            "ordre": self.ordre_importance,
+            "ordre_importance": self.ordre_importance,
             "banniere_path": self.banniere_path,
             "description": self.description,
             "mandats": mandats_data

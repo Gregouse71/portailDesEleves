@@ -31,14 +31,14 @@ function Home() {
     ];
 
     const { data: listePosts = [] } = useQuery({
-        queryKey: ['publicationRecentes'],
-        queryFn: () => obtenirPublicationsRecentes(),
+        queryKey: ['publicationRecentes', 3],
+        queryFn: () => obtenirPublicationsRecentes(3),
     });
 
     return (
         <Container fluid>
             <Card className="mb-3">
-                <Card.Body>
+                <Card.Body className='d-flex flex-column gap-3'>
                     <Card.Title as="h2" className="text-end">Publications récentes</Card.Title>
                     {listePosts.map(post_id => (
                         <Post key={post_id} postId={post_id} isGestion={false}/>
@@ -49,7 +49,7 @@ function Home() {
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">Mailing-lists</Card.Title>
                     {mailingLists.map((list, index) => (
-                        <p key={index} className="text-end small">
+                        <p key={index} className="text-end small text-wrap">
                             {list.name} : <a href={`mailto:${list.email}`}>{list.email}</a>
                         </p>
                     ))}
@@ -68,7 +68,7 @@ function Home() {
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">Contacts en cas de mal-être</Card.Title>
                     {contacts.map((contact, index) => (
-                        <p key={index} className="text-end small">
+                        <p key={index} className="text-end small text-wrap">
                             {contact.name} :
                             {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
                             {contact.phone && <> / <a href={`tel:${contact.phone}`}>{contact.phone}</a></>}
@@ -77,7 +77,7 @@ function Home() {
                     ))}
                     <h3 className="text-end">Contacts des VP Soutien :</h3>
                     {vpSoutien.map((vp, index) => (
-                        <p key={index} className="text-end small">
+                        <p key={index} className="text-end small text-wrap">
                             {vp.name} : <a href={`mailto:${vp.email}`}>{vp.email}</a> / <a href={`tel:${vp.phone}`}>{vp.phone}</a>
                         </p>
                     ))}

@@ -46,6 +46,23 @@ export async function modifierDescriptionAsso(asso_id, new_desc) {
   }
 }
 
+export async function modifierOrdreImportanceAsso(asso_id, ordre_importance) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_ordre_importance`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ ordre_importance })
+    });
+    return handleResponse(res);
+  } catch (error) {
+    console.error("Erreur lors de la modification de l'ordre d'importance : ", error);
+    throw error;
+  }
+}
+
 export async function ajouterMembre(associationId, mandatId, membreId) {
   try {
     const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_membre/${mandatId}/${membreId}`, {

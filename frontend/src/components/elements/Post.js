@@ -4,8 +4,9 @@ import { UPLOAD_BASE_URL } from "../../api/base";
 import { useLayout } from "../../layouts/Layout";
 import RichEditor, { RichTextDisplay } from "./RichEditor";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ajouterContenuPublication, modifierPublication, obtenirPublication, supprimerCommentaire, modifierCommentaire, modifierLikeComment, modifierLikePost, creerNouveauCommentaire } from "../../api/api_publications";
+import { ajouterContenuPublication, modifierPublication, obtenirPublication, modifierLikePost } from "../../api/api_publications";
 import { useEffect, useState } from "react";
+import CommentSection from "./CommentSection";
 
 const formatPublicationDate = (dateString) => {
     const date = new Date(dateString);
@@ -34,13 +35,9 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
         "tags": []
     })
     const [isModifying, setIsModifying] = useState(false);
+    const [showNewCommentForm, setShowNewCommentForm] = useState(false);
 
     const [post, setPost] = useState(null);
-    const [idModifyComment, setIdModifyComment] = useState(null);
-    const [modifyComment, setModifyComment] = useState("");
-
-    const [idNewComment, setIdNewComment] = useState(null);
-    const [newComment, setNewComment] = useState("");
 
     const [modifyPreviewUrl, setModifyPreviewUrl] = useState(null);
     const [modifyPostFile, setModifyPostFile] = useState(null);
@@ -141,68 +138,9 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
         }
     }
 
-
-    const removeComment = async (comm_id) => {
-        try {
-            supprimerCommentaire(comm_id);
-            queryClient.invalidateQueries(['publicationData', post.association.id])
-        } catch (erreur) {
-            console.error(erreur);
-        }
-    }
-
-    const validateModifyComment = async () => {
-        try {
-            modifierCommentaire(idModifyComment, { "contenu": modifyComment })
-            setModifyComment("")
-            setIdModifyComment(null)
-            queryClient.invalidateQueries(['publicationData', post.association.id])
-        } catch (erreur) {
-            console.error(erreur);
-        }
-    }
-
-    const handleSetIdModifyComment = async (comment_id) => {
-        if (idModifyComment !== comment_id) {
-            const comment = post.commentaires.find(c => c.id === comment_id);
-            if (comment) {
-                setModifyComment(comment.contenu);
-            }
-            setIdModifyComment(comment_id);
-        }
-    }
-
-
-    const handleSetIdNewComment = (comment_id) => {
-        if (comment_id !== idNewComment) {
-            setNewComment("");
-            setIdNewComment(comment_id);
-        }
-    }
-
-    const validateNewComment = async () => {
-        try {
-            await creerNouveauCommentaire(postId, newComment)
-            setNewComment("");
-            setIdNewComment(null)
-            queryClient.invalidateQueries(['publicationData', post.association.id])
-        } catch (erreur) {
-            console.error(erreur);
-        }
-    }
-
     const handleChangePostLike = async (postId) => {
         try {
             modifierLikePost(postId)
-            queryClient.invalidateQueries(['publicationData', post.association.id])
-        } catch (erreur) {
-            console.error(erreur);
-        }
-    }
-
-    const handleChangeCommentLike = async (comment_id) => {
-        try {
-            modifierLikeComment(comment_id)
             queryClient.invalidateQueries(['publicationData', post.association.id])
         } catch (erreur) {
             console.error(erreur);
@@ -258,8 +196,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                                     (post.fichier_joint && !shouldRemoveExistingAttachment && post.association &&
                                         <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/publications/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
                                             <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/thumbnails/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
-                                        </a>)
-                                }
+                                        </a>)}
                             </Col>}
                     </Row>
                     <Form.Group className="mb-3">
@@ -362,7 +299,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                                     {post.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
                                     {post.likes.length}
                                 </Button>
-                                <Button variant="secondary" onClick={() => handleSetIdNewComment(post.id)}>Commenter</Button>
+                                <Button variant="secondary" onClick={() => setShowNewCommentForm(prev => !prev)}>Commenter</Button>
                             </>}
                             {isGestion && <>
                                 <Button variant="primary" onClick={startModifying}>Éditer</Button>
@@ -372,58 +309,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                         <small className="text-muted">Publié le : {formatPublicationDate(post.date_publication)}</small>
                     </div>
 
-                    {/* Nouveau commentaire */}
-                    {idNewComment === post.id && <Card className="mt-3">
-                        <Card.Body>
-                            <Form>
-                                <Form.Group className="mb-3">
-                                    <Form.Control as="textarea" rows={3} value={newComment} placeholder="Écrivez votre commentaire ici" onChange={(e) => setNewComment(e.target.value)} />
-                                </Form.Group>
-                                <div className="d-flex gap-2">
-                                    <Button variant="success" onClick={() => validateNewComment(post.id)} disabled={isLoading}>
-                                        {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
-                                    </Button>
-                                    <Button variant="danger" onClick={() => handleSetIdNewComment(null)}>Annuler</Button>
-                                </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>}
-
-                    {post.commentaires.map((comment) => <Card className="mt-3" key={comment.id}>
-                        <Card.Body>
-                            {comment.id !== idModifyComment && <>
-                                <div className="d-flex align-items-center gap-3">
-                                    <Image src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
-                                    <p className="mb-0">{comment.contenu}</p>
-                                </div>
-                                <div className="d-flex justify-content-between align-items-center mt-2">
-                                    <div className="d-flex gap-2">
-                                        <Button variant="primary" size="sm" onClick={() => handleChangeCommentLike(comment.id)}>
-                                            {comment.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
-                                            {comment.likes.length}
-                                        </Button>
-                                        {comment.id_auteur === userData.id && <Button variant="secondary" size="sm" onClick={() => handleSetIdModifyComment(comment.id)}>Éditer</Button>}
-                                        {(isGestion || comment.id_auteur === userData.id) && <Button variant="danger" size="sm" onClick={() => removeComment(comment.id)}>Supprimer</Button>}
-                                    </div>
-                                    <small className="text-muted">Publié le : {formatPublicationDate(comment.date)}</small>
-                                </div>
-                            </>}
-
-                            {comment.id === idModifyComment && <>
-                                <Form>
-                                    <Form.Group className="mb-3">
-                                        <Form.Control as="textarea" rows={3} value={modifyComment} placeholder="Écrivez votre commentaire ici" onChange={(e) => setModifyComment(e.target.value)} />
-                                    </Form.Group>
-                                    <div className="d-flex gap-2">
-                                        <Button variant="success" onClick={() => validateModifyComment()} disabled={isLoading}>
-                                            {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
-                                        </Button>
-                                        <Button variant="danger" onClick={() => handleSetIdModifyComment(null)}>Annuler</Button>
-                                    </div>
-                                </Form>
-                            </>}
-                        </Card.Body>
-                    </Card>)}
+                    {post.is_commentable && <CommentSection post={post} userData={userData} isGestion={isGestion} showNewCommentForm={showNewCommentForm} setShowNewCommentForm={setShowNewCommentForm} />}
                 </>}
         </Card.Body>
     </Card>

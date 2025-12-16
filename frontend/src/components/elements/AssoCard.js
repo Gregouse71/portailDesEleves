@@ -1,24 +1,85 @@
-import { Card } from "react-bootstrap"
+import { Card, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { UPLOAD_BASE_URL } from "../../api/base";
-import { useQuery } from "@tanstack/react-query";
-import { chargerAsso } from "../../api/api_associations";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { chargerAsso, modifierOrdreImportanceAsso } from "../../api/api_associations";
+import { useEffect, useState } from "react";
 
-export default function AssoCard({ asso_id, mandat, role }) {
+export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingAsso, onEditAsso }) {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     const { data: asso, isLoading } = useQuery({
         queryKey: ['asso', asso_id],
         queryFn: () => chargerAsso(asso_id),
     });
 
+    const [ordre, setOrdre] = useState(asso?.ordre_importance || 0);
+
+    useEffect(() => {
+        if (asso) {
+            setOrdre(asso.ordre_importance || 0);
+        }
+    }, [asso]);
+    
+    useEffect(() => {
+        if (!isEditMode) {
+            onEditAsso(null); // Reset editing when edit mode is turned off
+        }
+    }, [isEditMode, onEditAsso]);
+
+    const handleSaveOrdre = async () => {
+        if (asso && parseInt(ordre, 10) !== asso.ordre_importance) {
+            try {
+                await modifierOrdreImportanceAsso(asso.id, parseInt(ordre, 10));
+                queryClient.invalidateQueries(['listeAssos']);
+            } catch (error) {
+                console.error("Failed to update priority:", error);
+                if (asso) {
+                    setOrdre(asso.ordre_importance);
+                }
+            }
+        }
+        onEditAsso(null); // Stop editing after saving
+    };
+
+    const handleCancelEdit = () => {
+        if (asso) {
+            setOrdre(asso.ordre_importance || 0); // Reset to original value
+        }
+        onEditAsso(null); // Stop editing
+    };
+
+    const handleCardClick = () => {
+        if (!isEditMode) {
+            navigate(`/assos/get/${asso.id}`);
+        }
+    };
+
     return (isLoading
         ? <div> Chargement ...</div>
         : <Card
             className="h-100 text-center"
-            onClick={() => navigate(`/assos/get/${asso.id}`)}
-            style={{ cursor: 'pointer' }}
+            onClick={handleCardClick}
+            style={{ cursor: isEditMode ? 'default' : 'pointer', position: 'relative' }}
         >
+            {isEditMode && (
+                <Button 
+                    variant="primary" 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (isEditingAsso) {
+                            handleCancelEdit();
+                        } else {
+                            onEditAsso(asso.id);
+                        }
+                    }} 
+                    style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 2 }}
+                >
+                    <img src="/assets/icons/edit.svg" alt="Editer la priorité" />
+                </Button>
+            )}
+
             {asso.img !== null && <Card.Img
                 variant="top"
                 className="mt-3 object-fit-contain"
@@ -26,10 +87,32 @@ export default function AssoCard({ asso_id, mandat, role }) {
                 alt={asso.nom}
                 style={{ height: '120px' }}
             />}
-            < Card.Body className="px-2">
+            <Card.Body className="px-2">
                 <Card.Title>{asso.nom}</Card.Title>
                 {role && <> <hr /><Card.Text>{role}</Card.Text></>}
-            </Card.Body >
+                {isEditMode && !isEditingAsso && (
+                    <>
+                        <hr />
+                        <Card.Text>Position : {ordre}</Card.Text>
+                    </>
+                )}
+                {isEditingAsso && (
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <Form.Group>
+                            <Form.Label>Position</Form.Label>
+                            <Form.Control
+                                type="number"
+                                value={ordre}
+                                onChange={(e) => setOrdre(e.target.value)}
+                            />
+                        </Form.Group>
+                        <div className="d-flex justify-content-around mt-2">
+                            <Button variant="success" onClick={handleSaveOrdre}>Valider</Button>
+                        </div>
+                    </div>
+                )}
+            </Card.Body>
             {mandat && <Card.Footer><Card.Text>{mandat}</Card.Text></Card.Footer>}
-        </Card >);
+        </Card>);
 }
+

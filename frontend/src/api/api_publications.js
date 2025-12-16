@@ -32,9 +32,9 @@ export async function obtenirPublicationsAsso(asso_id) {
   }
 }
 
-export async function obtenirPublicationsRecentes() {
+export async function obtenirPublicationsRecentes(limit) {
   try {
-    const res = await fetch(`${API_BASE_URL}/publications/recent`, {
+    const res = await fetch(`${API_BASE_URL}/publications/recent${limit ? `?limit=${limit}` : ''}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

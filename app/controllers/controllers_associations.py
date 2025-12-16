@@ -40,6 +40,23 @@ def route_editer_description(association_id: int):
         return jsonify({"message": f"echec dans la modification de la description : {e}"}), 500
 
 
+@controllers_associations.route("/<int:association_id>/modifier_ordre_importance", methods=['PATCH'])
+@login_required
+@superutilisateur_required
+def route_modifier_ordre_importance(association_id: int):
+    """
+    Modifie l'ordre d'importance d'une asso
+    """
+    try:
+        new_ordre = request.json.get("ordre_importance")
+        asso = db.session.get(Association, association_id)
+        asso.ordre_importance = int(new_ordre)
+        db.session.commit()
+        return jsonify({"message": "Ordre d'importance modifié avec succès"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Echec dans la modification de l'ordre d'importance : {e}"}), 500
+
+
 @controllers_associations.route('/<int:association_id>/ajouter_membre/<int:mandat_id>/<int:nouveau_membre_id>', methods=['POST'])
 @login_required
 @est_membre_de_asso
@@ -280,9 +297,9 @@ def route_get_assos():
     if current_user.est_baptise or current_user.est_superutilisateur:
         assos = Association.query.all()
     else:
-        assos = Association.query.filter_by(a_cacher_aux_nouveaux=False)
+        assos = Association.query.filter_by(a_cacher_aux_nouveaux=False).all()
 
-    return jsonify([asso.id for asso in assos])
+    return jsonify([{"id": asso.id, "ordre_importance": asso.ordre_importance} for asso in assos])
 
 
 @controllers_associations.route('/<int:association_id>', methods=['GET'])

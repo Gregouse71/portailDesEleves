@@ -49,8 +49,44 @@ def check_pw(user: Utilisateur, password:str):
     """
     Vérifie que c'est bien le mot de passe de l'utilisateur
     """
+    hashed_password = user.mot_de_passe
+    if hashed_password.startswith('pbkdf2_sha256$'):
+        # It's an old Django hash.
+        import hashlib
+        import base64
+        
+        try:
+            algo, iterations, salt, b64_hash = hashed_password.split('$', 3)
+            iterations = int(iterations)
+            
+            # The password in old db is utf-8 encoded
+            password_bytes = password.encode('utf-8')
+            salt_bytes = salt.encode('utf-8')
+            
+            # Hash the provided password with the same salt and iterations
+            derived_key = hashlib.pbkdf2_hmac('sha256', password_bytes, salt_bytes, iterations, dklen=32)
+            
+            # Compare with the stored hash
+            # The stored hash is base64 encoded.
+            stored_hash_bytes = base64.b64decode(b64_hash)
+            
+            if derived_key == stored_hash_bytes:
+                # Password is correct. Let's upgrade the hash to Argon2.
+                user.mot_de_passe = ph.hash(password)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except Exception:
+            # In case of any error in parsing or decoding, fail closed.
+            return False
+            
     try:
         ph.verify(user.mot_de_passe, password)
+        # If the password is correct and it was a legacy hash, rehash it.
+        if ph.check_needs_rehash(user.mot_de_passe):
+            user.mot_de_passe = ph.hash(password)
+            db.session.commit()
         return True
     except (exceptions.VerifyMismatchError, exceptions.InvalidHash):
         return False
