@@ -1,7 +1,8 @@
 import { useLayout } from '../../../layouts/Layout';
 import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuivant } from '../../../api/api_sondages';
+import { chargerUtilisateurs } from '../../../api/api_utilisateurs';
 import { useNavigate } from "react-router-dom";
-import { Container, Table, Button, Spinner, Card, ListGroup } from "react-bootstrap";
+import { Container, Row, Col, Button, Spinner, Card, ListGroup } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 function GererSondages() {
@@ -10,17 +11,15 @@ function GererSondages() {
     const navigate = useNavigate();
 
     const formatDate = (dateString) => {
-        if (!dateString || dateString.length !== 12) {
-            return "Invalid date";
+        console.log("dateString received by formatDate:", dateString);
+        if (!dateString) {
+            return "No date provided";
         }
-        const year = dateString.substring(0, 4);
-        const month = dateString.substring(4, 6);
-        const day = dateString.substring(6, 8);
-        const hour = dateString.substring(8, 10);
-        const minute = dateString.substring(10, 12);
-
-        const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
-        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return "Invalid date value";
+        }
+        const options = { year: 'numeric', month: 'long', day: 'numeric' }; // Removed hour and minute
         return date.toLocaleDateString(undefined, options);
     }
 
@@ -30,10 +29,20 @@ function GererSondages() {
         queryClient.invalidateQueries({ queryKey: ['donneesUtilisateur', userData.id] });
     }
 
-    const { data: sondagesEnAttente = [], isLoading } = useQuery({
+    const { data: sondagesEnAttente = [], isLoading: isLoadingSondages } = useQuery({
         queryKey: ['sondagesEnAttente'],
         queryFn: () => obtenirSondagesEnAttente().then(r => r.sondages),
     });
+
+    const { data: users = [], isLoading: isLoadingUsers } = useQuery({
+        queryKey: ['utilisateurs'],
+        queryFn: () => chargerUtilisateurs().then(r => r.utilisateurs),
+    });
+
+    const userMap = users.reduce((acc, user) => {
+        acc[user.id] = `${user.firstname} ${user.lastname}`;
+        return acc;
+    }, {});
 
     const mutate_validation = useMutation({
         mutationFn: async ({ id_sondage, del }) => {
@@ -58,12 +67,12 @@ function GererSondages() {
         }
     });
 
-    if (isLoading) {
+    if (isLoadingSondages || isLoadingUsers) {
         return (
             <Container>
                 <h1>Gestion des sondages en attente</h1>
                 <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Chargement des sondages...</span>
+                    <span className="visually-hidden">Chargement...</span>
                 </Spinner>
                 <Button onClick={() => navigate("/")} variant="secondary" className="mt-3">Retour</Button>
             </Container>
@@ -73,8 +82,10 @@ function GererSondages() {
     return (
         <Container>
             <h1>Gestion des sondages en attente</h1>
-            <Button variant="primary" onClick={() => suivantEtReload()} className="mt-3">Passer au sondage suivant</Button>
-            <Button variant="secondary" onClick={() => navigate("/")} className="mt-3 ms-2">Retour</Button>
+            <div className="mb-4">
+                <Button variant="primary" onClick={() => suivantEtReload()} className="mt-3">Passer au sondage suivant</Button>
+                <Button variant="secondary" onClick={() => navigate("/")} className="mt-3 ms-2">Retour</Button>
+            </div>
             {sondagesEnAttente.length === 0 ? (
                 <Card>
                     <Card.Body>
@@ -82,52 +93,52 @@ function GererSondages() {
                     </Card.Body>
                 </Card>
             ) : (
-                <Table striped bordered hover responsive>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Question</th>
-                            <th>Réponses</th>
-                            <th>Proposé par</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sondagesEnAttente.map((sondage) => (
-                            <tr key={sondage.id}>
-                                <td>{sondage.id}</td>
-                                <td>{sondage.question}</td>
-                                <td>
-                                    <ListGroup>
-                                        {sondage.reponses.map((reponse, index) => (
-                                            <ListGroup.Item key={index}>{reponse}</ListGroup.Item>
-                                        ))}
-                                    </ListGroup>
-                                </td>
-                                <td>{sondage.propose_par_user_id}</td>
-                                <td>{formatDate(sondage.date_proposition)}</td>
-                                <td>
-                                    <Button
-                                        variant="success"
-                                        onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: false })}
-                                        disabled={mutate_validation.isLoading} // Optional: disable buttons during mutation
-                                    >
-                                        Valider
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: true })}
-                                        className="ms-2"
-                                        disabled={mutate_validation.isLoading}
-                                    >
-                                        Supprimer
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
+                <>
+                    {Array.from({ length: Math.ceil(sondagesEnAttente.length / 3) }).map((_, rowIndex) => (
+                        <Row key={rowIndex} xs={1} md={2} lg={3} className="g-4 mb-4">
+                            {sondagesEnAttente.slice(rowIndex * 3, rowIndex * 3 + 3).map((sondage) => (
+                                <Col key={sondage.id}>
+                                    <Card className="h-100">
+                                        <Card.Header>Sondage ID: {sondage.id}</Card.Header>
+                                        <Card.Body>
+                                            <Card.Title>{sondage.question}</Card.Title>
+                                            <Card.Subtitle className="mb-2 text-muted">
+                                                Proposé par: {userMap[sondage.propose_par_user_id] || `ID: ${sondage.propose_par_user_id}`}
+                                            </Card.Subtitle>
+                                            <Card.Text>
+                                                Date: {formatDate(sondage.date_proposition)}
+                                            </Card.Text>
+                                            <h5>Réponses:</h5>
+                                            <ListGroup>
+                                                {sondage.reponses.map((reponse, index) => (
+                                                    <ListGroup.Item key={index}>{reponse}</ListGroup.Item>
+                                                ))}
+                                            </ListGroup>
+                                        </Card.Body>
+                                        <Card.Footer>
+                                            <Button
+                                                variant="success"
+                                                onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: false })}
+                                                disabled={mutate_validation.isLoading}
+                                                className="w-100 mb-2"
+                                            >
+                                                Valider
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: true })}
+                                                disabled={mutate_validation.isLoading}
+                                                className="w-100"
+                                            >
+                                                Supprimer
+                                            </Button>
+                                        </Card.Footer>
+                                    </Card>
+                                </Col>
+                            ))}
+                        </Row>
+                    ))}
+                </>
             )}
         </Container>
     );

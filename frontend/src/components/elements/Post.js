@@ -256,8 +256,8 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                                 {modifyPreviewUrl ?
                                     <Image src={modifyPreviewUrl} fluid alt="La miniature automatique sera générée à l'envoi" /> :
                                     (post.fichier_joint && !shouldRemoveExistingAttachment && post.association &&
-                                        <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
-                                            <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                        <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/publications/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                            <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/thumbnails/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
                                         </a>)
                                 }
                             </Col>}
@@ -349,8 +349,8 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                                 <RichTextDisplay content={post.contenu} />
                             </Col>
                             <Col md="3" className="text-center">
-                                <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
-                                    <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/publications/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                    <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/thumbnails/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
                                 </a>
                             </Col>
                         </Row> : <RichTextDisplay content={post.contenu} />}

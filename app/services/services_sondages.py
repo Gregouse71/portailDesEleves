@@ -17,7 +17,7 @@ def proposer_sondage(question:str, reponses:list, utilisateur:Utilisateur) :
     """
     Ajouter un sondage dans la bdd. La liste des reponses possibles est au format ["reponse1", "reponse2", "reponse3"], de taille entre 2 et 4
     """
-    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_proposition=datetime.now())
+    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_proposition=date.today())
     db.session.add(proposition)
     db.session.commit()
 
