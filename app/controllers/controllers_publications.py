@@ -41,8 +41,7 @@ def route_get_publications_by_tag(tag: str):
 @login_required
 def route_obtenir_publications_asso(association_id: int):
     """
-    Renvoie toutes les publications d'une asso
-    Avec les commentaires
+    Renvoie la liste des id des posts d'une asso
     """
     try:
         query = Publication.query.filter(Publication.id_association == association_id)
@@ -56,21 +55,47 @@ def route_obtenir_publications_asso(association_id: int):
             # publications spécifiques aux differents cycles
             query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
         publications = query.order_by(desc(Publication.date_publication)).all()
-        return jsonify({"publications": [{"id": e.id,
-                                          "auteur": e.auteur.nom_utilisateur if e.auteur else None,
-                                          "titre": e.titre,
-                                          "contenu": e.contenu,
-                                          "date_publication": e.date_publication,
-                                          "likes": e.likes,
-                                          "is_commentable": e.is_commentable,
-                                          "commentaires": [comment.to_dict() for comment in e.commentaires],
-                                          "fichier_joint": e.fichier_joint,
-                                          "miniature": e.miniature,
-                                          "tags": e.tags,
-                                          "association": {"id": e.association.id, "nom": e.association.nom, "nom_dossier": e.association.nom_dossier} if e.association else None}
-                                         for e in publications]}), 200
+        return jsonify([p.id for p in publications]), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+    
+
+@controllers_publications.route("obtenir_publication/<int:post_id>")
+@login_required
+def route_obtenir_publication(post_id: int):
+    """
+    Renvoie toutes les publications d'une asso
+    Avec les commentaires
+    """
+    # try:
+    query = Publication.query.filter(Publication.id == post_id)
+    if not (current_user.est_superutilisateur):
+        # publications internes
+        if not any(role.mandat.association_id == association_id for role in current_user.associations):
+            query = query.filter(Publication.is_publication_interne.is_(False))
+        # publications sensibles
+        if not current_user.est_baptise and not current_user.is_superuser:
+            query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
+        # publications spécifiques aux differents cycles
+        query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
+    publication = query.order_by(desc(Publication.date_publication)).all()
+    return jsonify(publication[0].to_dict()), 200
+    # except ValueError as e:
+    #     return jsonify({"error": str(e)}), 400
+
+
+@controllers_publications.route('/recent', methods=['GET'])
+@login_required
+def route_add_get_publications_recentes():
+    """
+    Renvoie les dernieres publications
+    """
+    try:
+        publications = Publication.query.order_by(desc(Publication.date_publication)).limit(10).all()
+        return jsonify([p.id for p in publications]), 200
+    except ValueError as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 
 @controllers_publications.route("<int:association_id>/creer_nouvelle_publication", methods=['POST'])

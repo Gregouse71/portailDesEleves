@@ -32,6 +32,38 @@ export async function obtenirPublicationsAsso(asso_id) {
   }
 }
 
+export async function obtenirPublicationsRecentes() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/publications/recent`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    })
+    return handleResponse(res);
+  } catch (erreur) {
+    console.error("Erreur réseau :", erreur)
+    throw erreur;
+  }
+}
+
+export async function obtenirPublication(post_id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/publications/obtenir_publication/${post_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    })
+    return handleResponse(res);
+  } catch (erreur) {
+    console.error("Erreur réseau :", erreur)
+    throw erreur;
+  }
+}
+
 export async function supprimerPublication(asso_id, publication_id) {
   try {
     const res = await fetch(`${API_BASE_URL}/publications/${asso_id}/supprimer_publication/${publication_id}`, {
