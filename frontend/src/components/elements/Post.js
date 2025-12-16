@@ -224,7 +224,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
     }
 
 
-    return <Card key={post.id}>
+    return <Card>
         <Card.Body className="d-flex flex-column">
             {/* Les publications existantes */}
             {isModifying && isGestion ?

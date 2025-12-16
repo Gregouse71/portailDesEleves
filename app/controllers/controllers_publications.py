@@ -91,8 +91,8 @@ def route_add_get_publications_recentes():
     Renvoie les dernieres publications
     """
     try:
-        pub = Publication.query.order_by(desc(Publication.date_publication)).limit(10).all()
-        return jsonify(pub), 200
+        publications = Publication.query.order_by(desc(Publication.date_publication)).limit(10).all()
+        return jsonify([p.id for p in publications]), 200
     except ValueError as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
