@@ -18,7 +18,7 @@ export default function TabAsso({ id }) {
             <h2>Associations actuelles</h2>
             <div className="asso-grid">
                 {assos.actuel.map((asso) =>  (
-                    <AssoCard key={asso.asso_id} asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} />
+                    <AssoCard key={asso.asso_id} asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} isEditMode={false} />
                 ))}
             </div>
         </Container>
@@ -26,7 +26,7 @@ export default function TabAsso({ id }) {
             <h2>Anciennes associations</h2>
             <div className="asso-grid">
                 {assos.ancien.map((asso) => (
-                    <AssoCard key={asso.asso_id} asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} />
+                    <AssoCard key={asso.asso_id} asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} isEditMode={false} />
                 ))}
             </div>
         </Container>
