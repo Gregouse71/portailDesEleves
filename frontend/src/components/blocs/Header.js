@@ -36,7 +36,7 @@ export default function Header() {
   return (
     <Navbar bg="dark" data-bs-theme="dark" expand="md" color='#005a9e' className="global-header-header">
       <Container fluid>
-        <Navbar.Brand href="#" onClick={() => navigate("/")}><em>Le nouveau</em> portail des élèves (work in progress)</Navbar.Brand>
+        <Navbar.Brand href="#" onClick={() => navigate("/")}>Le portail des élèves <em>(work in progress)</em></Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">

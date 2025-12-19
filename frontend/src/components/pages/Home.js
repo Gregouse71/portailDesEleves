@@ -16,18 +16,18 @@ function Home() {
     ];
 
     const contacts = [
-        { name: 'Anne Mortureux, psychologue aux Mines (mercredi aprèm ou distanciel)', email: 'psy-mortureux@mines-paristech.fr', phone: '+33688782188' },
+        { name: 'Anne Mortureux, psychologue aux Mines (mercredi aprèm ou distanciel)', email: 'psy-mortureux@mines-paristech.fr', phone: '+33 (0)6 88 78 21 88' },
         { name: 'Anne-Hélène Malcor, psychologue aux Mines (mardi en fin d\'aprèm et soirée ou distanciel)', email: 'psy-malcor@mines-paristech.fr' },
-        { name: 'Nightline Paris (appel anonymisés, 21h-2h30 / tchat anonymisé sur le site)', website: 'https://www.nightline.fr/paris', phone: '+33188321232' },
-        { name: 'Pamela Vaulot (successeuse de Béatrice)', email: 'pamela.vaulot@minesparis.psl.eu', phone: '+33627202338' },
+        { name: 'Nightline Paris (appel anonymisés, 21h-2h30 / tchat anonymisé sur le site)', website: 'https://www.nightline.fr/paris', phone: '+33 (0)1 88 32 12 32' },
+        { name: 'Pamela Vaulot (successeuse de Béatrice)', email: 'pamela.vaulot@minesparis.psl.eu', phone: '+33 (0)6 27 20 23 38' },
     ];
 
     const vpSoutien = [
-        { name: 'Luigi Romain', email: 'luigi.romain@etu.minesparis.psl.eu', phone: '+33768302498' },
-        { name: 'Hélory Grenade', email: 'helory.grenade@etu.minesparis.psl.eu', phone: '+33772339429' },
-        { name: 'Solène Losantos', email: 'solene.losantos@etu.minesparis.psl.eu', phone: '+33625106526' },
-        { name: 'Baptiste Vial', email: 'baptiste.vial@etu.minesparis.psl.eu', phone: '+33642676358' },
-        { name: 'Marguerite Tabary', email: 'marguerite.tabary@etu.minesparis.psl.eu', phone: '+33634425911' },
+        { name: 'Luigi Romain', email: 'luigi.romain@etu.minesparis.psl.eu', phone: '+33 (0)7 68 30 24 98' },
+        { name: 'Hélory Grenade', email: 'helory.grenade@etu.minesparis.psl.eu', phone: '+33 (0)7 72 33 94 29' },
+        { name: 'Solène Losantos', email: 'solene.losantos@etu.minesparis.psl.eu', phone: '+33 (0)6 25 10 65 26' },
+        { name: 'Baptiste Vial', email: 'baptiste.vial@etu.minesparis.psl.eu', phone: '+33 (0)6 42 67 63 58' },
+        { name: 'Marguerite Tabary', email: 'marguerite.tabary@etu.minesparis.psl.eu', phone: '+33 (0)6 34 42 59 11' },
     ];
 
     const { data: listePosts = [] } = useQuery({
@@ -49,9 +49,9 @@ function Home() {
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">Mailing-lists</Card.Title>
                     {mailingLists.map((list, index) => (
-                        <p key={index} className="text-end small text-wrap">
+                        <div key={index} className="text-end small text-wrap mb-2">
                             {list.name} : <a href={`mailto:${list.email}`}>{list.email}</a>
-                        </p>
+                        </div>
                     ))}
                 </Card.Body>
             </Card>
@@ -68,18 +68,18 @@ function Home() {
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">Contacts en cas de mal-être</Card.Title>
                     {contacts.map((contact, index) => (
-                        <p key={index} className="text-end small text-wrap">
+                        <div key={index} className="text-end small text-wrap mb-2">
                             {contact.name} :
                             {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
                             {contact.phone && <> / <a href={`tel:${contact.phone}`}>{contact.phone}</a></>}
                             {contact.website && <a href={contact.website} target="_blank" rel="noopener noreferrer">{contact.website}</a>}
-                        </p>
+                        </div>
                     ))}
                     <h3 className="text-end">Contacts des VP Soutien :</h3>
                     {vpSoutien.map((vp, index) => (
-                        <p key={index} className="text-end small text-wrap">
+                        <div key={index} className="text-end small text-wrap mb-2">
                             {vp.name} : <a href={`mailto:${vp.email}`}>{vp.email}</a> / <a href={`tel:${vp.phone}`}>{vp.phone}</a>
-                        </p>
+                        </div>
                     ))}
                 </Card.Body>
             </Card>

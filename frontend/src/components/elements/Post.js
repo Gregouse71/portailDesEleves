@@ -292,14 +292,14 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                             </Col>
                         </Row> : <RichTextDisplay content={post.contenu} />}
                     </div>
-                    <div className="d-flex justify-content-between align-items-center mt-auto">
+                    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mt-auto gap-2">
                         <div className="d-flex gap-2">
                             {!isGestion && <>
-                                <Button variant="primary" onClick={() => handleChangePostLike(post.id)}>
-                                    {post.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
+                                <Button variant="primary" size="sm" onClick={() => handleChangePostLike(post.id)}>
+                                    {post.likes.includes(userData.id) ? <img height="17px" src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img height="17px" src="/assets/icons/heart.svg" alt="J'aime" />}
                                     {post.likes.length}
                                 </Button>
-                                <Button variant="secondary" onClick={() => setShowNewCommentForm(prev => !prev)}>Commenter</Button>
+                                <Button variant="secondary" size="sm" onClick={() => setShowNewCommentForm(prev => !prev)}>Commenter</Button>
                             </>}
                             {isGestion && <>
                                 <Button variant="primary" onClick={startModifying}>Éditer</Button>
