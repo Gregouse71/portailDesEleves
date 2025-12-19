@@ -58,26 +58,29 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const [optionsC, setOptionsC] = useState([]);
     const [selectedF, setSelectedF] = useState([]);
     const [optionsF, setOptionsF] = useState([]);
+    const [instruments, setInstruments] = useState([]);
 
     useEffect(() => {
-        if (!userInfos?.promotion) return;
+        if (!donneesUtilisateur) return;
 
-        const fetchOptions = async () => {
-            if (parrains) setOptionsP(parrains.map(u => ({ value: u.id, label: u.nom_utilisateur })));
-            if (coUsers) setOptionsC(coUsers.map(u => ({ value: u.id, label: u.nom_utilisateur })));
-            if (fillots) setOptionsF(fillots.map(u => ({ value: u.id, label: u.nom_utilisateur })));
+        if (parrains) setOptionsP(parrains.map(u => ({ value: u.id, label: u.nom_utilisateur })));
+        if (coUsers) setOptionsC(coUsers.map(u => ({ value: u.id, label: u.nom_utilisateur })));
+        if (fillots) setOptionsF(fillots.map(u => ({ value: u.id, label: u.nom_utilisateur })));
+    }, [parrains, coUsers, fillots, donneesUtilisateur]);
 
-            if (userInfos.cos) setSelectedC(userInfos.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
-            if (userInfos.marrain) setSelectedP({ value: userInfos.marrain.id, label: userInfos.marrain.nom_utilisateur });
-            if (userInfos.fillots) setSelectedF(userInfos.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
-        };
-        fetchOptions();
-    }, [userInfos, parrains, coUsers, fillots]);
+    useEffect(() => {
+        if (!donneesUtilisateur) return;
+
+        if (donneesUtilisateur.cos) setSelectedC(donneesUtilisateur.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
+        if (donneesUtilisateur.marrain) setSelectedP({ value: donneesUtilisateur.marrain.id, label: donneesUtilisateur.marrain.nom_utilisateur });
+        if (donneesUtilisateur.fillots) setSelectedF(donneesUtilisateur.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
+        if (donneesUtilisateur.instruments) setInstruments(donneesUtilisateur.instruments);
+    }, [donneesUtilisateur]);
 
     const mutation = useMutation({
         mutationFn: async (updatedInfos) => {
             const { cos, marrain, fillots, ...otherInfos } = updatedInfos;
-            await modifierInfos(id, otherInfos);
+            await modifierInfos(id, { ...otherInfos, instruments });
 
             const newCoIds = selectedC.map(c => c.value);
             await changerCo(id, newCoIds);
@@ -99,14 +102,34 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     const handleInstruChange = (index, field, value) => {
-        const newInstruments = [...userInfos.instruments];
+        const newInstruments = [...instruments];
         newInstruments[index] = { ...newInstruments[index], [field]: value };
-        setUserInfos({ ...userInfos, instruments: newInstruments });
+        setInstruments(newInstruments);
     };
 
     const ajouterInstru = () => {
-        const newInstruments = [...(userInfos.instruments || []), { name: "Piano", niveau: "Débutant" }];
-        setUserInfos({ ...userInfos, instruments: newInstruments });
+        setInstruments([...instruments, { name: "Piano", niveau: "Débutant" }]);
+    };
+
+    const supprimerInstru = (index) => {
+        setInstruments(instruments.filter((_, i) => i !== index));
+    };
+
+    const handleCancel = () => {
+        setUserInfos(donneesUtilisateur);
+        setInstruments(donneesUtilisateur.instruments || []);
+        setSelectedC(donneesUtilisateur.cos?.map(c => ({ value: c.id, label: c.nom_utilisateur })) || []);
+        setSelectedP(donneesUtilisateur.marrain ? { value: donneesUtilisateur.marrain.id, label: donneesUtilisateur.marrain.nom_utilisateur } : null);
+        setSelectedF(donneesUtilisateur.fillots?.map(f => ({ value: f.id, label: f.nom_utilisateur })) || []);
+        setIsGestion(false);
+    };
+
+    const toggleGestion = () => {
+        if (isGestion) {
+            handleCancel();
+        } else {
+            setIsGestion(true);
+        }
     };
 
     if (isPendingUser || !userInfos) {
@@ -116,7 +139,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
     return (<>
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Informations</h2>
-            {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)} />}
+            {autoriseAModifier && <BoutonEditer onClick={toggleGestion} />}
         </div>
 
         <Row>
@@ -209,8 +232,8 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Instruments</Form.Label>
                     <Col sm="10">
-                        {userInfos.instruments && userInfos.instruments.map((elt, ind) => (
-                            <Row key={ind} className="mb-2">
+                        {instruments && instruments.map((elt, ind) => (
+                            <Row key={ind} className="mb-2 align-items-center">
                                 <Col>
                                     <Form.Control
                                         value={elt.name}
@@ -224,6 +247,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
                                         onChange={(e) => handleInstruChange(ind, 'niveau', e.target.value)}
                                         placeholder="Niveau (ex: Débutant)"
                                     />
+                                </Col>
+                                <Col xs="auto">
+                                    <Button variant="danger" onClick={() => supprimerInstru(ind)}>
+                                        <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                                    </Button>
                                 </Col>
                             </Row>
                         ))}
@@ -267,7 +295,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
                 <div className="d-flex gap-2 mt-3">
                     <Button variant="success" onClick={() => mutation.mutate(userInfos)}>Valider</Button>
-                    <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
+                    <Button variant="danger" onClick={handleCancel}>Annuler</Button>
                 </div>
             </Form>
         }
