@@ -50,7 +50,7 @@ def route_obtenir_publications_asso(association_id: int):
             if not any(role.mandat.association_id == association_id for role in current_user.associations):
                 query = query.filter(Publication.is_publication_interne.is_(False))
             # publications sensibles
-            if not current_user.est_baptise and not current_user.is_superuser:
+            if not current_user.est_baptise and not current_user.est_superutilisateur:
                 query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
             # publications spécifiques aux differents cycles
             query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
@@ -68,13 +68,19 @@ def route_obtenir_publication(post_id: int):
     Avec les commentaires
     """
     # try:
+    publication_for_id = Publication.query.get(post_id)
+    if not publication_for_id:
+        return jsonify({"error": "Publication non trouvée"}), 404
+    
+    association_id = publication_for_id.id_association
+
     query = Publication.query.filter(Publication.id == post_id)
     if not (current_user.est_superutilisateur):
         # publications internes
         if not any(role.mandat.association_id == association_id for role in current_user.associations):
             query = query.filter(Publication.is_publication_interne.is_(False))
         # publications sensibles
-        if not current_user.est_baptise and not current_user.is_superuser:
+        if not current_user.est_baptise and not current_user.est_superutilisateur:
             query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
         # publications spécifiques aux differents cycles
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
@@ -179,7 +185,7 @@ def route_modifier_publication(association_id, publication_id):
     publication = Publication.query.get(publication_id)
     if publication:
         data = request.json
-        if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise) and not current_user.is_superuser:
+        if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise) and not current_user.est_superutilisateur:
             # Les non baptisés n'ont pas le droit de modifier les posts cachés
             return jsonify({"message": "publication non trouvé"}), 404
         modify_publication(
