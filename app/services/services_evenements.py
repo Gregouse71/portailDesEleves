@@ -1,6 +1,7 @@
 from app.services import db
 from app.models.models_evenements import Evenement
 from datetime import datetime, timedelta, time
+from copy import copy
 
 
 def est_heure_HH_colon_MM(heure_str):
@@ -97,6 +98,8 @@ def get_evenements_par_date(date_str: str):
         return _filtrer_par_jour(now.date(), include_periodiques=True)
     elif date_str == "week":
         return _filtrer_par_semaine()
+    elif date_str == "next_week":
+        return _filtrer_par_prochains_jours(7)
     elif len(date_str) == 8:  # Format AAAAMMJJ
         date_obj = datetime.strptime(date_str, "%Y%m%d").date()
         include_periodiques = date_obj.year == now.year
@@ -110,6 +113,63 @@ def get_evenements_par_date(date_str: str):
     else:
         raise ValueError(
             "Format de date invalide. Utilisez 'ajd', 'week', 'AAAAMMJJ', 'AAAAMM' ou 'AAAA'.")
+
+
+def _filtrer_par_prochains_jours(nb_jours: int):
+    """
+    Récupère les événements des 'nb_jours' prochains jours.
+    Pour les événements périodiques, crée une instance virtuelle pour chaque occurrence.
+    """
+    now = datetime.now()
+    today = now.date()
+    end_date = today + timedelta(days=nb_jours)
+
+    # 1. Événements ponctuels
+    evenements = Evenement.query.filter(
+        Evenement.evenement_masque == False,
+        Evenement.evenement_periodique == False,
+        Evenement.date_de_debut >= datetime.combine(today, time.min),
+        Evenement.date_de_debut < datetime.combine(end_date, time.min)
+    ).all()
+
+    # 2. Événements périodiques
+    evenements_periodiques_db = Evenement.query.filter(
+        Evenement.evenement_masque == False,
+        Evenement.evenement_periodique == True
+    ).all()
+
+    evenements_periodiques_etendus = []
+
+    for i in range(nb_jours):
+        current_date = today + timedelta(days=i)
+        current_day_name = _jour_de_semaine(current_date.strftime("%Y%m%d"))
+        current_date_str = current_date.strftime("%Y%m%d")
+
+        for evt in evenements_periodiques_db:
+            if evt.jours_de_la_semaine and current_day_name in evt.jours_de_la_semaine:
+                # Vérifier annulation
+                if evt.dates_annulation and current_date_str in evt.dates_annulation:
+                    continue
+
+                # Créer une copie pour cette occurrence spécifique
+                evt_copy = copy(evt)
+
+                # Définir la date de début spécifique
+                heure = evt.heure_de_debut if evt.heure_de_debut else time(0, 0)
+                evt_copy.date_de_debut = datetime.combine(current_date, heure)
+
+                # Idem pour date de fin si nécessaire
+                if evt.heure_de_fin:
+                    evt_copy.date_de_fin = datetime.combine(
+                        current_date, evt.heure_de_fin)
+
+                evenements_periodiques_etendus.append(evt_copy)
+
+    # Combiner et trier par date
+    tous_evenements = evenements + evenements_periodiques_etendus
+    tous_evenements.sort(key=lambda x: x.date_de_debut if x.date_de_debut else datetime.max)
+
+    return tous_evenements
 
 
 def _filtrer_par_jour(date_filtre: datetime.date, include_periodiques: bool):

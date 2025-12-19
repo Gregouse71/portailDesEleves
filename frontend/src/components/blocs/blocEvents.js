@@ -7,17 +7,13 @@ import { UPLOAD_BASE_URL } from "../../api/base";
 import { Link } from "react-router-dom";
 
 export default function BlocEvents() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const date = `${year}${month.toString().padStart(2, '0')}`;
-
     const { data: events = [], isLoading } = useQuery({
-        queryKey: ['evenements', date],
-        queryFn: () => getEvenementsMois(date)
+        queryKey: ['evenements', 'next_week'],
+        queryFn: () => getEvenementsMois('next_week')
     });
 
     const formatDate = (dateString) => {
+        if (!dateString) return "Date inconnue";
         const options = { weekday: 'long', day: 'numeric', month: 'short' };
         const date = new Date(dateString);
         return date.toLocaleDateString('fr-FR', options);
