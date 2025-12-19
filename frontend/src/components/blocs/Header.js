@@ -36,7 +36,7 @@ export default function Header() {
   return (
     <Navbar bg="dark" data-bs-theme="dark" expand="md" color='#005a9e' className="global-header-header">
       <Container fluid>
-        <Navbar.Brand href="#" onClick={() => navigate("/")}><em>Le nouveau</em> portail des élèves</Navbar.Brand>
+        <Navbar.Brand href="#" onClick={() => navigate("/")}><em>Le nouveau</em> portail des élèves (work in progress)</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
@@ -51,6 +51,8 @@ export default function Header() {
               <NavDropdown.Item onClick={() => navigate("/vendomes")}>Vendômes</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/palums")}>Palums</NavDropdown.Item>
             </NavDropdown>
+
+            <Button variant="danger" size="sm" href="mailto:portail@kataevskiy.com">Signaler un bug</Button>
 
             <div className="d-flex flex-column flex-md-row gap-2">
               {(octoPermission || bieroPermission) && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
