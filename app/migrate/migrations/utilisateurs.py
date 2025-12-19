@@ -127,9 +127,7 @@ def migrate_users():
                 cycle = 'vs'
             
             # Determine if baptized
-            est_baptise = False
-            if profile[17]: # parrain_id
-                est_baptise = True
+            est_baptise = True
 
             # Create a new user object
             prenom_raw = auth_user[2] if auth_user[2] else ""
