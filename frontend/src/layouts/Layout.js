@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import Header from '../components/blocs/Header';
 import BlocSondage from '../components/blocs/blocSondage';
 import BlocChat from '../components/blocs/blocChat';
@@ -6,12 +6,22 @@ import BlocAnniversaire from '../components/blocs/blocAnniversaire';
 import '../assets/styles/layout.scss';
 import { obtenirIdUser } from '../api/api_global';
 import { obtenirDataUser } from '../api/api_utilisateurs';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import BlocEvents from '../components/blocs/blocEvents';
 
 const LayoutContext = createContext();
+
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
+}
 
 export function LayoutProvider({ children }) {
     const { data: id } = useQuery({
@@ -36,6 +46,7 @@ export function LayoutProvider({ children }) {
 
     return (
         <LayoutContext.Provider value={{ userData }}>
+            <ScrollToTop />
             {!isLoading && children}
         </LayoutContext.Provider>
     );
