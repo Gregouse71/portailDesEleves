@@ -67,14 +67,14 @@ export function Layout() {
             <Header className="header-global" />
             <Container fluid className="main-content-global">
                 <Row>
-                    <Col md={2} className=" left order-2 order-md-1">
+                    <Col md={2} className="left order-2 order-md-1">
                         <BlocEvents />
                         <BlocSondage />
                     </Col>
                     <Col md={8} className="mb-3 order-1 order-md-2">
                         <Outlet />
                     </Col>
-                    <Col md={2} className=" right order-3 order-md-3">
+                    <Col md={2} className="right order-3 order-md-3">
                         <BlocChat />
                         <BlocAnniversaire />
                     </Col>

@@ -27,33 +27,12 @@ def obtenir_liste_utilisateurs(promo: int, cycles: str):
         if cycle not in valid_cycles:
             return jsonify({"message": f"Erreur : cycle invalide '{cycle}'. Valeurs autorisées: {valid_cycles}"}), 400
     # Récupération des utilisateurs avec seulement les champs nécessaires
-    utilisateurs = Utilisateur.query.with_entities(
-        Utilisateur.id,
-        Utilisateur.nom_utilisateur,
-        Utilisateur.prenom,
-        Utilisateur.surnom,
-        Utilisateur.nom,
-        Utilisateur.promotion,
-        Utilisateur.cycle,
-        Utilisateur.photo
-    ).filter(
+    utilisateurs = Utilisateur.query.filter(
         Utilisateur.promotion == str(promo),
         Utilisateur.cycle.in_(str_cycles)
     ).all()
     # Conversion en JSON
-    liste_utilisateurs = [
-        {
-            "id": u.id,
-            "nom_utilisateur": u.nom_utilisateur,
-            "prenom": u.prenom,
-            "surnom": u.surnom,
-            "nom": u.nom,
-            "promotion": u.promotion,
-            "cycle": u.cycle,
-            "photo": u.photo
-        }
-        for u in utilisateurs
-    ]
+    liste_utilisateurs = [u.to_dict() for u in utilisateurs]
     return jsonify(liste_utilisateurs), 200
 
 

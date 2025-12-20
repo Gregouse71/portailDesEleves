@@ -1,5 +1,3 @@
-// TODO REMOVE THIS CLASS !!!
-
 import { Card, Button, Form } from "react-bootstrap";
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +25,7 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
                 />
             </div>
             <Card.Body className="px-2">
-                <Card.Title className="h6 bold">{user.nom_utilisateur}</Card.Title>
+                <Card.Title className="h6 bold">{user.prenom} {user.nom}</Card.Title>
                 {user.role ? <hr/> : null}
                 {!isModifying && <Card.Text className="small">{user.role}</Card.Text>}
                 {isModifying && <>
