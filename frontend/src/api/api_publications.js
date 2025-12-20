@@ -2,13 +2,16 @@ import { API_BASE_URL, handleResponse } from "./base";
 
 export async function getPublicationsByTag(tag, offset, limit) {
   try {
-    const res = await fetch(`${API_BASE_URL}/publications/tag/${tag}`, {
-      method: "POST",
+    const params = new URLSearchParams();
+    if (offset !== undefined) params.append("offset", offset);
+    if (limit !== undefined) params.append("limit", limit);
+    const queryString = params.toString();
+    const res = await fetch(`${API_BASE_URL}/publications/tag/${tag}${queryString ? `?${queryString}` : ""}`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ offset, limit })
     })
     return handleResponse(res);
   } catch (erreur) {
@@ -19,13 +22,16 @@ export async function getPublicationsByTag(tag, offset, limit) {
 
 export async function obtenirPublicationsAsso(asso_id, offset, limit) {
   try {
-    const res = await fetch(`${API_BASE_URL}/publications/obtenir_publications_asso/${asso_id}`, {
-      method: "POST",
+    const params = new URLSearchParams();
+    if (offset !== undefined) params.append("offset", offset);
+    if (limit !== undefined) params.append("limit", limit);
+    const queryString = params.toString();
+    const res = await fetch(`${API_BASE_URL}/publications/obtenir_publications_asso/${asso_id}${queryString ? `?${queryString}` : ""}`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ offset, limit })
     })
     return handleResponse(res);
   } catch (erreur) {

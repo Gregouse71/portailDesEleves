@@ -12,16 +12,15 @@ from app.services.services_publications import *
 controllers_publications = Blueprint('controllers_publications', __name__)
 
 
-@controllers_publications.route("/tag/<tag>", methods=['POST'])
+@controllers_publications.route("/tag/<tag>", methods=['GET'])
 @login_required
 def route_get_publications_by_tag(tag: str):
     """
     Renvoie toutes les publications avec un tag spécifique.
     """
     try:
-        data = request.json or {}
-        limit = data.get('limit')
-        offset = data.get('offset')
+        limit = request.args.get('limit', type=int)
+        offset = request.args.get('offset', type=int)
 
         publications = get_publications_by_tag(tag, limit=limit, offset=offset)
         return jsonify({"publications": [{"id": e.id,
@@ -41,16 +40,15 @@ def route_get_publications_by_tag(tag: str):
         return jsonify({"error": str(e)}), 400
 
 
-@controllers_publications.route("obtenir_publications_asso/<int:association_id>", methods=['POST'])
+@controllers_publications.route("obtenir_publications_asso/<int:association_id>", methods=['GET'])
 @login_required
 def route_obtenir_publications_asso(association_id: int):
     """
     Renvoie la liste des id des posts d'une asso
     """
     try:
-        data = request.json or {}
-        limit = data.get('limit')
-        offset = data.get('offset')
+        limit = request.args.get('limit', type=int)
+        offset = request.args.get('offset', type=int)
 
         query = Publication.query.filter(Publication.id_association == association_id)
         if not (current_user.est_superutilisateur):

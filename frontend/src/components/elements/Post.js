@@ -35,6 +35,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
         "tags": []
     })
     const [isModifying, setIsModifying] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [showNewCommentForm, setShowNewCommentForm] = useState(false);
 
     const [post, setPost] = useState(null);
@@ -112,6 +113,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
     };
 
     const validateModifyPost = async () => {
+        setIsSubmitting(true);
         try {
             let updatedModifyPost = { ...modifyPost };
 
@@ -135,6 +137,8 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
         } catch (erreur) {
             console.error(erreur);
             setIsModifying(true);
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -262,8 +266,8 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                         </Col>
                     </Form.Group>
                     <div className="d-flex gap-2">
-                        <Button variant="success" onClick={validateModifyPost} disabled={isLoading}>
-                            {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
+                        <Button variant="success" onClick={validateModifyPost} disabled={isSubmitting}>
+                            {isSubmitting ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Valider"}
                         </Button>
                         <Button variant="danger" onClick={() => setIsModifying(false)}>Annuler</Button>
                     </div>
