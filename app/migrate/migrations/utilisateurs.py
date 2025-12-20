@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import text
 
 from app import db
-from app.models.models_utilisateurs import Utilisateur
+from app.models.models_utilisateurs import Utilisateur, default_questions
 
 def update_user_photos():
     print("Updating user photos...")
@@ -74,9 +74,16 @@ def migrate_users():
         "Raconte une blague :": "050Raconte une blague :",
         "Trash ton co :": "060Trash ton co :",
         "Et ton parrain, comment tu l'aimes ?": "070Et ton parrain, comment tu l'aimes ?",
+        "Et ton parrain, comment tu l’aimes ?": "070Et ton parrain, comment tu l'aimes ?",
         "Et ton fillot ?": "080Et ton fillot ?",
         "Champagne ou Ricard ?": "090Champagne ou Ricard ?",
         "Ton top 5 du moment ?": "100Ton top 5 du moment :",
+        "Que signifie JPG ?": "110Que signifie JPG ?",
+        "Qui convoites-tu secrètement ?": "120Qui convoites-tu secrètement ?",
+        "Le truc le plus absurde qui te soit jamais arrivé :": "130Le truc le plus absurde qui te soit jamais arrivé :",
+        "Tes vacances de rêve ?": "140Tes vacances de rêve ?",
+        "Ton date idéal ?": "150Ton date idéal ?",
+        "Ton talent caché ?": "160Ton talent caché ?",
     }
 
     for userprofile_id, question_enonce, reponse_contenu in trombi_qa_data:
@@ -191,7 +198,13 @@ def migrate_users():
             new_user.solde_octo = profile[20]
             new_user.solde_biero = profile[21]
             new_user.instruments = instruments_by_user.get(user_id, [])
-            new_user.questions_reponses_du_portail = questions_reponses_by_user.get(user_id, {})
+            
+            # Initialize with default questions and merge existing responses
+            user_questions = default_questions.copy()
+            if user_id in questions_reponses_by_user:
+                user_questions.update(questions_reponses_by_user[user_id])
+            
+            new_user.questions_reponses_du_portail = user_questions
             
             # Add the new user to the new database
             db.session.add(new_user)

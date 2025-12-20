@@ -15,6 +15,7 @@ dependencies:
   - eventlet
   - redis-py
   - pdf2image
+  - poppler
   - pymysql
   - mariadb
   - gunicorn

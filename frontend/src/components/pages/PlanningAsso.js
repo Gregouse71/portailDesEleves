@@ -5,12 +5,7 @@ import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
 
 const PlanningAsso = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const date = `${year}${month.toString().padStart(2, '0')}`;
-
-    const { data: events, isLoading: isLoadingEvents, isError: isErrorEvents, error: errorEvents } = useQuery({ queryKey: ['evenements', date], queryFn: () => getEvenementsMois(date) });
+    const { data: events, isLoading: isLoadingEvents, isError: isErrorEvents, error: errorEvents } = useQuery({ queryKey: ['evenements', 'next_week'], queryFn: () => getEvenementsMois('next_week') });
 
     const GetAssoInfo = ({ assoId }) => {
         const { data: asso, isLoading, isError, error } = useQuery({ queryKey: ['association', assoId], queryFn: () => chargerAsso(assoId) });
