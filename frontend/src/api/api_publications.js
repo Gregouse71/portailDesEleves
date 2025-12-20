@@ -1,13 +1,14 @@
 import { API_BASE_URL, handleResponse } from "./base";
 
-export async function getPublicationsByTag(tag) {
+export async function getPublicationsByTag(tag, offset, limit) {
   try {
     const res = await fetch(`${API_BASE_URL}/publications/tag/${tag}`, {
-      method: "GET",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
+      body: JSON.stringify({ offset, limit })
     })
     return handleResponse(res);
   } catch (erreur) {

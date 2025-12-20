@@ -317,7 +317,7 @@ def remove_like_from_comment(utilisateur: Utilisateur, commentaire: Commentaire)
         raise ValueError("Le commentaire n'existe pas")
 
 
-def get_publications_by_tag(tag: str):
+def get_publications_by_tag(tag: str, limit: int = None, offset: int = None):
     """
     Renvoie toutes les publications avec un tag spécifique,
     en tenant compte des permissions de l'utilisateur actuel.
@@ -343,6 +343,14 @@ def get_publications_by_tag(tag: str):
         # Filter out cycle-specific publications
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
 
-    publications = query.order_by(desc(Publication.date_publication)).all()
+    query = query.order_by(desc(Publication.date_publication))
+
+    if limit is not None:
+        query = query.limit(limit)
+    
+    if offset is not None:
+        query = query.offset(offset)
+
+    publications = query.all()
     return publications
 

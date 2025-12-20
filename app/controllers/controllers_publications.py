@@ -12,14 +12,18 @@ from app.services.services_publications import *
 controllers_publications = Blueprint('controllers_publications', __name__)
 
 
-@controllers_publications.route("/tag/<tag>")
+@controllers_publications.route("/tag/<tag>", methods=['POST'])
 @login_required
 def route_get_publications_by_tag(tag: str):
     """
     Renvoie toutes les publications avec un tag spécifique.
     """
     try:
-        publications = get_publications_by_tag(tag)
+        data = request.json or {}
+        limit = data.get('limit')
+        offset = data.get('offset')
+
+        publications = get_publications_by_tag(tag, limit=limit, offset=offset)
         return jsonify({"publications": [{"id": e.id,
                                           "auteur": e.auteur.nom_utilisateur if e.auteur else None,
                                           "titre": e.titre,
