@@ -53,8 +53,7 @@ export default function BlocSondage() {
                                 return (
                                     <div key={index}>
                                         <div className="d-flex justify-content-between">
-                                            <p>{reponse}</p>
-                                            <p className="text-muted"> {votes} votes ({percent.toFixed(1)}%)</p>
+                                            <p>{reponse}<span className="text-muted"> {votes} votes ({percent.toFixed(1)}%)</span></p>
                                         </div>
                                         <ProgressBar now={percent} />
                                     </div>
