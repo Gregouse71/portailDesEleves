@@ -37,13 +37,17 @@ def route_get_publications_by_tag(tag: str):
         return jsonify({"error": str(e)}), 400
 
 
-@controllers_publications.route("obtenir_publications_asso/<int:association_id>")
+@controllers_publications.route("obtenir_publications_asso/<int:association_id>", methods=['POST'])
 @login_required
 def route_obtenir_publications_asso(association_id: int):
     """
     Renvoie la liste des id des posts d'une asso
     """
     try:
+        data = request.json or {}
+        limit = data.get('limit')
+        offset = data.get('offset')
+
         query = Publication.query.filter(Publication.id_association == association_id)
         if not (current_user.est_superutilisateur):
             # publications internes
@@ -54,7 +58,16 @@ def route_obtenir_publications_asso(association_id: int):
                 query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
             # publications spécifiques aux differents cycles
             query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
-        publications = query.order_by(desc(Publication.date_publication)).all()
+        
+        query = query.order_by(desc(Publication.date_publication))
+
+        if limit is not None:
+            query = query.limit(limit)
+        
+        if offset is not None:
+            query = query.offset(offset)
+
+        publications = query.all()
         return jsonify([p.id for p in publications]), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

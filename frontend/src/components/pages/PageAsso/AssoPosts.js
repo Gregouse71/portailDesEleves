@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { ajouterContenuPublication, creerNouvellePublication, obtenirPublicationsAsso, supprimerPublication } from "../../../api/api_publications";
 import RichEditor from "../../elements/RichEditor";
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
 import BoutonEditer from "../../elements/BoutonEditer";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import Post from "../../elements/Post";
 
 const tagOptions = [
@@ -32,6 +32,8 @@ function AssoPosts({ asso_id }) {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [fileInputKey, setFileInputKey] = useState(Date.now());
     const [isLoading, setIsLoading] = useState(false);
+
+    const observer = useRef();
 
     const clearNewPost = () => {
         setNewPost({
@@ -128,12 +130,33 @@ function AssoPosts({ asso_id }) {
         enabled: !!asso_id,
     });
 
-    const { data: listePosts = [] } = useQuery({
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        status,
+    } = useInfiniteQuery({
         queryKey: ['publicationData', asso_id, 'publications'],
-        queryFn: () => obtenirPublicationsAsso(asso_id),
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        queryFn: ({ pageParam = 0 }) => obtenirPublicationsAsso(asso_id, pageParam, 10),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) => {
+            return lastPage.length === 10 ? allPages.length * 10 : undefined;
+        },
         enabled: !!asso_id,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
+
+    const lastPostRef = useCallback(node => {
+        if (isFetchingNextPage) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage();
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
     useEffect(() => {
         let fileForPreview = newPostMiniatureFile || newPostFile;
@@ -148,6 +171,8 @@ function AssoPosts({ asso_id }) {
         return () => URL.revokeObjectURL(objectUrl);
 
     }, [newPostFile, newPostMiniatureFile]);
+
+    const listePosts = data?.pages.flat() || [];
 
     return (
         <>
@@ -245,15 +270,18 @@ function AssoPosts({ asso_id }) {
                     </Card.Body>
                 </Card>}
 
-                {listePosts.map((postId) =>
-                    <Post
-                        key={postId}
-                        postId={postId}
-                        isGestion={isGestion}
-                        removePost={() => removePost(postId)}
-                        tagOptions={tagOptions}
-                    />
-                )}
+                {listePosts.map((postId, index) => (
+                    <div key={postId} ref={index === listePosts.length - 1 ? lastPostRef : null}>
+                        <Post
+                            postId={postId}
+                            isGestion={isGestion}
+                            removePost={() => removePost(postId)}
+                            tagOptions={tagOptions}
+                        />
+                    </div>
+                ))}
+
+                {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}
             </div>
         </>
     )

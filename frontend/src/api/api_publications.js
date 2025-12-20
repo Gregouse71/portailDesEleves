@@ -16,14 +16,15 @@ export async function getPublicationsByTag(tag) {
   }
 }
 
-export async function obtenirPublicationsAsso(asso_id) {
+export async function obtenirPublicationsAsso(asso_id, offset, limit) {
   try {
     const res = await fetch(`${API_BASE_URL}/publications/obtenir_publications_asso/${asso_id}`, {
-      method: "GET",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
+      body: JSON.stringify({ offset, limit })
     })
     return handleResponse(res);
   } catch (erreur) {
