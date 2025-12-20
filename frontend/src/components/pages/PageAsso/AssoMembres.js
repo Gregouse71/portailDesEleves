@@ -6,6 +6,7 @@ import { Card, Button, Form, Row, Col } from "react-bootstrap";
 import UserCard from "../../elements/UserCard";
 import BoutonEditer from "../../elements/BoutonEditer";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import AssoMandat from "../../elements/AssoMandat";
 
 function AssoMembres({ asso_id }) {
     const queryClient = useQueryClient();
@@ -21,11 +22,6 @@ function AssoMembres({ asso_id }) {
     const [promoAjoutMembre, setPromoAjoutMembre] = useState(null);
     const [idAjoutMembre, setIdAjoutMembre] = useState(null);
     const [mandatAjoutMembre, setMandatAjoutMembre] = useState(null);
-
-    const [idMembreModifier, setIdMembreModifier] = useState(null);
-    const [nouveauRole, setNouveauRole] = useState("");
-    const [nouvellePosition, setNouvellePosition] = useState("");
-    const [editingMandat, setEditingMandat] = useState(null);
 
     const { data: asso = { mandats: [] } } = useQuery({
         queryKey: ['asso', asso_id],
@@ -77,53 +73,10 @@ function AssoMembres({ asso_id }) {
 
     const handleSetIsGestionMembres = (newState) => {
         if (!newState) {
-            setIdMembreModifier(null);
             setIsAjoutMembre(false);
             setIsAjoutMandat(false);
-            setEditingMandat(null);
         }
         setIsGestionMembres(newState);
-    }
-
-    const handleRetirerMembre = async (mandatId, membreId) => {
-        try {
-            await retirerMembre(asso_id, mandatId, membreId);
-            queryClient.invalidateQueries(['asso', asso_id]);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleMembreChange = async (mandatId, membreId) => {
-        const memberToModify = asso.mandats.flatMap(m => m.membres).find(u => u.id === membreId);
-        if (!memberToModify) return;
-
-        const originalRole = memberToModify.role || "";
-        const originalPosition = memberToModify.position?.toString() || "";
-
-        let roleChanged = nouveauRole !== originalRole;
-        let positionChanged = nouvellePosition !== originalPosition;
-
-        if (roleChanged) {
-            try {
-                await modifierRoleMembre(asso_id, mandatId, membreId, nouveauRole);
-            } catch (erreur) {
-                console.error(erreur);
-            }
-        }
-        if (positionChanged) {
-            try {
-                await modifierPositionMembre(asso_id, mandatId, membreId, parseInt(nouvellePosition));
-            } catch (erreur) {
-                console.error(erreur)
-            }
-        }
-
-        if (roleChanged || positionChanged) {
-            queryClient.invalidateQueries(['asso', asso_id]);
-        }
-
-        setIdMembreModifier(null);
     }
 
     const handleAjoutMembre = async () => {
@@ -135,17 +88,6 @@ function AssoMembres({ asso_id }) {
             } catch (erreur) {
                 console.error(erreur);
             }
-        }
-    }
-
-    const handleModifierParametres = (userId, userRole, userPosition) => {
-        if (idMembreModifier === userId) {
-            setIdMembreModifier(null);
-        }
-        else {
-            setNouveauRole(userRole || "");
-            setNouvellePosition(userPosition?.toString() || "");
-            setIdMembreModifier(userId);
         }
     }
 
@@ -162,41 +104,7 @@ function AssoMembres({ asso_id }) {
         }
         setIsAjoutMandat(false);
     }
-
-    const handleEditMandat = (mandat) => {
-        setEditingMandat({ ...mandat });
-    }
-
-    const handleCancelEditMandat = () => {
-        setEditingMandat(null);
-    }
-
-    const handleSaveMandat = async () => {
-        if (editingMandat) {
-            try {
-                await modifierMandat(asso_id, editingMandat.id, editingMandat.nom, editingMandat.position, editingMandat.actuel);
-                if (editingMandat.actuel) {
-                    const otherMandats = asso.mandats.filter(m => m.id !== editingMandat.id && m.actuel);
-                    for (const other of otherMandats) {
-                        await modifierMandat(asso_id, other.id, other.nom, other.position, false);
-                    }
-                }
-                queryClient.invalidateQueries(['asso', asso_id]);
-                setEditingMandat(null);
-            } catch (error) {
-                console.error(error);
-            }
-        }
-    }
-
-    const handleDelMandat = async (id) => {
-        try {
-            await supprimerMandat(asso_id, id);
-            queryClient.invalidateQueries(['asso', asso_id]);
-        } catch (erreur) {
-            console.error(erreur);
-        }
-    }
+    
 
     const sortedMandats = [...asso.mandats].sort((a, b) => {
         if (a.actuel) return -1;
@@ -291,89 +199,7 @@ function AssoMembres({ asso_id }) {
             )}
 
             {sortedMandats.map((mandat) => (
-                <Card key={mandat.id} className="mb-4">
-                    <Card.Header>
-                        <Row className="align-items-center">
-                            <Col xs={12} md>
-                                {editingMandat && editingMandat.id === mandat.id ? (
-                                    <Form className="w-100">
-                                        <Row className="align-items-end">
-                                            <Col>
-                                                <Form.Group>
-                                                    <Form.Label>Nom</Form.Label>
-                                                    <Form.Control
-                                                        type="text"
-                                                        value={editingMandat.nom}
-                                                        onChange={(e) => setEditingMandat({ ...editingMandat, nom: e.target.value })}
-                                                    />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col>
-                                                <Form.Group>
-                                                    <Form.Label>Priorité d'affichage</Form.Label>
-                                                    <Form.Control
-                                                        type="number"
-                                                        value={editingMandat.position}
-                                                        onChange={(e) => setEditingMandat({ ...editingMandat, position: parseInt(e.target.value) || 0 })}
-                                                    />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col className="d-flex align-items-end pb-1">
-                                                <Form.Check
-                                                    type="checkbox"
-                                                    label="Mandat actuel"
-                                                    checked={editingMandat.actuel}
-                                                    onChange={(e) => setEditingMandat({ ...editingMandat, actuel: e.target.checked })}
-                                                />
-                                            </Col>
-                                        </Row>
-                                    </Form>
-                                ) : (
-                                    <Card.Title className="m-0">{mandat.nom}</Card.Title>
-                                )}
-                            </Col>
-                            {isGestionMembres && (
-                                <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
-                                    {editingMandat && editingMandat.id === mandat.id ? (
-                                        <>
-                                            <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
-                                            <Button variant="secondary" onClick={handleCancelEditMandat}>Annuler</Button>
-                                        </>
-                                    ) : (
-                                        <Button variant="primary" onClick={() => handleEditMandat(mandat)}>Editer</Button>
-                                    )}
-                                </Col>
-                            )}
-                        </Row>
-                    </Card.Header>
-                    <Card.Body>
-                        <div className="member-grid">
-                            {[...mandat.membres].sort((a, b) => {
-                                if (a.position === null) return 1;
-                                if (b.position === null) return -1;
-                                return b.position - a.position;
-                            }).map((user) => (
-                                <UserCard user={user} isGestion={isGestionMembres} isModifying={idMembreModifier === user.id}
-                                    key={user.id}
-                                    f1={() => handleRetirerMembre(mandat.id, user.id)}
-                                    t1="Supprimer ce membre"
-                                    f2={() => { handleModifierParametres(user.id, user.role, user.position) }}
-                                    t2="Modifier les paramètres"
-                                    values={[
-                                        { label: "Rôle", value: nouveauRole, onChange: (e) => setNouveauRole(e.target.value) },
-                                        { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) }
-                                    ]}
-                                    validate={() => handleMembreChange(mandat.id, user.id)}
-                                />
-                            ))}
-                        </div>
-                        {isGestionMembres && editingMandat && editingMandat.id === mandat.id && (
-                            <div className="d-flex justify-content-end mt-3">
-                                <Button variant="danger" onClick={() => handleDelMandat(mandat.id)}>Supprimer le mandat</Button>
-                            </div>
-                        )}
-                    </Card.Body>
-                </Card>
+                <AssoMandat mandat={mandat} asso={asso} isGestion={isGestionMembres}/>
             ))}
         </div>
     )
