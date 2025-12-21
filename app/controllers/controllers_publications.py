@@ -172,8 +172,7 @@ def route_supprimer_publication(association_id, publication_id):
 @login_required
 def route_supprimer_commentaire(comment_id):
     """
-    Supprime la publication
-    Ainsi que toutes les commentaires associés
+    Supprime le commentaire
     """
     commentaire = Commentaire.query.get(comment_id)
     if not commentaire:
@@ -182,9 +181,12 @@ def route_supprimer_commentaire(comment_id):
     if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise):
         # Les non baptisés n'ont pas le droit de supprimer les posts cachés
         return jsonify({"message": "commentaire non trouvé"}), 404
-    if current_user.est_superutilisateur or (publication.id_association in current_user.associations_actuelles.keys()) or commentaire.id_ateur == current_user.id:
+    
+    user_asso_ids = [m.mandat.association_id for m in current_user.associations if m.mandat.actuel]
+    
+    if current_user.est_superutilisateur or (publication.id_association in user_asso_ids) or commentaire.id_auteur == current_user.id:
         remove_comment(commentaire)
-        return jsonify({"message": "publication supprimée avec succès"}), 200
+        return jsonify({"message": "commentaire supprimé avec succès"}), 200
     else:
         return jsonify({"message": "vous devez être auteur ou membre de l'association pour supprimer ce commentaire"}), 403
 

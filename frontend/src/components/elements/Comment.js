@@ -17,7 +17,7 @@ const formatPublicationDate = (dateString) => {
     return `${datePart} à ${timePart}`;
 }
 
-export default function Comment({ comment, userData, isGestion, handleLike, handleDelete, onSaveEdit }) {
+export default function Comment({ comment, userData, isMembreAsso, handleLike, handleDelete, onSaveEdit }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.contenu);
     const [isSaving, setIsSaving] = useState(false);
@@ -41,6 +41,8 @@ export default function Comment({ comment, userData, isGestion, handleLike, hand
         }
         setIsSaving(false);
     };
+
+    const canDelete = userData.is_superuser || isMembreAsso || comment.id_auteur === userData.id;
 
     return (
         <Card className="mt-3">
@@ -70,7 +72,7 @@ export default function Comment({ comment, userData, isGestion, handleLike, hand
                                     {comment.likes.length}
                                 </Button>
                                 {comment.id_auteur === userData.id && <Button variant="secondary" size="sm" onClick={handleEdit}>Éditer</Button>}
-                                {(isGestion || comment.id_auteur === userData.id) && <Button variant="danger" size="sm" onClick={() => handleDelete(comment.id)}>Supprimer</Button>}
+                                {canDelete && <Button variant="danger" size="sm" onClick={() => handleDelete(comment.id)}>Supprimer</Button>}
                             </div>
                             <small className="text-muted">Publié le : {formatPublicationDate(comment.date)}</small>
                         </div>

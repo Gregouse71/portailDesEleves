@@ -1,13 +1,23 @@
 import { Card, Form, Button, Spinner } from "react-bootstrap";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { creerNouveauCommentaire, modifierCommentaire, supprimerCommentaire, modifierLikeComment } from "../../api/api_publications";
+import { obtenirAssosUtilisateur } from "../../api/api_utilisateurs";
 import Comment from "./Comment";
 
 export default function CommentSection({ post, userData, isGestion, showNewCommentForm, setShowNewCommentForm }) {
     const [newComment, setNewComment] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
+
+    const { data: userAssos } = useQuery({
+        queryKey: ['userAssos', userData.id],
+        queryFn: () => obtenirAssosUtilisateur(userData.id),
+        staleTime: Infinity,
+        enabled: !!userData.id
+    });
+
+    const isMembreAsso = userAssos?.actuel?.some(asso => asso.asso_id === post.association.id);
 
     const invalidatePostQuery = () => {
         queryClient.invalidateQueries(['publications', post.id]);
@@ -86,7 +96,7 @@ export default function CommentSection({ post, userData, isGestion, showNewComme
                     key={comment.id}
                     comment={comment}
                     userData={userData}
-                    isGestion={isGestion}
+                    isMembreAsso={isMembreAsso}
                     handleLike={handleLikeComment}
                     handleDelete={handleDeleteComment}
                     onSaveEdit={handleSaveEdit}

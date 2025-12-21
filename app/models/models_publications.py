@@ -38,7 +38,11 @@ class Commentaire(db.Model):
         return {
             "id": self.id,
             "id_auteur": self.id_auteur,
-            "auteur": self.auteur.nom_utilisateur if self.auteur else None,
+            "auteur": {
+                "id": self.auteur.id,
+                "nom_utilisateur": self.auteur.nom_utilisateur,
+                "photo": self.auteur.photo
+            } if self.auteur else None,
             "publication": self.publication.titre,
             "id_publication": self.id_publication,
             "contenu": self.contenu,
