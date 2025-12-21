@@ -5,6 +5,7 @@ import "../../assets/styles/chat.scss"
 import { obtenirPlusDeMessages } from '../../api/api_chat';
 import { Card, Form, InputGroup } from 'react-bootstrap';
 import { useLayout } from '../../layouts/Layout';
+import { Link } from 'react-router-dom';
 
 export default function BlocChat() {
   const [messages, setMessages] = useState([]);
@@ -167,9 +168,12 @@ export default function BlocChat() {
           {messages.map((msg, idx) => (
             <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="p-1 rounded-lg chat-message">
               <span className="text-muted">{msg.time}</span>{" "}
-              <span className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}>
+              <Link
+                className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}
+                to={`/utilisateur/${msg.author_id}`}
+              >
                 {msg.author}
-              </span>{" "}
+              </Link>{" "}
               :{" "}
               <span>{msg.text}</span>
             </div>
