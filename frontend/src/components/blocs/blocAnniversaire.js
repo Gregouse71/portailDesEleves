@@ -21,7 +21,7 @@ export default function BlocAnniversaire() {
             {annivs.map(elt => {
                 return (
                     <div key={elt[0]} className='mb-3'>
-                        <p className='mb-0 fw-bold border-bottom pb-1 anniv-date-header'>{new Date(elt[0]).toLocaleString("fr-FR", { day: "numeric", month: "long" })}</p>
+                        <p className='mb-0 fw-bold border-bottom pb-1 anniv-date-header'>{new Date(elt[0]).toLocaleString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}</p>
                         {elt[1].map(user => {
                             const prenom = user[0];
                             const nom = user[1];
