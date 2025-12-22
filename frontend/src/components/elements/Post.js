@@ -7,6 +7,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ajouterContenuPublication, modifierPublication, obtenirPublication, modifierLikePost } from "../../api/api_publications";
 import { useEffect, useState } from "react";
 import CommentSection from "./CommentSection";
+import { Link } from "react-router-dom";
+import { chargerAsso } from "../../api/api_associations";
 
 const formatPublicationDate = (dateString) => {
     const date = new Date(dateString);
@@ -57,7 +59,6 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
     useEffect(() => {
         if (postData) { setPost(postData) };
     }, [postData]);
-
 
     const clearModifyPost = () => {
         setModifyPost({
@@ -163,12 +164,27 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
             const { titre, contenu, is_commentable, fichier_joint, miniature, tags } = post;
             setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable, fichier_joint, miniature, tags: tags || [] }));
         }
-    }
+    };
+
+    const GetAssoInfo = () => {
+        const { data: asso, isLoading: isLoadingAsso } = useQuery({
+            queryKey: ['asso', post.association.id],
+            queryFn: () => chargerAsso(post.association.id),
+            enabled: !!post.association.id
+        });
+
+        if (isLoadingAsso) {
+            return <Spinner animation="border" size="sm" />;
+        }
+
+        return (<Link to={`/assos/get/${post.association.id}`}>
+            <Image src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '50px', height: '50px' }} />
+        </Link>);
+    };
 
 
     return <Card>
         <Card.Body className="d-flex flex-column">
-            {/* Les publications existantes */}
             {isModifying && isGestion ?
                 <Form>
                     <Row>
@@ -275,8 +291,13 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                 :
                 <>
                     <div style={{ flex: 1 }}>
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <Card.Title className="mb-0">{post.titre}</Card.Title>
+                        <div className="d-flex justify-content-between align-items-center">
+                            <Card.Title className="mb-0">
+                                <GetAssoInfo />
+                                <Link to={`/assos/get/${post.association.id}?tab=posts`} style={{ textDecoration: "none", color: "#000" }}>
+                                    {post.titre}
+                                </Link>
+                            </Card.Title>
                             {post.tags && post.tags.length > 0 && (
                                 <div className="d-flex gap-1">
                                     {post.tags.map(tag => (

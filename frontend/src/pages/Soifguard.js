@@ -100,7 +100,6 @@ export default function SoifGuard() {
 
         // Recharger les utilisateurs après l'encaissement
         const data = await chargerUtilisateurs(promo);
-        console.log("Utilisateurs mis à jour :", data); // DEBUG
         setUtilisateurs(data);
       }
     };

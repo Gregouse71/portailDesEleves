@@ -1,6 +1,7 @@
 import { Card, Image, Button, Form, Spinner } from "react-bootstrap";
 import { useState } from "react";
 import { UPLOAD_BASE_URL } from "../../api/base";
+import { Link } from "react-router-dom";
 
 const formatPublicationDate = (dateString) => {
     const date = new Date(dateString);
@@ -62,7 +63,9 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                 ) : (
                     <>
                         <div className="d-flex align-items-center gap-3">
-                            <Image src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
+                            <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
+                                <Image src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
+                            </Link>
                             <p className="mb-0 text-break">{comment.contenu}</p>
                         </div>
                         <div className="d-flex justify-content-between align-items-center mt-2">

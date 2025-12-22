@@ -74,8 +74,8 @@ export default function BlocSondage() {
         content = (
             <>
                 <Card.Text className='text-center'>
-                    <p>Pas de sondage pour le moment...</p>
-                    <p>Propose vite un nouveau sondage !</p>
+                    Pas de sondage pour le moment...<br/>
+                    Propose vite un nouveau sondage !
                 </Card.Text>
             </>
         );

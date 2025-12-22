@@ -47,7 +47,6 @@ export async function sondageSuivant() {
       alert(`Erreur : ${errorData.message}`);
     } else {
       const data = await response.json();
-      console.log("Sondage suivant :", data.message);  // Affiche "success" si ça fonctionne
     }
   } catch (error) {
     console.error("Erreur réseau :", error);

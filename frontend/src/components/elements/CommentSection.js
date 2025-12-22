@@ -5,7 +5,7 @@ import { creerNouveauCommentaire, modifierCommentaire, supprimerCommentaire, mod
 import { obtenirAssosUtilisateur } from "../../api/api_utilisateurs";
 import Comment from "./Comment";
 
-export default function CommentSection({ post, userData, isGestion, showNewCommentForm, setShowNewCommentForm }) {
+export default function CommentSection({ post, userData, showNewCommentForm, setShowNewCommentForm }) {
     const [newComment, setNewComment] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();

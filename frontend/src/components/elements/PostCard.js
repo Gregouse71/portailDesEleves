@@ -16,7 +16,6 @@ export default function PostCard({ post }) {
             window.open(`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/publications/${post.fichier_joint}`, '_blank');
         } else {
             // If no file, navigate to a detail page if one exists (or do nothing)
-            console.log("No file attached to this post.");
             // navigate(`/publications/${post.id}`); // Example: navigate to a detail page
         }
     };

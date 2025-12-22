@@ -32,7 +32,7 @@ export default function BlocChat() {
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
-      console.log("Connected to server");
+      
     });
 
     newSocket.on("message", (message) => {
@@ -53,7 +53,7 @@ export default function BlocChat() {
     });
 
     newSocket.on("disconnect", () => {
-      console.log("Disconnected from server");
+      
     });
 
     return () => {
@@ -78,7 +78,6 @@ export default function BlocChat() {
         // Force scroll to bottom only on the first load
         messageDisplay.scrollTop = messageDisplay.scrollHeight;
         isInitialLoadRef.current = false;
-        console.log("Initial scroll to bottom performed.");
       } else if (isAtBottomRef.current) {
         // Auto-scroll when new messages arrive (socket updates)
         messageDisplay.scrollTop = messageDisplay.scrollHeight;
