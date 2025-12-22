@@ -4,16 +4,13 @@ import { obtenirScoresSondages } from "../../../api/api_sondages";
 import { useQuery } from "@tanstack/react-query";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
+import { useLayout } from "../../../layouts/Layout";
 
-// Constants for styling the top ranks
 const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
 
 const RECENT_FORMULA = 'S_r = \\sum_{i=1}^N w_i V_i \\quad \\text{où } w_i = e^{-\\lambda t_i} \\quad \\text{et } V_i = \\begin{cases} 1 \\quad \\text{si le vote est gagnant}\\\\ -1 \\quad \\text{sinon} \\end{cases}';
 const GLOBAL_FORMULA = 'S_g = \\bar{X} \\pm z_\\alpha \\sqrt{\\frac{1 - \\bar{X}^2}{N}} \\quad \\text{où } \\begin{cases}\\bar{X} = \\frac{1}{N} \\sum_{i=1}^N V_i\\\\z_\\alpha = 1.96\\end{cases}';
 
-// ----------------------------------------------------------------------
-// Reusable Component for Rendering a Single List (Updated)
-// ----------------------------------------------------------------------
 function RankingList({ title, data, scoreKey, isNegative = false, isVotes = false }) {
     return (
         <Card className="mb-4 h-100">
@@ -70,17 +67,9 @@ function RankingList({ title, data, scoreKey, isNegative = false, isVotes = fals
     );
 }
 
-// Helper function to find the current user's vote count
-const getCurrentUserVoteCount = (maxVotesArray, currentUsername) => {
-    const currentUserStats = maxVotesArray.find(user => user.nom_utilisateur === currentUsername);
-    // Assuming the vote count key is 'max_votes' inside the user object
-    return currentUserStats ? currentUserStats.nombre_votes : 0;
-};
 
-// ----------------------------------------------------------------------
-// Main Component
-// ----------------------------------------------------------------------
 export default function ClassementSondage() {
+    const { userData } = useLayout();
     const { data: scores = { recent: [[], []], global: [[], []] } } = useQuery({
         queryKey: ['scoresSondages'],
         queryFn: obtenirScoresSondages,
@@ -97,15 +86,11 @@ export default function ClassementSondage() {
     const globalScoreCon = mon_score_global && mon_score_global[0] ? mon_score_global[0].toFixed(3) : "0.000";
     const globalScoreDiv = mon_score_global && mon_score_global[1] ? mon_score_global[1].toFixed(3) : "0.000";
 
-    // Find participation count
-    const participationCount = getCurrentUserVoteCount(max_votes, currentUsername);
-
-
     return (
         <Container className="mt-4">
             <h1 className="mb-4 text-center">Classement des Sondages</h1>
 
-            {/* ------------------- CURRENT USER SCORE (Condensed) ------------------- */}
+            {/* ------------------- CURRENT USER SCORE ------------------- */}
             <Card className="mb-5 p-3 bg-light shadow-sm">
                 <Card.Title>Mon Score Actuel</Card.Title>
 
@@ -124,7 +109,7 @@ export default function ClassementSondage() {
 
                 {/* Participation Count at the bottom */}
                 <Card.Text className="small text-muted border-top pt-2 mt-2">
-                    Nombre de votes : <strong className="text-dark">{participationCount}</strong>
+                    Nombre de votes : <strong className="text-dark">{userData.nombre_votes}</strong>
                 </Card.Text>
             </Card>
 
@@ -134,19 +119,10 @@ export default function ClassementSondage() {
             <BlockMath math={RECENT_FORMULA} />
             <Row>
                 <Col md={6}>
-                    <RankingList
-                        title="Top convergent recent"
-                        data={recent[0]}
-                        scoreKey="score_recent"
-                    />
+                    <RankingList title="Top convergent recent" data={recent[0]} scoreKey="score_recent" />
                 </Col>
                 <Col md={6}>
-                    <RankingList
-                        title="Top divergent recent"
-                        data={recent[1]}
-                        scoreKey="score_recent"
-                        isNegative={true}
-                    />
+                    <RankingList title="Top divergent recent" data={recent[1]} scoreKey="score_recent" isNegative={true} />
                 </Col>
             </Row>
 
@@ -156,35 +132,21 @@ export default function ClassementSondage() {
             <BlockMath math={GLOBAL_FORMULA} />
             <Row>
                 <Col md={6}>
-                    <RankingList
-                        title="Top convegent global"
-                        data={globalScores[0]}
-                        scoreKey="score_global_con"
-                    />
+                    <RankingList title="Top convegent global" data={globalScores[0]} scoreKey="score_global_con" />
                 </Col>
                 <Col md={6}>
-                    <RankingList
-                        title="Top divergent"
-                        data={globalScores[1]}
-                        scoreKey="score_global_div"
-                        isNegative={true}
-                    />
+                    <RankingList title="Top divergent" data={globalScores[1]} scoreKey="score_global_div" isNegative={true} />
                 </Col>
             </Row>
 
-            {/* ------------------- TOP VOTERS (MOVED TO BOTTOM) ------------------- */}
+            {/* ------------------- TOP VOTERS ------------------- */}
             {max_votes.length > 0 && (
                 <>
                     <h2 className="mt-5 mb-3">Classement des participations</h2>
                     <p className="text-muted">Classement basé sur le nombre total de votes effectués.</p>
                     <Row className="justify-content-center">
                         <Col md={6} lg={4}>
-                            <RankingList
-                                title="Top participants"
-                                data={max_votes}
-                                scoreKey="nombre_votes"
-                                isVotes={true}
-                            />
+                            <RankingList title="Top participants" data={max_votes} scoreKey="nombre_votes" isVotes={true} />
                         </Col>
                     </Row>
                 </>

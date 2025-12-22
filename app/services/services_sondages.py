@@ -206,8 +206,8 @@ def _wilson(total, n):
     z = 1.64485 # 1.0 = 85%, 1.6 = 95%
     avg = total/n
 
-    T1 = z/2 * sqrt( (avg*(1 - avg) + z**2/4/n) / n) 
-    return 100 * (avg + z**2/2/n + T1) / (1 + z**2/n) # Formule de Wilson (tirée de l'ancien portail)
+    T1 = z * sqrt( (avg*(1 - avg) + z**2/4/n) / n) 
+    return 100 * (avg + z**2/2/n - T1) / (1 + z**2/n) # Formule de Wilson (tirée de l'ancien portail)
 
 def score_global_sondages(id: int):
     """
