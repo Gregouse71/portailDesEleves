@@ -35,7 +35,8 @@ def migrate_sondages():
             new_sondage.date_publication = None
 
         db.session.add(new_sondage)
-        print(f"Migrated sondage {row[0]}")
+        if row[0] % 100 == 0:
+            print(f"Migrated sondage {row[0]}")
 
     db.session.commit()
 
@@ -81,8 +82,9 @@ def migrate_sondages():
         s.perdants = perdants
         db.session.add(s)
         db.session.commit()
-        print(f"Migrated sondage {s} : {s.gagnants} {s.perdants}")
-        
+        if s.id % 100 == 0:
+            print(f"Migrated sondage {s} : {s.gagnants} {s.perdants}")
+
     users = Utilisateur.query.all()
     for u in users:
         u.nombre_votes = VoteSondage.query.filter_by(utilisateur_id=u.id).count()

@@ -21,3 +21,4 @@ dependencies:
   - gunicorn
   - pyjwt
   - argon2-cffi
+  - numpy

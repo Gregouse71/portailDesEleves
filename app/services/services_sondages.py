@@ -1,4 +1,5 @@
 from math import exp, sqrt
+import numpy as np
 
 # importer les models grace a __init__.py de models
 from app.services import db
@@ -64,34 +65,33 @@ def _resultat_sondage(id_sondage) :
     """
     Renvoie la liste des nombres de votes du sondage du jour par option
     """
-    compteur_votes = [VoteSondage.query.filter_by(sondage_id=id_sondage, vote=i).count() for i in range(1, 5)]
+    nb_option = len(Sondage.query.filter_by(id=id_sondage).first().reponses)
+    compteur_votes = [VoteSondage.query.filter_by(sondage_id=id_sondage, vote=i + 1).count() for i in range(nb_option)]
     return compteur_votes
 
 def _donner_votes_gagnants_perdants(compteur_votes) :
-    """prend en entree le tableau des votes, renvoie les numeros gagnants. Ne pas appliquer s'il n'y a pas eu de sondage ce jour"""
-    gagnants = []
-    maxi = -1
+    """
+    Calcul les votes gagnats et pedrants à partir du compteur
+    """
+    
+    if np.max(compteur_votes) == 0:  # Si personne n'a voté
+        return [], []  # il n'y a ni perdant, ni gagnant
 
-    perdants = []
-    mini = compteur_votes[0] + 1
+    # Récupération des indices de maximums
+    gagnants = np.argwhere(compteur_votes == np.max(compteur_votes)).flatten().tolist()
 
-    for i in range(4) :
-        if compteur_votes[i] > maxi :
-            maxi = compteur_votes[i]
-            gagnants = [i]
-        elif compteur_votes[i] == maxi :
-            gagnants.append(i)
-
-        if 0 < compteur_votes[i] < mini:
-            mini = compteur_votes[i]
-            perdants = [i]
-        elif compteur_votes[i] == mini:
-            perdants.append(i)
+    if np.min(compteur_votes) == 0:  # Si un choix n'a pas été pris
+        perdants = []                # alors personne n'est libre penseur ultime
+    else:                            # Sinon, c'est tous ceux qui ont pris une option avec le moins de votes
+        perdants = np.argwhere(compteur_votes == np.min(compteur_votes)).flatten().tolist()
+        
+    if np.max(compteur_votes) == np.min(compteur_votes):  # Si toutes les options ont été prise à égalité
+        perdants = []                                     # il n'y a pas de libre penseur
 
     return gagnants, perdants
 
 
-def sondage_suivant() -> None:
+async def sondage_suivant() -> None:
     """
     - regarde l'id du sondage du jour
     - si il y en a un regarde si il y a des votes

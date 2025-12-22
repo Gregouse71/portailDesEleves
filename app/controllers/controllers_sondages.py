@@ -95,7 +95,7 @@ def route_proposer_sondage():
 @controllers_sondages.route("/sondage_suivant", methods=["POST"])
 @login_required
 @vp_sondaj_required
-def route_sondage_suivant() :
+async def route_sondage_suivant() :
     try :
         sondage_suivant()
         return jsonify({"message" : "success"}), 200
