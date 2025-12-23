@@ -197,7 +197,8 @@ def set_user_infos(user_id: int):
     utilisateur.ville_origine = data.get("ville_origine")
     utilisateur.chambre = data.get("chambre")
     utilisateur.instruments = data.get("instruments")
-    utilisateur.telephone = data.get("telephone")   
+    utilisateur.telephone = data.get("telephone")
+    utilisateur.email = data.get("email")
 
     db.session.add(utilisateur)
     db.session.commit()
