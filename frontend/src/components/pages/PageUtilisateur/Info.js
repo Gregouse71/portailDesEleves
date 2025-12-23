@@ -132,6 +132,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
         }
     };
 
+    const formaterDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
     if (isPendingUser || !userInfos) {
         return <p>Chargement des informations...</p>
     }
@@ -174,6 +180,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         {!isGestion ?
             <>
                 <p><b>Promo :</b> {userInfos.promotion}</p>
+                <p><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</p>
                 <p><b>Ville d'origine :</b> {userInfos.ville_origine}</p>
                 <p><b>Chambre :</b> {userInfos.chambre}</p>
                 {userInfos.instruments && userInfos.instruments.length > 0 &&
@@ -220,6 +227,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Form.Label column sm="2">Promo</Form.Label>
                     <Col sm="10">
                         <Form.Control value={userInfos.promotion} disabled />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Date de naissance</Form.Label>
+                    <Col sm="10">
+                        <Form.Control value={formaterDate(userInfos.date_de_naissance)} disabled />
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
