@@ -50,6 +50,7 @@ export default function Header() {
             <NavDropdown title="Services" id="services-nav-dropdown">
               <NavDropdown.Item onClick={() => navigate("/vendomes")}>Vendômes</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/palums")}>Palums</NavDropdown.Item>
+              <NavDropdown.Item href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</NavDropdown.Item>
             </NavDropdown>
 
             <Button variant="danger" size="sm" href="mailto:portail@kataevskiy.com">Signaler un bug</Button>
