@@ -159,8 +159,14 @@ export default function TabInfo({ id, autoriseAModifier }) {
             <Col md={6}>
                 <InputGroup className="mb-3">
                     <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{ width: '20px' }} /></InputGroup.Text>
-                    <Form.Control value={userInfos.email || 'example@mail.com'} disabled />
-                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.email || 'example@mail.com')}>Copier</Button>
+                    <Form.Control
+                        name="email"
+                        value={userInfos.email || ''}
+                        placeholder="example@mail.com"
+                        disabled={!isGestion}
+                        onChange={handleChange}
+                    />
+                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.email || '')}>Copier</Button>
                 </InputGroup>
             </Col>
         </Row>
