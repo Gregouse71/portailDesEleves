@@ -275,8 +275,8 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                 :
                 <>
                     <div style={{ flex: 1 }}>
-                        <div className="d-flex justify-content-between align-items-center">
-                            <Card.Title>{post.titre}</Card.Title>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <Card.Title className="mb-0">{post.titre}</Card.Title>
                             {post.tags && post.tags.length > 0 && (
                                 <div className="d-flex gap-1">
                                     {post.tags.map(tag => (
