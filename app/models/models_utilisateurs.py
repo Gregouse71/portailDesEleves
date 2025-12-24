@@ -43,7 +43,6 @@ class Utilisateur(db.Model, UserMixin) :
     nom = db.Column(db.String(1000), nullable=False)
     promotion = db.Column(db.String(4), nullable=True)
     cycle = db.Column(db.String(10), nullable=False) # Parmi 'ic', 'ast', 'vs', 'ev', 'isup', 'de'
-    est_nouveau_a_la_mine = db.Column(db.Boolean, nullable=False, default=True)
     est_visible = db.Column(db.Boolean, nullable=False, default=True)
     est_vp_sondaj = db.Column(db.Boolean, nullable=False, default=False)
     est_superutilisateur = db.Column(db.Boolean, nullable=False, default=False)
@@ -67,7 +66,7 @@ class Utilisateur(db.Model, UserMixin) :
     marrain_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
     marrain = db.relationship('Utilisateur', remote_side=[id], back_populates='fillots', foreign_keys=[marrain_id], post_update=True)
     fillots = db.relationship('Utilisateur', back_populates='marrain', foreign_keys=[marrain_id])
-    est_baptise = db.Column(db.Boolean, nullable=False)
+    est_baptise = db.Column(db.Boolean, nullable=False, default=False)
 
     # Gestion des colocations
     cos = db.relationship('Utilisateur',
@@ -131,7 +130,6 @@ class Utilisateur(db.Model, UserMixin) :
             self.cycle = cycle 
         else :
             raise ValueError("Cycle invalide. doit etre dans {'ic', 'ast', 'vs', 'isup', 'ev', 'de'}")
-        self.est_nouveau_a_la_mine = True
         self.est_visible = True
         self.est_vp_sondaj = False
         self.est_superutilisateur = False
@@ -185,8 +183,6 @@ class Utilisateur(db.Model, UserMixin) :
         - cycle : str
             Donne des informations sur le cursus du mineur.
             Peut etre 'ic', 'ast', 'vs', 'isup', 'ev' ou 'de'.
-        - est_nouveau_a_la_mine : bool
-            Est mis a True pour tous les nouveaux arrivants. Passe a False apres la PR.
         - est_visible : bool
             True par defaut. Pour rendre invisible un utilisateur sans le supprimer de la base de donnees.
         - est_vp_sondaj : bool
@@ -269,21 +265,16 @@ class Utilisateur(db.Model, UserMixin) :
                     self.cycle = value
                 else :
                     raise ValueError(f"Non modifie. '{value}' doit etre 'ic', 'ast', 'vs', 'isup', 'ev' ou 'de'")
-            elif key=="est_nouveau_a_la_mine" :
-                if isinstance(value, bool) :
-                    self.est_nouveau_a_la_mine = value
-                else :
-                    raise ValueError(f"Non modifie. est_nouveau_a_la_mine doit etre un booleen")
             elif key=="est_visible" :
                 if isinstance(value, bool) :
                     self.est_visible = value
                 else :
-                    raise ValueError(f"Non modifie. est_nouveau_a_la_mine doit etre un booleen")
+                    raise ValueError(f"Non modifie. est_visible doit etre un booleen")
             elif key=="est_vp_sondaj" :
                 if isinstance(value, bool) :
                     self.est_vp_sondaj = value
                 else :
-                    raise ValueError(f"Non modifie. est_nouveau_a_la_mine doit etre un booleen")
+                    raise ValueError(f"Non modifie. est_vp_sondaj doit etre un booleen")
             elif key=="date_de_naissance" :
                 if value==None or valider_chaine_date_naissance(value) :
                     self.date_de_naissance = value
