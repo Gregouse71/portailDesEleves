@@ -91,7 +91,7 @@ def _donner_votes_gagnants_perdants(compteur_votes) :
     return gagnants, perdants
 
 
-async def sondage_suivant() -> None:
+def sondage_suivant() -> None:
     """
     - regarde l'id du sondage du jour
     - si il y en a un regarde si il y a des votes

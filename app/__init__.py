@@ -23,9 +23,7 @@ import os
 socketio = SocketIO(
     async_mode='eventlet',
     cors_allowed_origins="*",
-    message_queue="redis://localhost:6379/0",
-    logger=True,
-    engineio_logger=True
+    message_queue="redis://localhost:6379/0"
 )
 
 # Initialisation des extensions (sans encore les attacher à l'application)
