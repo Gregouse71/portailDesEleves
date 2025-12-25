@@ -37,7 +37,8 @@ export function LayoutProvider({ children }) {
         instruments: [],
         co: null,
         marrain: null,
-        fillots: []
+        fillots: [],
+        vote_sondaj_du_jour: null
     }, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
