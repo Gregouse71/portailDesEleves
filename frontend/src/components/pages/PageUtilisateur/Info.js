@@ -24,20 +24,9 @@ export default function TabInfo({ id, autoriseAModifier }) {
     }, [donneesUtilisateur]);
 
 
-    const promo = Number(userInfos?.promotion);
-    const { data: parrains } = useQuery({
-        queryKey: ["promoUsers", promo - 1],
-        queryFn: () => chargerUtilisateurs(promo - 1),
-        enabled: !!promo, // only run if promo is defined
-    });
-    const { data: coUsers } = useQuery({
+    const { data: allUsers } = useQuery({
         queryKey: ["allUsers"],
         queryFn: () => chargerUtilisateurs(),
-    });
-    const { data: fillots } = useQuery({
-        queryKey: ["promoUsers", promo + 1],
-        queryFn: () => chargerUtilisateurs(promo + 1),
-        enabled: !!promo,
     });
 
     const copyToClipboard = (text) => {
@@ -61,12 +50,13 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const [instruments, setInstruments] = useState([]);
 
     useEffect(() => {
-        if (!donneesUtilisateur) return;
+        if (!donneesUtilisateur || !allUsers) return;
 
-        if (parrains) setOptionsP(parrains.map(u => ({ value: u.id, label: u.nom_utilisateur })));
-        if (coUsers) setOptionsC(coUsers.map(u => ({ value: u.id, label: u.nom_utilisateur })));
-        if (fillots) setOptionsF(fillots.map(u => ({ value: u.id, label: u.nom_utilisateur })));
-    }, [parrains, coUsers, fillots, donneesUtilisateur]);
+        const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
+        setOptionsP(options);
+        setOptionsC(options);
+        setOptionsF(options);
+    }, [allUsers, donneesUtilisateur]);
 
     useEffect(() => {
         if (!donneesUtilisateur) return;
