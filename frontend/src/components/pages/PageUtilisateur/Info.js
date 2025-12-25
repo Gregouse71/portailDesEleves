@@ -138,6 +138,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
         return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     };
 
+    const formaterDateForInput = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    };
+
     if (isPendingUser || !userInfos) {
         return <p>Chargement des informations...</p>
     }
@@ -232,7 +238,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Date de naissance</Form.Label>
                     <Col sm="10">
-                        <Form.Control value={formaterDate(userInfos.date_de_naissance)} disabled />
+                        <Form.Control
+                            type="date"
+                            name="date_de_naissance"
+                            value={formaterDateForInput(userInfos.date_de_naissance)}
+                            onChange={handleChange}
+                        />
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">

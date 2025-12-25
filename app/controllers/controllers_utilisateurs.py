@@ -199,6 +199,13 @@ def set_user_infos(user_id: int):
     utilisateur.instruments = data.get("instruments")
     utilisateur.telephone = data.get("telephone")
     utilisateur.email = data.get("email")
+    
+    date_de_naissance = data.get("date_de_naissance") 
+    if date_de_naissance:
+        try:
+            utilisateur.date_de_naissance = datetime.strptime(date_de_naissance, "%Y-%m-%d").date() 
+        except ValueError:
+            return jsonify({"message": "Format de date de naissance invalide. Utilisez 'YYYY-MM-DD'."}), 400
 
     db.session.add(utilisateur)
     db.session.commit()
