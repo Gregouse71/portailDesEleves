@@ -86,7 +86,8 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
             style={{ cursor: isEditMode ? 'default' : 'pointer', position: 'relative' }}
         >
             {isEditMode && (
-                <Button 
+                <Button
+                    className="btn-sm"
                     variant="primary" 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -96,7 +97,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                             onEditAsso(asso.id);
                         }
                     }} 
-                    style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 2 }}
+                    style={{ position: 'absolute', zIndex: 1 }}
                 >
                     <img src="/assets/icons/edit.svg" alt="Editer la priorité" />
                 </Button>
