@@ -2,7 +2,7 @@ import { Card, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { chargerAsso, modifierOrdreImportanceAsso } from "../../api/api_associations";
+import { chargerAsso, modifierOrdreImportanceAsso, modifierNomAsso } from "../../api/api_associations";
 import { useEffect, useState } from "react";
 
 export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingAsso, onEditAsso }) {
@@ -15,10 +15,12 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
     });
 
     const [ordre, setOrdre] = useState(asso?.ordre_importance || 0);
+    const [nom, setNom] = useState(asso?.nom || "");
 
     useEffect(() => {
         if (asso) {
             setOrdre(asso.ordre_importance || 0);
+            setNom(asso.nom || "");
         }
     }, [asso]);
     
@@ -28,11 +30,13 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
         }
     }, [isEditMode, onEditAsso]);
 
-    const handleSaveOrdre = async () => {
+    const handleSave = async () => {
+        let hasChanged = false;
+
         if (asso && parseInt(ordre, 10) !== asso.ordre_importance) {
             try {
                 await modifierOrdreImportanceAsso(asso.id, parseInt(ordre, 10));
-                queryClient.invalidateQueries(['listeAssos']);
+                hasChanged = true;
             } catch (error) {
                 console.error("Failed to update priority:", error);
                 if (asso) {
@@ -40,12 +44,30 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 }
             }
         }
+
+        if (asso && nom !== asso.nom) {
+            try {
+                await modifierNomAsso(asso.id, nom);
+                hasChanged = true;
+            } catch (error) {
+                console.error("Failed to update name:", error);
+                if (asso) {
+                    setNom(asso.nom);
+                }
+            }
+        }
+
+        if (hasChanged) {
+            queryClient.invalidateQueries(['listeAssos']);
+            queryClient.invalidateQueries(['asso', asso_id]);
+        }
         onEditAsso(null); // Stop editing after saving
     };
 
     const handleCancelEdit = () => {
         if (asso) {
             setOrdre(asso.ordre_importance || 0); // Reset to original value
+            setNom(asso.nom || "");
         }
         onEditAsso(null); // Stop editing
     };
@@ -88,7 +110,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 style={{ height: '120px' }}
             />}
             <Card.Body className="px-2">
-                <Card.Title>{asso.nom}</Card.Title>
+                {!isEditingAsso && <Card.Title>{nom}</Card.Title>}
                 {role && <> <hr /><Card.Text>{role}</Card.Text></>}
                 {isEditMode && !isEditingAsso && (
                     <>
@@ -98,6 +120,14 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 )}
                 {isEditingAsso && (
                     <div onClick={(e) => e.stopPropagation()}>
+                        <Form.Group className="mb-2">
+                            <Form.Label>Nom</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={nom}
+                                onChange={(e) => setNom(e.target.value)}
+                            />
+                        </Form.Group>
                         <Form.Group>
                             <Form.Label>Position</Form.Label>
                             <Form.Control
@@ -107,7 +137,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                             />
                         </Form.Group>
                         <div className="d-flex justify-content-around mt-2">
-                            <Button variant="success" onClick={handleSaveOrdre}>Valider</Button>
+                            <Button variant="success" onClick={handleSave}>Valider</Button>
                         </div>
                     </div>
                 )}

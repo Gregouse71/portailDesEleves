@@ -57,6 +57,23 @@ def route_modifier_ordre_importance(association_id: int):
         return jsonify({"message": f"Echec dans la modification de l'ordre d'importance : {e}"}), 500
 
 
+@controllers_associations.route("/<int:association_id>/modifier_nom", methods=['PATCH'])
+@login_required
+@superutilisateur_required
+def route_modifier_nom(association_id: int):
+    """
+    Modifie le nom d'une asso
+    """
+    try:
+        new_nom = request.json.get("nom")
+        asso = db.session.get(Association, association_id)
+        asso.nom = new_nom
+        db.session.commit()
+        return jsonify({"message": "Nom modifié avec succès"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Echec dans la modification du nom : {e}"}), 500
+
+
 @controllers_associations.route('/<int:association_id>/ajouter_membre/<int:mandat_id>/<int:nouveau_membre_id>', methods=['POST'])
 @login_required
 @est_membre_de_asso

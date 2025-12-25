@@ -63,6 +63,23 @@ export async function modifierOrdreImportanceAsso(asso_id, ordre_importance) {
   }
 }
 
+export async function modifierNomAsso(asso_id, nom) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_nom`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ nom })
+    });
+    return handleResponse(res);
+  } catch (error) {
+    console.error("Erreur lors de la modification du nom : ", error);
+    throw error;
+  }
+}
+
 export async function ajouterMembre(associationId, mandatId, membreId) {
   try {
     const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_membre/${mandatId}/${membreId}`, {
