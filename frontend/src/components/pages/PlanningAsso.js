@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Spinner, Alert, ListGroup, Row, Col } from 'react-bootstrap';
+import { Container, Spinner, Alert, ListGroup, Row, Col, Table } from 'react-bootstrap';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
@@ -20,7 +20,7 @@ const PlanningAsso = () => {
 
         return (
             <div className="d-flex align-items-center">
-                <img src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '40px', height: '40px' }} />
+                <img src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo`} className="me-2 object-fit-cover" style={{ width: '40px', height: '40px' }} />
                 <span>{asso.nom}</span>
             </div>
         );
@@ -50,28 +50,28 @@ const PlanningAsso = () => {
     return (
         <Container>
             <h1 className="my-4">Événements à venir</h1>
-            <ListGroup>
-                <ListGroup.Item key="header">
-                    <Row className="fw-bold align-items-center">
-                        <Col md={2}>Quand</Col>
-                        <Col md={2}>Asso</Col>
-                        <Col md={3}>Nom de l'event</Col>
-                        <Col md={2}>Où</Col>
-                        <Col md={3}>Description</Col>
-                    </Row>
-                </ListGroup.Item>
+            <Table responsive hover>
+                <thead key="header">
+                    <tr className="fw-bold align-items-center">
+                        <th>Quand</th>
+                        <th>Asso</th>
+                        <th>Quoi</th>
+                        <th>Où</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
                 {events.map(event => (
-                    <ListGroup.Item key={event.id}>
-                        <Row className="align-items-start">
-                            <Col md={2}>{formatDate(event.date_de_debut)}</Col>
-                            <Col md={2}><GetAssoInfo assoId={event.id_association} /></Col>
-                            <Col md={3}>{event.nom}</Col>
-                            <Col md={2}>{event.lieu}</Col>
-                            <Col md={3} className="text-break">{event.description}</Col>
-                        </Row>
-                    </ListGroup.Item>
+                        <tr key={event.id} className="align-items-start">
+                            <td>{formatDate(event.date_de_debut)}</td>
+                            <td><GetAssoInfo assoId={event.id_association} /></td>
+                            <td>{event.nom}</td>
+                            <td>{event.lieu}</td>
+                            <td className="text-break">{event.description}</td>
+                        </tr>
                 ))}
-            </ListGroup>
+                </tbody>
+            </Table>
         </Container>
     );
 };
