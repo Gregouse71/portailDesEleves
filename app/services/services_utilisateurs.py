@@ -106,7 +106,7 @@ def prochains_anniv():
         date2 = date(year=2000, month=date.today().month, day=date.today().day)
 
         return (date2 <= date1 <= date2 + timedelta(days=5)
-                or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
+                or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=5))
 
     now = date.today().replace(year=2000)
     def aux(user):

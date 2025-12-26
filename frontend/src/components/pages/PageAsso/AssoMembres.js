@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Select from "react-select";
-import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../../api/api_associations";
+import { ajouterMandat, ajouterMembre, chargerAsso, estUtilisateurDansAsso } from "../../../api/api_associations";
 import { obtenirListeDesPromos, chargerUtilisateurs } from "../../../api/api_utilisateurs";
-import { Card, Button, Form, Row, Col } from "react-bootstrap";
-import UserCard from "../../elements/UserCard";
+import { Card, Button, Form } from "react-bootstrap";
 import BoutonEditer from "../../elements/BoutonEditer";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AssoMandat from "../../elements/AssoMandat";

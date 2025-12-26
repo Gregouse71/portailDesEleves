@@ -28,9 +28,9 @@ function GererSondages() {
         queryClient.invalidateQueries({ queryKey: ['donneesUtilisateur', userData.id] });
     }
 
-    const { data: sondagesEnAttente = [], isLoading: isLoadingSondages } = useQuery({
+    const { data = {sondages: [], a_venir: 0}, isLoading: isLoadingSondages } = useQuery({
         queryKey: ['sondagesEnAttente'],
-        queryFn: () => obtenirSondagesEnAttente().then(r => r.sondages),
+        queryFn: () => obtenirSondagesEnAttente(),
     });
 
     const { data: users = [], isLoading: isLoadingUsers } = useQuery({
@@ -53,15 +53,15 @@ function GererSondages() {
             await queryClient.cancelQueries({ queryKey: ['sondagesEnAttente'] });
             const previousSondages = queryClient.getQueryData(['sondagesEnAttente']);
 
-            const updatedSondages = previousSondages.filter(s => s.id !== id_sondage);
-            queryClient.setQueryData(['sondagesEnAttente'], updatedSondages);
+            const updatedSondages = previousSondages.sondages.filter(s => s.id !== id_sondage);
+            queryClient.setQueryData(['sondagesEnAttente'], {...previousSondages, updatedSondages});
 
             return { previousSondages };
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['sondagesEnAttente'] });
         },
-        onError: (err, variables, context) => {
+        onError: (context) => {
             queryClient.setQueryData(['sondagesEnAttente'], context.previousSondages);
         }
     });
@@ -85,7 +85,10 @@ function GererSondages() {
                 <Button variant="primary" onClick={() => suivantEtReload()} className="mt-3">Passer au sondage suivant</Button>
                 <Button variant="secondary" onClick={() => navigate("/")} className="mt-3 ms-2">Retour</Button>
             </div>
-            {sondagesEnAttente.length === 0 ? (
+            <div className='mb-2'>
+                Sondages à venir : {data.a_venir}
+            </div>
+            {data.sondages.length === 0 ? (
                 <Card>
                     <Card.Body>
                         <Card.Text>Aucun sondage en attente.</Card.Text>
@@ -93,9 +96,9 @@ function GererSondages() {
                 </Card>
             ) : (
                 <>
-                    {Array.from({ length: Math.ceil(sondagesEnAttente.length / 3) }).map((_, rowIndex) => (
+                    {Array.from({ length: Math.ceil(data.sondages.length / 3) }).map((_, rowIndex) => (
                         <Row key={rowIndex} xs={1} md={2} lg={3} className="g-4 mb-4">
-                            {sondagesEnAttente.slice(rowIndex * 3, rowIndex * 3 + 3).map((sondage) => (
+                            {data.sondages.slice(rowIndex * 3, rowIndex * 3 + 3).map((sondage) => (
                                 <Col key={sondage.id}>
                                     <Card className="h-100">
                                         <Card.Header>Sondage ID: {sondage.id}</Card.Header>

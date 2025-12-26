@@ -6,6 +6,7 @@ from app.services import *
 from app.utils.decorators import * 
 from app.services.services_sondages import *
 from app.models.models_utilisateurs import Utilisateur
+from app.models.models_sondages import Sondage
 
 
 # Creer le blueprint pour les sondages
@@ -107,7 +108,8 @@ def route_sondage_suivant() :
 def route_obtenir_sondages_en_attente() :
     try :
         sondages = obtenir_sondages_non_valide()
-        return jsonify({"sondages": sondages}), 200
+        a_venir = Sondage.query.filter_by(autorise=True, archive=False).count()
+        return jsonify({"sondages": sondages, "a_venir": a_venir}), 200
 
     except Exception as e:
         return jsonify({'message': f'Erreur lors du chargement des sondages : {str(e)}'}), 500
