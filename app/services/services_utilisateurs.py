@@ -105,8 +105,19 @@ def prochains_anniv():
         date1 = date(year=2000, month=d.month, day=d.day)
         date2 = date(year=2000, month=date.today().month, day=date.today().day)
 
-        return (date2 <= date1 <= date2 + timedelta(days=7)
+        return (date2 <= date1 <= date2 + timedelta(days=5)
                 or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
+
+    now = date.today().replace(year=2000)
+    def aux(user):
+        """
+        Renvoie la distance entre la date de naissance de use et la date d'aujourd'hui
+        sans prendre en compte l'année.
+        """
+        temp = (user[0] - now).days
+        if temp >= 0:
+            return temp
+        return (user[0].replace(year=2001) - now).days
 
     current_year_suffix = datetime.today().year % 100
     promos_to_consider = []
@@ -117,7 +128,10 @@ def prochains_anniv():
     users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance)\
         .filter(Utilisateur.promotion.in_(promos_to_consider))\
         .all()
+        
 
-    ret = sorted([(user.date_de_naissance.replace(year=2000), user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if must_display(user.date_de_naissance)])
+    ret = sorted(
+            [(user.date_de_naissance.replace(year=2000), user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if must_display(user.date_de_naissance)],
+            key=aux)
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
     return ret
