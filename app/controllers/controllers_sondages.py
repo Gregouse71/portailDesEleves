@@ -20,8 +20,7 @@ def route_sondage_du_jour():
     resultat = obtenir_sondage_du_jour_et_votes()
     if resultat:
         question_du_jour, reponses, votes_par_question = resultat
-        print(resultat)
-        
+
         # Retourner les données sous forme de JSON
         return jsonify({
             'is_sondage': True,

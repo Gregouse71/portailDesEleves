@@ -233,11 +233,13 @@ def score_global_sondages(id: int):
 
 def update_all_scores ():
     users = Utilisateur.query.all()
-    for user in users:
-        user.score_recent = score_recent_sondages (user.id)
-        con, div = score_global_sondages (user.id)  # Score consensuel, divergent
+    with db.session.no_autoflush:
+        for user in users:
+            user.nombre_votes = VoteSondage.query.filter_by(utilisateur_id=user.id).count()
+            user.score_recent = score_recent_sondages (user.id)
+            con, div = score_global_sondages (user.id)  # Score consensuel, divergent
 
-        user.score_global_con = con
-        user.score_global_div = div
-        db.session.add(user)
-        db.session.commit()
+            user.score_global_con = con
+            user.score_global_div = div
+            db.session.add(user)
+            db.session.commit()

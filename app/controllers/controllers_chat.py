@@ -16,5 +16,4 @@ def more_chat_message(last_sent: int):
         messages = Message.query.order_by(desc(Message.id)).limit(100).all()
     else:
         messages = Message.query.filter(Message.id < last_sent).order_by(desc(Message.id)).limit(100).all()
-    print(messages[0].id, "   ", messages[-1].id)
     return jsonify([message.to_dict() for message in messages[::-1]])
