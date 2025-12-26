@@ -10,6 +10,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import BlocEvents from '../components/blocs/blocEvents';
+import BlocSoldes from '../components/blocs/blocSoldes';
 
 const LayoutContext = createContext();
 
@@ -71,6 +72,7 @@ export function Layout() {
                     <Col md={2} className="left order-2 order-md-1">
                         <BlocEvents />
                         <BlocSondage />
+                        <BlocSoldes />
                     </Col>
                     <Col md={8} className="mb-3 order-1 order-md-2">
                         <Outlet />

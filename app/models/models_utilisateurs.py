@@ -8,6 +8,9 @@ from app.utils.divers_utils import ph
 from ..utils.verification_format import *
 from ..utils.verification_format import valider_instruments
 
+import locale
+locale.setlocale (locale.LC_ALL, 'fr_FR.UTF-8')
+
 
 default_questions = { # Les trois premiers caractères servent à l'odonnancement
     "010Ta devise ?": "",
@@ -368,5 +371,7 @@ class Utilisateur(db.Model, UserMixin) :
             "score_recent": self.score_recent,
             "score_global_con": self.score_global_con,
             "score_global_div": self.score_global_div,
-            "nombre_votes": self.nombre_votes
+            "nombre_votes": self.nombre_votes,
+            "solde_octo": self.solde_octo,
+            "solde_biero": self.solde_biero
         }
