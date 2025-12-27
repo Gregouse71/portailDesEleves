@@ -21,6 +21,9 @@ def route_sondage_du_jour():
     resultat = obtenir_sondage_du_jour_et_votes()
     if resultat:
         question_du_jour, reponses, votes_par_question = resultat
+        
+        if current_user.vote_sondaj_du_jour is None:
+            votes_par_question = [0 for i in range(len(votes_par_question))]
 
         # Retourner les données sous forme de JSON
         return jsonify({
