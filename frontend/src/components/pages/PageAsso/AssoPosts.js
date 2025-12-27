@@ -4,7 +4,6 @@ import { ajouterContenuPublication, creerNouvellePublication, obtenirPublication
 import RichEditor from "../../elements/RichEditor";
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
-import BoutonEditer from "../../elements/BoutonEditer";
 import { useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import Post from "../../elements/Post";
 

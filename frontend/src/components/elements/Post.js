@@ -307,9 +307,10 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                         ))}
                                     </div>
                                 )}
-                                {autorisé && <DropdownEditer
-                                    canModify={true} modify={startModifying}
-                                    canRemove={true} remove={removePost}
+                                {autorisé && <DropdownEditer list={[
+                                    { can: true, onClick: startModifying, name: "Modifier" },
+                                    { can: true, onClick: removePost, name: "Supprimer" },
+                                ]}
                                 />}
                             </div>
                         </div>

@@ -3,8 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../api/api_associations";
 import { useState } from "react";
 import UserCard from "./UserCard";
+import DropdownEditer from "./DropdownEditer";
 
-export default function AssoMandat({ mandat, asso, isGestion }) {
+export default function AssoMandat({ mandat, asso, canModify }) {
     const queryClient = useQueryClient();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -134,18 +135,20 @@ export default function AssoMandat({ mandat, asso, isGestion }) {
                             <Card.Title className="m-0">{mandat.nom}</Card.Title>
                         )}
                     </Col>
-                    {isGestion && (
-                        <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
-                            {isEditing ? (
-                                <>
-                                    <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
-                                    <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
-                                </>
-                            ) : (
-                                <Button variant="primary" onClick={() => { setEditingMandat(mandat); setIsEditing(true) }}>Editer</Button>
-                            )}
-                        </Col>
-                    )}
+                    <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
+                        {isEditing ?
+                            <>
+                                <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
+                                <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
+                            </>
+                            :
+                            <DropdownEditer list={[
+                                {can: canModify, onClick: () => { setEditingMandat(mandat); setIsEditing(true)}, name: "Modifier"},
+                                {can: canModify, onClick: () => handleDelMandat(mandat.id), name: "Supprimer"},
+                            ]}
+                            />
+                        }
+                    </Col>
                 </Row>
             </Card.Header>
             <Card.Body>
@@ -155,7 +158,7 @@ export default function AssoMandat({ mandat, asso, isGestion }) {
                         if (b.position === null) return -1;
                         return b.position - a.position;
                     }).map((user) => (
-                        <UserCard user={user} isGestion={isGestion} isModifying={idMembreModifier === user.id}
+                        <UserCard user={user} isGestion={isEditing} isModifying={idMembreModifier === user.id}
                             key={user.id}
                             f1={() => handleRetirerMembre(user.id)}
                             t1="Supprimer ce membre"
@@ -169,11 +172,6 @@ export default function AssoMandat({ mandat, asso, isGestion }) {
                         />
                     ))}
                 </div>
-                {isGestion && isEditing && (
-                    <div className="d-flex justify-content-end mt-3">
-                        <Button variant="danger" onClick={() => handleDelMandat(mandat.id)}>Supprimer le mandat</Button>
-                    </div>
-                )}
             </Card.Body>
         </Card>);
 }

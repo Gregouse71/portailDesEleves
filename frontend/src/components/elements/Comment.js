@@ -75,9 +75,10 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                                 <p className="mb-0 text-break">{comment.contenu}</p>
                             </div>
                             {comment.id_auteur === userData.id &&
-                                <DropdownEditer as="div" className="ms-auto flex-shrink-0"
-                                    canModify={comment.id_auteur === userData.id} modify={handleEdit}
-                                    canRemove={canDelete} remove={() => handleDelete(comment.id)}
+                                <DropdownEditer list={[
+                                    { can: comment.id_auteur === userData.id, onClick: handleEdit, name: "Modifier" },
+                                    { can: canDelete, onClick: () => handleDelete(comment.id), name: "Supprimer" },
+                                ]}
                                 />
                             }
                         </div>

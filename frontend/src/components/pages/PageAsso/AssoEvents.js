@@ -337,10 +337,12 @@ function Event({ event, canModify = false }) {
                             {event.nom}
                         </Card.Title>
                         <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                            {canModify && <DropdownEditer
-                                canModify={true} modify={handleStartModifying}
-                                canRemove={true} remove={() => removeEvent()}
-                            />}
+                            {canModify && <DropdownEditer list={[
+                                { can: true, onClick: handleStartModifying, name: "Modifier" },
+                                { can: true, onClick: removeEvent, name: "Supprimer" },
+                            ]}
+                            />
+                            }
                         </div>
                     </div>
                     <Card.Subtitle className="mb-2 text-muted">{formatEventDate(event)}</Card.Subtitle>
