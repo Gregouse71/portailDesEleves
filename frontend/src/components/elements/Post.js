@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import CommentSection from "./CommentSection";
 import { Link } from "react-router-dom";
 import { chargerAsso } from "../../api/api_associations";
-import BoutonEditer from "./BoutonEditer";
 import DropdownEditer from "./DropdownEditer";
 
 const formatPublicationDate = (dateString) => {

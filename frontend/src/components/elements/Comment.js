@@ -74,10 +74,12 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                                 </Link>
                                 <p className="mb-0 text-break">{comment.contenu}</p>
                             </div>
-                            <DropdownEditer as="div" className="ms-auto flex-shrink-0"
-                                canModify={comment.id_auteur === userData.id} modify={handleEdit}
-                                canRemove={canDelete} remove={() => handleDelete(comment.id)}
-                            />
+                            {comment.id_auteur === userData.id &&
+                                <DropdownEditer as="div" className="ms-auto flex-shrink-0"
+                                    canModify={comment.id_auteur === userData.id} modify={handleEdit}
+                                    canRemove={canDelete} remove={() => handleDelete(comment.id)}
+                                />
+                            }
                         </div>
                         <div className="d-flex justify-content-between align-items-center mt-2">
                             <div className="d-flex gap-2">
