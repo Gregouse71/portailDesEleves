@@ -6,7 +6,7 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurSondage(Exception):
@@ -153,13 +153,28 @@ def obtenir_sondages_non_valide() :
         })
     return sondages_data
 
+def sondage_dhier ():
+    """
+    Renvoie le résultat du sondage d'hier
+    ("question ?", ["reponse1", "reponse2"], [1, 96])
+    """
+    sondage = Sondage.query.filter_by(date_publication=date.today() - timedelta(days=1)).all()
+    if not sondage:
+        return None
+    s = sondage[0]
+    return {
+        "question": s.question,
+        "reponses": s.reponses,
+        "votes": _resultat_sondage(s.id)
+    }
+
 def obtenir_sondage_du_jour_et_votes():
     """
     Renvoie la question du sondage du jour, une liste des questions et une liste du nombre de votes pour chaque reponse.
     La taille des tableaux de résultats est ajustee en fonction du nombre de reponses disponibles (2, 3 ou 4).
     Si il n'y a pas de sondage aujourd'hui, renvoie None
     Exemple de retour :
-    ("question ?", ["reponse1", "reponse2", None, None], [1,96,0,0])
+    ("question ?", ["reponse1", "reponse2"], [1, 96)
     """
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
     if id_sondage_du_jour:

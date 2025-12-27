@@ -26,14 +26,19 @@ def route_sondage_du_jour():
             votes_par_question = [0 for i in range(len(votes_par_question))]
 
         # Retourner les données sous forme de JSON
-        return jsonify({
+        ret = {
             'is_sondage': True,
             'question': question_du_jour, # quel est le meilleur etage ?
             'reponses': reponses, #["piche", "straal", "bench"]
             'votes' : votes_par_question # [0,1,8]
-        })
+        }
     else:
-        return jsonify({'is_sondage': False}), 200
+        ret = {'is_sondage': False}
+    
+    ret["hier"] = sondage_dhier()
+    
+    return jsonify(ret), 200
+        
 
 # /!\ ajouter un decorateur pour verifier qu'il y a bien un sodage aujourd'hui   
 @controllers_sondages.route('/voter_sondage/<int:vote>', methods=['POST'])

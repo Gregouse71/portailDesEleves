@@ -74,7 +74,7 @@ export default function BlocSondage() {
         content = (
             <>
                 <Card.Text className='text-center'>
-                    Pas de sondage pour le moment...<br/>
+                    Pas de sondage pour le moment...<br />
                     Propose vite un nouveau sondage !
                 </Card.Text>
             </>
@@ -87,6 +87,33 @@ export default function BlocSondage() {
             <Card.Body className='d-flex flex-column'>
                 {content}
             </Card.Body>
+            {sondage.hier && <>
+                <Card.Header as="h6" className="text-center">Sondage d'hier</Card.Header>
+                <Card.Body>
+                    <p className="h5 fw-bold">{sondage.hier.question}</p>
+                    <div>
+                        {(() => {
+                            const totalVotes = sondage.hier.votes.reduce((sum, v) => sum + v, 0);
+                            return sondage.hier.reponses.map((reponse, index) => {
+                                const votes = sondage.hier.votes[index];
+                                const percent = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+                                return (
+                                    <div key={index}>
+                                        <div className="d-flex justify-content-between">
+                                            <p>
+                                                {reponse}
+                                                <span className="text-muted"> {votes} votes ({percent.toFixed(1)}%)</span>
+                                            </p>
+                                        </div>
+                                        <ProgressBar now={percent} />
+                                    </div>
+                                );
+                            });
+                        })()}
+
+                    </div>
+                </Card.Body>
+            </>}
             <Card.Footer className="d-flex justify-content-between">
                 <Button
                     variant="light"
