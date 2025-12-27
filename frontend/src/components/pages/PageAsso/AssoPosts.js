@@ -178,7 +178,12 @@ function AssoPosts({ asso_id }) {
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les publications</h2>
-                {membreData.autorise && <BoutonEditer onClick={() => handleSetIsGestion(!isGestion)} />}
+                {membreData.autorise && <Button
+                    variant="light"
+                    onClick={() => handleSetIsGestion(!isGestion)}
+                >
+                    <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                </Button>}
             </div>
             {isGestion && !isNewPost && <div className="d-flex gap-2 mb-3">
                 <Button variant="success" onClick={() => setIsNewPost(true)}>
@@ -274,7 +279,7 @@ function AssoPosts({ asso_id }) {
                     <div key={postId} ref={index === listePosts.length - 1 ? lastPostRef : null}>
                         <Post
                             postId={postId}
-                            isGestion={isGestion}
+                            autorisé={membreData.autorise}
                             removePost={() => removePost(postId)}
                             tagOptions={tagOptions}
                         />

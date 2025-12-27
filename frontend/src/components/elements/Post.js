@@ -1,4 +1,4 @@
-import { Card, Col, Row, Image, Button, Form, Spinner, InputGroup } from "react-bootstrap";
+import { Card, Col, Row, Image, Button, Form, Spinner, InputGroup, Dropdown } from "react-bootstrap";
 import Select from 'react-select';
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { useLayout } from "../../layouts/Layout";
@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import CommentSection from "./CommentSection";
 import { Link } from "react-router-dom";
 import { chargerAsso } from "../../api/api_associations";
+import BoutonEditer from "./BoutonEditer";
+import DropdownEditer from "./DropdownEditer";
 
 const formatPublicationDate = (dateString) => {
     const date = new Date(dateString);
@@ -26,7 +28,7 @@ const formatPublicationDate = (dateString) => {
 }
 
 
-export default function Post({ postId, isGestion, removePost, tagOptions }) {
+export default function Post({ postId, removePost, tagOptions, autorisé }) {
     const [modifyPost, setModifyPost] = useState({
         "titre": "",
         "contenu": "",
@@ -185,7 +187,7 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
 
     return <Card>
         <Card.Body className="d-flex flex-column">
-            {isModifying && isGestion ?
+            {isModifying ?
                 <Form>
                     <Row>
                         <Col md={(modifyPreviewUrl || (post.fichier_joint && !shouldRemoveExistingAttachment)) ? "9" : "12"}>
@@ -298,13 +300,19 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                                     {post.titre}
                                 </Link>
                             </Card.Title>
-                            {post.tags && post.tags.length > 0 && (
-                                <div className="d-flex gap-1">
-                                    {post.tags.map(tag => (
-                                        <span key={tag} className="badge bg-info">{tag}</span>
-                                    ))}
-                                </div>
-                            )}
+                            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                                {post.tags && post.tags.length > 0 && (
+                                    <div className="d-flex gap-1">
+                                        {post.tags.map(tag => (
+                                            <span key={tag} className="badge bg-info">{tag}</span>
+                                        ))}
+                                    </div>
+                                )}
+                                {autorisé && <DropdownEditer
+                                    canModify={true} modify={startModifying}
+                                    canRemove={true} remove={removePost}
+                                />}
+                            </div>
                         </div>
                         {post.fichier_joint && post.association ? <Row>
                             <Col md="9">
@@ -319,22 +327,18 @@ export default function Post({ postId, isGestion, removePost, tagOptions }) {
                     </div>
                     <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mt-auto gap-2">
                         <div className="d-flex gap-2 mt-2">
-                            {!isGestion && <>
+                            {!isModifying && <>
                                 <Button variant="primary" size="sm" onClick={() => handleChangePostLike(post.id)} className="d-flex align-items-center gap-1">
                                     {post.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
                                     <span>{post.likes.length}</span>
                                 </Button>
                                 <Button variant="secondary" size="sm" onClick={() => setShowNewCommentForm(prev => !prev)}>Commenter</Button>
                             </>}
-                            {isGestion && <>
-                                <Button variant="primary" onClick={startModifying}>Éditer</Button>
-                                <Button variant="danger" onClick={removePost}>Supprimer</Button>
-                            </>}
                         </div>
                         <small className="text-muted">Publié le : {formatPublicationDate(post.date_publication)}</small>
                     </div>
 
-                    {post.is_commentable && <CommentSection post={post} userData={userData} isGestion={isGestion} showNewCommentForm={showNewCommentForm} setShowNewCommentForm={setShowNewCommentForm} />}
+                    {post.is_commentable && <CommentSection post={post} userData={userData} isGestion={isModifying} showNewCommentForm={showNewCommentForm} setShowNewCommentForm={setShowNewCommentForm} />}
                 </>}
         </Card.Body>
     </Card>

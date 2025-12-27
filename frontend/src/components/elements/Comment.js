@@ -2,6 +2,7 @@ import { Card, Image, Button, Form, Spinner } from "react-bootstrap";
 import { useState } from "react";
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { Link } from "react-router-dom";
+import DropdownEditer from "./DropdownEditer";
 
 const formatPublicationDate = (dateString) => {
     const date = new Date(dateString);
@@ -62,11 +63,21 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                     </Form>
                 ) : (
                     <>
-                        <div className="d-flex align-items-center gap-3">
-                            <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
-                                <Image src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''} alt={`${comment.auteur.nom_utilisateur}`} roundedCircle width={50} height={50} style={{ objectFit: 'cover' }} />
-                            </Link>
-                            <p className="mb-0 text-break">{comment.contenu}</p>
+                        <div className="d-flex align-items-center gap-3 w-100">
+                            <div className="d-flex align-items-center gap-2 flex-grow-1">
+                                <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
+                                    <Image
+                                        src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''}
+                                        alt={`${comment.auteur.nom_utilisateur}`}
+                                        roundedCircle width={50} height={50} style={{ objectFit: 'cover' }}
+                                    />
+                                </Link>
+                                <p className="mb-0 text-break">{comment.contenu}</p>
+                            </div>
+                            <DropdownEditer as="div" className="ms-auto flex-shrink-0"
+                                canModify={comment.id_auteur === userData.id} modify={handleEdit}
+                                canRemove={canDelete} remove={() => handleDelete(comment.id)}
+                            />
                         </div>
                         <div className="d-flex justify-content-between align-items-center mt-2">
                             <div className="d-flex gap-2">
@@ -74,8 +85,6 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                                     {comment.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
                                     {comment.likes.length}
                                 </Button>
-                                {comment.id_auteur === userData.id && <Button variant="secondary" size="sm" onClick={handleEdit}>Éditer</Button>}
-                                {canDelete && <Button variant="danger" size="sm" onClick={() => handleDelete(comment.id)}>Supprimer</Button>}
                             </div>
                             <small className="text-muted">Publié le : {formatPublicationDate(comment.date)}</small>
                         </div>
