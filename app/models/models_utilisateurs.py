@@ -85,6 +85,7 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Liste des assos actuelles
     associations = db.relationship('AssociationMembre', back_populates='utilisateur')
+    votes_elections = db.relationship('ElectionVote', back_populates='utilisateur')
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)

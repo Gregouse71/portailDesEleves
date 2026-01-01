@@ -477,7 +477,7 @@ export default function AssoEvents({ asso_id }) {
 
     return <>
         <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Les publications</h2>
+            <h2>Les événements</h2>
             {membreData.autorise && <Button
                 variant="light"
                 onClick={() => setIsNewEvent(true)}
