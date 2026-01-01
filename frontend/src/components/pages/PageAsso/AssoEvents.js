@@ -31,219 +31,37 @@ const formatEventDate = (event) => {
     }
 };
 
-function NewEvent({ asso_id, setIsNewEvent }) {
+
+function Event({ event, canModify = false, isNew, asso_id, setIsNewEvent }) {
     const queryClient = useQueryClient();
-    const [newEventTemps, setNewEventTemps] = useState({
+    const [isModifying, setIsModifying] = useState(isNew);
+
+    const DEFAULT_TEMPS = {
         "date_de_debut": "",
         "heure_de_debut": "",
         "date_de_fin": "",
         "heure_de_fin": ""
-    });
-    const [newEventTempsPeriodique, setNewEventTempsPeriodique] = useState({
+    };
+    const DEFAULT_TEMPS_PERIODIQUE = {
         "jours_de_la_semaine": [],
         "heure_de_debut": "",
         "heure_de_fin": ""
-    });
-    const [nouvelEvent, setNouvelEvent] = useState({
-        "nom": "",
-        "description": "",
-        "lieu": "",
-        "evenement_periodique": false,
-    });
-
-    // La création d'un nouvel événement
-    const clearNewEvent = () => {
-        setNewEventTemps({
-            "date_de_debut": "",
-            "heure_de_debut": "",
-            "date_de_fin": "",
-            "heure_de_fin": ""
-        });
-        setNewEventTempsPeriodique({
-            "jours_de_la_semaine": [],
-            "heure_de_debut": "",
-            "heure_de_fin": ""
-        });
-        setNouvelEvent({
+    };
+    const DEFAULT_EVENT = {
             "nom": "",
             "description": "",
             "lieu": "",
-            "evenement_periodique": false,
-        });
-    }
-
-    const handleSetNouvelEvent = (e) => {
-        const { name, value, checked } = e.target;
-        setNouvelEvent(prevState => {
-            if (name === 'evenement_periodique') {
-                return { ...prevState, [name]: checked };
-            }
-            return { ...prevState, [name]: value };
-        });
-    };
-
-    const handleSetNewEventTempsPeriodique = (e) => {
-        const { name, value, checked } = e.target;
-        setNewEventTempsPeriodique(prevState => {
-            // Les jours de la semaine pour un événement périodique
-            if (name === 'jours_de_la_semaine') {
-                const currentDays = newEventTempsPeriodique.jours_de_la_semaine;
-                const updatedDays = checked ? [...currentDays, value] : currentDays.filter(day => day !== value);
-                return { ...prevState, [name]: updatedDays };
-            }
-            return { ...prevState, [name]: value };
-        });
-    };
-
-    const handleSetNewEventTemps = (e) => {
-        const { name, value } = e.target;
-        setNewEventTemps(prevState => {
-            return { ...prevState, [name]: value };
-        });
-    }
-
-    const validerNouvelEvent = async () => {
-        try {
-            const newEvent = {
-                ...nouvelEvent,
-                ...newEventTempsPeriodique,
-                ...{
-                    date_de_debut: `${newEventTemps.date_de_debut}T${newEventTemps.heure_de_debut}:00`,
-                    date_de_fin: `${newEventTemps.date_de_fin}T${newEventTemps.heure_de_fin}:00`
-                }
-            };
-            await creerNouvelEvenement(asso_id, newEvent);
-            clearNewEvent();
-            setIsNewEvent(false);
-            queryClient.invalidateQueries(['eventsData', asso_id]);
-        } catch (error) {
-            console.error(error);
+            "evenement_periodique": event ? event.evenement_periodique : false,
         }
-    };
 
-    return <Card>
-        <Card.Body>
-            <Form>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Titre</Form.Label>
-                    <Col sm="10">
-                        <Form.Control value={nouvelEvent.nom} name='nom' onChange={handleSetNouvelEvent} />
-                    </Col>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Check type="checkbox" label="Événement périodique" checked={nouvelEvent.evenement_periodique} name='evenement_periodique' onChange={handleSetNouvelEvent} />
-                </Form.Group>
-
-                {nouvelEvent.evenement_periodique && <>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Jours</Form.Label>
-                        <Col sm="10">
-                            {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(day => (
-                                <Form.Check inline key={day} type="checkbox" name="jours_de_la_semaine" value={day} label={day} checked={newEventTempsPeriodique.jours_de_la_semaine.includes(day)} onChange={handleSetNewEventTempsPeriodique} />
-                            ))}
-                        </Col>
-                    </Form.Group>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Heure de début</Form.Label>
-                        <Col sm="10">
-                            <Form.Control value={newEventTempsPeriodique.heure_de_debut} name='heure_de_debut' type='time' onChange={handleSetNewEventTempsPeriodique} />
-                        </Col>
-                    </Form.Group>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Heure de fin</Form.Label>
-                        <Col sm="10">
-                            <Form.Control value={newEventTempsPeriodique.heure_de_fin} name='heure_de_fin' type='time' onChange={handleSetNewEventTempsPeriodique} />
-                        </Col>
-                    </Form.Group>
-                </>}
-
-                {!nouvelEvent.evenement_periodique && <>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Date de début</Form.Label>
-                        <Col sm="10">
-                            <Form.Control value={newEventTemps.date_de_debut} name='date_de_debut' type='date' onChange={handleSetNewEventTemps} />
-                        </Col>
-                    </Form.Group>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Heure de début</Form.Label>
-                        <Col sm="10">
-                            <Form.Control value={newEventTemps.heure_de_debut} name='heure_de_debut' type='time' onChange={handleSetNewEventTemps} />
-                        </Col>
-                    </Form.Group>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Date de fin</Form.Label>
-                        <Col sm="10">
-                            <Form.Control value={newEventTemps.date_de_fin} name='date_de_fin' type='date' onChange={handleSetNewEventTemps} />
-                        </Col>
-                    </Form.Group>
-                    <Form.Group as={Row} className="mb-3">
-                        <Form.Label column sm="2">Heure de fin</Form.Label>
-                        <Col sm="10">
-                            <Form.Control value={newEventTemps.heure_de_fin} name='heure_de_fin' type='time' onChange={handleSetNewEventTemps} />
-                        </Col>
-                    </Form.Group>
-                </>}
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Lieu</Form.Label>
-                    <Col sm="10">
-                        <Form.Control value={nouvelEvent.lieu} name='lieu' onChange={handleSetNouvelEvent} />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Description</Form.Label>
-                    <Col sm="10">
-                        <Form.Control as="textarea" value={nouvelEvent.description} name='description' onChange={handleSetNouvelEvent} />
-                    </Col>
-                </Form.Group>
-                <div className="d-flex gap-2">
-                    <Button variant="success" onClick={validerNouvelEvent}>Ajouter</Button>
-                    <Button variant="danger" onClick={() => setIsNewEvent(false)}>Annuler</Button>
-                </div>
-            </Form>
-        </Card.Body>
-    </Card>
-}
-
-function Event({ event, canModify = false }) {
-    const queryClient = useQueryClient();
-    const [isModifying, setIsModifying] = useState(false);
-
-    const [modifierEventTemps, setModifierEventTemps] = useState({
-        "date_de_debut": "",
-        "heure_de_debut": "",
-        "date_de_fin": "",
-        "heure_de_fin": ""
-    });
-    const [modifierEventTempsPeriodique, setModifierEventTempsPeriodique] = useState({
-        "jours_de_la_semaine": [],
-        "heure_de_debut": "",
-        "heure_de_fin": ""
-    });
-    const [modifierEvent, setModifierEvent] = useState({
-        "nom": "",
-        "description": "",
-        "lieu": "",
-        "evenement_periodique": event.evenement_periodique,
-    });
+    const [modifierEventTemps, setModifierEventTemps] = useState(DEFAULT_TEMPS);
+    const [modifierEventTempsPeriodique, setModifierEventTempsPeriodique] = useState(DEFAULT_TEMPS_PERIODIQUE);
+    const [modifierEvent, setModifierEvent] = useState(DEFAULT_EVENT);
 
     const clearModiferEvent = () => {
-        setModifierEventTemps({
-            "date_de_debut": "",
-            "heure_de_debut": "",
-            "date_de_fin": "",
-            "heure_de_fin": ""
-        });
-        setModifierEventTempsPeriodique({
-            "jours_de_la_semaine": [],
-            "heure_de_debut": "",
-            "heure_de_fin": ""
-        });
-        setModifierEvent({
-            "nom": "",
-            "description": "",
-            "lieu": "",
-            "evenement_periodique": false,
-        });
+        setModifierEventTemps(DEFAULT_TEMPS);
+        setModifierEventTempsPeriodique(DEFAULT_TEMPS_PERIODIQUE);
+        setModifierEvent(DEFAULT_EVENT);
     };
 
     const handleSetModifierEventTemps = (e) => {
@@ -309,10 +127,13 @@ function Event({ event, canModify = false }) {
                     date_de_fin: `${modifierEventTemps.date_de_fin}T${modifierEventTemps.heure_de_fin}:00`
                 }
             };
-            await modifierEvenement(event.id_association, event.id, newEvent);
+            if (isNew) await creerNouvelEvenement(asso_id, newEvent);
+            else await modifierEvenement(event.id_association, event.id, newEvent);
+
             clearModiferEvent();
+            if (isNew) setIsNewEvent(false);
             setIsModifying(false);
-            queryClient.invalidateQueries(['eventsData', event.id_association]);
+            queryClient.invalidateQueries(['eventsData', asso_id]);
         } catch (error) {
             console.error(error);
         }
@@ -327,7 +148,7 @@ function Event({ event, canModify = false }) {
         }
     }
 
-    return <Card key={event.id}>
+    return <Card>
         <Card.Body>
             {!isModifying ?
                 /* Affichage de l'événement */
@@ -488,11 +309,12 @@ export default function AssoEvents({ asso_id }) {
         <div className="d-flex flex-column gap-3">
 
             {/* formulaire pour un nouvel événement */}
-            {isNewEvent && <NewEvent asso_id={asso_id} setIsNewEvent={setIsNewEvent} />}
+            {isNewEvent && <Event key={-1} asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={true} />}
 
             {/* Les événements existants */}
             {listeEvents.map((event) => (
-                <Event event={event} canModify={membreData.autorise} />
+                <Event key={event.id} event={event} canModify={membreData.autorise}
+                    asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={false} />
             ))}
         </div>
     </>
