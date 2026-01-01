@@ -12,7 +12,7 @@ with app.app_context():
             
 
      # Liste des associations à créer
-    bde = Association(nom="BDE", description="Bureau des élèves", type_association="loi 1901", logo_path="Capture_decran_2024-08-16_162358.png", ordre_importance=1)
+    bde = Association(nom="BDE", description="Bureau des élèves", type_association="loi 1901", logo_path="Capture_decran_2024-08-16_162358.png", ordre_importance=1, tab_election=True)
     bds = Association(nom="BDS", description="Bureau des sports", type_association="loi 1901", logo_path="logo_jump.png", ordre_importance=2)
     bda = Association(nom="BDA", description="Bureau des arts", type_association="loi 1901", logo_path="channels4_profile%20(2).jpg", banniere_path="bannerBDA.png", ordre_importance=3)        
     bde.id = 1

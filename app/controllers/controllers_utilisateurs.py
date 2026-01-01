@@ -41,7 +41,7 @@ def obtenir_liste_utilisateurs(promo: int, cycles: str):
 def obtenir_liste_des_promos():
     """Renvoie la liste des promotions au format JSON"""
     promotions = db.session.query(Utilisateur.promotion).distinct().all()
-    promotions_list = [promo[0] for promo in promotions if promo[0] is not None]  # Exclure les None
+    promotions_list = [promo[0] for promo in promotions if promo[0] is not None and promo[0] != "00"]  # Exclure les None
     return jsonify(promotions_list)
 
 

@@ -26,14 +26,19 @@ class Association(db.Model):
     publications = db.relationship('Publication', back_populates='association')
     # Mandats de l'asso
     mandats = db.relationship('AssociationMandat', back_populates='association')
+    # Elections
+    elections = db.relationship('Election', back_populates='association')
 
     type_association = db.Column(db.String(1000), nullable=True)
     ordre_importance = db.Column(db.Integer, nullable=True)
 
+    # Affichage d'une tab election sur la page du portail
+    tab_election = db.Column(db.Boolean, nullable=False, default=False)
+
     def __init__(
         self, nom: str, ordre_importance: int,description: str = None,
         type_association: str = None, logo_path: str = None,  banniere_path: str = None,
-        a_cacher_aux_nouveaux: bool = False
+        a_cacher_aux_nouveaux: bool = False, tab_election: bool = False
     ):
         """
         Crée une nouvelle association
@@ -110,7 +115,7 @@ class Association(db.Model):
             }
             for mandat in self.mandats
         ]
-        
+
         return {
             "id": self.id,
             "nom_dossier": self.nom_dossier,
@@ -119,6 +124,7 @@ class Association(db.Model):
             "ordre_importance": self.ordre_importance,
             "banniere_path": self.banniere_path,
             "description": self.description,
+            "elections": self.tab_election,
             "mandats": mandats_data
         }
 

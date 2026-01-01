@@ -9,6 +9,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
+import AssoElection from './PageAsso/AssoElection';
 
 function Asso() {
     const [searchParams] = useSearchParams();
@@ -59,6 +60,14 @@ function Asso() {
         backgroundColor: 'lightgrey'
     };
 
+    const tabs = [
+        { key: "info", titre: "Infos", element: <AssoInfo id={asso.id} /> },
+        { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} /> },
+        { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} /> },
+        { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} /> },
+        ... asso.elections ? [{key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} />}] : []
+    ]
+
     return (
         <Container>
             <input
@@ -108,32 +117,18 @@ function Asso() {
                     <Col xs={12}>
                         <Tab.Container id="asso-tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
                             <Nav variant="tabs" className="mb-3">
-                                <Nav.Item>
-                                    <Nav.Link eventKey="info">Infos</Nav.Link>
-                                </Nav.Item>
-                                <Nav.Item>
-                                    <Nav.Link eventKey="events">Événements</Nav.Link>
-                                </Nav.Item>
-                                <Nav.Item>
-                                    <Nav.Link eventKey="members">Membres</Nav.Link>
-                                </Nav.Item>
-                                <Nav.Item>
-                                    <Nav.Link eventKey="posts">Publications</Nav.Link>
-                                </Nav.Item>
+                                {tabs.map(elt =>
+                                    <Nav.Item>
+                                        <Nav.Link eventKey={elt.key}>{elt.titre}</Nav.Link>
+                                    </Nav.Item>)
+                                }
                             </Nav>
                             <Tab.Content>
-                                <Tab.Pane eventKey="info">
-                                    <AssoInfo id={asso.id} />
-                                </Tab.Pane>
-                                <Tab.Pane eventKey="events">
-                                    <AssoEvents asso_id={asso.id} />
-                                </Tab.Pane>
-                                <Tab.Pane eventKey="members">
-                                    <AssoMembres asso_id={asso.id} />
-                                </Tab.Pane>
-                                <Tab.Pane eventKey="posts">
-                                    <AssoPosts asso_id={asso.id} />
-                                </Tab.Pane>
+                                {tabs.map(elt =>
+                                    <Tab.Pane eventKey={elt.key}>
+                                        {elt.element}
+                                    </Tab.Pane>
+                                )}
                             </Tab.Content>
                         </Tab.Container>
                     </Col>
