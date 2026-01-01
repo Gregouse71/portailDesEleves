@@ -16,7 +16,6 @@ def get_elections_par_asso(id: int):
     Renvoie la liste des elections de l'association
     """
     elections = Election.query.filter_by(association_id=id).all()
-    print(elections)
     return jsonify([e.id for e in elections])
 
 

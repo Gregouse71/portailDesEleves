@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
     creerNouvelEvenement,
     modifierEvenement,
+    obteniEvenement,
     obtenirEvenementsAsso,
     supprimerEvenement
 } from "../../../api/api_evenements";
@@ -32,9 +33,15 @@ const formatEventDate = (event) => {
 };
 
 
-function Event({ event, canModify = false, isNew, asso_id, setIsNewEvent }) {
+function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
     const queryClient = useQueryClient();
     const [isModifying, setIsModifying] = useState(isNew);
+
+    const { data: event, isLoading } = useQuery({
+        queryKey: ['event', id],
+        queryFn: () => obteniEvenement(id),
+        enabled: !isNew,
+    });
 
     const DEFAULT_TEMPS = {
         "date_de_debut": "",
@@ -48,11 +55,11 @@ function Event({ event, canModify = false, isNew, asso_id, setIsNewEvent }) {
         "heure_de_fin": ""
     };
     const DEFAULT_EVENT = {
-            "nom": "",
-            "description": "",
-            "lieu": "",
-            "evenement_periodique": event ? event.evenement_periodique : false,
-        }
+        "nom": "",
+        "description": "",
+        "lieu": "",
+        "evenement_periodique": event ? event.evenement_periodique : false,
+    }
 
     const [modifierEventTemps, setModifierEventTemps] = useState(DEFAULT_TEMPS);
     const [modifierEventTempsPeriodique, setModifierEventTempsPeriodique] = useState(DEFAULT_TEMPS_PERIODIQUE);
@@ -127,13 +134,15 @@ function Event({ event, canModify = false, isNew, asso_id, setIsNewEvent }) {
                     date_de_fin: `${modifierEventTemps.date_de_fin}T${modifierEventTemps.heure_de_fin}:00`
                 }
             };
-            if (isNew) await creerNouvelEvenement(asso_id, newEvent);
-            else await modifierEvenement(event.id_association, event.id, newEvent);
+            if (isNew) await creerNouvelEvenement(newEvent, asso_id);
+            else await modifierEvenement(newEvent, event.id_association, event.id);
 
             clearModiferEvent();
             if (isNew) setIsNewEvent(false);
             setIsModifying(false);
-            queryClient.invalidateQueries(['eventsData', asso_id]);
+
+            if (isNew) queryClient.invalidateQueries(['eventsAsso', asso_id]);
+            else queryClient.invalidateQueries(['event', id]);
         } catch (error) {
             console.error(error);
         }
@@ -142,11 +151,13 @@ function Event({ event, canModify = false, isNew, asso_id, setIsNewEvent }) {
     const removeEvent = async () => {
         try {
             await supprimerEvenement(event.id_association, event.id);
-            queryClient.invalidateQueries(['eventsData', event.id_association]);
+            queryClient.invalidateQueries(['eventsAsso', asso_id]);
         } catch (erreur) {
             console.error(erreur);
         }
     }
+
+    if (isLoading) return <>Chargement...</>
 
     return <Card>
         <Card.Body>
@@ -256,7 +267,6 @@ function Event({ event, canModify = false, isNew, asso_id, setIsNewEvent }) {
 }
 
 export default function AssoEvents({ asso_id }) {
-    const [listeEvents, setListeEvents] = useState([]);
     const [isNewEvent, setIsNewEvent] = useState(false);
 
     function sortEvents(events) {
@@ -284,17 +294,13 @@ export default function AssoEvents({ asso_id }) {
         enabled: !!asso_id,
     });
 
-    const { data: eventsData } = useQuery({
-        queryKey: ['eventsData', asso_id],
+    const { data: events = [], isLoading } = useQuery({
+        queryKey: ['eventsAsso', asso_id],
         queryFn: () => obtenirEvenementsAsso(asso_id),
         enabled: !!asso_id,
     });
 
-    useEffect(() => {
-        if (eventsData) { setListeEvents(sortEvents(eventsData.evenements)) };
-    }, [eventsData]);
-
-
+    if (isLoading) return <>Chargement...</>
 
     return <>
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -312,8 +318,8 @@ export default function AssoEvents({ asso_id }) {
             {isNewEvent && <Event key={-1} asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={true} />}
 
             {/* Les événements existants */}
-            {listeEvents.map((event) => (
-                <Event key={event.id} event={event} canModify={membreData.autorise}
+            {sortEvents(events).map((event) => (
+                <Event key={event.id} id={event.id} canModify={membreData.autorise}
                     asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={false} />
             ))}
         </div>

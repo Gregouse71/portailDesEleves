@@ -8,7 +8,7 @@ const ELECTIONS_BASE_URL = `${API_BASE_URL}/elections`;
  *  - asso_id : id de l'asso
  * 
  * renvoie :
- *  - l'id de l'asso créee
+ *  - l'id de l'élection créee
  */
 export const creerNouvelleElection = createApiPost(`${ELECTIONS_BASE_URL}/election`)
 

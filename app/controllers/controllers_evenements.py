@@ -10,11 +10,32 @@ from app.services.services_evenements import *
 # Creer le blueprint pour les evenements
 controllers_evenements = Blueprint('controllers_evenements', __name__)
 
+@controllers_evenements.get("/asso/<int:id>")
+@login_required
+def get_events_par_asso(id: int):
+    """
+    Renvoie la liste des evenements de l'association, ordonnés par date
+    """
+    events = Evenement.query.filter_by(id_association=id).all()
+    return jsonify([{"id": e.id, "evenement_periodique": e.evenement_periodique, "date_de_debut": e.date_de_debut} for e in events])
 
-@controllers_evenements.route("<int:association_id>/creer_nouvel_evenement", methods=['POST'])
+
+@controllers_evenements.get("/event/<int:id>")
+@login_required
+def get_election_by_id(id: int):
+    """
+    Renvoie l'election qui a pour id *id*
+    """
+    event = Evenement.query.filter_by(id=id).first()
+    if event:
+        return jsonify(event.to_dict())
+    return jsonify({"message": f""}), 400
+
+
+@controllers_evenements.post("event/<int:association_id>")
 @login_required
 @est_membre_de_asso
-def route_creer_nouvel_evenement(association_id: int):
+def post_event(association_id: int):
     """
     Ajoute un nouvel evenement dans la BDD. 
     La logique de si l'evenement est periodique ou non est laisse a init du model Evenement
@@ -50,7 +71,7 @@ def route_creer_nouvel_evenement(association_id: int):
         return jsonify({"message": f"erreur lors de la création de l'événement : {e}"}), 500
 
 
-@controllers_evenements.route("<int:association_id>/modifier_evenement/<int:id_evenement>", methods=['PUT'])
+@controllers_evenements.put("/event/<int:association_id>/<int:id_evenement>")
 @login_required
 @est_membre_de_asso
 def route_modifier_evenement(association_id: int, id_evenement: int):
@@ -95,7 +116,7 @@ def route_toggle_visibility(evenement_id):
     return jsonify({"message": "Visibilité de l'événement modifiée", "evenement_masque": evenement.evenement_masque}), 200
 
 
-@controllers_evenements.route("<int:association_id>/supprimer_evenement/<int:evenement_id>", methods=["DELETE"])
+@controllers_evenements.delete("event/<int:association_id>/<int:evenement_id>")
 @login_required
 @est_membre_de_asso
 def route_supprimer_evenement(association_id, evenement_id):
@@ -142,13 +163,3 @@ def route_obtenir_evenements(date: str):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-
-@controllers_evenements.route("obtenir_evenements_asso/<int:id_asso>")
-@login_required
-def route_obtenir_evenements_asso(id_asso: int):
-    try:
-        evenements = Evenement.query.filter(
-            Evenement.id_association == id_asso).all()
-        return jsonify({"evenements": [e.to_dict() for e in evenements]}), 200
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
