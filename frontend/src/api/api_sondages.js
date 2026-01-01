@@ -1,4 +1,4 @@
-import { API_BASE_URL, handleResponse } from "./base";
+import { API_BASE_URL } from "./base";
 
 export async function obtenirSondageDuJour() {
   const res = await fetch(`${API_BASE_URL}/sondages/sondage_du_jour`,
@@ -46,7 +46,6 @@ export async function sondageSuivant() {
       // Afficher l'erreur dans l'interface utilisateur si nécessaire
       alert(`Erreur : ${errorData.message}`);
     } else {
-      const data = await response.json();
     }
   } catch (error) {
     console.error("Erreur réseau :", error);

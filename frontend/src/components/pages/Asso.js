@@ -65,7 +65,7 @@ function Asso() {
         { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} /> },
         { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} /> },
         { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} /> },
-        ... asso.elections ? [{key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} />}] : []
+        ...asso.elections ? [{key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} />}] : []
     ]
 
     return (

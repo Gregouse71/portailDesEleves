@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, createApiPut, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, createApiPut } from "./base";
 
 const EVENEMENTS_BASE_URL = `${API_BASE_URL}/evenements`;
 

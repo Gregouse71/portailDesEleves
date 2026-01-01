@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from "@tanstack/react-query";
 import '../../assets/styles/anniv.scss'
 
-// "undefined" means the URL will be computed from the `window.location` object
-
 export default function BlocAnniversaire() {
     const { data: annivs = [], error, isLoading } = useQuery({
         queryKey: ['prochainsAnniversaires'],

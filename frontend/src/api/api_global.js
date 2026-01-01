@@ -1,4 +1,4 @@
-import { API_BASE_URL, handleResponse } from "./base";
+import { API_BASE_URL } from "./base";
 
 export async function estAuthentifie() {
   const res = await fetch(`${API_BASE_URL}/login/est_auth`, { credentials: "include" });

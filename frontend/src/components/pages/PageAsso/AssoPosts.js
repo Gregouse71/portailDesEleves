@@ -134,7 +134,6 @@ function AssoPosts({ asso_id }) {
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
-        status,
     } = useInfiniteQuery({
         queryKey: ['publicationData', asso_id, 'publications'],
         queryFn: ({ pageParam = 0 }) => obtenirPublicationsAsso(asso_id, pageParam, 10),

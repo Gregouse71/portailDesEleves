@@ -76,7 +76,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
             setModifyingElection({ ...modifyingElection, promos: [...modifyingElection.promos, value] });
         }
         else {
-            setModifyingElection({ ...modifyingElection, promos: modifyingElection.promos.filter(i => i != value) });
+            setModifyingElection({ ...modifyingElection, promos: modifyingElection.promos.filter(i => i !== value) });
         }
     }
 

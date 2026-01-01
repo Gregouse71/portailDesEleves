@@ -75,9 +75,6 @@ export default function ClassementSondage() {
         queryFn: obtenirScoresSondages,
     });
 
-    // NOTE: Replace 'current_user_username' with the actual way you get the logged-in user's username
-    const currentUsername = "PlaceholderUsername"; // <-- **REPLACE THIS**
-
     // Destructure data
     const { mon_score_recent, mon_score_global, max_votes = [], recent, global: globalScores } = scores;
 
