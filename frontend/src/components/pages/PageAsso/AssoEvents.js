@@ -45,9 +45,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
 
     const DEFAULT_TEMPS = {
         "date_de_debut": "",
-        "heure_de_debut": "",
         "date_de_fin": "",
-        "heure_de_fin": ""
     };
     const DEFAULT_TEMPS_PERIODIQUE = {
         "jours_de_la_semaine": [],
@@ -110,15 +108,9 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
             const { jours_de_la_semaine, heure_de_debut, heure_de_fin } = event;
             setModifierEventTempsPeriodique({ jours_de_la_semaine, heure_de_debut, heure_de_fin })
         } else {
-            const dateDebut = new Date(event.date_de_debut);
-            const dateFin = new Date(event.date_de_fin);
-
-            const getParisPart = (date, options) => new Intl.DateTimeFormat('fr-CA', { ...options, timeZone: 'Europe/Paris' }).format(date).replace(' h ', ':');
             setModifierEventTemps({
-                date_de_debut: getParisPart(dateDebut, { year: 'numeric', month: '2-digit', day: '2-digit' }),
-                heure_de_debut: getParisPart(dateDebut, { hour: '2-digit', minute: '2-digit', hour12: false }),
-                date_de_fin: getParisPart(dateFin, { year: 'numeric', month: '2-digit', day: '2-digit' }),
-                heure_de_fin: getParisPart(dateFin, { hour: '2-digit', minute: '2-digit', hour12: false })
+                date_de_debut: event.date_de_debut,
+                date_de_fin: event.date_de_fin,
             })
         }
         setIsModifying(true);
@@ -129,10 +121,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
             const newEvent = {
                 ...modifierEvent,
                 ...modifierEventTempsPeriodique,
-                ...{
-                    date_de_debut: `${modifierEventTemps.date_de_debut}T${modifierEventTemps.heure_de_debut}:00`,
-                    date_de_fin: `${modifierEventTemps.date_de_fin}T${modifierEventTemps.heure_de_fin}:00`
-                }
+                ...modifierEventTemps
             };
             if (isNew) await creerNouvelEvenement(newEvent, asso_id);
             else await modifierEvenement(newEvent, event.id_association, event.id);
@@ -221,27 +210,15 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                         :
                         <>
                             <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Date de début</Form.Label>
+                                <Form.Label column sm="2">Début</Form.Label>
                                 <Col sm="10">
-                                    <Form.Control value={modifierEventTemps.date_de_debut} name='date_de_debut' type='date' onChange={handleSetModifierEventTemps} />
+                                    <Form.Control value={modifierEventTemps.date_de_debut} name='date_de_debut' type='datetime-local' onChange={handleSetModifierEventTemps} />
                                 </Col>
                             </Form.Group>
                             <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Heure de début</Form.Label>
+                                <Form.Label column sm="2">Fin</Form.Label>
                                 <Col sm="10">
-                                    <Form.Control value={modifierEventTemps.heure_de_debut} name='heure_de_debut' type='time' onChange={handleSetModifierEventTemps} />
-                                </Col>
-                            </Form.Group>
-                            <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Date de fin</Form.Label>
-                                <Col sm="10">
-                                    <Form.Control value={modifierEventTemps.date_de_fin} name='date_de_fin' type='date' onChange={handleSetModifierEventTemps} />
-                                </Col>
-                            </Form.Group>
-                            <Form.Group as={Row} className="mb-3">
-                                <Form.Label column sm="2">Heure de fin</Form.Label>
-                                <Col sm="10">
-                                    <Form.Control value={modifierEventTemps.heure_de_fin} name='heure_de_fin' type='time' onChange={handleSetModifierEventTemps} />
+                                    <Form.Control value={modifierEventTemps.date_de_fin} name='date_de_fin' type='datetime-local' onChange={handleSetModifierEventTemps} />
                                 </Col>
                             </Form.Group>
                         </>}

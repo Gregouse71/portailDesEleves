@@ -110,7 +110,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 </div>
                 <Row md="10">
                     <Col as="h6">Collège électoral : </Col>
-                    <Col>Promotions {election.promos.map((p, i) => <>{i > 0 && <>, </>}{p}</>)}</Col>
+                    <Col>Promotions {election.promos.join(", ")}</Col>
                 </Row>
                 <Row>
                     {election.options.map((options, i) =>

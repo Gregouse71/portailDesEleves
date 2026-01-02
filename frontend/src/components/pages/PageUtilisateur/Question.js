@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { obtenirQuestionsReponses, modifierQuestionsReponses } from "../../../api/api_utilisateurs";
 import { Button, Form, Row, Col } from "react-bootstrap";
-import BoutonEditer from "../../elements/BoutonEditer";
+import DropdownEditer from "../../elements/DropdownEditer";
 
 export default function TabQuestions({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -39,7 +39,12 @@ export default function TabQuestions({ id, autoriseAModifier }) {
     return (<>
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Un peu plus sur moi</h2>
-            {autoriseAModifier && <BoutonEditer onClick={() => setIsGestion(!isGestion)}/>}
+            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                {autoriseAModifier && <DropdownEditer list={[
+                    { can: true, onClick: () => setIsGestion(!isGestion), name: "Modifier" },
+                ]}
+                />}
+            </div>
         </div>
 
         {!isGestion ? <>

@@ -4,7 +4,7 @@ import Select from "react-select";
 import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
-import BoutonEditer from "../../elements/BoutonEditer";
+import DropdownEditer from "../../elements/DropdownEditer";
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -141,7 +141,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
     return (<>
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Informations</h2>
-            {autoriseAModifier && <BoutonEditer onClick={toggleGestion} />}
+            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                {autoriseAModifier && <DropdownEditer list={[
+                    { can: true, onClick: toggleGestion, name: "Modifier" },
+                ]}
+                />}
+            </div>
         </div>
 
         <Row>

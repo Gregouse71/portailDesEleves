@@ -1,8 +1,8 @@
-from app.services import db
-from app.models.models_evenements import Evenement
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, date
 from copy import copy
 
+from app.services import db
+from app.models.models_evenements import Evenement
 
 def est_heure_HH_colon_MM(heure_str):
     try:
@@ -100,6 +100,8 @@ def get_evenements_par_date(date_str: str):
         return _filtrer_par_semaine()
     elif date_str == "next_week":
         return _filtrer_par_prochains_jours(7)
+    elif date_str == "next_month":
+        return _filtrer_par_prochains_jours(31)
     elif len(date_str) == 8:  # Format AAAAMMJJ
         date_obj = datetime.strptime(date_str, "%Y%m%d").date()
         include_periodiques = date_obj.year == now.year
@@ -120,8 +122,7 @@ def _filtrer_par_prochains_jours(nb_jours: int):
     Récupère les événements des 'nb_jours' prochains jours.
     Pour les événements périodiques, crée une instance virtuelle pour chaque occurrence.
     """
-    now = datetime.now()
-    today = now.date()
+    today = date.today()
     end_date = today + timedelta(days=nb_jours)
 
     # 1. Événements ponctuels

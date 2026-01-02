@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { chargerAsso, estUtilisateurDansAsso, modifierDescriptionAsso } from "../../../api/api_associations";
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
 import { Button } from "react-bootstrap";
-import BoutonEditer from "../../elements/BoutonEditer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import DropdownEditer from "../../elements/DropdownEditer";
 
 function AssoInfo({ id }) {
     const queryClient = useQueryClient();
@@ -15,7 +15,7 @@ function AssoInfo({ id }) {
         queryKey: ['asso', id],
         queryFn: () => chargerAsso(id),
     });
-    const { data: membreData = {is_membre: false, autorise: false} } = useQuery({
+    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
         queryKey: ['membreData', id],
         queryFn: () => estUtilisateurDansAsso(id),
     });
@@ -25,7 +25,7 @@ function AssoInfo({ id }) {
     }, [asso]);
 
     const mutation = useMutation({
-        mutationFn: async () => {modifierDescriptionAsso(id, newDescription);},
+        mutationFn: async () => { modifierDescriptionAsso(id, newDescription); },
         onSuccess: () => {
             queryClient.invalidateQueries(['asso', id]);
             setDescription(newDescription);
@@ -44,7 +44,13 @@ function AssoInfo({ id }) {
             <div>
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h2>Description de l'association</h2>
-                    {membreData.autorise && <BoutonEditer onClick={() => setIsEdition(!isEdition)}/>}
+
+                    <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                        {membreData.autorise && <DropdownEditer list={[
+                            { can: true, onClick: () => setIsEdition(!isEdition), name: "Modifier" },
+                        ]}
+                        />}
+                    </div>
                 </div>
                 {/*  */}
                 {!isEdition && <div>
