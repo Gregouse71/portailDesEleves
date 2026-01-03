@@ -32,11 +32,11 @@ login_manager = LoginManager()
 # session = Session()
 scheduler = APScheduler()
 
-def create_app():
+def create_app(config: Config):
     # Creation de l'instance de l'application Flask
     app = Flask(__name__)
     # Chargement de la configuration
-    app.config.from_object(Config)
+    app.config.from_object(config)
 
     # Permet de stocker les caractères UTF dans les objets JSON
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {

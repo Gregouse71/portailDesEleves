@@ -29,7 +29,7 @@ def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
     Fait voter un utilisateur au sondage du jour
     Met a jour utilisateur.vote_sondaj_du_jour
     Met a jour le nombre de votes du sondage de la reponse du sondage en question dans la table "votes_sondage_du_jour"
-    - vote doit etre 1, 2, 3 ou 4. Cette fonction ne verifie pas si le vote est possible (ex : reponse 4 alors qu'il n'y a que 3 reponses possibles)
+    - vote doit etre 0, 1, 2 ou 3. Cette fonction ne verifie pas si le vote est possible (ex : reponse 4 alors qu'il n'y a que 3 reponses possibles)
     - il faudra aussi verifier s'il y a bien un sondage aujourd'hui
     """
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
@@ -59,32 +59,37 @@ def valider_sondage(id_sondage:int) :
     else :
         raise ValueError("id de sondage invalide")
 
-# Passage d'un sondage a un autre 
+# Passage d'un sondage a un autre
 # Les fonctions suivantes ne doivent etre utilisees qu'au sein d'une meme route
 def _resultat_sondage(id_sondage) :
     """
     Renvoie la liste des nombres de votes du sondage du jour par option
     """
     nb_option = len(Sondage.query.filter_by(id=id_sondage).first().reponses)
-    compteur_votes = [VoteSondage.query.filter_by(sondage_id=id_sondage, vote=i + 1).count() for i in range(nb_option)]
+    compteur_votes = [VoteSondage.query.filter_by(sondage_id=id_sondage, vote=i).count() for i in range(nb_option)]
     return compteur_votes
 
-def _donner_votes_gagnants_perdants(compteur_votes) :
+def _donner_votes_gagnants_perdants(compteur_votes: list[int]) :
     """
     Calcul les votes gagnats et pedrants à partir du compteur
+
+    Args:
+        - compteur_votes (list[int]) : une liste ou un np.array de taille nb_option du sondage,
+            où chaque case a le nombre de votants pour cette option
     """
-    
+
     if np.max(compteur_votes) == 0:  # Si personne n'a voté
         return [], []  # il n'y a ni perdant, ni gagnant
 
-    # Récupération des indices de maximums
+    # Récupération des indices de maximums. Il peut y en avoir plusieurs,
+    # donc on n'utilise pas argmax qui ne renvoie que l'index de la première instance du max
     gagnants = np.argwhere(compteur_votes == np.max(compteur_votes)).flatten().tolist()
 
     if np.min(compteur_votes) == 0:  # Si un choix n'a pas été pris
         perdants = []                # alors personne n'est libre penseur ultime
     else:                            # Sinon, c'est tous ceux qui ont pris une option avec le moins de votes
-        perdants = np.argwhere(compteur_votes == np.min(compteur_votes)).flatten().tolist()
-        
+        perdants = np.argwhere(compteur_votes == np.min(compteur_votes)).flatten().tolist() # Idem que pour le max
+
     if np.max(compteur_votes) == np.min(compteur_votes):  # Si toutes les options ont été prise à égalité
         perdants = []                                     # il n'y a pas de libre penseur
 
@@ -96,7 +101,7 @@ def sondage_suivant() -> None:
     - regarde l'id du sondage du jour
     - si il y en a un regarde si il y a des votes
     - si il y en a, compte les votes, trouve les votes gagnants, trouve les votants et leur ajoute une victoire
-    - archive le sondage du jour 
+    - archive le sondage du jour
     - supprime le sondage du jour de la table des sondages en attente
     - trouve le nouveau sondage du jour, met son id dans la variable globale
     """
@@ -212,7 +217,7 @@ def score_recent_sondages (id: int):
             valeur += 1
         if vote.perdant:
             valeur -= 1
-        
+
         score_recent += exp(- vote.sondage.age() / 14) * valeur
 
     return 100 * score_recent
@@ -221,7 +226,7 @@ def _wilson(total, n):
     z = 1.64485 # 1.0 = 85%, 1.6 = 95%
     avg = total/n
 
-    T1 = z * sqrt( (avg*(1 - avg) + z**2/4/n) / n) 
+    T1 = z * sqrt( (avg*(1 - avg) + z**2/4/n) / n)
     return 100 * (avg + z**2/2/n - T1) / (1 + z**2/n) # Formule de Wilson (tirée de l'ancien portail)
 
 def score_global_sondages(id: int):

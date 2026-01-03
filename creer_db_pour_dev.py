@@ -1,11 +1,12 @@
 from app import create_app, db
 from app.models import Association
 from app.models import Utilisateur
+from config import Config
 import unicodedata
 import random
 from datetime import date
 
-_, app = create_app()
+_, app = create_app(config)
 
 # Activer le contexte de l'application
 with app.app_context():

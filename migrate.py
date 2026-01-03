@@ -2,8 +2,9 @@ from app import create_app, db
 from app.migrate.migrate_all import migrate_all
 from app.models.models_utilisateurs import Utilisateur
 from werkzeug.security import generate_password_hash
+from config import Config
 
-socketio, app = create_app()
+socketio, app = create_app(Config)
 
 with app.app_context():
     db.create_all()
