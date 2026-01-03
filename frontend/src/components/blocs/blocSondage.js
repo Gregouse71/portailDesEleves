@@ -33,7 +33,7 @@ export default function BlocSondage() {
                     <p className="h3 fw-bold">{sondage.question}</p>
                     <div className="d-grid gap-2">
                         {sondage.reponses.map((reponse, index) => (
-                            <Button variant="primary" key={index} onClick={() => voterEtReload(index + 1)}>
+                            <Button variant="primary" key={index} onClick={() => voterEtReload(index)}>
                                 {reponse}
                             </Button>
                         ))}
@@ -54,7 +54,7 @@ export default function BlocSondage() {
                                     <div key={index}>
                                         <div className="d-flex justify-content-between">
                                             <p>
-                                                <span style={{ fontWeight: userData.vote_sondaj_du_jour - 1 === index ? "bold" : "normal" }}                                                >
+                                                <span style={{ fontWeight: userData.vote_sondaj_du_jour === index ? "bold" : "normal" }}                                                >
                                                     {reponse}
                                                 </span>
                                                 <span className="text-muted"> {votes} votes ({percent.toFixed(1)}%)</span>

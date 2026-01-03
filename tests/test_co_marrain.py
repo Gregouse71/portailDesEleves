@@ -3,9 +3,10 @@
 from app import create_app, db
 from app.models import Utilisateur
 from app.controllers import creer_co, supprimer_co, ajouter_fillots_a_la_famille, supprimer_fillots
+from config import Config
 
 def test_creer_utilisateur():
-    _, app = create_app()
+    _, app = create_app(Config)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # Utiliser une DB en memoire pour les tests
     with app.app_context():
         db.create_all()  # Creer les tables

@@ -3,9 +3,9 @@ from app.models import Utilisateur,Association
 from app.services.services_associations import *
 from app.services.services_utilisateurs import *
 from sqlalchemy.orm.attributes import flag_modified
+from config import Config
 
-
-_, app = create_app()
+_, app = create_app(Config)
 
 with app.app_context():
  

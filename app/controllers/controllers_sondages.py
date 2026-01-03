@@ -23,7 +23,7 @@ def route_sondage_du_jour():
         question_du_jour, reponses, votes_par_question = resultat
         
         if current_user.vote_sondaj_du_jour is None:
-            votes_par_question = [0 for i in range(len(votes_par_question))]
+            votes_par_question = [0 for i in range(len(votes_par_question))] # TODO: pq faire ça ? Cause des bugs
 
         # Retourner les données sous forme de JSON
         ret = {
@@ -53,9 +53,9 @@ def route_voter_sondage(vote:int):
     except ErreurSondage as e:
         return jsonify({'message': str(e)}), 500
     
-# /!\ ajouter un decorateur pour verifier que seul le vp sondaj peut faire ça
 @controllers_sondages.route('/route_valider_sondage/<int:id_sondage>', methods=['POST'])
 @login_required
+@vp_sondaj_required
 def route_valider_sondage(id_sondage:int):
     """
     Permet a un vp sondaj de valider un sondage propose.

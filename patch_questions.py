@@ -1,10 +1,11 @@
 import sqlite3
 from app import create_app, db
 from app.models.models_utilisateurs import Utilisateur, default_questions
+from config import Config
 
 def patch_questions():
     # Initialize the app to connect to the main database (MariaDB)
-    app_socketio, app = create_app()
+    app_socketio, app = create_app(Config)
 
     with app.app_context():
         print("Patching user questions...")

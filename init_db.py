@@ -5,9 +5,10 @@ Ce fichier n'est utilise qu'une fois, pour initialiser les bases de donnees
 
 from app import create_app, db
 from app.models import GlobalVariable
+from config import Config
 
 # Creer une instance de l'application Flask
-_, app = create_app()
+_, app = create_app(Config)
 
 # Créer les tables si elles n'existent pas encore
 with app.app_context():
