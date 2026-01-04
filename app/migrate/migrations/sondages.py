@@ -57,10 +57,12 @@ def migrate_sondages():
                 new_vote = VoteSondage(
                     sondage=sondage,
                     utilisateur=utilisateur,
-                    vote=row[3]
+                    vote=row[3] - 1
                 )
                 db.session.add(new_vote)
-                print(f"Migrated vote {row[0]}")
+                
+                if row[0] % 100 == 0:
+                    print(f"Migrated vote {row[0]}")
             else:
                 print(f"Skipped duplicate vote {row[0]} for sondage {sondage.id} by user {utilisateur.id}")
 
@@ -75,8 +77,8 @@ def migrate_sondages():
         gagnants, perdants = _donner_votes_gagnants_perdants(compteur_votes)  # On détermine les votes gagnants
         votes = VoteSondage.query.filter_by(sondage_id=s.id).all()
         for vote in votes:  # Pour chaque vote, on détermine s'il est gagnant
-            vote.gagnant = vote.vote - 1 in gagnants # /!\ L'indexation n'est pas la même dans la table vote ou sondage
-            vote.perdant = vote.vote - 1 in perdants
+            vote.gagnant = vote.vote in gagnants
+            vote.perdant = vote.vote in perdants
             db.session.add(vote)
         s.gagnants = gagnants
         s.perdants = perdants

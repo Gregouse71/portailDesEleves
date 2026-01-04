@@ -14,7 +14,7 @@ class Election(db.Model):
     # ID de l'association
     id = db.Column(db.Integer, primary_key=True)
 
-    nom = db.Column(db.String, nullable=False)
+    nom = db.Column(db.String(1000), nullable=False)
     description = db.Column(db.Text, nullable=False, default="")
     # Faut-il l'afficher pour tous les utilisateurs ?
     visible = db.Column(db.Boolean, nullable=False, default=False)
