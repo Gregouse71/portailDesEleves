@@ -34,6 +34,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                 }
             }
             queryClient.invalidateQueries(['asso', asso.id]);
+            setIsEditing(false);
             setEditingMandat(null);
         } catch (error) {
             console.error(error);
