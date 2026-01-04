@@ -295,7 +295,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                         <div className="d-flex justify-content-between align-items-center">
                             <Card.Title className="mb-0 d-flex align-items-center">
                                 <GetAssoInfo />
-                                <Link to={`/assos/get/${post.association.id}?tab=posts`} style={{ textDecoration: "none", color: "#000" }}>
+                                <Link to={`/assos/get/${post.association.id}/posts`} style={{ textDecoration: "none", color: "#000" }}>
                                     {post.titre}
                                 </Link>
                             </Card.Title>

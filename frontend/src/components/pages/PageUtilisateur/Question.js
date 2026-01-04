@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+import "../../../assets/styles/utilisateur.scss"
 import { obtenirQuestionsReponses, modifierQuestionsReponses } from "../../../api/api_utilisateurs";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
@@ -47,25 +48,28 @@ export default function TabQuestions({ id, autoriseAModifier }) {
             </div>
         </div>
 
-        {!isGestion ? <>
-            {Object.keys(questionsReponses).map(key => {
-                return (<p key={key}><strong>{key.slice(3, -1)} :</strong> {questionsReponses[key]}</p>)
-            })}
-        </> : <Form>
-            {Array.from(Object.keys(questionsReponses)).sort().map(key => {
-                return (
-                    <Form.Group as={Row} className="mb-3" key={key}>
-                        <Form.Label column sm="4">{key.slice(3, -1)}</Form.Label>
-                        <Col sm="8">
-                            <Form.Control type="text" name={key} value={questionsReponses[key]} onChange={handleChange} />
-                        </Col>
-                    </Form.Group>
-                )
-            })}
-            <div className="d-flex gap-2">
-                <Button variant="success" onClick={mutation.mutate}>Valider</Button>
-                <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
+        {!isGestion ?
+            <div class="list-question">
+                {Object.keys(questionsReponses).map(key => {
+                    return (<div key={key}><strong>{key.slice(3, -1)} :</strong> {questionsReponses[key]}</div>)
+                })}
             </div>
-        </Form>}
+            :
+            <Form>
+                {Array.from(Object.keys(questionsReponses)).sort().map(key => {
+                    return (
+                        <Form.Group as={Row} className="mb-3" key={key}>
+                            <Form.Label column sm="4">{key.slice(3, -1)}</Form.Label>
+                            <Col sm="8">
+                                <Form.Control type="text" name={key} value={questionsReponses[key]} onChange={handleChange} />
+                            </Col>
+                        </Form.Group>
+                    )
+                })}
+                <div className="d-flex gap-2">
+                    <Button variant="success" onClick={mutation.mutate}>Valider</Button>
+                    <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
+                </div>
+            </Form>}
     </>)
 }

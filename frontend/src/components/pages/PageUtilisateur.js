@@ -1,19 +1,17 @@
-import { useState } from 'react';
 import { obtenirDataUser } from '../../api/api_utilisateurs';
-
 import { useLayout } from '../../layouts/Layout';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
-import { useParams } from 'react-router-dom';
+import { useParams, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
-import { Container, Row, Col, Card, Image, Nav, Tab } from 'react-bootstrap';
+import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 
 function PageUtilisateur() {
-    const [activeTab, setActiveTab] = useState("info");
     const { userData } = useLayout();
     const { id } = useParams();
+    const location = useLocation();
 
     const { data: donneesUtilisateur, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
@@ -23,6 +21,13 @@ function PageUtilisateur() {
     if (isLoading) { return (<p>Chargement...</p>); }
 
     const autoriseAModifier = userData.id == id || userData.is_superuser;
+
+    // Helper to determine active tab based on URL path
+    const getActiveKey = () => {
+        if (location.pathname.includes('assos')) return 'assos';
+        if (location.pathname.includes('questions')) return 'questions';
+        return 'info';
+    };
 
     return (
         <Container className="py-4">
@@ -57,31 +62,29 @@ function PageUtilisateur() {
                 </Card.Body>
             </Card>
 
-            <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
-                <Nav variant="tabs" className="my-3">
-                    <Nav.Item>
-                        <Nav.Link eventKey="info">Infos</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                        <Nav.Link eventKey="assos">Associations</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                        <Nav.Link eventKey="questions">Questions/Réponses</Nav.Link>
-                    </Nav.Item>
-                </Nav>
+            <Nav variant="tabs" className="my-3" activeKey={getActiveKey()}>
+                <Nav.Item>
+                    <Nav.Link key={1} as={Link} to={`/utilisateur/${id}`} eventKey="info">
+                        Infos
+                    </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link key={1} as={Link} to={`/utilisateur/${id}/assos`} eventKey="assos">
+                        Associations
+                    </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link key={1} as={Link} to={`/utilisateur/${id}/questions`} eventKey="questions">
+                        Questions/Réponses
+                    </Nav.Link>
+                </Nav.Item>
+            </Nav>
 
-                <Tab.Content>
-                    <Tab.Pane eventKey="info">
-                        <TabInfo id={id} autoriseAModifier={autoriseAModifier} />
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="assos">
-                        <TabAsso id={id} />
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="questions">
-                        <TabQuestions id={id} autoriseAModifier={autoriseAModifier} />
-                    </Tab.Pane>
-                </Tab.Content>
-            </Tab.Container>
+            <Routes>
+                <Route index={true} element={<TabInfo id={id} autoriseAModifier={autoriseAModifier} />} />
+                <Route path="assos" element={<TabAsso id={id} />} />
+                <Route path="questions" element={<TabQuestions id={id} autoriseAModifier={autoriseAModifier} />} />
+            </Routes>
         </Container>
     );
 }

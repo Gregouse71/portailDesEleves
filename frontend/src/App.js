@@ -37,7 +37,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="assos">
               <Route path="" element={<ListeAssos />} />
-              <Route path="get/:id" element={<Asso />} />
+              <Route path="get/:id/*" element={<Asso />} />
               <Route path="planning" element={<PlanningAsso />} />
               <Route path="ajouter" element={<AjouterAssociation />} />
             </Route>
@@ -51,7 +51,7 @@ export default function App() {
               <Route path="gerer" element={<GererSondages />} />
             </Route>
             <Route path="utilisateur">
-              <Route path=":id" element={<PageUtilisateur />} />
+              <Route path=":id/*" element={<PageUtilisateur />} />
             </Route>
             <Route path="search" element={<Search />} />
             <Route path="vendomes" element={<Vendomes />} />

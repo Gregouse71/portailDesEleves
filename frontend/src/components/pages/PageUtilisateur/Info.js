@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import "../../../assets/styles/utilisateur.scss"
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -179,13 +180,13 @@ export default function TabInfo({ id, autoriseAModifier }) {
         </Row>
 
         {!isGestion ?
-            <>
-                <p><b>Promo :</b> {userInfos.promotion}</p>
-                <p><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</p>
-                <p><b>Ville d'origine :</b> {userInfos.ville_origine}</p>
-                <p><b>Chambre :</b> {userInfos.chambre}</p>
+            <div class="list-question">
+                <div><b>Promo :</b> {userInfos.promotion}</div>
+                <div><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</div>
+                <div><b>Ville d'origine :</b> {userInfos.ville_origine}</div>
+                <div><b>Chambre :</b> {userInfos.chambre}</div>
                 {userInfos.instruments && userInfos.instruments.length > 0 &&
-                    <p>
+                    <div>
                         <b>Instruments :</b>{' '}
                         {userInfos.instruments.map((instrument, index) => (
                             <span key={index}>
@@ -193,24 +194,24 @@ export default function TabInfo({ id, autoriseAModifier }) {
                                 {index < userInfos.instruments.length - 1 ? ', ' : ''}
                             </span>
                         ))}
-                    </p>
+                    </div>
                 }
                 <div>
                     {userInfos.cos && userInfos.cos.length > 0 &&
-                        <p><b>Cos :</b>{' '}
+                        <div><b>Cos :</b>{' '}
                             {userInfos.cos.map((co, index) => (
                                 <span key={co.id}>
                                     <Link to={`/utilisateur/${co.id}`}>{co.nom_utilisateur}</Link>
                                     {index < userInfos.cos.length - 1 ? ', ' : ''}
                                 </span>
                             ))}
-                        </p>
+                        </div>
                     }
                     {userInfos.marrain &&
-                        <p><b>Marrain :</b> <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></p>
+                        <div><b>Marrain :</b> <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></div>
                     }
                     {userInfos.fillots && userInfos.fillots.length > 0 &&
-                        <p>
+                        <div>
                             <b>Fillots :</b>{' '}
                             {userInfos.fillots.map((fillot, index) => (
                                 <span key={fillot.id}>
@@ -218,10 +219,10 @@ export default function TabInfo({ id, autoriseAModifier }) {
                                     {index < userInfos.fillots.length - 1 ? ', ' : ''}
                                 </span>
                             ))}
-                        </p>
+                        </div>
                     }
                 </div>
-            </>
+            </div>
             :
             <Form>
                 <Form.Group as={Row} className="mb-3">
