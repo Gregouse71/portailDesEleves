@@ -360,7 +360,7 @@ class Utilisateur(db.Model, UserMixin) :
             "photo": self.photo,
             "email": self.email,
             "telephone": self.telephone,
-            "date_de_naissance": self.date_de_naissance,
+            "date_de_naissance": self.date_de_naissance.isoformat() if self.date_de_naissance is not None else None,
             "ville_origine": self.ville_origine,
             "sports": self.sports,
             "instruments": self.instruments if self.instruments is not None else [],

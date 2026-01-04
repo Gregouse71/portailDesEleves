@@ -5,6 +5,7 @@ from app.models.models_sondages import VoteSondage, Sondage
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
+from sqlalchemy import func
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurDeLienUtilisateurs(Exception):
@@ -119,11 +120,9 @@ def prochains_anniv():
             return temp
         return (user[0].replace(year=2001) - now).days
 
-    current_year_suffix = datetime.today().year % 100
-    promos_to_consider = []
-    for i in range(4):
-        promo_suffix = (current_year_suffix - i + 100) % 100
-        promos_to_consider.append(f"{promo_suffix:02d}")
+    # C'est horrible. Il faudrait vraiment que les promos soient des entiers
+    max_promo = int(db.session.query(func.max(Utilisateur.promotion)).first()[0])
+    promos_to_consider = [max_promo - i for i in range(4)]
 
     users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance)\
         .filter(Utilisateur.promotion.in_(promos_to_consider))\

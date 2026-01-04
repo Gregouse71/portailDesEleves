@@ -180,7 +180,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         </Row>
 
         {!isGestion ?
-            <div class="list-question">
+            <div className="list-question">
                 <div><b>Promo :</b> {userInfos.promotion}</div>
                 <div><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</div>
                 <div><b>Ville d'origine :</b> {userInfos.ville_origine}</div>
@@ -226,6 +226,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
             :
             <Form>
                 <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Surnom</Form.Label>
+                    <Col sm="10">
+                        <Form.Control type="text" name="surnom"  value={userInfos.surnom} onChange={handleChange} />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Promo</Form.Label>
                     <Col sm="10">
                         <Form.Control value={userInfos.promotion} disabled />
@@ -245,13 +251,13 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Ville d'origine</Form.Label>
                     <Col sm="10">
-                        <Form.Control type="text" name="ville_origine" value={userInfos.ville_origine} onChange={e => handleChange(e)} />
+                        <Form.Control type="text" name="ville_origine" value={userInfos.ville_origine} onChange={handleChange} />
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Chambre</Form.Label>
                     <Col sm="10">
-                        <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={e => handleChange(e)} />
+                        <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={handleChange} />
                     </Col>
                 </Form.Group>
 

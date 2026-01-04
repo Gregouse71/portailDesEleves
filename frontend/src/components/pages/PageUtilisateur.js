@@ -56,7 +56,7 @@ function PageUtilisateur() {
                 <Card.Body>
                     <Row>
                         <Col>
-                            <h2>{donneesUtilisateur.prenom} {donneesUtilisateur.nom}</h2>
+                            <h2>{donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>"{donneesUtilisateur.surnom}"</em>} {donneesUtilisateur.nom}</h2>
                         </Col>
                     </Row>
                 </Card.Body>
@@ -69,12 +69,12 @@ function PageUtilisateur() {
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link key={1} as={Link} to={`/utilisateur/${id}/assos`} eventKey="assos">
+                    <Nav.Link key={2} as={Link} to={`/utilisateur/${id}/assos`} eventKey="assos">
                         Associations
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link key={1} as={Link} to={`/utilisateur/${id}/questions`} eventKey="questions">
+                    <Nav.Link key={3} as={Link} to={`/utilisateur/${id}/questions`} eventKey="questions">
                         Questions/Réponses
                     </Nav.Link>
                 </Nav.Item>

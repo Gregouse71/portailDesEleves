@@ -45,7 +45,7 @@ Flask fonctionne avec des *routes*. Une route Flask est une fonction python pré
 
 Cette syntaxe indique à Flask comment l'on pourra exécuter la route : il faudra entrer l'URL :
 
-`https://url_du_site/nom_du_blueprint/nom_de_la_route`
+`https://url_du_site/api/nom_du_blueprint/nom_de_la_route`
 
 Une route peut être une fonction python quelconque, mais généralement il y aura deux types de routes :
 - Les routes qui chargent du contenu web
@@ -90,7 +90,7 @@ Précisons également que `models/`, une fois importé par `__init__.py`, import
 - ce même fichier charge également `models.py`, ce qui permet de lire les éléments de la base comme des éléments d'une classe python.
 
 
-### D - Arborescence du projet
+### D - Arborescence du backend
 
 À la lumière de ce qui précède, l'arborescence du projet est la suivante : 
 
@@ -98,19 +98,10 @@ Précisons également que `models/`, une fois importé par `__init__.py`, import
 nouveau_portail/
 │
 ├── app/
-│   ├── __pycache__             # Généré automatiquement par python, ne pas toucher
 │   ├── __init__.py             # Initialisation de l'application Flask et des extensions
 │   ├── models/                 # Tables de la BDD
-│   ├── controllers/            # Requêtes à la BDD
+│   ├── controllers/            # Définition de l'API
 │   ├── services/               # Logique métier
-│   ├── views/                  # Chargement des pages web
-│   ├── templates/              # Morceaux de pages web en html
-│   ├── static/                 # Fichiers statiques : feuilles de style, javaScript, images, etc. 
-│   │   ├── fichiers_divers     
-│   │   ├── style               # feuilles de style .css
-│   │   ├── script              # scripts .js
-│   │   ├── images                      
-│   │   └── etc.
 │   │  
 │   └── utils/                  # Utilitaires
 │       ├── decorators.py       # Décorateurs pour les permissions ("@est_vp_sondaj", etc.)
@@ -121,23 +112,28 @@ nouveau_portail/
 ├── config.py                   # Configuration de l'application
 ├── run.py                      # Fichier pour lancer le serveur 
 ├── init_db.py                  # Fichier pour initialiser la BDD à partir des modèles
-└── requirements.txt            # Dépendances Python
+└── environment.yaml            # Dépendances Python
 ```
 
 Résumons le rôle de chaque élément :
 
 - **`models/`** :
- Les classes python qui structurent les données de la base, qui permettent de l'initialiser puis de la lire et de la modifier. Ces classes seront manipulées par les fonction de `services/`.
 
-- **`services/`** : 
-    La logique métier de l'application, qui implémente les règles spécifiques à l'application qui gèrent la manière dont les données sont manipulées et traitées. Ces fonctions seront appelées par les controllers. 
+Les classes python qui structurent les données de la base, qui permettent de l'initialiser puis de la lire et de la modifier. Ces classes seront manipulées par les fonction de `services/`.
 
-- **`controllers/`** : 
-  Contient les routes de requêtes à l'API, qui font appel aux fonction de `services/` pour lire et modifier des données selon la logique de l'application. Les permissions sont vérifiées avec des décorateurs de `decorators.py`.
+- **`services/`** :
 
-- **`requirements.txt`** :
-  Fichier listant toutes les dépendances Python nécessaires au fonctionnement de l’application. Facilite l’installation des dépendances avec `$ pip install -r requirements.txt`.
+La logique métier de l'application, qui implémente les règles spécifiques à l'application qui gèrent la manière dont les données sont manipulées et traitées. Ces fonctions seront appelées par les controllers. 
+
+- **`controllers/`** :
+
+Contient les routes de requêtes à l'API, qui font appel aux fonction de `services/` pour lire et modifier des données selon la logique de l'application. Les permissions sont vérifiées avec des décorateurs de `decorators.py`.
+
+- **`environment.yaml`** :
+
+Fichier listant toutes les dépendances Python nécessaires au fonctionnement de l’application. Facilite l’installation des dépendances avec `$ conda env create -f environment.yml`.
 
 - **`tasks/`** :
-  Contient les taches à réaliser à intervalles réguliers par le backend.
+
+Contient les taches à réaliser à intervalles réguliers par le backend.
 

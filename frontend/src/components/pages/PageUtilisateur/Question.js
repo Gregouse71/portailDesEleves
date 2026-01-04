@@ -49,7 +49,7 @@ export default function TabQuestions({ id, autoriseAModifier }) {
         </div>
 
         {!isGestion ?
-            <div class="list-question">
+            <div className="list-question">
                 {Object.keys(questionsReponses).map(key => {
                     return (<div key={key}><strong>{key.slice(3, -1)} :</strong> {questionsReponses[key]}</div>)
                 })}

@@ -203,13 +203,13 @@ def set_user_infos(user_id: int):
     date_de_naissance = data.get("date_de_naissance") 
     if date_de_naissance:
         try:
-            utilisateur.date_de_naissance = datetime.strptime(date_de_naissance, "%Y-%m-%d").date() 
+            utilisateur.date_de_naissance = data.get("date_de_naissance")
         except ValueError:
-            return jsonify({"message": "Format de date de naissance invalide. Utilisez 'YYYY-MM-DD'."}), 400
+            return jsonify({"message": "Format de date de naissance invalide. Utilisez un format standard."}), 400
 
     db.session.add(utilisateur)
     db.session.commit()
-    return jsonify({"message": "Reponses patchées"}), 200
+    return jsonify({utilisateur.to_dict()}), 200
 
 
 @controllers_utilisateurs.route('/supprimer_co/<int:co_id>', methods=['DELETE'])
