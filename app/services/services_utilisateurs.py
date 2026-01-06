@@ -12,6 +12,26 @@ class ErreurDeLienUtilisateurs(Exception):
     def __init__(self, message):
         super().__init__(message)
 
+def add_utilisateur(nom_utilisateur: str, 
+                    email: str,
+                    prenom: str, 
+                    nom: str, 
+                    promotion: str, 
+                    cycle: str,
+                    mot_de_passe_en_clair: str) -> Utilisateur:
+    """Ajoute un utilisateur dans la base de données s'il n'existe pas déjà"""
+    
+    user = Utilisateur(
+        nom_utilisateur=nom_utilisateur,
+        email=email,
+        prenom=prenom,
+        nom=nom,
+        promotion=promotion,
+        cycle=cycle,
+        mot_de_passe_en_clair=mot_de_passe_en_clair
+    )
+    db.session.add(user) # try except ?
+    db.session.commit()
 # CO
 
 def get_utilisateur(utilisateur_id) -> Utilisateur:  

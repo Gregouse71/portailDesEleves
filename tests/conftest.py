@@ -22,6 +22,16 @@ def db_initialized(app):
     db.drop_all()
 
 @pytest.fixture()
+def db_with_admin(app, db_initialized):
+    admin = Utilisateur(nom_utilisateur="admin", prenom="Admin", nom="Nom", promotion=23, email="admin@example.com", cycle="de", mot_de_passe_en_clair="1234")
+    admin.est_superutilisateur = True
+    admin.est_baptise = True
+    db_initialized.session.add(admin)
+    db_initialized.session.commit()
+    yield db_initialized
+    db_initialized.session.remove()
+
+@pytest.fixture()
 def db_with_users(app, db_initialized):
     # 4 utilisateurs, arbitraire en utilisant du code précédent
     admin = Utilisateur(nom_utilisateur="admin", prenom="Admin", nom="Nom", promotion=23, email="admin@example.com", cycle="de", mot_de_passe_en_clair="1234")

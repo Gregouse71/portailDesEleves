@@ -369,6 +369,35 @@ def route_changer_marrain():
         db.session.rollback()
         return jsonify({"message": f"Erreur lors du changement de marrain : {str(e)}"}), 500
 
+@controllers_utilisateurs.route('/add_utilisateur', methods=['POST'])
+@superutilisateur_required
+def route_add_utilisateur():
+    data = request.get_json()
+    try:
+        nom_utilisateur = data['nom_utilisateur']
+        email = data['email']
+        nom = data['nom']
+        prenom = data['prenom']
+        promotion = data['promotion']
+        cycle = data['cycle']
+        mot_de_passe_en_clair = data['mot_de_passe_en_clair']
+    except KeyError as e:
+        return jsonify({"message": f"Au moins un champ est manquant pour l'ajout d'un utilisateur: {str(e)}"}), 500
+    try:
+        add_utilisateur(nom_utilisateur=nom_utilisateur,
+                        email=email,
+                        prenom=prenom,
+                        nom=nom,
+                        promotion=promotion,
+                        cycle=cycle,
+                        mot_de_passe_en_clair=mot_de_passe_en_clair)
+        return jsonify({"message": "Utilisateur ajouté avec succès"}), 203
+    except ValueError as e:
+        return jsonify({"message": f"Au moins un champ est invalide pour l'ajout d'un utilisateur: {str(e)}"}), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors de l'ajout d'un utilisateur : {str(e)}"}), 500
+
 @controllers_utilisateurs.route('/search/<string:query>', methods=['GET'])
 @login_required
 def search_users(query):
