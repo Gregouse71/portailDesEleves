@@ -33,7 +33,7 @@ def db_with_admin(app, db_initialized):
 
 @pytest.fixture()
 def db_with_users(app, db_initialized):
-    # 4 utilisateurs, arbitraire en utilisant du code précédent
+    # 5 utilisateurs, arbitraire en utilisant du code précédent
     admin = Utilisateur(nom_utilisateur="admin", prenom="Admin", nom="Nom", promotion=23, email="admin@example.com", cycle="de", mot_de_passe_en_clair="1234")
     admin.est_superutilisateur = True
     admin.est_baptise = True
@@ -41,7 +41,8 @@ def db_with_users(app, db_initialized):
     achille = Utilisateur(nom_utilisateur="23fruchard", prenom="Achille", nom="Fruchard", promotion=23, email="achille@exemple.com", cycle="ic", mot_de_passe_en_clair="1234")
     louise = Utilisateur(nom_utilisateur="24deferran", prenom="Louise", nom="De Ferran", promotion=24, email="louise@exemple.com", cycle="ic", mot_de_passe_en_clair="1234")
     test_user = Utilisateur(nom_utilisateur="test", prenom="Test", nom="User", promotion=23, email="test@example.com", cycle="ic", mot_de_passe_en_clair="1234")
-    users = [admin, jules, achille, louise, test_user]
+    vp_sondaj = Utilisateur(nom_utilisateur="23sondaj", prenom="VP", nom="Sondaj", promotion=23, email="vp_sondaj@example.com", cycle="ic", mot_de_passe_en_clair="1234")
+    users = [admin, jules, achille, louise, test_user, vp_sondaj]
 
     for user in users:
         db_initialized.session.add(user)
@@ -140,3 +141,9 @@ def client_factory_user_lose(client_factory):
         assert response.status_code == 200
         return user_lose
     return _create_client_user_lose
+
+@pytest.fixture()
+def client_factory_vp_sondaj(client_factory):
+    def _create_client_vp_sondaj():
+        vp_sondaj = client_factory()
+        response = vp_sondaj.post('/api/login/connexion', json={'username': 'vp_sondaj', 'password': '1234'})
