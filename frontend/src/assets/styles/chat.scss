@@ -9,13 +9,13 @@
     font-size: 0.8em;
 }
 
-.chat-author-me {
-    color: #005a9e;
+body[data-theme] .chat-author-me {
+    color: var(--primary-color);
     text-decoration: none;
 }
 
-.chat-author-other {
-    color: gray;
+body[data-theme] .chat-author-other {
+    color: var(--text-color);
     text-decoration: none;
 }
 

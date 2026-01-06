@@ -10,6 +10,7 @@ import CommentSection from "./CommentSection";
 import { Link } from "react-router-dom";
 import { chargerAsso } from "../../api/api_associations";
 import DropdownEditer from "./DropdownEditer";
+import '../../assets/styles/post.scss';
 
 const formatPublicationDate = (dateString) => {
     const date = new Date(dateString);
@@ -295,7 +296,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                         <div className="d-flex justify-content-between align-items-center">
                             <Card.Title className="mb-0 d-flex align-items-center">
                                 <GetAssoInfo />
-                                <Link to={`/assos/get/${post.association.id}/posts`} style={{ textDecoration: "none", color: "#000" }}>
+                                <Link to={`/assos/get/${post.association.id}/posts`} className="post-title-link">
                                     {post.titre}
                                 </Link>
                             </Card.Title>
@@ -303,7 +304,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 {post.tags && post.tags.length > 0 && (
                                     <div className="d-flex gap-1">
                                         {post.tags.map(tag => (
-                                            <span key={tag} className="badge bg-info">{tag}</span>
+                                            <span key={tag} className="badge post-tag-badge">{tag}</span>
                                         ))}
                                     </div>
                                 )}

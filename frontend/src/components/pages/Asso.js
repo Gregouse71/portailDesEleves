@@ -53,7 +53,6 @@ function Asso() {
 
     const bannerStyle = {
         backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
-        backgroundColor: 'lightgrey'
     };
 
     const tabs = [
@@ -81,21 +80,20 @@ function Asso() {
                     <div className="position-relative">
                         <div className="asso-banner rounded-top" style={bannerStyle}>
                             {membreData.autorise && (
-                                <>
-                                    <Button variant="primary" className="position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
-                                        <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
-                                    </Button>
-                                    <Button variant="primary" className="position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
-                                        <img src="/assets/icons/upload_photo.svg" alt="Changer la bannière" style={{ width: '24px', height: '24px' }} /> Changer la bannière
-                                    </Button>
-                                </>
-                            )}
+                                                                 <>
+                                                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
+                                                                        <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
+                                                                    </Button>
+                                                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
+                                                                        <img src="/assets/icons/upload_photo.svg" alt="Changer la bannière" style={{ width: '24px', height: '24px' }} /> Changer la bannière
+                                                                    </Button>
+                                                                </>                            )}
                         </div>
                     </div>
                 </Col>
             </Row>
 
-            <div className="bg-light p-3 rounded-bottom">
+            <div className="asso-main-content p-3 rounded-bottom">
                 <Row>
                     <Col md={3} className="text-center text-md-start">
                         <div style={{ position: "relative", zIndex: 1 }}>
@@ -108,7 +106,7 @@ function Asso() {
                     </Col>
                     <Col md={9} className="d-flex align-items-center justify-content-center justify-content-md-start mt-3 mt-md-0">
                         <h2>{asso.nom}</h2>
-                        {membreData.is_membre && <Badge bg="success" className="ms-3">membre</Badge>}
+                        {membreData.is_membre && <Badge className="asso-member-badge ms-3">membre</Badge>}
                     </Col>
                 </Row>
                 <Row className="mt-3">

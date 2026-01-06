@@ -42,10 +42,10 @@
     width: var(--user-profilpic-size);
     height: auto;
     border-radius: var(--user-profilpic-radius);
-    border: var(--user-profilpic-border-size) solid white;
+    border: var(--user-profilpic-border-size) solid var(--card-bg);
     background-color: var(--secondary-color);
     object-fit: cover;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 20px var(--shadow-color);
 }
 
 /* Infos principales */
@@ -90,9 +90,9 @@
     cursor: pointer;
     align-items: center;  /* Aligne l'icône et le texte horizontalement */
     padding: var(--copy-button-padding);
-    background-color: var(--global-style-secondary-color);
+    background-color: var(--button-secondary-bg);
     border-radius: var(--copy-button-border-radius);
-    color: white; /* Texte en blanc */
+    color: var(--text-color); /* Texte en blanc */
     transition: background-color 0.3s, transform 0.2s;
 }
 
@@ -105,12 +105,12 @@
 .copyButton .user-icon {
     width: calc(var(--user-icon-size) * 0.7) ;
     margin-right: var(--copy-button-padding); /* Espacement entre l'icône et le texte */
-    filter: brightness(0) invert(1); /* Applique un filtre pour rendre l'icône blanche */
+    filter: var(--icon-filter-color); /* Applique un filtre pour rendre l'icône blanche */
 }
 
 
 .copyButton:hover {
-    background-color: var(--global-style-primary-color); /* Change la couleur de fond au survol */
+    background-color: var(--button-primary-bg); /* Change la couleur de fond au survol */
     transform: scale(1.05); /* Effet de zoom au survol */
 }
 
@@ -133,7 +133,7 @@
 .user-tabs {
     display: flex;
     justify-content: space-around;
-    border-bottom: 2px solid var(--secondary-color);
+    border-bottom: 2px solid var(--primary-color);
 }
 
 

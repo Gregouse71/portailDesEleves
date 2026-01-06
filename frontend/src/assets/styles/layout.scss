@@ -1,33 +1,69 @@
-/* Déclaration des variables globales */
-:root {
-  --global-style-primary-color: #000000; /* Couleur du header (noir) */
-  --global-style-secondary-color: #035BA2;
-  --global-style-background-color: #f5f5f5; /* Fond de la page */
-  --global-style-text-color: #333333; /* Couleur du texte principal */
-}
-
 /* Styles généraux */
 body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background-color: var(--global-style-background-color);
+  background-color: var(--background-color); // Use the theme variable directly
 }
 
 /* Layout global */
+@import './themes';
+@import './bootstrap_overrides';
+
 .layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 .main-content-global {
-    margin-top: 10px;
+    flex-grow: 1;
+    padding-top: 1rem; // Add some space below the header
 }
+
+// Custom styles for left and right columns if needed
+.left, .right {
+    padding: 1rem;
+}
+
+// Global Card theming
+body[data-theme] .card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border-color);
+    color: var(--text-color); // Ensure text color is inherited or explicitly set
+}
+
+body[data-theme] .card-header {
+    background-color: var(--card-header-bg);
+    color: var(--text-color);
+}
+
+// Global icon theming
+.theme-icon {
+    filter: var(--icon-color-filter);
+    transition: transform 0.2s ease;
+}
+
+// Override Bootstrap's text-muted
+body[data-theme] .text-muted {
+    color: var(--text-color-secondary) !important; /* Use !important to ensure override */
+}
+
+// Ensure links within cards also respect the theme or primary color
+.card a {
+    color: var(--primary-color);
+}
+
+.card a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
 
 /* Quill editor font size */
 .ql-snow .ql-picker.ql-size .ql-picker-label::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item::before {
+.ql-snow .ql-snow .ql-picker.ql-size .ql-picker-item::before {
   content: attr(data-value) !important;
 }
 

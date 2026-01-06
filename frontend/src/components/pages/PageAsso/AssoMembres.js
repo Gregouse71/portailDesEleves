@@ -50,8 +50,8 @@ function AssoMembres({ asso_id }) {
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les membres</h2>
                 {membreData.autorise &&
-                    <Button variant="light" onClick={() => setIsAjoutMandat(!isAjoutMandat)}>
-                        <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                    <Button variant="outline-secondary" onClick={() => setIsAjoutMandat(!isAjoutMandat)}>
+                        <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
                     </Button>}
             </div>
 

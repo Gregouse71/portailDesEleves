@@ -5,18 +5,20 @@ import { useQuery } from "@tanstack/react-query";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { useLayout } from "../../../layouts/Layout";
+import '../../../assets/styles/classement_sondage.scss';
 
-const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
+const RANK_CLASSES = ['rank-gold', 'rank-silver', 'rank-bronze'];
 
 const RECENT_FORMULA = 'S_r = \\sum_{i=1}^N w_i V_i \\quad \\text{où } w_i = e^{-\\lambda t_i} \\quad \\text{et } V_i = \\begin{cases} 1 \\quad \\text{si le vote est gagnant}\\\\ -1 \\quad \\text{sinon} \\end{cases}';
 const GLOBAL_FORMULA = 'S_g = \\bar{X} \\pm z_\\alpha \\sqrt{\\frac{1 - \\bar{X}^2}{N}} \\quad \\text{où } \\begin{cases}\\bar{X} = \\frac{1}{N} \\sum_{i=1}^N V_i\\\\z_\\alpha = 1.96\\end{cases}';
 
 function RankingList({ title, data, scoreKey, isNegative = false, isVotes = false }) {
+    const headerClass = isNegative ? 'classement-header-danger' : isVotes ? 'classement-header-info' : 'classement-header-success';
     return (
         <Card className="mb-4 h-100">
             <Card.Header
                 as="h5"
-                className={`text-center fw-bold ${isNegative ? 'bg-danger text-white' : isVotes ? 'bg-info text-white' : 'bg-success text-white'}`}
+                className={`text-center fw-bold ${headerClass}`}
             >
                 {title}
             </Card.Header>
@@ -27,38 +29,34 @@ function RankingList({ title, data, scoreKey, isNegative = false, isVotes = fals
                         ? (isVotes ? user[scoreKey] : user[scoreKey].toFixed())
                         : "0";
 
-                    const colorStyle = index < 3 ? { backgroundColor: RANK_COLORS[index], fontWeight: 'bold' } : {};
+                    const rankClass = index < 3 ? RANK_CLASSES[index] : '';
 
                     return (
                         <ListGroup.Item
                             key={user.nom_utilisateur}
                             className="d-flex justify-content-between align-items-center"
                         >
-                            {/* START: Two-column layout within the list item */}
                             <Row className="w-100 align-items-center mx-0">
-                                {/* COLUMN 1: Rank and Name */}
                                 <Col xs={7} className="d-flex align-items-center px-0" >
                                     <span style={{ width: '30px', textAlign: 'left', marginRight: '10px' }}>
-                                        <span style={colorStyle}>
+                                        <span className={rankClass}>
                                             #{rank}
                                         </span>
                                     </span>
                                     <Link
                                         to={`/utilisateur/${user.id}`}
-                                        className="text-decoration-none text-dark" // Remove default underline and keep text dark
+                                        className="text-decoration-none classement-link-dark"
                                     >
                                         <strong>{user.prenom} {user.nom}</strong>
                                     </Link>
                                 </Col>
 
-                                {/* COLUMN 2: Score/Value */}
                                 <Col xs={5} className="text-end px-0">
                                     <span>
                                         {score} {isVotes ? 'votes' : ''}
                                     </span>
                                 </Col>
                             </Row>
-                            {/* END: Two-column layout */}
                         </ListGroup.Item>
                     );
                 })}
@@ -87,30 +85,26 @@ export default function ClassementSondage() {
         <Container className="mt-4">
             <h1 className="mb-4 text-center">Classement des Sondages</h1>
 
-            {/* ------------------- CURRENT USER SCORE ------------------- */}
-            <Card className="mb-5 p-3 bg-light shadow-sm">
+            <Card className="mb-5 p-3 classement-bg-light">
                 <Card.Title>Mon Score Actuel</Card.Title>
 
-                {/* Score Row */}
                 <Row className="fw-bold mb-2">
                     <Col xs={12} md={4} className="mb-2 mb-md-0">
-                        Score Récent : <span className="text-primary">{recentScore}</span>
+                        Score Récent : <span className="classement-text-primary">{recentScore}</span>
                     </Col>
                     <Col xs={12} md={4} className="mb-2 mb-md-0">
-                        Global Convergent : <span className="text-success">{globalScoreCon}</span>
+                        Global Convergent : <span className="classement-text-success">{globalScoreCon}</span>
                     </Col>
                     <Col xs={12} md={4}>
-                        Global Divergent : <span className="text-danger">{globalScoreDiv}</span>
+                        Global Divergent : <span className="classement-text-danger">{globalScoreDiv}</span>
                     </Col>
                 </Row>
 
-                {/* Participation Count at the bottom */}
                 <Card.Text className="small text-muted border-top pt-2 mt-2">
-                    Nombre de votes : <strong className="text-dark">{userData.nombre_votes}</strong>
+                    Nombre de votes : <strong className="classement-text-dark">{userData.nombre_votes}</strong>
                 </Card.Text>
             </Card>
 
-            {/* ------------------- CLASSEMENT RÉCENT ------------------- */}
             <h2 className="mt-5 mb-3">Classement Récent</h2>
             <p className="text-muted">Calculé avec de coefficients en exponentielle décroissante sur les votes par date :</p>
             <BlockMath math={RECENT_FORMULA} />
@@ -123,7 +117,6 @@ export default function ClassementSondage() {
                 </Col>
             </Row>
 
-            {/* ------------------- CLASSEMENT GLOBAL ------------------- */}
             <h2 className="mt-5 mb-3">Classement Global</h2>
             <p className="text-muted">Calculé grâce à l'intervalle de confiance à 95% d'une gaussienne.</p>
             <BlockMath math={GLOBAL_FORMULA} />
@@ -136,7 +129,6 @@ export default function ClassementSondage() {
                 </Col>
             </Row>
 
-            {/* ------------------- TOP VOTERS ------------------- */}
             {max_votes.length > 0 && (
                 <>
                     <h2 className="mt-5 mb-3">Classement des participations</h2>

@@ -2,6 +2,7 @@
 // Gere les routes principales
 
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Soifguard from "./pages/Soifguard";
 import Admin from "./pages/Admin";
 import ListeAssos from "./components/pages/AssoListe";
@@ -26,8 +27,23 @@ import MDPoublie from "./components/MDPoublie";
 import ProtectedRoute from "./Protected";
 
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      return storedTheme;
+    }
+    // If no theme is stored, check for system preference
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   return (
-    <LayoutProvider>
+    <LayoutProvider theme={theme} setTheme={setTheme}>
       <Routes>
         <Route path="/login" element={<FormulaireConnexion />} />
         <Route path="/reset/:token" element={<NouveauMDP />} />

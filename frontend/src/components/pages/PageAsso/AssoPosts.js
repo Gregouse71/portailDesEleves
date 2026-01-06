@@ -177,10 +177,10 @@ function AssoPosts({ asso_id }) {
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Les publications</h2>
                 {membreData.autorise && <Button
-                    variant="light"
+                    variant="outline-secondary"
                     onClick={() => setIsNewPost(!isNewPost)}
                 >
-                    <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                    <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
                 </Button>}
             </div>
             <div className="d-flex flex-column gap-3">

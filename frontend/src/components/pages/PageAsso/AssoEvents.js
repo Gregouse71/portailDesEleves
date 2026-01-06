@@ -283,10 +283,10 @@ export default function AssoEvents({ asso_id }) {
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Les événements</h2>
             {membreData.autorise && <Button
-                variant="light"
+                variant="outline-secondary"
                 onClick={() => setIsNewEvent(!isNewEvent)}
             >
-                <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
             </Button>}
         </div>
         <div className="d-flex flex-column gap-3">

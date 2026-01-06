@@ -1,0 +1,82 @@
+// themeswitcher.scss
+
+.theme-switcher {
+  display: inline-block;
+  position: relative;
+  width: 60px;
+  height: 34px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+  }
+
+  .icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    img {
+      width: 20px;
+      height: 20px;
+      filter: invert(1); // Make icons visible against the slider background
+    }
+  }
+  .sun {
+    left: 6px;
+    opacity: 1;
+    transition: opacity 0.2s;
+  }
+  .moon {
+    right: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  input:checked + .slider {
+    background-color: var(--primary-color);
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  
+  // Icon visibility based on theme
+  input:not(:checked) + .slider .sun {
+    opacity: 1;
+  }
+  input:not(:checked) + .slider .moon {
+    opacity: 0;
+  }
+
+  input:checked + .slider .sun {
+    opacity: 0;
+  }
+  input:checked + .slider .moon {
+    opacity: 1;
+  }
+}

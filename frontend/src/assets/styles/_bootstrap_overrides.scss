@@ -1,0 +1,59 @@
+// _bootstrap_overrides.scss
+// This file contains overrides for default Bootstrap components to make them theme-aware.
+
+// Table Overrides
+body[data-theme] .table > :not(caption) > * > * {
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  color: var(--text-color);
+}
+
+// Override for hover state
+body[data-theme] .table-hover > tbody > tr:hover > * {
+  background-color: var(--card-hover-bg);
+  color: var(--text-color);
+}
+
+// Dropdown Overrides
+body[data-theme] .dropdown-menu {
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  color: var(--text-color);
+}
+
+body[data-theme] .dropdown-item {
+  color: var(--text-color);
+}
+
+body[data-theme] .dropdown-item:hover {
+  background-color: var(--card-hover-bg);
+  color: var(--text-color);
+}
+
+// Fix for icons within specific button variants
+body[data-theme] .btn-outline-light .theme-icon {
+    filter: var(--icon-filter-color-inverted); // White icon
+}
+body[data-theme] .btn-outline-light:hover .theme-icon {
+    filter: var(--icon-color-filter); // Black icon on hover
+}
+
+// Override for btn-outline-secondary
+body[data-theme] .btn-outline-secondary {
+    color: var(--text-color);
+    border-color: var(--card-border-color);
+
+    &:hover {
+        background-color: var(--card-hover-bg);
+        color: var(--text-color);
+        border-color: var(--card-hover-bg);
+    }
+}
+
+// Ensure icon inside this button is also themed
+body[data-theme] .btn-outline-secondary .theme-icon {
+    filter: var(--icon-filter-color);
+}
+body[data-theme] .btn-outline-secondary:hover .theme-icon {
+    filter: var(--icon-filter-color);
+}

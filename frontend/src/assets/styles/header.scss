@@ -4,15 +4,23 @@
 @import "bootstrap/scss/mixins";
 
 .global-header-header {
-    background-color: $black;
-    color: $white;
+    background-color: var(--header-bg);
+    color: var(--header-text);
     padding: 10px 20px;
     min-height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+
+    .navbar-brand,
+    .nav-link {
+        color: var(--header-text) !important;
+    }
 
     h1 {
         font-size: 24px;
         margin: 0;
-        color: $white;
+        color: var(--header-text);
     }
 
     .navbar-brand {
@@ -25,9 +33,9 @@
 
     .navbar-collapse {
         @include media-breakpoint-down(md) {
-            background-color: $dark;
+            background-color: var(--header-bg); /* Use header-bg for collapsed background too */
             padding: 1rem;
-            border-radius: $border-radius;
+            border-radius: $border-radius; // $border-radius can stay as it's a size variable
             margin-top: 0.5rem;
         }
     }

@@ -1,0 +1,26 @@
+// Styles for the Post component
+
+$tag-color-light: #16a085; // A vibrant green/teal
+$tag-color-dark: #8e44ad;  // A vibrant purple
+
+.post-title-link,
+.post-title-link:visited,
+.post-title-link:active {
+    color: var(--text-color) !important;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--primary-color) !important;
+    }
+}
+
+.post-tag-badge {
+    background-color: $tag-color-light;
+    color: #fff;
+}
+
+[data-theme='dark'] {
+    .post-tag-badge {
+        background-color: $tag-color-dark;
+    }
+}

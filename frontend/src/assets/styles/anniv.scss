@@ -1,17 +1,14 @@
-.user-link-text {
-    color: var(--text-color, #333);
+.user-link-text,
+.user-link-text:visited,
+.user-link-text:active {
+    color: var(--text-color) !important;
     text-decoration: none;
+}
 
-    &:hover {
-        color: var(--primary-color, #005a9e);
-        text-decoration: underline;
-        cursor: pointer;
-    }
-
-    &:visited,
-    &:active {
-        color: var(--text-color, #333);
-    }
+.user-link-text:hover {
+    color: var(--primary-color) !important;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .anniv-date-header {
@@ -19,7 +16,7 @@
     font-size: 1.05rem;
     letter-spacing: 0.5px;
 
-    color: var(--primary-color, #005a9e);
+    color: var(--primary-color);
 
     border-bottom: 1px solid;
     padding-bottom: 0.25rem;

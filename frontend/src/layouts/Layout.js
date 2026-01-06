@@ -24,7 +24,7 @@ function ScrollToTop() {
     return null;
 }
 
-export function LayoutProvider({ children }) {
+export function LayoutProvider({ children, theme, setTheme }) {
     const { data: id } = useQuery({
         queryKey: ['id'],
         queryFn: obtenirIdUser
@@ -47,7 +47,7 @@ export function LayoutProvider({ children }) {
     });
 
     return (
-        <LayoutContext.Provider value={{ userData }}>
+        <LayoutContext.Provider value={{ userData, theme, setTheme }}>
             <ScrollToTop />
             {!isLoading && children}
         </LayoutContext.Provider>
@@ -66,7 +66,7 @@ export function Layout() {
 
     return (
         <div className="layout">
-            <Header className="header-global" />
+            <Header />
             <Container fluid className="main-content-global">
                 <Row>
                     <Col md={2} className="left order-2 order-md-1">

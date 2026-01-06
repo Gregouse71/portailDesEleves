@@ -202,12 +202,9 @@ export default function AssoElection({ asso_id }) {
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Élections</h2>
-                {userData.is_superuser && <Button
-                    variant="light"
-                    onClick={() => setIsCreating(true)}
-                >
-                    <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
-                </Button>}
+                <Button variant='outline-secondary' onClick={() => setIsCreating(true)}>
+                    <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
+                </Button>
             </div>
             {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}
             {elections.map(id => <Election key={id} id={id} canModify={userData.is_superuser} isNew={false} asso_id={asso_id} />)}

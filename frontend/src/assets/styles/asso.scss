@@ -2,23 +2,41 @@
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
-:root {
-    --primary-color: #007bff;
-    --text-color: #333;
-}
 
 .asso-banner {
     height: 200px;
     background-size: cover;
     background-position: center;
+    background-color: var(--card-border-color); /* Default background */
 }
+
+.asso-main-content {
+    background-color: var(--card-bg);
+}
+
+.asso-member-badge {
+    background-color: var(--success-color);
+    color: var(--success-text-color);
+}
+
+.asso-primary-btn {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--header-text);
+
+    &:hover {
+        background-color: var(--primary-color-hover);
+        border-color: var(--primary-color-hover);
+    }
+}
+
 
 .asso-logo {
     margin-top: -75px;
     width: 150px;
     height: 150px;
-    border: 6px solid $light;
-    background-color: $light;
+    border: 6px solid var(--card-bg);
+    background-color: var(--card-bg);
     object-fit: contain;
 }
 

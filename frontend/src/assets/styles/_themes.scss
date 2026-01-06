@@ -1,0 +1,49 @@
+:root {
+  --background-color: #FFFFFF;
+  --text-color: #333333;
+  --header-bg: #1b1f23;
+  --header-text: #FFF;
+  --primary-color: #005a9e;
+  --primary-color-hover: #004a8e;
+  --secondary-color: #6c757d;
+  --button-secondary-bg: #6c757d;
+  --button-primary-bg: #005a9e;
+  --icon-filter-color: brightness(0) saturate(100%);
+  --icon-filter-color-inverted: brightness(0) invert(1);
+  --text-color-secondary: #6c757d;
+  --card-bg: #ffffff;
+  --card-hover-bg: #e0e0e0;
+  --card-border-color: #dee2e6;
+  --card-header-bg: rgba(0, 0, 0, 0.03);
+  --global-white: #fff;
+  --global-light-gray: #f9f9f9;
+  --global-dark-gray: #555;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --success-color: #28a745;
+  --success-text-color: #fff;
+}
+
+[data-theme='dark'] {
+  --background-color: #121212;
+  --text-color: #FFFFFF;
+  --header-bg: #343a40;
+  --header-text: #FFF;
+  --primary-color: #4dabf7;
+  --primary-color-hover: #6dbcf8;
+  --secondary-color: #a8a8a8;
+  --button-secondary-bg: #a8a8a8;
+  --button-primary-bg: #4dabf7;
+  --icon-filter-color: brightness(0) invert(1);
+  --icon-filter-color-inverted: brightness(0) saturate(100%);
+  --text-color-secondary: #a8a8a8;
+  --card-bg: #1e1e1e;
+  --card-hover-bg: #2c2c2c;
+  --card-border-color: #444;
+  --card-header-bg: #2c2c2c;
+  --global-white: #121212;
+  --global-light-gray: #1e1e1e;
+  --global-dark-gray: #ccc;
+  --shadow-color: rgba(255, 255, 255, 0.1);
+  --success-color: #218838;
+  --success-text-color: #fff;
+}

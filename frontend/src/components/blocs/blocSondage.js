@@ -116,22 +116,22 @@ export default function BlocSondage() {
             </>}
             <Card.Footer className="d-flex justify-content-between">
                 <Button
-                    variant="light"
+                    variant="outline-secondary"
                     onClick={() => navigate("/sondage/proposer")}
                 >
-                    <img src="/assets/icons/plus.svg" alt="proposer un sondage" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                    <img src="/assets/icons/plus.svg" alt="proposer un sondage" className="theme-icon" />
                 </Button>
                 <Button
-                    variant="light"
+                    variant="outline-secondary"
                     onClick={() => navigate("/sondage/classement")}
                 >
-                    <img src="/assets/icons/stats.svg" alt="classement" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                    <img src="/assets/icons/stats.svg" alt="classement" className="theme-icon" />
                 </Button>
                 {userData.is_superuser && <Button
-                    variant="light"
+                    variant="outline-secondary"
                     onClick={() => navigate("/sondage/gerer")}
                 >
-                    <img src="/assets/icons/manage.svg" alt="gestion" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
+                    <img src="/assets/icons/manage.svg" alt="gestion" className="theme-icon" />
                 </Button>}
             </Card.Footer>
         </Card>

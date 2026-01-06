@@ -87,8 +87,8 @@ function ProposerSondage() {
             </InputGroup>
           ))}
           {reponses.length < 4 && (
-            <Button variant="light border d-flex gap-1 justify-content-center" onClick={addReponse}>
-              <img src="/assets/icons/plus.svg" alt="Ajouter" />
+            <Button variant="outline-secondary border d-flex gap-1 justify-content-center" onClick={addReponse}>
+              <img src="/assets/icons/plus.svg" alt="Ajouter" className="theme-icon" />
               <span>Rajouter une option</span>
             </Button>
           )}

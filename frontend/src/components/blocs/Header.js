@@ -1,14 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useLayout } from '../../layouts/Layout';
 import { seDeconnecter } from '../../api/api_global';
-import {  useState } from 'react';
+import { useState } from 'react';
 import { verifierPermission } from '../../api/api_soifguard';
 import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
 import '../../assets/styles/header.scss';
 import { useQuery } from '@tanstack/react-query';
+import ThemeSwitcher from '../elements/ThemeSwitcher';
 
 export default function Header() {
-  const { userData } = useLayout();
+  const { userData, theme, setTheme } = useLayout();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -33,8 +34,12 @@ export default function Header() {
     navigate("/login");  // Rediriger après déconnexion
   }
 
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
   return (
-    <Navbar bg="dark" data-bs-theme="dark" expand="md" color='#005a9e' className="global-header-header">
+    <Navbar expand="md" data-bs-theme="dark" className="global-header-header">
       <Container fluid>
         <Navbar.Brand href="#" onClick={() => navigate("/")}>Le portail des élèves (WIP)</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -76,6 +81,11 @@ export default function Header() {
             <NavDropdown title={userData ? userData.nom_utilisateur : "Chargement..."} id="user-nav-dropdown" align="end">
               <NavDropdown.Item onClick={() => navigate(`utilisateur/${userData.id}`)}>Ma page</NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleLogout()}>Se déconnecter</NavDropdown.Item>
+              <NavDropdown.Divider />
+              <div className="d-flex justify-content-between align-items-center px-3">
+                Thème
+                <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
+              </div>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
