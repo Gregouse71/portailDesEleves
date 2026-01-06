@@ -19,14 +19,14 @@ export default function BlocSoldes() {
             <Card.Header as="h5" className="text-center">Soldes éthylo-associatifs</Card.Header>
             <Card.Body className='d-flex flex-column'>
                 <Row className='mb-2'>
-                    <Col md="auto" className="d-flex align-items-center">
+                    <Col className="d-flex align-items-center">
                         <Image
                             src={userData.solde_octo >= 0 ? "/assets/gif/octo-belus-content.gif" : "/assets/gif/octo-belus-pas-content.gif"}
                             alt="GIF"
                             style={{ width: '75px', height: '75px', objectFit: 'cover' }}
                         />
                     </Col>
-                    <Col md="auto" className="d-flex align-items-center">
+                    <Col className="d-flex align-items-center">
                         <Image
                             src={userData.solde_biero >= 0 ? "/assets/gif/biero-p17-positif.gif" : "/assets/gif/biero-p17-negatif.gif"}
                             alt="GIF"
@@ -35,7 +35,7 @@ export default function BlocSoldes() {
                     </Col>
                 </Row>
                 <Row className="mb-2">
-                    <Col md="auto">
+                    <Col >
                         <span style={{ color: userData.solde_octo >= 0 ? "green" : "red" }}>
                             Octo : {formatter.format(userData.solde_octo)}
                         </span>
@@ -45,7 +45,7 @@ export default function BlocSoldes() {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="auto">
+                    <Col >
                         <span style={{ color: userData.solde_biero >= 0 ? "green" : "red" }}>
                             Biéro : {formatter.format(userData.solde_biero)}
                         </span>
