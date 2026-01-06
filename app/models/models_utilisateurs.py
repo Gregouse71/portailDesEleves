@@ -58,6 +58,7 @@ class Utilisateur(db.Model, UserMixin) :
     email = db.Column(db.String(1000), nullable=False)
     date_de_naissance = db.Column(db.Date(), nullable=True)
     surnom = db.Column(db.String(1000), nullable=True)
+    pronoms = db.Column(db.String(1000), nullable=True)
     ville_origine = db.Column(db.String(1000), nullable=True)
     telephone = db.Column(db.String(100), nullable=True)
     chambre = db.Column(db.String(1000), nullable=True)
@@ -156,195 +157,72 @@ class Utilisateur(db.Model, UserMixin) :
         """
         return f"<Utilisateur {self.nom_utilisateur}>"
     
-    def update(self, **kwargs) :
+    def update(self, data) :
         """
-        Modifie les valeurs d'un utilisateur, puis met a jour la base de donnee.
-        Dans le cas du mdp, hash la chaine de caracteres donnee avant de l'enregistrer
-
-        Les formats a respecter sont listes si apres. Cette doumentation fait autorite
-        quant au format que doit avoir la class utilisateur
-
-        /!\ Sauf exceptions la table utilisateur n'est pas vouee a etre modifiee a la main. 
-        Cette fonction sera utilisee au sein de fonctions bien precises. 
-
-        Les valeurs de la class qui ont "nullable=True" peuvent etre mise a None. 
-        ----------------------
-
-        - nom_utilisateur : str
-            Au format 23nomdefamille. La mise sous ce format et ces regles precises ne sont pas verifiees par cette fonction.
-        - prenom : str
-        - nom : str
-            Contient les tirets, espaces, apostrophes, et accents. Premiere lettre de chaque nom en majscule. Autres caracteres interdits.
+        data : dictionnaire avec les clés suivantes :
         - surnom : str
             Contient les tirets, espaces, apostrophes, et accents. Majuscules ou minuscules. Autres caracteres interdits.
-        - promotion : int
-            La promotion. Un numero de promotion est le nombre forme par le chiffre des dizaines et celui des unites d'une annee.
-            Pour les nouveaux 1A, c'est l'annee de leur integration. Pour les 2A AST c'est l'annee de promo des 2A anciens 1A. 
-            Pour les VS, c'est l'annee de promotion des 3A anciens 2A ou anciens cesuriens. Vaut None pour la DE
         - email : str
             Le mail au format des Mines. Cette verification n'est pas effctuee, un autre fonction existera pour generer le mail
             avec nom + prenom
-        - cycle : str
-            Donne des informations sur le cursus du mineur.
-            Peut etre 'ic', 'ast', 'vs', 'isup', 'ev' ou 'de'.
-        - est_visible : bool
-            True par defaut. Pour rendre invisible un utilisateur sans le supprimer de la base de donnees.
-        - est_vp_sondaj : bool
-            Les utilisateurs ayant ce tag a True peuvent valider et supprimer des sondages.
-        - est_superutilisateur : bool
-            Les superutilisateurs peuvent acceder aux pages d'administration du portail. 
-            Ce tag n'est pas modifiable ici pour des raisons de securite.
-        - mot_de_passe_non_hache: str
-            Le mot de passe non chiffre de l'utilisateur. Sera chiffre par cette fonction.
-        - date_de_naissance: str
-            Au format 'AAAAMMJJ'.
+        - date_de_naissance: datetime
         - ville_origine : str
             Peut contenir tirets, espaces, apostrophes, et accents. Premiere lettre de chaque nom en majscule.
         - telephone : str
             Au format "0612345678" ou "0033612345678" ou "+33612345678". En cas d'extension telephonique, ne verifie pas la validite
         - chambre : str
-        - sports : str
         instruments : str
             Du texte, avec accents et caracteres speciaux autorises mais pas emojis. 
         - publications : liste d'objets Publication
             Liste des publications d'utilisateur
-        
-        ### Pour marrains, fillots et co, aucune correspondance n'est geree par cette fonction. 
-        Cette fonctionnalite ne doit pas etre utilisee, sauf dans un cas bien precis. 
-
-        - marrain_id : int
-            L'id du marrain dans la table des utilisateurs
-        - marrain : Utilisateur
-            Le marrain de l'utilisateur
-        - fillots : liste d'Utilisateurs
-            Les fillots de l'utilisateur
-        - cos : list 
-            La liste des cos de l'utilisateur
-        - co_nom : Utilisateur
-            Le co de l'utilisateur
-
-        - questions_reponses_du_portail : dict
-            Les questions et les reponses au format {question1 : reponse1, question2 : reponse2, ...}
-            Le dictionnaire contient du texte, pas d'emojis ou de caracteres speciaux. 
-        
-        /!\ Ne doivent pas etre utilise hors d'une fonction qui verifie la validite des id
-        
-        - vote_sondaj_du_jour : int
-            1, 2, 3 ou 4 selon le vote de l'utilisateur au sondaj du jour. 
-        - nombre_participations_sondaj : int
-            Sera incremente a chaque vote.
-        - nombre_victoires_sondaj : int
-            Sera incremente a minuit pour chaque utlisateur en fonction du vote qui a gagne.
-        - meilleur_score_2048 : int
-            Sera update a chaque partie ou le reccord est battu.
-        - mot_de_passe : str
-            Est hache puis modifie
         """
-        for key, value in kwargs.items():
-            if key == "nom_utilisateur" :
-                if value != None and verifier_chaine_nom_utilisateur(value):
-                    self.nom_utilisateur = value
-                else :
-                    raise ValueError(f"Non modifie. Le nom d'utilisateur '{value}' est invalide.")
-            elif key == "prenom" :
-                if value != None and verifier_chaine_prenom_nom(value) :
-                    self.prenom = value
-                else :
-                    raise ValueError(f"Non modifie. Le prenom '{value}' est invalide.")
-            elif key == "nom" :
-                if value != None and verifier_chaine_prenom_nom(value) :
-                    self.nom = value
-                else :
-                    raise ValueError(f"Non modifie. Le nom de famille '{value}' est invalide.")
-            elif key == "promotion" : 
-                self.promotion = value # None pour la DE
-            
-            elif key == "email" :
-                if value != None and verifier_chaine_mail(value) :
+        for key in data:
+            value = data[key]
+            if key == "email" :
+                if value is None or verifier_chaine_mail(value) :
                     self.email = value
                 else :
                     raise ValueError(f"Non modifie. Le mail '{value}' est invalide.")
-            elif key=="cycle" :
-                if value in {'ic', 'ast', 'vs', 'isup', 'ev', 'de'} :
-                    self.cycle = value
-                else :
-                    raise ValueError(f"Non modifie. '{value}' doit etre 'ic', 'ast', 'vs', 'isup', 'ev' ou 'de'")
-            elif key=="est_visible" :
-                if isinstance(value, bool) :
-                    self.est_visible = value
-                else :
-                    raise ValueError(f"Non modifie. est_visible doit etre un booleen")
-            elif key=="est_vp_sondaj" :
-                if isinstance(value, bool) :
-                    self.est_vp_sondaj = value
-                else :
-                    raise ValueError(f"Non modifie. est_vp_sondaj doit etre un booleen")
             elif key=="date_de_naissance" :
-                if value==None or valider_chaine_date_naissance(value) :
+                if value is None or valider_chaine_date_naissance(value) :
                     self.date_de_naissance = value
                 else :
                     raise ValueError(f"Non modifie. date_de_naissance doit etre au format 'AAAAMMJJ'. Date donnee : {value}")
             elif key=="surnom" :
-                if value==None or valider_chaine_surnom(value) :
+                if value is None or valider_chaine_texte(value) :
                     self.surnom = value
                 else :
                     raise ValueError(f"Non modifie. Le surnom '{value}' est invalide.")
+            elif key=="pronoms" :
+                if value is None or valider_chaine_texte(value) :
+                    self.pronoms = value
+                else :
+                    raise ValueError(f"Non modifie. Le surnom '{value}' est invalide.")
             elif key=="ville_origine" :
-                if value==None or verifier_chaine_prenom_nom(value) :
+                if value is None or valider_chaine_texte(value) :
                     self.ville_origine = value
                 else :
                     raise ValueError(f"Non modifie. La ville '{value}' est invalide.")
             elif key=="telephone" :
-                if value==None or valider_chaine_telephone(value) :
+                if value is None or valider_chaine_texte(value) :
                     self.telephone = value
                 else :
                     raise ValueError(f"Non modifie. Le format du numero '{value}' n'est pas reconnu.")
             elif key=="chambre" :
-                if value==None or valider_chaines_de_base(value) :
+                if value is None or valider_chaine_texte(value) :
                     self.chambre = value
                 else :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
             elif key=="sports" :
-                if value==None or valider_chaines_de_base(value) :
+                if value is None or valider_chaine_texte(value) :
                     self.sports = value
                 else :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
             elif key=="instruments" :
-                if value==None or valider_instruments(value) :
+                if value is None or valider_instruments(value) :
                     self.instruments = value
                 else :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
-            elif key=="questions_reponses_du_portail" :
-                if value == None or valider_questions_du_portail(value) :
-                    self.questions_reponses_du_portail = value
-            elif key=="vote_sondaj_du_jour" :
-                if value==None or value in {1,2,3,4} :
-                    self.vote_sondaj_du_jour = value
-                else :
-                    raise ValueError("Le vote au sondage du jour doit etre 1, 2, 3 ou 4")
-            elif key=="nombre_participations_sondaj" :
-                if value != None :
-                    self.nombre_participations_sondaj = value
-            elif key=="nombre_victoires_sondaj" :
-                if value != None :
-                    self.nombre_victoires_sondaj = value
-            elif key=="meilleur_score_2048" :
-                if value != None :
-                    self.meilleur_score_2048 = value
-            elif key=="mot_de_passe_non_hache" : 
-                if value != None :
-                    self.mot_de_passe = generate_password_hash(value)
-            elif key == "cos" :
-                if value != None :
-                    self.cos = value
-            elif key == "marrain" :
-                if value != None :
-                    self.marrain = value
-            elif key == "fillots" :
-                if value != None :
-                    self.fillots = value
-            else :
-                raise KeyError(f"L'attribut {key} n'existe pas.")
 
 
     def to_dict(self):
@@ -354,6 +232,7 @@ class Utilisateur(db.Model, UserMixin) :
             "prenom": self.prenom,
             "nom": self.nom,
             "surnom": self.surnom,
+            "pronoms": self.pronoms,
             "promotion": self.promotion,
             "chambre": self.chambre,
             "cycle": self.cycle,

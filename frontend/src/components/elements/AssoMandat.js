@@ -1,9 +1,11 @@
 import { Card, Form, Button, Row, Col } from "react-bootstrap";
-import { useQueryClient } from "@tanstack/react-query";
-import { modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../api/api_associations";
+import Select from "react-select";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ajouterMembre, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../api/api_associations";
 import { useState } from "react";
 import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
+import { chargerUtilisateurs, obtenirListeDesPromos } from "../../api/api_utilisateurs";
 
 export default function AssoMandat({ mandat, asso, canModify }) {
     const queryClient = useQueryClient();
@@ -14,6 +16,17 @@ export default function AssoMandat({ mandat, asso, canModify }) {
     const [idMembreModifier, setIdMembreModifier] = useState(null); // Id du membre à modifier
     const [nouveauRole, setNouveauRole] = useState("");
     const [nouvellePosition, setNouvellePosition] = useState("");
+
+    const [listeNouveauxMembres, setListeNouveauxMembres] = useState([]);
+
+    const [isAjoutMembre, setIsAjoutMembre] = useState(false);
+    const [promoAjoutMembre, setPromoAjoutMembre] = useState(null);
+    const [idAjoutMembre, setIdAjoutMembre] = useState(null);
+
+    const { data: listePromos = [] } = useQuery({
+        queryKey: ['listePromos'],
+        queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
+    });
 
     const handleDelMandat = async () => {
         try {
@@ -84,6 +97,16 @@ export default function AssoMandat({ mandat, asso, canModify }) {
         setIdMembreModifier(null);
     }
 
+    const startAjoutMembre = () => {
+        if (isAjoutMembre) return;
+
+        setIsAjoutMembre(true);
+        if (listePromos.length > 0 && !promoAjoutMembre) {
+            const latestPromo = listePromos[0];
+            handlePromoChange({ value: latestPromo, label: latestPromo });
+        }
+    }
+
     const handleRetirerMembre = async (membreId) => {
         try {
             await retirerMembre(asso.id, mandat.id, membreId);
@@ -93,66 +116,126 @@ export default function AssoMandat({ mandat, asso, canModify }) {
         }
     };
 
+    const handlePromoChange = async (selectedOption) => {
+        setPromoAjoutMembre(selectedOption);
+        setIdAjoutMembre(null); // Reset user selection
+        setListeNouveauxMembres([]); // Reset user list
+
+        if (selectedOption) {
+            try {
+                const listeMembres = await chargerUtilisateurs(selectedOption.value);
+                setListeNouveauxMembres(listeMembres);
+            } catch (erreur) {
+                console.error(erreur);
+            }
+        }
+    }
+
+    const handleAjoutMembre = async () => {
+        if (idAjoutMembre) {
+            try {
+                await ajouterMembre(asso.id, mandat.id, idAjoutMembre.value);
+                setIsAjoutMembre(false);
+                queryClient.invalidateQueries(['asso', asso.id]);
+            } catch (erreur) {
+                console.error(erreur);
+            }
+        }
+    }
+
 
     return (
         <Card key={mandat.id} className="mb-4">
-            <Card.Header>
-                <Row className="align-items-center">
-                    <Col xs={12} md>
-                        {isEditing ? (
-                            <Form className="w-100">
-                                <Row className="align-items-end">
-                                    <Col>
-                                        <Form.Group>
-                                            <Form.Label>Nom</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={editingMandat.nom}
-                                                onChange={(e) => setEditingMandat({ ...editingMandat, nom: e.target.value })}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col>
-                                        <Form.Group>
-                                            <Form.Label>Priorité d'affichage</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                value={editingMandat.position}
-                                                onChange={(e) => setEditingMandat({ ...editingMandat, position: parseInt(e.target.value) || 0 })}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col className="d-flex align-items-end pb-1">
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Mandat actuel"
-                                            checked={editingMandat.actuel}
-                                            onChange={(e) => setEditingMandat({ ...editingMandat, actuel: e.target.checked })}
+            <Card.Header><Row className="align-items-center">
+                <Col xs={12} md>
+                    {isEditing ? (
+                        <Form className="w-100">
+                            <Row className="align-items-end">
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Nom</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={editingMandat.nom}
+                                            onChange={(e) => setEditingMandat({ ...editingMandat, nom: e.target.value })}
                                         />
-                                    </Col>
-                                </Row>
-                            </Form>
-                        ) : (
-                            <Card.Title className="m-0">{mandat.nom}</Card.Title>
-                        )}
-                    </Col>
-                    <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
-                        {isEditing ?
-                            <>
-                                <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
-                                <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
-                            </>
-                            :
-                            <DropdownEditer list={[
-                                {can: canModify, onClick: () => { setEditingMandat(mandat); setIsEditing(true)}, name: "Modifier"},
-                                {can: canModify, onClick: () => handleDelMandat(mandat.id), name: "Supprimer"},
-                            ]}
-                            />
-                        }
-                    </Col>
-                </Row>
-            </Card.Header>
+                                    </Form.Group>
+                                </Col>
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Priorité d'affichage</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            value={editingMandat.position}
+                                            onChange={(e) => setEditingMandat({ ...editingMandat, position: parseInt(e.target.value) || 0 })}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col className="d-flex align-items-end pb-1">
+                                    <Form.Check
+                                        type="checkbox"
+                                        label="Mandat actuel"
+                                        checked={editingMandat.actuel}
+                                        onChange={(e) => setEditingMandat({ ...editingMandat, actuel: e.target.checked })}
+                                    />
+                                </Col>
+                            </Row>
+                        </Form>
+                    ) : (
+                        <Card.Title className="m-0">{mandat.nom}</Card.Title>
+                    )}
+                </Col>
+                <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
+                    {isEditing ?
+                        <>
+                            <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
+                            <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
+                        </>
+                        :
+                        <DropdownEditer list={[
+                            { can: canModify, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
+                            { can: canModify, onClick: () => handleDelMandat(mandat.id), name: "Supprimer" },
+                            { can: true, onClick: startAjoutMembre, name: "Ajouter un membre" },
+                        ]}
+                        />
+                    }
+                </Col>
+            </Row></Card.Header>
             <Card.Body>
+                {isAjoutMembre && (
+                    <Card className="mb-3">
+                        <Card.Body>
+                            <Card.Title>Ajouter un membre</Card.Title>
+                            <div className="w-100 p-2">
+                                <Form.Group className="mb-3 text-start">
+                                    <Form.Label>Promotion</Form.Label>
+                                    <Select
+                                        options={listePromos.map(p => ({ value: p, label: p }))}
+                                        value={promoAjoutMembre}
+                                        onChange={handlePromoChange}
+                                        placeholder="Choisir une promo..."
+                                        menuPortalTarget={document.body}
+                                        styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                    />
+                                </Form.Group>
+                                <Form.Group className="mb-3 text-start">
+                                    <Form.Label>Utilisateur</Form.Label>
+                                    <Select
+                                        options={listeNouveauxMembres.map(u => ({ value: u.id, label: u.nom_utilisateur }))}
+                                        value={idAjoutMembre}
+                                        onChange={setIdAjoutMembre}
+                                        placeholder="Choisir un utilisateur..."
+                                        isDisabled={!promoAjoutMembre || listeNouveauxMembres.length === 0}
+                                        menuPortalTarget={document.body}
+                                        styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                    />
+                                </Form.Group>
+                                <Button variant="primary" onClick={handleAjoutMembre} disabled={!idAjoutMembre}>Ajouter</Button>
+                                <Button variant="secondary" onClick={() => setIsAjoutMembre(false)} className="ms-2">Annuler</Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                )}
                 <div className="member-grid">
                     {[...mandat.membres].sort((a, b) => {
                         if (a.position === null) return 1;

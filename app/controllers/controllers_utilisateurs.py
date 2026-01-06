@@ -193,23 +193,10 @@ def set_user_infos(user_id: int):
         return jsonify({"message": "Pas le droit"}), 401
 
     data = request.get_json()
-    
-    utilisateur.ville_origine = data.get("ville_origine")
-    utilisateur.chambre = data.get("chambre")
-    utilisateur.instruments = data.get("instruments")
-    utilisateur.telephone = data.get("telephone")
-    utilisateur.email = data.get("email")
-    
-    date_de_naissance = data.get("date_de_naissance") 
-    if date_de_naissance:
-        try:
-            utilisateur.date_de_naissance = data.get("date_de_naissance")
-        except ValueError:
-            return jsonify({"message": "Format de date de naissance invalide. Utilisez un format standard."}), 400
-
+    utilisateur.update(data)
     db.session.add(utilisateur)
     db.session.commit()
-    return jsonify({utilisateur.to_dict()}), 200
+    return jsonify(utilisateur.to_dict()), 200
 
 
 @controllers_utilisateurs.route('/supprimer_co/<int:co_id>', methods=['DELETE'])

@@ -232,6 +232,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Pronoms</Form.Label>
+                    <Col sm="10">
+                        <Form.Control type="text" name="pronoms"  value={userInfos.pronoms} onChange={handleChange} />
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Promo</Form.Label>
                     <Col sm="10">
                         <Form.Control value={userInfos.promotion} disabled />

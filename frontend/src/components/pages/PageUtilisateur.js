@@ -56,7 +56,10 @@ function PageUtilisateur() {
                 <Card.Body>
                     <Row>
                         <Col>
-                            <h2>{donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>"{donneesUtilisateur.surnom}"</em>} {donneesUtilisateur.nom}</h2>
+                            <h2>
+                                {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>"{donneesUtilisateur.surnom}"</em>} {donneesUtilisateur.nom}
+                                {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
+                            </h2>
                         </Col>
                     </Row>
                 </Card.Body>

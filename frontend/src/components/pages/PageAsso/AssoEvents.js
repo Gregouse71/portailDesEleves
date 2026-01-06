@@ -284,7 +284,7 @@ export default function AssoEvents({ asso_id }) {
             <h2>Les événements</h2>
             {membreData.autorise && <Button
                 variant="light"
-                onClick={() => setIsNewEvent(true)}
+                onClick={() => setIsNewEvent(!isNewEvent)}
             >
                 <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
             </Button>}

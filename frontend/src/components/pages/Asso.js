@@ -96,6 +96,21 @@ function Asso() {
             </Row>
 
             <div className="bg-light p-3 rounded-bottom">
+                <Row>
+                    <Col md={3} className="text-center text-md-start">
+                        <div style={{ position: "relative", zIndex: 1 }}>
+                            <Image
+                                src={asso.img ? `${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
+                                alt={asso.nom}
+                                className="asso-logo rounded-3"
+                            />
+                        </div>
+                    </Col>
+                    <Col md={9} className="d-flex align-items-center justify-content-center justify-content-md-start mt-3 mt-md-0">
+                        <h2>{asso.nom}</h2>
+                        {membreData.is_membre && <Badge bg="success" className="ms-3">membre</Badge>}
+                    </Col>
+                </Row>
                 <Row className="mt-3">
                     <Col xs={12}>
                         <Nav variant="tabs" className="mb-3" activeKey={activeKey}>

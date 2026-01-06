@@ -22,3 +22,4 @@ dependencies:
   - pyjwt
   - argon2-cffi
   - numpy
+  - python-dateutil

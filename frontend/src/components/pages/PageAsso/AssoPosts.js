@@ -178,17 +178,11 @@ function AssoPosts({ asso_id }) {
                 <h2>Les publications</h2>
                 {membreData.autorise && <Button
                     variant="light"
-                    onClick={() => handleSetIsGestion(!isGestion)}
+                    onClick={() => setIsNewPost(!isNewPost)}
                 >
                     <img src="/assets/icons/plus.svg" alt="ajouter" style={{ filter: "brightness(0) saturate(100%)", transition: "transform 0.2s ease" }} />
                 </Button>}
             </div>
-            {isGestion && !isNewPost && <div className="d-flex gap-2 mb-3">
-                <Button variant="success" onClick={() => setIsNewPost(true)}>
-                    <img src="/assets/icons/plus.svg" alt="Ajouter une publication" />
-                    {" "}Ajouter une publication
-                </Button>
-            </div>}
             <div className="d-flex flex-column gap-3">
 
                 {/* formulaire pour une nouvelle publication */}
