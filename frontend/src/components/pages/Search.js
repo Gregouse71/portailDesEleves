@@ -3,6 +3,7 @@ import { ListGroup, Image } from 'react-bootstrap';
 import { searchUsers } from '../../api/api_utilisateurs';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useQuery } from '@tanstack/react-query';
+import '../../assets/styles/search.scss';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
@@ -14,7 +15,7 @@ export default function Search() {
   });
 
   return (
-    <div>
+    <div className="search-results-container">
       <h1>Résultats de recherche pour "{query}"</h1>
       {searchResults.length > 0 ? (
         <ListGroup>

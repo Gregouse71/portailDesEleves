@@ -1,0 +1,30 @@
+
+.search-results-container {
+    padding: 1rem;
+    border-radius: 0.5rem;
+
+    h1 {
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .list-group-item {
+        background-color: var(--card-bg) !important;
+        border: 1px solid var(--card-border-color);
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s ease-in-out;
+
+        &:hover {
+            background-color: var(--card-hover-bg) !important;
+        }
+
+        p {
+            color: var(--text-color) !important;
+        }
+
+        .text-muted {
+            color: var(--text-color-secondary) !important;
+        }
+    }
+}

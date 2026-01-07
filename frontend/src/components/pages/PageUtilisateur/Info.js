@@ -181,7 +181,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
         {!isGestion ?
             <div className="list-question">
-                <div><b>Promo :</b> {userInfos.promotion}</div>
+                <div><b>Promo :</b> {userInfos.cycle !== "ic" && userInfos.cycle}{userInfos.promotion}</div>
                 <div><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</div>
                 <div><b>Ville d'origine :</b> {userInfos.ville_origine}</div>
                 <div><b>Chambre :</b> {userInfos.chambre}</div>
