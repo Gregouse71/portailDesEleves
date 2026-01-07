@@ -23,7 +23,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
             setNom(asso.nom || "");
         }
     }, [asso]);
-    
+
     useEffect(() => {
         if (!isEditMode) {
             onEditAsso(null); // Reset editing when edit mode is turned off
@@ -88,7 +88,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
             {isEditMode && (
                 <Button
                     className="btn-sm"
-                    variant="primary" 
+                    variant="primary"
                     onClick={(e) => {
                         e.stopPropagation();
                         if (isEditingAsso) {
@@ -96,7 +96,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                         } else {
                             onEditAsso(asso.id);
                         }
-                    }} 
+                    }}
                     style={{ position: 'absolute', zIndex: 1 }}
                 >
                     <img src="/assets/icons/edit.svg" alt="Editer la priorité" />
@@ -108,7 +108,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 className="mt-3 object-fit-contain"
                 src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`}
                 alt={asso.nom}
-                style={{ height: '120px' }}
+                style={{ height: '120px', backgroundColor: "white" }}
             />}
             <Card.Body className="px-2">
                 {!isEditingAsso && <Card.Title>{nom}</Card.Title>}

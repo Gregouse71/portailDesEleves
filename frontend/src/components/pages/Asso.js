@@ -80,14 +80,14 @@ function Asso() {
                     <div className="position-relative">
                         <div className="asso-banner rounded-top" style={bannerStyle}>
                             {membreData.autorise && (
-                                                                 <>
-                                                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
-                                                                        <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
-                                                                    </Button>
-                                                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
-                                                                        <img src="/assets/icons/upload_photo.svg" alt="Changer la bannière" style={{ width: '24px', height: '24px' }} /> Changer la bannière
-                                                                    </Button>
-                                                                </>                            )}
+                                <>
+                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
+                                        <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
+                                    </Button>
+                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
+                                        <img src="/assets/icons/upload_photo.svg" alt="Changer la bannière" style={{ width: '24px', height: '24px' }} /> Changer la bannière
+                                    </Button>
+                                </>)}
                         </div>
                     </div>
                 </Col>
@@ -101,6 +101,7 @@ function Asso() {
                                 src={asso.img ? `${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
                                 alt={asso.nom}
                                 className="asso-logo rounded-3"
+                                style={{ backgroundColor: "white" }}
                             />
                         </div>
                     </Col>
