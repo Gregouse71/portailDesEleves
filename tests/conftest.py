@@ -147,3 +147,6 @@ def client_factory_vp_sondaj(client_factory):
     def _create_client_vp_sondaj():
         vp_sondaj = client_factory()
         response = vp_sondaj.post('/api/login/connexion', json={'username': 'vp_sondaj', 'password': '1234'})
+        assert response.status_code == 200
+        return vp_sondaj
+    return _create_client_vp_sondaj
