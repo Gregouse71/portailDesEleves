@@ -62,18 +62,23 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                         </div>
                     </Form>
                 ) : (
-                    <>
-                        <div className="d-flex align-items-center gap-3 w-100">
-                            <div className="d-flex align-items-center gap-2 flex-grow-1">
-                                <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
-                                    <Image
-                                        src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''}
-                                        alt={`${comment.auteur.nom_utilisateur}`}
-                                        roundedCircle width={50} height={50} style={{ objectFit: 'cover' }}
-                                    />
-                                </Link>
-                                <p className="mb-0 text-break">{comment.contenu}</p>
-                            </div>
+                    <div className="d-flex align-items-center gap-3 w-100 justify-content-between">
+                        <div className="d-flex align-items-center gap-2 flex-grow-1">
+                            <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
+                                <Image
+                                    src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''}
+                                    alt={`${comment.auteur.nom_utilisateur}`}
+                                    roundedCircle width={50} height={50} style={{ objectFit: 'cover' }}
+                                />
+                            </Link>
+                            <p className="mb-0 text-break">{comment.contenu}</p>
+                        </div>
+                        <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                            <Button variant="primary" size="sm" onClick={() => handleLike(comment.id)} className="d-flex align-items-center gap-1 p-1 px-2">
+                                {comment.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
+                                <span>{comment.likes.length}</span>
+                            </Button>
+                            <small className="text-muted text-nowrap">{formatPublicationDate(comment.date)}</small>
                             {canDelete &&
                                 <DropdownEditer list={[
                                     { can: comment.id_auteur === userData.id, onClick: handleEdit, name: "Modifier" },
@@ -82,16 +87,7 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                                 />
                             }
                         </div>
-                        <div className="d-flex justify-content-between align-items-center mt-2">
-                            <div className="d-flex gap-2">
-                                <Button variant="primary" size="sm" onClick={() => handleLike(comment.id)}>
-                                    {comment.likes.includes(userData.id) ? <img src="/assets/icons/heart_plain.svg" alt="Je n'aime plus" /> : <img src="/assets/icons/heart.svg" alt="J'aime" />}
-                                    {comment.likes.length}
-                                </Button>
-                            </div>
-                            <small className="text-muted">Publié le : {formatPublicationDate(comment.date)}</small>
-                        </div>
-                    </>
+                    </div>
                 )}
             </Card.Body>
         </Card>

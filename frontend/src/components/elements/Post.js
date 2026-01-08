@@ -315,16 +315,18 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 />}
                             </div>
                         </div>
-                        {post.fichier_joint && post.association ? <Row>
-                            <Col md="9">
-                                <RichTextDisplay content={post.contenu} />
-                            </Col>
-                            <Col md="3" className="text-center">
-                                <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/publications/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
-                                    <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/thumbnails/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
-                                </a>
-                            </Col>
-                        </Row> : <RichTextDisplay content={post.contenu} />}
+                        <div className="post-content-container">
+                            {post.fichier_joint && post.association ? <Row>
+                                <Col md="9">
+                                    <RichTextDisplay content={post.contenu} />
+                                </Col>
+                                <Col md="3" className="text-center">
+                                    <a href={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/publications/${post.fichier_joint}`} target="_blank" rel="noopener noreferrer">
+                                        <Image src={`${UPLOAD_BASE_URL}/associations/${post.association.nom_dossier}/thumbnails/${post.miniature ? post.miniature : post.fichier_joint}`} fluid style={{ cursor: 'pointer' }} />
+                                    </a>
+                                </Col>
+                            </Row> : <RichTextDisplay content={post.contenu} />}
+                        </div>
                     </div>
                     <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mt-auto gap-2">
                         <div className="d-flex gap-2 mt-2">

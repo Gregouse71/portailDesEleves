@@ -24,3 +24,28 @@ $tag-color-dark: #8e44ad;  // A vibrant purple
         background-color: $tag-color-dark;
     }
 }
+
+.post-content-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    padding-right: 5px; // Space for scrollbar if needed
+
+    /* Custom scrollbar for better appearance */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--secondary-color);
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-color);
+    }
+}
