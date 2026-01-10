@@ -6,3 +6,4 @@ from app.models.models_sondages import *
 from app.models.models_divers import *
 from app.models.models_chat import Message
 from app.models.models_elections import Election, ElectionVote
+from app.models.models_jeux import JeuxPartie

@@ -25,6 +25,7 @@ import Palums from "./components/pages/Palums";
 import NouveauMDP from "./components/NouveauMDP";
 import MDPoublie from "./components/MDPoublie";
 import ProtectedRoute from "./Protected";
+import Jeux2048 from "./components/pages/Jeux/2048";
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -68,6 +69,9 @@ export default function App() {
             </Route>
             <Route path="utilisateur">
               <Route path=":id/*" element={<PageUtilisateur />} />
+            </Route>
+            <Route path="jeux/*">
+              <Route path="2048" element={<Jeux2048 />} />
             </Route>
             <Route path="search" element={<Search />} />
             <Route path="vendomes" element={<Vendomes />} />

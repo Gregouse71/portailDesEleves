@@ -1,0 +1,339 @@
+// frontend/src/assets/styles/jeux2048.scss
+
+.jeux-2048-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.jeux-2048-board {
+  border-radius: 6px;
+  width: 90%;
+  max-width: 500px;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 10px;
+  padding: 10px;
+  margin-top: 20px;
+  touch-action: none; /* Prevent scrolling when swiping on the board */
+  box-sizing: border-box;
+  container-type: inline-size;
+}
+
+@supports not (aspect-ratio: 1 / 1) {
+  .jeux-2048-board {
+    height: 500px;
+  }
+}
+
+@media (max-width: 450px) {
+  .jeux-2048-board {
+    gap: 8px;
+    padding: 8px;
+  }
+}
+
+.jeux-2048-cell {
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 25px; /* Fallback */
+  font-size: 7cqi; /* Dynamic size */
+  font-weight: bold;
+  transition: 0.3s ease-in-out;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// Light theme styles
+[data-theme='light'] {
+  .jeux-2048-board {
+    background-color: #bbada0;
+  }
+
+  .jeux-2048-cell {
+    background-color: rgba(238, 228, 218, 0.35);
+    color: #776e65;
+  }
+
+  .tile-2 {
+    background-color: #eee4da;
+    color: #776e65;
+  }
+
+  .tile-4 {
+    background-color: #ede0c8;
+    color: #776e65;
+  }
+
+  .tile-8 {
+    background-color: #f2b179;
+    color: #f9f6f2;
+  }
+
+  .tile-16 {
+    background-color: #f59563;
+    color: #f9f6f2;
+  }
+
+  .tile-32 {
+    background-color: #f67c5f;
+    color: #f9f6f2;
+  }
+
+  .tile-64 {
+    background-color: #f65e3b;
+    color: #f9f6f2;
+  }
+
+  .tile-128 {
+    background-color: #edcf72;
+    color: #f9f6f2;
+  }
+
+  .tile-256 {
+    background-color: #edcc61;
+    color: #f9f6f2;
+  }
+
+  .tile-512 {
+    background-color: #edc850;
+    color: #f9f6f2;
+  }
+
+  .tile-1024 {
+    background-color: #edc53f;
+    color: #f9f6f2;
+  }
+
+  .tile-2048 {
+    background-color: #edc22e;
+    color: #f9f6f2;
+  }
+}
+
+// Dark theme styles
+[data-theme='dark'] {
+  .jeux-2048-board {
+    background-color: #424242; // A darker board background
+  }
+
+  .jeux-2048-cell {
+    background-color: rgba(238, 228, 218, 0.1); // A more transparent cell for dark mode
+    color: #f9f6f2; // Lighter text
+  }
+
+  .tile-2 {
+    background-color: #5a5a5a;
+    color: #f9f6f2;
+  }
+
+  .tile-4 {
+    background-color: #807979;
+    color: #f9f6f2;
+  }
+
+  .tile-8 {
+    background-color: #b58863;
+    color: #f9f6f2;
+  }
+
+  .tile-16 {
+    background-color: #c47c54;
+    color: #f9f6f2;
+  }
+
+  .tile-32 {
+    background-color: #d16b47;
+    color: #f9f6f2;
+  }
+
+  .tile-64 {
+    background-color: #dc583a;
+    color: #f9f6f2;
+  }
+
+  .tile-128 {
+    background-color: #e5b854;
+    color: #f9f6f2
+  }
+
+  .tile-256 {
+    background-color: #e5b244;
+    color: #f9f6f2;
+  }
+
+  .tile-512 {
+    background-color: #e5a933;
+    color: #f9f6f2;
+  }
+
+  .tile-1024 {
+    background-color: #e5a222;
+    color: #f9f6f2;
+  }
+
+  .tile-2048 {
+    background-color: #e59a11;
+    color: #f9f6f2;
+  }
+}
+
+/* Leaderboard Styles */
+
+.leaderboard-container {
+  width: 100%;
+  max-width: 100%; /* Allow it to fill the column */
+  margin-top: 0; /* Remove top margin for side-by-side layout */
+}
+
+.leaderboard-card {
+  border: 1px solid var(--card-border-color); /* Simpler border */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: none; /* Remove heavy shadow */
+}
+
+.leaderboard-header {
+  background-color: var(--card-header-bg); /* Use theme header bg instead of primary */
+  color: var(--text-color);
+  font-weight: bold;
+  text-align: center;
+  padding: 0.75rem; /* Reduced padding */
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--card-border-color);
+}
+
+.leaderboard-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem; /* Reduced padding for thinner lines */
+  border-bottom: 1px solid var(--card-border-color);
+  transition: background-color 0.2s;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--card-hover-bg);
+  }
+}
+
+
+
+.leaderboard-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* Smaller rank circle */
+  height: 24px;
+  border-radius: 50%;
+  font-weight: bold;
+  margin-right: 10px;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  
+  &.rank-1 { background-color: #FFD700; color: #fff; }
+  &.rank-2 { background-color: #C0C0C0; color: #fff; }
+  &.rank-3 { background-color: #CD7F32; color: #fff; }
+  &.rank-other { background-color: var(--secondary-color); color: #fff; }
+}
+
+
+
+.leaderboard-user-info {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.leaderboard-avatar {
+  width: 30px; /* Smaller avatar */
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 1px solid var(--card-border-color);
+}
+
+.leaderboard-name {
+  font-weight: normal; /* Less bold */
+  text-decoration: none;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+
+  &:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+}
+
+.leaderboard-score {
+  font-weight: bold;
+  color: var(--text-color); /* Neutral color for score */
+  margin-left: 10px;
+  font-size: 1rem;
+}
+
+/* Score Board Styles */
+.score-container {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.score-box {
+  background-color: var(--card-bg);
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-align: center;
+  min-width: 100px;
+  border: 1px solid var(--card-border-color);
+  box-shadow: 0 2px 4px var(--shadow-color);
+  
+  .score-label {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  
+  .score-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-color);
+    line-height: 1;
+  }
+}
+
+[data-theme='light'] {
+    .score-box {
+        background-color: #bbada0;
+        border: none;
+        
+        .score-label {
+            color: #eee4da;
+        }
+        
+        .score-value {
+            color: #fff;
+        }
+    }
+}

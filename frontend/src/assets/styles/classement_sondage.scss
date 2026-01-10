@@ -1,94 +1,24 @@
 // Fichier SCSS pour ClassementSondage
 
 // Variables de couleur locales pour le thème clair
-$rank-gold-light: #FFD700;
-$rank-silver-light: #C0C0C0;
-$rank-bronze-light: #CD7F32;
-
-$header-bg-success-light: #28a745;
-$header-bg-danger-light: #dc3545;
-$header-bg-info-light: #17a2b8;
-$header-text-color-light: #fff;
 $danger-color-light: #dc3545;
 
-
 // Variables de couleur locales pour le thème sombre
-$rank-gold-dark: #b89c00;
-$rank-silver-dark: #8b8b8b;
-$rank-bronze-dark: #8b5b29;
-
-$header-bg-success-dark: #218838;
-$header-bg-danger-dark: #c0392b;
-$header-bg-info-dark: #0d6efd;
-$header-text-color-dark: #fff;
 $danger-color-dark: #c0392b;
 
-
-// Classes pour les en-têtes
-.classement-header-success {
-    background-color: $header-bg-success-light;
-    color: $header-text-color-light;
-}
-.classement-header-danger {
-    background-color: $header-bg-danger-light;
-    color: $header-text-color-light;
-}
-.classement-header-info {
-    background-color: $header-bg-info-light;
-    color: $header-text-color-light;
-}
-
-// Classes pour les couleurs de rang
-.rank-gold { background-color: $rank-gold-light; font-weight: bold; color: var(--header-text); }
-.rank-silver { background-color: $rank-silver-light; font-weight: bold; color: var(--header-text); }
-.rank-bronze { background-color: $rank-bronze-light; font-weight: bold; color: var(--header-text); }
-
-// Classe pour le fond "light"
+// Classe pour le fond "light" (Used in summary card)
 .classement-bg-light {
     background-color: var(--global-light-gray);
     box-shadow: 0 .125rem .25rem var(--shadow-color);
 }
 
-// Classes pour les couleurs de texte
+// Classes pour les couleurs de texte (Used in summary card)
 .classement-text-primary { color: var(--primary-color); }
 .classement-text-success { color: var(--success-color); }
 .classement-text-danger { color: $danger-color-light; }
 .classement-text-dark { color: var(--text-color); }
-.classement-link-dark,
-.classement-link-dark:visited,
-.classement-link-dark:active {
-    color: var(--text-color) !important;
-    &:hover {
-        color: var(--primary-color) !important;
-    }
-}
-
-// Theme list-group-items inside the classement cards
-.card .list-group-item {
-    background-color: var(--card-bg);
-    border-color: var(--card-border-color);
-    color: var(--text-color); // Ensure text color is inherited here
-}
-
 
 // Styles pour le thème sombre
 [data-theme='dark'] {
-    .classement-header-success {
-        background-color: $header-bg-success-dark;
-        color: $header-text-color-dark;
-    }
-    .classement-header-danger {
-        background-color: $header-bg-danger-dark;
-        color: $header-text-color-dark;
-    }
-    .classement-header-info {
-        background-color: $header-bg-info-dark;
-        color: $header-text-color-dark;
-    }
-
-    .rank-gold { background-color: $rank-gold-dark; }
-    .rank-silver { background-color: $rank-silver-dark; }
-    .rank-bronze { background-color: $rank-bronze-dark; }
-
     .classement-text-danger { color: $danger-color-dark; }
 }
