@@ -192,9 +192,9 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                             <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
                         </>
                         :
-                        <DropdownEditer list={[
-                            { can: canModify, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
-                            { can: canModify, onClick: () => handleDelMandat(mandat.id), name: "Supprimer" },
+                        canModify && <DropdownEditer list={[
+                            { can: true, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
+                            { can: true, onClick: () => handleDelMandat(mandat.id), name: "Supprimer" },
                             { can: true, onClick: startAjoutMembre, name: "Ajouter un membre" },
                         ]}
                         />
