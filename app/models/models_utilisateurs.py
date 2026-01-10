@@ -87,6 +87,9 @@ class Utilisateur(db.Model, UserMixin) :
     # Liste des assos actuelles
     associations = db.relationship('AssociationMembre', back_populates='utilisateur')
     votes_elections = db.relationship('ElectionVote', back_populates='utilisateur')
+    
+    # Parties pour les jeux
+    parties = db.relationship('JeuxPartie', back_populates='utilisateur')
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
@@ -118,15 +121,15 @@ class Utilisateur(db.Model, UserMixin) :
         Cree un nouvel utilisateur
         cycle doit etre "ic", "ast", "isup", "vs", "ev" ou "de" # pour matmaz
         """
-        if verifier_chaine_nom_utilisateur(nom_utilisateur) :
+        if valider_chaine_texte(nom_utilisateur) :
             self.nom_utilisateur = nom_utilisateur
         else :
             raise ValueError(f"Nom d'utilisateur invalide : {nom_utilisateur}")
-        if verifier_chaine_prenom_nom(prenom) : 
+        if valider_chaine_texte(prenom) : 
             self.prenom = prenom
         else :
             raise ValueError(f"Prenom invalide : {prenom}")
-        if verifier_chaine_prenom_nom(nom) :
+        if valider_chaine_texte(nom) :
             self.nom = nom
         else :
             raise ValueError(f"Nom de famille invalide : {nom}")
@@ -253,5 +256,6 @@ class Utilisateur(db.Model, UserMixin) :
             "score_global_div": self.score_global_div,
             "nombre_votes": self.nombre_votes,
             "solde_octo": self.solde_octo,
-            "solde_biero": self.solde_biero
+            "solde_biero": self.solde_biero,
+            "meilleur_score_2048": self.meilleur_score_2048
         }

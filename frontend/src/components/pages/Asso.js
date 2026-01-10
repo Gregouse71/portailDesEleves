@@ -1,13 +1,12 @@
-import { useState } from 'react';
 import '../../assets/styles/asso.scss';
 import { chargerAsso, estUtilisateurDansAsso, ajouterContenu, changerPhoto } from './../../api/api_associations';
 import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
-import { Link, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
-import { Container, Row, Col, Nav, Tab, Image, Button, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Nav, Image, Button, Badge } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 

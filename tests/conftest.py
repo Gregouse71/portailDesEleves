@@ -1,8 +1,7 @@
 import pytest
 
 from app import create_app, db
-from app.models import Utilisateur, Sondage, VoteSondage, GlobalVariable
-from app.services.services_sondages import proposer_sondage
+from app.models import Utilisateur, Sondage, GlobalVariable
 from config import Config
 
 @pytest.fixture(scope='class')

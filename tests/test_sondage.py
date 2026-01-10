@@ -1,8 +1,5 @@
-import pytest
-from app.services.services_sondages import sondage_suivant
-from app.models import Utilisateur, Sondage, VoteSondage
+from app.models import Sondage, VoteSondage
 from app.services.services_global import get_global_var
-from flask_login import current_user
 
 class TestSondages:
     def test_service_proposer_sondage(app, db_sondages_full):
@@ -26,7 +23,7 @@ class TestSondages:
         with client_factory_admin() as client_admin:
             r = client_admin.post(f'/api/sondages/route_valider_sondage/{sondage.id}')
             assert r.status_code == 200
-            r = client_admin.post(f'/api/sondages/sondage_suivant')
+            r = client_admin.post('/api/sondages/sondage_suivant')
             assert r.status_code == 200
             assert get_global_var("id_sondage_du_jour")
             r = client_admin.get('/api/sondages/sondage_du_jour')
@@ -46,3 +43,7 @@ class TestSondages:
             test_scores_client(client_admin, is_gagnant=True)
         with client_factory_user_lose() as client_user_lose:
            test_scores_client(client_user_lose, is_gagnant=False)
+
+    # Juste pour vérifier que les tests sont bien faits (oui je suis parano)
+    # def test_fail(app):
+    #     assert False

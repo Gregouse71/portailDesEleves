@@ -1,74 +1,18 @@
-import { Container, Row, Col, Card, ListGroup } from "react-bootstrap";
-import { Link } from 'react-router-dom';
+import { Container, Row, Col, Card } from "react-bootstrap";
 import { obtenirScoresSondages } from "../../../api/api_sondages";
 import { useQuery } from "@tanstack/react-query";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { useLayout } from "../../../layouts/Layout";
 import '../../../assets/styles/classement_sondage.scss';
-
-const RANK_CLASSES = ['rank-gold', 'rank-silver', 'rank-bronze'];
+import Leaderboard from "../../elements/Leaderboard";
 
 const RECENT_FORMULA = 'S_r = \\sum_{i=1}^N w_i V_i \\quad \\text{où } w_i = e^{-\\lambda t_i} \\quad \\text{et } V_i = \\begin{cases} 1 \\quad \\text{si le vote est gagnant}\\\\ -1 \\quad \\text{sinon} \\end{cases}';
 const GLOBAL_FORMULA = 'S_g = \\bar{X} \\pm z_\\alpha \\sqrt{\\frac{1 - \\bar{X}^2}{N}} \\quad \\text{où } \\begin{cases}\\bar{X} = \\frac{1}{N} \\sum_{i=1}^N V_i\\\\z_\\alpha = 1.96\\end{cases}';
 
-function RankingList({ title, data, scoreKey, isNegative = false, isVotes = false }) {
-    const headerClass = isNegative ? 'classement-header-danger' : isVotes ? 'classement-header-info' : 'classement-header-success';
-    return (
-        <Card className="mb-4 h-100">
-            <Card.Header
-                as="h5"
-                className={`text-center fw-bold ${headerClass}`}
-            >
-                {title}
-            </Card.Header>
-            <ListGroup variant="flush">
-                {data.map((user, index) => {
-                    const rank = index + 1;
-                    const score = user[scoreKey] !== undefined && user[scoreKey] !== null
-                        ? (isVotes ? user[scoreKey] : user[scoreKey].toFixed())
-                        : "0";
-
-                    const rankClass = index < 3 ? RANK_CLASSES[index] : '';
-
-                    return (
-                        <ListGroup.Item
-                            key={user.nom_utilisateur}
-                            className="d-flex justify-content-between align-items-center"
-                        >
-                            <Row className="w-100 align-items-center mx-0">
-                                <Col xs={7} className="d-flex align-items-center px-0" >
-                                    <span style={{ width: '30px', textAlign: 'left', marginRight: '10px' }}>
-                                        <span className={rankClass}>
-                                            #{rank}
-                                        </span>
-                                    </span>
-                                    <Link
-                                        to={`/utilisateur/${user.id}`}
-                                        className="text-decoration-none classement-link-dark"
-                                    >
-                                        <strong>{user.prenom} {user.nom}</strong>
-                                    </Link>
-                                </Col>
-
-                                <Col xs={5} className="text-end px-0">
-                                    <span>
-                                        {score} {isVotes ? 'votes' : ''}
-                                    </span>
-                                </Col>
-                            </Row>
-                        </ListGroup.Item>
-                    );
-                })}
-            </ListGroup>
-        </Card>
-    );
-}
-
-
 export default function ClassementSondage() {
     const { userData } = useLayout();
-    const { data: scores = { recent: [[], []], global: [[], []] } } = useQuery({
+    const { data: scores = { recent: [[], []], global: [[], []] }, isLoading } = useQuery({
         queryKey: ['scoresSondages'],
         queryFn: obtenirScoresSondages,
     });
@@ -80,6 +24,9 @@ export default function ClassementSondage() {
     const recentScore = mon_score_recent ? mon_score_recent.toFixed(3) : "0.000";
     const globalScoreCon = mon_score_global && mon_score_global[0] ? mon_score_global[0].toFixed(3) : "0.000";
     const globalScoreDiv = mon_score_global && mon_score_global[1] ? mon_score_global[1].toFixed(3) : "0.000";
+
+    const formatFloatScore = (s) => s !== undefined && s !== null ? s.toFixed() : "0";
+    const formatIntScore = (s) => s !== undefined && s !== null ? `${s} votes` : "0 votes";
 
     return (
         <Container className="mt-4">
@@ -109,11 +56,11 @@ export default function ClassementSondage() {
             <p className="text-muted">Calculé avec de coefficients en exponentielle décroissante sur les votes par date :</p>
             <BlockMath math={RECENT_FORMULA} />
             <Row>
-                <Col md={6}>
-                    <RankingList title="Top convergent recent" data={recent[0]} scoreKey="score_recent" />
+                <Col md={6} className="mb-4">
+                    <Leaderboard title="Top convergent recent" data={recent[0]} scoreKey="score_recent" formatScore={formatFloatScore} isLoading={isLoading} />
                 </Col>
-                <Col md={6}>
-                    <RankingList title="Top divergent recent" data={recent[1]} scoreKey="score_recent" isNegative={true} />
+                <Col md={6} className="mb-4">
+                    <Leaderboard title="Top divergent recent" data={recent[1]} scoreKey="score_recent" formatScore={formatFloatScore} isLoading={isLoading} />
                 </Col>
             </Row>
 
@@ -121,11 +68,11 @@ export default function ClassementSondage() {
             <p className="text-muted">Calculé grâce à l'intervalle de confiance à 95% d'une gaussienne.</p>
             <BlockMath math={GLOBAL_FORMULA} />
             <Row>
-                <Col md={6}>
-                    <RankingList title="Top convegent global" data={globalScores[0]} scoreKey="score_global_con" />
+                <Col md={6} className="mb-4">
+                    <Leaderboard title="Top convegent global" data={globalScores[0]} scoreKey="score_global_con" formatScore={formatFloatScore} isLoading={isLoading} />
                 </Col>
-                <Col md={6}>
-                    <RankingList title="Top divergent" data={globalScores[1]} scoreKey="score_global_div" isNegative={true} />
+                <Col md={6} className="mb-4">
+                    <Leaderboard title="Top divergent" data={globalScores[1]} scoreKey="score_global_div" formatScore={formatFloatScore} isLoading={isLoading} />
                 </Col>
             </Row>
 
@@ -134,8 +81,8 @@ export default function ClassementSondage() {
                     <h2 className="mt-5 mb-3">Classement des participations</h2>
                     <p className="text-muted">Classement basé sur le nombre total de votes effectués.</p>
                     <Row className="justify-content-center">
-                        <Col md={6} lg={4}>
-                            <RankingList title="Top participants" data={max_votes} scoreKey="nombre_votes" isVotes={true} />
+                        <Col md={6} className="mb-4">
+                            <Leaderboard title="Top participants" data={max_votes} scoreKey="nombre_votes" formatScore={formatIntScore} isLoading={isLoading} />
                         </Col>
                     </Row>
                 </>

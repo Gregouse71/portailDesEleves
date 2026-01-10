@@ -47,19 +47,19 @@ export default function Header() {
           <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
             <NavDropdown title="Menu" id="basic-nav-dropdown">
               <NavDropdown.Item onClick={() => navigate("/")}>Accueil</NavDropdown.Item>
-              <NavDropdown.Item onClick={() => navigate("/assos")}>Assos</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => navigate("/assos")}>Associations</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/assos/planning")}>Planning associatif</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
-            </NavDropdown>
-
-            <NavDropdown title="Services" id="services-nav-dropdown">
+              <NavDropdown.Divider />
               <NavDropdown.Item onClick={() => navigate("/vendomes")}>Vendômes</NavDropdown.Item>
               <NavDropdown.Item onClick={() => navigate("/palums")}>Palums</NavDropdown.Item>
               <NavDropdown.Item href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</NavDropdown.Item>
               <NavDropdown.Item href="https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/" target="_blank" rel="noopener noreferrer">Réservation véhicule des Mines</NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item onClick={() => navigate("/jeux/2048")}>2048</NavDropdown.Item>
             </NavDropdown>
 
-            <Button variant="danger" size="sm" href="mailto:portail@kataevskiy.com">Signaler un bug</Button>
+            <Button variant="danger" size="sm" href="https://discord.gg/3MtV8cgTRu">Signaler un bug</Button>
 
             <div className="d-flex flex-column flex-md-row gap-2">
               {(octoPermission || bieroPermission) && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
