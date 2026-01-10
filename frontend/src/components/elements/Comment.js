@@ -47,7 +47,7 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
     const canDelete = userData.is_superuser || isMembreAsso || comment.id_auteur === userData.id;
 
     return (
-        <Card className="mt-3">
+        <Card className="mt-3 comment-content-container">
             <Card.Body>
                 {isEditing ? (
                     <Form>
@@ -62,7 +62,7 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                         </div>
                     </Form>
                 ) : (
-                    <div className="d-flex align-items-center gap-3 w-100 justify-content-between">
+                    <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-md-3 w-100 justify-content-between">
                         <div className="d-flex align-items-center gap-2 flex-grow-1">
                             <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
                                 <Image

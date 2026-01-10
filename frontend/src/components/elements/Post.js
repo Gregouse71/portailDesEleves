@@ -315,7 +315,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 />}
                             </div>
                         </div>
-                        <div className="post-content-container">
+                        <div className="post content-container">
                             {post.fichier_joint && post.association ? <Row>
                                 <Col md="9">
                                     <RichTextDisplay content={post.contenu} />
@@ -340,8 +340,9 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                         </div>
                         <small className="text-muted">Publié le : {formatPublicationDate(post.date_publication)}</small>
                     </div>
-
-                    {post.is_commentable && <CommentSection post={post} userData={userData} isGestion={isModifying} showNewCommentForm={showNewCommentForm} setShowNewCommentForm={setShowNewCommentForm} />}
+                    <div className="comments content-container">
+                        {post.is_commentable && <CommentSection post={post} userData={userData} isGestion={isModifying} showNewCommentForm={showNewCommentForm} setShowNewCommentForm={setShowNewCommentForm} />}
+                    </div>
                 </>}
         </Card.Body>
     </Card>

@@ -1,7 +1,7 @@
 // Styles for the Post component
 
 $tag-color-light: #16a085; // A vibrant green/teal
-$tag-color-dark: #8e44ad;  // A vibrant purple
+$tag-color-dark: #8e44ad; // A vibrant purple
 
 .post-title-link,
 .post-title-link:visited,
@@ -25,8 +25,7 @@ $tag-color-dark: #8e44ad;  // A vibrant purple
     }
 }
 
-.post-content-container {
-    max-height: 300px;
+.content-container {
     overflow-y: auto;
     margin-bottom: 1rem;
     padding-right: 5px; // Space for scrollbar if needed
@@ -48,4 +47,12 @@ $tag-color-dark: #8e44ad;  // A vibrant purple
     &::-webkit-scrollbar-thumb:hover {
         background: var(--primary-color);
     }
+}
+
+.post {
+    max-height: 300px;
+}
+
+.comments {
+    max-height: 200px;
 }
