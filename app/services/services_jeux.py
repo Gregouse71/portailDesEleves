@@ -35,6 +35,8 @@ def faire_un_coup(s: str, id: int, data: dict):
     if partie is None:
         return None
     if partie.jeu == "2048" and s == partie.jeu:
+        if data.get("score") != partie.score:
+            return partie.to_dict()
         partie = coup_2048(partie, data)
         if partie.is_game_over():
             partie.terminee = True

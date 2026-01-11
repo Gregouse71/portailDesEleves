@@ -47,7 +47,7 @@ export default function Jeux2048() {
     const moveMutation = useMutation({
         mutationFn: async (direction) => {
             if (partie?.jeu !== JEU || partie?.terminee) return;
-            const newSate = await faireUnCoup({ coup: direction }, JEU);
+            const newSate = await faireUnCoup({ coup: direction, score: partie?.score }, JEU);
             return newSate
         },
         onSuccess: (newState) => {

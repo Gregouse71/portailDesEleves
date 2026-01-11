@@ -43,6 +43,17 @@ class TestJeux:
 
             response2 = client.put("/api/jeux/partie/2048", json={"coup": "invalide"})
             assert response.json == response2.json
+    
+    def test_2048_synchronisation(app, db_with_users, client_factory_user_win):
+        """
+        Test d'un mouvement invalide
+        """
+        with client_factory_user_win() as client:
+            response = client.post("/api/jeux/partie", json={"jeu": "2048"})
+            response = client.get("/api/jeux/partie/2048")
+
+            response2 = client.put("/api/jeux/partie/2048", json={"coup": "haut", "score": 30})
+            assert response.json == response2.json
 
     def test_2048_persistence(app, db_with_users, client_factory_user_win):
         """
