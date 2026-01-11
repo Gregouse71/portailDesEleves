@@ -127,16 +127,16 @@ def _filtrer_par_prochains_jours(nb_jours: int):
 
     # 1. Événements ponctuels
     evenements = Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == False,
+        not Evenement.evenement_masque,
+        not Evenement.evenement_periodique,
         Evenement.date_de_debut >= datetime.combine(today, time.min),
         Evenement.date_de_debut < datetime.combine(end_date, time.min)
     ).all()
 
     # 2. Événements périodiques
     evenements_periodiques_db = Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == True
+        not Evenement.evenement_masque,
+        Evenement.evenement_periodique
     ).all()
 
     evenements_periodiques_etendus = []
@@ -177,14 +177,14 @@ def _filtrer_par_jour(date_filtre: datetime.date, include_periodiques: bool):
     """ Récupère les événements d'un jour précis """
     jour_semaine = _jour_de_semaine(date_filtre.strftime("%Y%m%d"))
     evenements = Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == False,
+        not Evenement.evenement_masque,
+        not Evenement.evenement_periodique,
         db.cast(Evenement.date_de_debut, db.Date) == date_filtre
     ).all()
     if include_periodiques:
         evenements_periodiques = Evenement.query.filter(
-            Evenement.evenement_masque == False,
-            Evenement.evenement_periodique == True,
+            not Evenement.evenement_masque,
+            Evenement.evenement_periodique,
             Evenement.jours_de_la_semaine.contains([jour_semaine])
         ).all()
         evenements_periodiques = [evt for evt in evenements_periodiques if date_filtre.strftime(
@@ -200,16 +200,16 @@ def _filtrer_par_semaine():
     lundi = now - timedelta(days=now.weekday())
     dimanche = lundi + timedelta(days=6)
     evenements = Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == False,
+        not Evenement.evenement_masque,
+        not Evenement.evenement_periodique,
         Evenement.date_de_debut.between(lundi, dimanche)
     ).all()
     dates_semaine = [(lundi + timedelta(days=i)).strftime("%Y%m%d")
                      for i in range(7)]
     jours_semaine = [_jour_de_semaine(date) for date in dates_semaine]
     evenements_periodiques = Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == True
+        not Evenement.evenement_masque,
+        Evenement.evenement_periodique
     ).all()
     evenements_periodiques = [
         evt for evt in evenements_periodiques
@@ -222,15 +222,15 @@ def _filtrer_par_semaine():
 def _filtrer_par_mois(year_month: datetime.date, include_periodiques: bool):
     """ Récupère tous les événements d'un mois donné """
     evenements = Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == False,
+        not Evenement.evenement_masque,
+        not Evenement.evenement_periodique,
         db.extract('year', Evenement.date_de_debut) == year_month.year,
         db.extract('month', Evenement.date_de_debut) == year_month.month
     ).all()
     if include_periodiques:
         evenements_periodiques = Evenement.query.filter(
-            Evenement.evenement_masque == False,
-            Evenement.evenement_periodique == True
+            not Evenement.evenement_masque,
+            Evenement.evenement_periodique
         ).all()
         month_string = year_month.strftime("%Y%m")
         evenements_periodiques = [
@@ -245,8 +245,8 @@ def _filtrer_par_annee(year_str: str):
     """ Récupère tous les événements d'une année donnée (sans événements périodiques) """
     year = int(year_str)
     return Evenement.query.filter(
-        Evenement.evenement_masque == False,
-        Evenement.evenement_periodique == False,
+        not Evenement.evenement_masque,
+        not Evenement.evenement_periodique,
         db.extract('year', Evenement.date_de_debut) == year
     ).all()
 

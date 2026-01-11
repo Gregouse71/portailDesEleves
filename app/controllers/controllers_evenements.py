@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask_login import login_required
+from datetime import datetime, time
 
-from app.services import *
-from app.utils.decorators import *
-from app.services.services_utilisateurs import *
-from app.services.services_associations import *
-from app.services.services_evenements import *
+from app import db
+from app.models.models_evenements import Evenement
+from app.utils.decorators import est_membre_de_asso
+from app.services.services_evenements import verifier_format, est_date_AAAAMMJJ, get_evenements_par_date, supprimer_evenement, change_event_visibility
 
 # Creer le blueprint pour les evenements
 controllers_evenements = Blueprint('controllers_evenements', __name__)
@@ -29,7 +29,7 @@ def get_election_by_id(id: int):
     event = Evenement.query.filter_by(id=id).first()
     if event:
         return jsonify(event.to_dict())
-    return jsonify({"message": f""}), 400
+    return jsonify({"message": ""}), 400
 
 
 @controllers_evenements.post("event/<int:association_id>")

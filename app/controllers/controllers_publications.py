@@ -1,13 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-import os
-from werkzeug.utils import secure_filename
-from datetime import datetime
+from sqlalchemy import desc
 
-from app import db
-from app.services import *
-from app.utils.decorators import *
-from app.services.services_publications import *
+from app.models import Publication, Association, Commentaire
+from app.utils.decorators import est_membre_de_asso
+from app.services.services_publications import get_publications_by_tag, add_publication, remove_publication, remove_comment, modify_like_post, modify_like_comment, modify_publication, modify_comment, add_comment, add_content_to_publication
 
 controllers_publications = Blueprint('controllers_publications', __name__)
 
@@ -213,8 +210,6 @@ def route_modifier_publication(association_id, publication_id):
             data["a_cacher_to_cycles"],
             data["a_cacher_aux_nouveaux"],
             data["is_publication_interne"],
-            data.get("fichier_joint"),
-            data.get("miniature"),
             data.get("tags")
         )
         return jsonify({"message": "publication modifiée avec succès"}), 200

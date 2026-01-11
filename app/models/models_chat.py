@@ -1,6 +1,5 @@
 from app import db
 from datetime import datetime
-from flask import jsonify
 
 from app.models.models_utilisateurs import Utilisateur
 

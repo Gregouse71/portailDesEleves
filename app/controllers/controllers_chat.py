@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
-from flask_login import login_required, current_user
-from sqlalchemy import asc, desc
+from flask_login import login_required
+from sqlalchemy import desc
 
 from app.models.models_chat import Message
 

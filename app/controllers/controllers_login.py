@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
-from ..models import db, Utilisateur
+
+from app.models.models_utilisateurs import Utilisateur
 from app.services.services_login import send_reset_mail, set_new_password, check_pw
 
 controllers_login = Blueprint('controllers_login', __name__)

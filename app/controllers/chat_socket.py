@@ -1,12 +1,10 @@
-from flask_login import login_required, current_user
-from sqlalchemy import desc, asc
+from flask_login import current_user
 
 from app.models.models_chat import Message
 from app import db
 
 from .. import socketio
-from flask_socketio import emit, join_room, leave_room
-import json
+from flask_socketio import emit
 from datetime import datetime
 
 

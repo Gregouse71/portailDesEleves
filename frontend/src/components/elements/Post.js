@@ -120,10 +120,6 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
         try {
             let updatedModifyPost = { ...modifyPost };
 
-            if (shouldRemoveExistingAttachment) {
-                updatedModifyPost.fichier_joint = null;
-            }
-
             await modifierPublication(post.association.id, postId, updatedModifyPost);
 
             if (modifyPostFile || modifyPostMiniatureFile) {

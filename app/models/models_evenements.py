@@ -1,25 +1,6 @@
 from app import db
-import os
-import re
-import shutil
 from datetime import datetime, time
 from app.models.models_associations import Association
-
-
-def est_heure_HHMM(heure_str):
-    try:
-        datetime.strptime(heure_str, "%H%M")
-        return True
-    except ValueError:
-        return False
-
-
-def est_date_AAAAMMJJHHMM(date_str):
-    try:
-        datetime.strptime(date_str, "%Y%m%d%H%M")
-        return True
-    except ValueError:
-        return False
 
 
 def est_valide_liste_de_jours(liste_jours):

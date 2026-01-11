@@ -111,6 +111,4 @@ class ElectionVote(db.Model):
 
 
     def to_dict(self):
-        mandats_data = 1
-
         return {}

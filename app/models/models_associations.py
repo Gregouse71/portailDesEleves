@@ -1,9 +1,7 @@
 from app import db
 import os
 import re
-import shutil
 
-from sqlalchemy import desc
 from app.models.models_utilisateurs import Utilisateur
 
 # Cette table sert à stocker les relations entre Association et Utilisateur
@@ -90,9 +88,9 @@ class Association(db.Model):
             Est-ce que l'association doit être cachée aux non-baptisés.
         """
 
-        if nom != None:
+        if nom is not None:
             self.nom = nom
-        if description != None:
+        if description is not None:
             self.description = description
     
     def to_dict(self):
@@ -137,7 +135,7 @@ class Association(db.Model):
         self.nom_dossier = nom_dossier
         try:
             os.mkdir(f"upload/associations/{nom_dossier}")
-        except:
+        except (FileNotFoundError, FileExistsError):
             print(f"dossier {nom_dossier} déjà créé !")
 
 

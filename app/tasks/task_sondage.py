@@ -1,10 +1,9 @@
 from .. import scheduler
 from app.controllers.controllers_sondages import sondage_suivant
 
-from datetime import datetime
 
-@scheduler.task('cron', id='task_sondage', day="*", hour="4")
+@scheduler.task("cron", id="task_sondage", day="*", hour="4")
 def task_sondage():
-    print(f"Nouveau sondage")
+    print("Nouveau sondage")
     with scheduler.app.app_context():
-        sondage_suivant ()
+        sondage_suivant()

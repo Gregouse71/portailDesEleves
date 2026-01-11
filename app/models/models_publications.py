@@ -1,7 +1,4 @@
 from app import db
-import os
-import re
-import shutil
 
 from datetime import datetime
 from app.models.models_associations import Association

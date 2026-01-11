@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
-from app.services import db
-from app.models import Utilisateur, Conso
-from app.services.services_soifguard import *
-from app.services.services_global import *
-from app.utils.decorators import * 
+from app import db
+from app.models import Utilisateur, Conso, PermissionSoifguard
+from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_prix_conso, liste_des_consos
+from app.services.services_global import get_global_var
+from app.utils.decorators import superutilisateur_required, a_permission_soifguard_octo, a_permission_soifguard_biero
 
 # Creer le blueprint pour soifguard
 controllers_soifguard = Blueprint('controllers_soifguard', __name__)

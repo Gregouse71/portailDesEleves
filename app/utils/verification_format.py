@@ -1,7 +1,5 @@
 import dateutil
 import re
-import unicodedata
-from datetime import datetime
 
 def verifier_chaine_mail(chaine: str) -> bool:
     # Ceci n'est pas une bonne manière : une adresse mail peut être plus complexe
@@ -24,7 +22,7 @@ def valider_chaine_texte(chaine: str) -> bool:
 
 def valider_questions_du_portail(dictionnaire: dict) -> bool:
     for cle, contenu in dictionnaire.items():
-        if not valider_chaines_de_base(cle) or not valider_chaines_de_base(contenu):
+        if not valider_chaine_texte(cle) or not valider_chaine_texte(contenu):
             return False
     return True
 

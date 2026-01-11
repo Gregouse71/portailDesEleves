@@ -2,7 +2,6 @@
 from app.services import db
 from app.models.models_associations import Association, AssociationMandat, AssociationMembre
 from app.models.models_utilisateurs import Utilisateur
-from sqlalchemy.orm.attributes import flag_modified
 
 
 # GESTION DES ASSOCIATIONS

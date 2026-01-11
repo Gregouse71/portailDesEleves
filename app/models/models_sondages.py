@@ -2,8 +2,6 @@ from app import db
 from sqlalchemy.ext.mutable import MutableList
 from datetime import date
 
-# verification du format des donnees :
-from ..utils.verification_format import *
 from app.models.models_utilisateurs import Utilisateur
 
 
@@ -41,7 +39,7 @@ class Sondage(db.Model):
     gagnants = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
     perdants = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
 
-    def __init__(self, propose_par_user_id:int, date_proposition: datetime.date, question:str, reponses: list[str], autorise:bool=False) :
+    def __init__(self, propose_par_user_id:int, date_proposition: date, question:str, reponses: list[str], autorise:bool=False) :
         """
         Cree un nouveau sondage
         """

@@ -1,6 +1,5 @@
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
-from sqlalchemy import asc, desc
 
 from app import db
 from app.models.models_elections import Election, ElectionVote
@@ -32,7 +31,7 @@ def get_election_by_id(id: int):
         ret["votant"] = current_user.promotion in election.promos
         return jsonify(ret)
     else:
-        return jsonify({"message": f""}), 403
+        return jsonify({"message": ""}), 403
 
 
 @controller_elections.post("election/<int:asso_id>")
@@ -44,7 +43,7 @@ def post_election(asso_id: int):
     """
     election = creer_election(asso_id, request.json)
     if not election:
-        return jsonify({"message": f"erreur lors de la création de l'election"}), 500
+        return jsonify({"message": "erreur lors de la création de l'election"}), 500
     return jsonify(election.to_dict())
 
 
@@ -57,12 +56,12 @@ def delete_election(id: int):
     """
     election = Election.query.filter_by(id=id).first()
     if not election:
-        return jsonify({"message": f"L'election n'existe pas"}), 400
+        return jsonify({"message": "L'election n'existe pas"}), 400
     for vote in election.votes:
         db.session.delete(vote)
     db.session.delete(election)
     db.session.commit()
-    return jsonify({"message": f""}), 200 
+    return jsonify({"message": ""}), 200 
 
 
 @controller_elections.put("election/<int:id>")
@@ -85,15 +84,15 @@ def patch_election_by_id(id: int):
 def voter_election(id: int):
     choix = request.json.get("choix")
     if choix is None:
-        return jsonify({"message": f"Choix invalide"}), 400
+        return jsonify({"message": "Choix invalide"}), 400
     election = Election.query.filter_by(id=id).first()
     if election is None:
-        return jsonify({"message": f"Election invalide"}), 400
+        return jsonify({"message": "Election invalide"}), 400
     if current_user.promotion not in election.promos:
-        return jsonify({"message": f"Non electeur"}), 403
+        return jsonify({"message": "Non electeur"}), 403
     deja = ElectionVote.query.filter_by(election_id=id, utilisateur_id=current_user.id).count()
     if deja > 0:
-        return jsonify({"message": f"Deja voté"}), 403
+        return jsonify({"message": "Deja voté"}), 403
 
     vote = ElectionVote(int(choix), election, current_user)
     db.session.add(vote)

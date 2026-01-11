@@ -4,12 +4,12 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 
-from app.services import *
-from app.utils.decorators import *
-from app.services.services_utilisateurs import *
+from app import db
+from app.utils.decorators import est_membre_de_asso, superutilisateur_required
+from app.services.services_utilisateurs import get_utilisateur
 from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position
 
-from app.models.models_associations import Association, AssociationMandat
+from app.models.models_associations import Association
 
 # TO DO :
 #

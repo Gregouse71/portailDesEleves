@@ -6,7 +6,7 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurSondage(Exception):

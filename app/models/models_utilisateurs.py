@@ -5,7 +5,7 @@ from datetime import date
 
 # verification du format des donnees :
 from app.utils.divers_utils import ph
-from ..utils.verification_format import *
+from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
 
 import locale
