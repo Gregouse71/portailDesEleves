@@ -36,7 +36,7 @@ export default function BlocSoldes() {
                 </Row>
                 <Row className="mb-2">
                     <Col >
-                        <span style={{ color: userData.solde_octo >= 0 ? "green" : "red" }}>
+                        <span className="text-nowrap" style={{ color: userData.solde_octo >= 0 ? "green" : "red" }}>
                             Octo : {formatter.format(userData.solde_octo)}
                         </span>
                     </Col>
@@ -46,7 +46,7 @@ export default function BlocSoldes() {
                 </Row>
                 <Row>
                     <Col >
-                        <span style={{ color: userData.solde_biero >= 0 ? "green" : "red" }}>
+                        <span className="text-nowrap" style={{ color: userData.solde_biero >= 0 ? "green" : "red" }}>
                             Biéro : {formatter.format(userData.solde_biero)}
                         </span>
                     </Col>
