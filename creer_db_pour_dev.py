@@ -6,7 +6,7 @@ import unicodedata
 import random
 from datetime import date
 
-_, app = create_app(config)
+_, app = create_app(Config)
 
 # Activer le contexte de l'application
 with app.app_context():

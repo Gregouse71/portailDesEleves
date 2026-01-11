@@ -1,0 +1,16 @@
+/* Force the dropdown to display the actual pixel value */
+.ql-snow .ql-picker.ql-size .ql-picker-label::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item::before {
+  content: attr(data-value) !important;
+}
+
+/* Handle the default/empty case (usually "Normal") */
+.ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item:not([data-value])::before {
+  content: "Normal";
+}
+
+/* Optional: Increase width so "12px" doesn't get cut off */
+.ql-snow .ql-picker.ql-size {
+  width: 90px !important;
+}

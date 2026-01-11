@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import '../../assets/styles/rich_editor.scss';
 import DOMPurify from 'dompurify';
 
 // 1. Setup Style Attributor & Whitelist
