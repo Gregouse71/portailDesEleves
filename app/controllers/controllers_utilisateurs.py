@@ -30,10 +30,12 @@ def obtenir_liste_utilisateurs(promo: int, cycles: str):
     utilisateurs = Utilisateur.query.filter(
         Utilisateur.promotion == str(promo),
         Utilisateur.cycle.in_(str_cycles)
-    ).all()
+    ).order_by(Utilisateur.nom).all()
     # Conversion en JSON
+    cycle = {"ic": 1, "isup": 2, "ast": 3, "vs": 4}
     liste_utilisateurs = [u.to_dict() for u in utilisateurs]
-    return jsonify(liste_utilisateurs), 200
+    return jsonify(sorted(liste_utilisateurs, key=lambda x: cycle[x["cycle"]] if x["cycle"] in cycle else 10)), 200
+
 
 
 @controllers_utilisateurs.route('/obtenir_liste_des_promos', methods=["GET"])
