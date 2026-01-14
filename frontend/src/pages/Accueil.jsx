@@ -10,7 +10,7 @@ export default function Accueil() {
   return (
     <Container className="accueil-main-container d-flex flex-column align-items-center justify-content-center vh-100">
       <h1>Bienvenue sur le nouveau portail des élèves</h1>
-      <Button onClick={() => navigate("/direction")}>Aller à l'application</Button>
+      <Button onClick={() => navigate("/direction")}>Aller à l&apos;application</Button>
     </Container>
   );
 }

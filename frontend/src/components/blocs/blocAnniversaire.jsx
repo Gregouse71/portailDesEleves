@@ -11,7 +11,7 @@ export default function BlocAnniversaire() {
     });
 
     if (isLoading) return <div>Chargement ...</div>;
-    if (error) return <div>Impossible d'obtenir les anniversaires</div>;
+    if (error) return <div>Impossible d&apos;obtenir les anniversaires</div>;
 
     return <Card id="bloc-anniversaire" className="bloc-global">
         <Card.Header as="h5" className="text-center">Anniversaires</Card.Header>

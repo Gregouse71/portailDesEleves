@@ -1,23 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { obtenirPermissionsSoifguard, ajouterPermission } from '../api/api_soifguard';
 import { obtenirIdUserParNom } from "../api/api_utilisateurs";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function Admin() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [nomUtilisateur, setNomUtilisateur] = useState("");
   const [asso, setAsso] = useState("octo"); // Valeur par défaut
-  const [permissions, setPermissions] = useState([]);
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
 
   // Récupérer toutes les permissions à afficher
-  const chargerPermissions = async () => {
-    const data = await obtenirPermissionsSoifguard();
-    if (data && Array.isArray(data)) {
-      setPermissions(data);
+  const { data: permissions = [] } = useQuery({
+    queryKey: ['permissions'],
+    queryFn: async () => {
+      const data = await obtenirPermissionsSoifguard();
+      return Array.isArray(data) ? data : [];
     }
-  };
+  });
 
   // Ajouter une permission
   const handleAjouterPermission = async () => {
@@ -43,17 +45,12 @@ export default function Admin() {
       setMessage("Permission ajoutée avec succès.");
       setErreur(""); // Réinitialiser les erreurs
       // Recharger les permissions après ajout
-      chargerPermissions();
+      queryClient.invalidateQueries(['permissions']);
     } else {
       setMessage(response.message || "Erreur lors de l'ajout de la permission.");
       setErreur(""); // Réinitialiser les erreurs
     }
   };
-
-  // Charger les permissions au démarrage du composant
-  useEffect(() => {
-    chargerPermissions();
-  }, []);
 
   return (
     <div>
@@ -64,7 +61,7 @@ export default function Admin() {
         <div style={{ display: "flex", gap: "10px" }}>
           <input
             type="text"
-            placeholder="Nom d'utilisateur"
+            placeholder="Nom d&apos;utilisateur"
             value={nomUtilisateur}
             onChange={(e) => setNomUtilisateur(e.target.value)}
           />
@@ -87,7 +84,7 @@ export default function Admin() {
         <table>
           <thead>
             <tr>
-              <th>Nom d'utilisateur</th>
+              <th>Nom d&apos;utilisateur</th>
               <th>Permissions</th>
             </tr>
           </thead>

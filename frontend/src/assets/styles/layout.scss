@@ -9,6 +9,7 @@ body {
 /* Layout global */
 @import './themes';
 @import './bootstrap_overrides';
+@import './react_select';
 
 .layout {
     display: flex;

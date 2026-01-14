@@ -34,7 +34,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     });
 
     const handleOptionChange = (index, value) => {
-        const newOption = [...modifyingElection?.options];
+        const newOption = [...modifyingElection.options];
         newOption[index] = value;
         setModifyingElection({ ...modifyingElection, options: newOption })
     };
@@ -82,7 +82,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 
     if (isLoading) return <>Chargement...</>;
 
-    const canVote = !!election ? election.votant && !election.deja_vote && election.ouvert : false;
+    const canVote = election ? election.votant && !election.deja_vote && election.ouvert : false;
 
     return <Card><Card.Body>
         {!isModifying ?
@@ -114,7 +114,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 </Row>
                 <Row>
                     {election.options.map((options, i) =>
-                        <Col className="d-flex justify-content-center"><Button key={i} disabled={!canVote} className="m-2"
+                        <Col key={i} className="d-flex justify-content-center"><Button key={i} disabled={!canVote} className="m-2"
                             onClick={() => { voterElection({ choix: i }, id); queryClient.invalidateQueries(['election', id]) }}                        >
                             {options}
                         </Button></Col>)
@@ -128,7 +128,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 <Form>
                     <div className="d-flex gap-2 mb-3">
                         <Button variant="success" onClick={mutation.mutate}>Valider</Button>
-                        <Button variant="danger" onClick={() => {if(isNew){stopCreating()}; setIsModifying(false)}}>Annuler</Button>
+                        <Button variant="danger" onClick={() => {if(isNew){stopCreating()} setIsModifying(false)}}>Annuler</Button>
                     </div>
                     <Form.Group as={Row} className="mb-3">
                         <Form.Label column sm="2">Nom</Form.Label>

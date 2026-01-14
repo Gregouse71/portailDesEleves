@@ -41,7 +41,7 @@ function Palums() {
       </div>
       {publications && publications.publications.length === 0 && (
         <Alert variant="info" className="mt-4">
-          Aucune publication trouvée avec le tag "Palum".
+          Aucune publication trouvée avec le tag &quot;Palum&quot;.
         </Alert>
       )}
     </Container>

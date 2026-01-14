@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 export default function BlocChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
 
   // Refs for Scroll Management
   const messageDisplayRef = useRef(null);
@@ -29,7 +29,7 @@ export default function BlocChat() {
       withCredentials: true,
       transports: ["websocket"],
     });
-    setSocket(newSocket);
+    socketRef.current = newSocket;
 
     newSocket.on("connect", () => {
       
@@ -107,7 +107,7 @@ export default function BlocChat() {
           if (entry.isIntersecting) {
             observer.unobserve(oldestMessage);
 
-            async function fetchNewMessages() {
+            const fetchNewMessages = async () => {
               // Record height before API call
               scrollHeightBeforeUpdateRef.current = messageDisplay.scrollHeight;
 
@@ -118,7 +118,7 @@ export default function BlocChat() {
                 shouldCorrectScrollRef.current = true;
                 setMessages([...new_messages, ...messages]);
               }
-            }
+            };
             fetchNewMessages();
           }
         },
@@ -144,7 +144,9 @@ export default function BlocChat() {
     }
 
     const message = { text: input };
-    socket.emit("message", message);
+    if (socketRef.current) {
+        socketRef.current.emit("message", message);
+    }
     setInput("");
 
     const messageDisplay = messageDisplayRef.current;

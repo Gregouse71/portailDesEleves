@@ -14,15 +14,8 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
         queryFn: () => chargerAsso(asso_id),
     });
 
-    const [ordre, setOrdre] = useState(asso?.ordre_importance || 0);
-    const [nom, setNom] = useState(asso?.nom || "");
-
-    useEffect(() => {
-        if (asso) {
-            setOrdre(asso.ordre_importance || 0);
-            setNom(asso.nom || "");
-        }
-    }, [asso]);
+    const [ordre, setOrdre] = useState(0);
+    const [nom, setNom] = useState("");
 
     useEffect(() => {
         if (!isEditMode) {
@@ -39,9 +32,6 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 hasChanged = true;
             } catch (error) {
                 console.error("Failed to update priority:", error);
-                if (asso) {
-                    setOrdre(asso.ordre_importance);
-                }
             }
         }
 
@@ -51,9 +41,6 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 hasChanged = true;
             } catch (error) {
                 console.error("Failed to update name:", error);
-                if (asso) {
-                    setNom(asso.nom);
-                }
             }
         }
 
@@ -65,12 +52,16 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
     };
 
     const handleCancelEdit = () => {
-        if (asso) {
-            setOrdre(asso.ordre_importance || 0); // Reset to original value
-            setNom(asso.nom || "");
-        }
         onEditAsso(null); // Stop editing
     };
+
+    const handleStartEdit = () => {
+        if (asso) {
+            setNom(asso.nom);
+            setOrdre(asso.ordre_importance);
+        }
+        onEditAsso(asso.id);
+    }
 
     const handleCardClick = () => {
         if (!isEditMode) {
@@ -83,6 +74,9 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
         : <Card
             className="h-100 text-center"
             onClick={handleCardClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
+            role="button"
+            tabIndex={isEditMode ? -1 : 0}
             style={{ cursor: isEditMode ? 'default' : 'pointer', position: 'relative' }}
         >
             {isEditMode && (
@@ -94,7 +88,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                         if (isEditingAsso) {
                             handleCancelEdit();
                         } else {
-                            onEditAsso(asso.id);
+                            handleStartEdit();
                         }
                     }}
                     style={{ position: 'absolute', zIndex: 1 }}
@@ -111,16 +105,22 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                 style={{ height: '120px', backgroundColor: "white" }}
             />}
             <Card.Body className="px-2">
-                {!isEditingAsso && <Card.Title>{nom}</Card.Title>}
+                {!isEditingAsso && <Card.Title>{asso.nom}</Card.Title>}
                 {role && <> <hr /><Card.Text>{role}</Card.Text></>}
                 {isEditMode && !isEditingAsso && (
                     <>
                         <hr />
-                        <Card.Text>Position : {ordre}</Card.Text>
+                        <Card.Text>Position : {asso.ordre_importance}</Card.Text>
                     </>
                 )}
                 {isEditingAsso && (
-                    <div onClick={(e) => e.stopPropagation()}>
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        role="button"
+                        tabIndex="0"
+                        style={{ cursor: 'auto' }}
+                    >
                         <Form.Group className="mb-2">
                             <Form.Label>Nom</Form.Label>
                             <Form.Control

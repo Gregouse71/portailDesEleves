@@ -59,7 +59,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
     });
 
     useEffect(() => {
-        if (postData) { setPost(postData) };
+        if (postData) { setPost(postData) }
     }, [postData]);
 
     const clearModifyPost = () => {
@@ -269,7 +269,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 name="tags"
                                 options={tagOptions}
                                 className="basic-multi-select"
-                                classNamePrefix="select"
+                                classNamePrefix="react-select"
                                 value={modifyPost.tags.map(tag => ({ value: tag, label: tag }))}
                                 onChange={(selectedOptions) => setModifyPost(prevState => ({
                                     ...prevState,

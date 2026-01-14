@@ -246,6 +246,9 @@ export default function SoifGuard() {
                   key={user.id}
                   className={`soifguard-grid-item ${selectedUser === user.id ? "soifguard-selected" : ""}`}  // Appliquer la classe de surbrillance
                   onClick={() => handleSelectUser(user.id)}  // Clic pour sélectionner/désélectionner
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelectUser(user.id); }}
+                  role="button"
+                  tabIndex="0"
                 >
                   <strong>{user.prenom} {user.nom}</strong>
                   <br />
@@ -297,6 +300,9 @@ export default function SoifGuard() {
                     key={conso.id}
                     className={`soifguard-grid-item ${selectedConso === conso.id ? "soifguard-selected" : ""}`}  // Appliquer la classe de surbrillance
                     onClick={() => handleSelectConso(conso.id)}  // Clic pour sélectionner/désélectionner
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelectConso(conso.id); }}
+                    role="button"
+                    tabIndex="0"
                   >
                     <strong>{conso.nom_conso}</strong> - {parseFloat(conso.prix).toFixed(2)}€
                     {conso.prix_cotisant !== null && <span> ({parseFloat(conso.prix_cotisant).toFixed(2)}€ cotisant)</span>}
@@ -320,7 +326,15 @@ export default function SoifGuard() {
               ) : (
                 <p>Aucune consommation disponible.</p>
               )}
-              <div className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)}>+ Ajouter</div>
+              <div
+                className="soifguard-grid-item soifguard-add-item"
+                onClick={() => setIsModalOpen(true)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsModalOpen(true); }}
+                role="button"
+                tabIndex="0"
+              >
+                + Ajouter
+              </div>
             </div>
           )}
         </div>
@@ -335,14 +349,14 @@ export default function SoifGuard() {
           <div className="soifguard-modal-content">
             <button className="soifguard-close-btn" onClick={() => setIsModalOpen(false)}>X</button>
             <h2>Ajouter une consommation</h2>
-            <label>Nom de la conso :</label>
-            <input type="text" value={nomConso} onChange={(e) => setNomConso(e.target.value)} />
+            <label htmlFor="nomConso">Nom de la conso :</label>
+            <input id="nomConso" type="text" value={nomConso} onChange={(e) => setNomConso(e.target.value)} />
 
-            <label>Prix :</label>
-            <input type="number" value={prix} onChange={(e) => setPrix(e.target.value)} />
+            <label htmlFor="prix">Prix :</label>
+            <input id="prix" type="number" value={prix} onChange={(e) => setPrix(e.target.value)} />
 
-            <label>Prix cotisant (optionnel) :</label>
-            <input type="number" value={prixCotisant} onChange={(e) => setPrixCotisant(e.target.value)} />
+            <label htmlFor="prixCotisant">Prix cotisant (optionnel) :</label>
+            <input id="prixCotisant" type="number" value={prixCotisant} onChange={(e) => setPrixCotisant(e.target.value)} />
 
             <button onClick={ajouterConso}>Ajouter</button>
           </div>

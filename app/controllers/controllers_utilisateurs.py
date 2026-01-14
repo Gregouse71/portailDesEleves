@@ -4,6 +4,7 @@ from datetime import datetime, date
 
 from app.services import *
 from app.utils.decorators import *
+from app.utils.verification_format import *
 from app.services.services_utilisateurs import *
 from app.models.models_associations import AssociationMembre
 

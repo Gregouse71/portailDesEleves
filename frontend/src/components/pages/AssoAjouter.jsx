@@ -44,14 +44,14 @@ function AjouterAssociation() {
 
     return (
         <Container className="mt-4">
-            <h1>Ajout d'une association</h1>
+            <h1>Ajout d&apos;une association</h1>
 
             {message && <Alert variant="success" onClose={() => setMessage('')} dismissible>{message}</Alert>}
             {erreur && <Alert variant="danger" onClose={() => setErreur('')} dismissible>{erreur}</Alert>}
 
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formNomAsso">
-                    <Form.Label>Nom de l'association</Form.Label>
+                    <Form.Label>Nom de l&apos;association</Form.Label>
                     <Form.Control
                         type="text"
                         value={nom}
@@ -68,7 +68,7 @@ function AjouterAssociation() {
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formTypeAsso">
-                    <Form.Label>Type d'association</Form.Label>
+                    <Form.Label>Type d&apos;association</Form.Label>
                     <Form.Select
                         value={typeAssociation}
                         onChange={(e) => setTypeAssociation(e.target.value)}
@@ -81,7 +81,7 @@ function AjouterAssociation() {
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formOrdreImportance">
-                    <Form.Label>Ordre d'importance</Form.Label>
+                    <Form.Label>Ordre d&apos;importance</Form.Label>
                     <Form.Control
                         type="number"
                         value={ordreImportance}
@@ -101,7 +101,7 @@ function AjouterAssociation() {
                 </Form.Group>
 
                 <Button variant="primary" type="submit">
-                    Ajouter l'association
+                    Ajouter l&apos;association
                 </Button>
                 <Button variant="secondary" onClick={() => navigate("/assos")} className="ms-2">
                     Retour

@@ -1,5 +1,4 @@
-import { API_BASE_URL } from "./base";
-import { handleResponse } from "./base";
+import { API_BASE_URL, handleResponse } from "./base";
 
 export async function obtenirPlusDeMessages(last_sent) {
   try {

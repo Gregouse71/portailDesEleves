@@ -17,14 +17,14 @@ function AccueilSoifguard() {
   return (
     <div>
       <h1>Soifguard</h1>
-      <p>Soifguard est le logiciel qui gère les comptes de l'octo et de la biéro</p>
+      <p>Soifguard est le logiciel qui gère les comptes de l&apos;octo et de la biéro</p>
 
       {octoPermission || bieroPermission ? (
         <button onClick={() => navigate("/soifguard")}>
           Lancer SoifGuard
         </button>
       ) : (
-        <p>Vous n'avez pas les permissions nécessaires pour accéder à Soifguard.</p>
+        <p>Vous n&apos;avez pas les permissions nécessaires pour accéder à Soifguard.</p>
       )}
 
       <button onClick={() => navigate("/")}>

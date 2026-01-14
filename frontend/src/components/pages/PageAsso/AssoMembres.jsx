@@ -3,7 +3,6 @@ import { ajouterMandat, chargerAsso, estUtilisateurDansAsso } from "../../../api
 import { Card, Button, Form } from "react-bootstrap";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AssoMandat from "../../elements/AssoMandat";
-import DropdownEditer from "../../elements/DropdownEditer";
 
 function AssoMembres({ asso_id }) {
     const queryClient = useQueryClient();
@@ -11,7 +10,7 @@ function AssoMembres({ asso_id }) {
     const [isAjoutMandat, setIsAjoutMandat] = useState(false);
     const [nomNouveauMandat, setNomNouveauMandat] = useState("");
 
-    const { data: asso, isLoading } = useQuery({
+    const { data: asso = {mandat: ""}, isLoading } = useQuery({
         queryKey: ['asso', asso_id],
         queryFn: () => chargerAsso(asso_id),
     });
@@ -27,7 +26,7 @@ function AssoMembres({ asso_id }) {
             if (b.actuel) return 1;
             return b.position - a.position;
         });
-    }, [asso?.mandats]);
+    }, [asso]);
 
     if (isLoading) return <>Chargement...</>
 
@@ -73,8 +72,8 @@ function AssoMembres({ asso_id }) {
                 )}
             </div>
 
-            {sortedMandats.map((mandat) => (
-                <AssoMandat mandat={mandat} asso={asso} canModify={membreData.autorise} />
+            {sortedMandats.map((mandat, i) => (
+                <AssoMandat key={i} mandat={mandat} asso={asso} canModify={membreData.autorise} />
             ))}
         </div>
     )

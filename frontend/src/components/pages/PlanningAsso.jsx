@@ -5,12 +5,6 @@ import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useState } from 'react';
 
-const formatDatePeriodique = (dateString) => {
-    const options = { weekday: 'long' };
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', options);
-};
-
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
     const date = new Date(dateString);

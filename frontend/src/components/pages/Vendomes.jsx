@@ -73,7 +73,7 @@ function Vendomes() {
       </div>
       {allPublications.length === 0 && (
         <Alert variant="info" className="mt-4">
-          Aucune publication trouvée avec le tag "Vendôme".
+          Aucune publication trouvée avec le tag &quot;Vendôme&quot;.
         </Alert>
       )}
        {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}

@@ -45,7 +45,6 @@ export async function sondageSuivant() {
       console.error("Erreur :", errorData.message);
       // Afficher l'erreur dans l'interface utilisateur si nécessaire
       alert(`Erreur : ${errorData.message}`);
-    } else {
     }
   } catch (error) {
     console.error("Erreur réseau :", error);

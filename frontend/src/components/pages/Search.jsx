@@ -16,7 +16,7 @@ export default function Search() {
 
   return (
     <div className="search-results-container">
-      <h1>Résultats de recherche pour "{query}"</h1>
+      <h1>Résultats de recherche pour &quot;{query}&quot;</h1>
       {searchResults.length > 0 ? (
         <ListGroup>
           {searchResults.sort((a, b) => b.promotion - a.promotion).map(user => (

@@ -41,14 +41,13 @@ export default function FormulaireConnexion() {
                     {erreur && <Alert variant="danger">{erreur}</Alert>}
                     <Form onSubmit={handleSubmit} className="d-flex flex-column">
                         <Form.Group className="mb-3" controlId="formBasicUsername">
-                            <Form.Label>Nom d'utilisateur</Form.Label>
+                            <Form.Label>Nom d&apos;utilisateur</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder="Entrer le nom d'utilisateur"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
-                                autoFocus // Keep the autofocus feature from the original HTML
                             />
                         </Form.Group>
 
@@ -70,7 +69,7 @@ export default function FormulaireConnexion() {
                         </div>
 
                         <Link to={'/oublie'} className="text-center text-muted mt-2">
-                            J'ai oublié mon mot de passe
+                            J&apos;ai oublié mon mot de passe
                         </Link>
 
                     </Form>
@@ -79,10 +78,10 @@ export default function FormulaireConnexion() {
 
             <div className="text-center mt-3 text-secondary" style={{ maxWidth: '500px' }}>
                 <p className="fs-6">
-                    Accès au <strong>{PORTAL_TITLE}</strong> de l'École des <strong>Mines de Paris</strong>.
+                    Accès au <strong>{PORTAL_TITLE}</strong> de l&apos;École des <strong>Mines de Paris</strong>.
                 </p>
                 <p className="small mb-1">
-                    En cas de problèmes d'identification, contactez le
+                    En cas de problèmes d&apos;identification, contactez le
                     <a href={`mailto:${VP_GEEK_EMAIL}`} className="ms-1">VP Geek ({VP_GEEK_EMAIL})</a>.
                 </p>
                 <p className="small">

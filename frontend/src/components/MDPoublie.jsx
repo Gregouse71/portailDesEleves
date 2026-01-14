@@ -28,12 +28,12 @@ export default function MDPoublie() {
                         Mot de passe oublié
                     </h1>
                     <p className="text-muted mb-4">
-                        Entrez votre nom d'utilisateur ou votre email ci-dessous pour recevoir un lien de réinitialisation.
+                        Entrez votre nom d&apos;utilisateur ou votre email ci-dessous pour recevoir un lien de réinitialisation.
                     </p>
 
                     {sent && (
                         <Alert variant="info" className="text-start">
-                            Si cet identifiant existe, un email a été envoyé à l'adresse associée pour la réinitialisation du mot de passe. Vérifiez votre boîte de réception.
+                            Si cet identifiant existe, un email a été envoyé à l&apos;adresse associée pour la réinitialisation du mot de passe. Vérifiez votre boîte de réception.
                         </Alert>
                     )}
 
@@ -42,11 +42,10 @@ export default function MDPoublie() {
                             <Form.Label className="text-start w-100">Identifiant / E-mail</Form.Label>
                             <Form.Control
                                 type="text"
-                                placeholder="Nom d'utilisateur ou email"
+                                placeholder="Nom d&apos;utilisateur ou email"
                                 value={identifiant}
                                 onChange={(e) => setIdentifiant(e.target.value)}
                                 required
-                                autoFocus
                             />
                         </Form.Group>
                         <div className="d-grid gap-2">

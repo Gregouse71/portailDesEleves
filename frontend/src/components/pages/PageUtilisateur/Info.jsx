@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Select from "react-select";
 import { Link } from "react-router-dom";
@@ -16,19 +16,18 @@ export default function TabInfo({ id, autoriseAModifier }) {
         queryFn: () => obtenirDataUser(id),
     });
 
-    const [userInfos, setUserInfos] = useState(null);
+    const [selectedP, setSelectedP] = useState({ value: donneesUtilisateur?.marrain.id, label: donneesUtilisateur?.marrain.nom_utilisateur });
+    const [selectedC, setSelectedC] = useState(donneesUtilisateur?.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
+    const [selectedF, setSelectedF] = useState(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
+    const [instruments, setInstruments] = useState(donneesUtilisateur?.instruments);
 
-    useEffect(() => {
-        if (donneesUtilisateur) {
-            setUserInfos(donneesUtilisateur);
-        }
-    }, [donneesUtilisateur]);
+    const [userInfos, setUserInfos] = useState(donneesUtilisateur);
 
-
-    const { data: allUsers } = useQuery({
+    const { data: allUsers = [] } = useQuery({
         queryKey: ["allUsers"],
         queryFn: () => chargerUtilisateurs(),
     });
+    const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
 
     const copyToClipboard = (text) => {
         if (navigator.clipboard) {
@@ -42,35 +41,9 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
 
-    const [selectedP, setSelectedP] = useState(null);
-    const [optionsP, setOptionsP] = useState([]);
-    const [selectedC, setSelectedC] = useState([]);
-    const [optionsC, setOptionsC] = useState([]);
-    const [selectedF, setSelectedF] = useState([]);
-    const [optionsF, setOptionsF] = useState([]);
-    const [instruments, setInstruments] = useState([]);
-
-    useEffect(() => {
-        if (!donneesUtilisateur || !allUsers) return;
-
-        const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
-        setOptionsP(options);
-        setOptionsC(options);
-        setOptionsF(options);
-    }, [allUsers, donneesUtilisateur]);
-
-    useEffect(() => {
-        if (!donneesUtilisateur) return;
-
-        if (donneesUtilisateur.cos) setSelectedC(donneesUtilisateur.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
-        if (donneesUtilisateur.marrain) setSelectedP({ value: donneesUtilisateur.marrain.id, label: donneesUtilisateur.marrain.nom_utilisateur });
-        if (donneesUtilisateur.fillots) setSelectedF(donneesUtilisateur.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
-        if (donneesUtilisateur.instruments) setInstruments(donneesUtilisateur.instruments);
-    }, [donneesUtilisateur]);
-
     const mutation = useMutation({
         mutationFn: async (updatedInfos) => {
-            const { cos, marrain, fillots, ...otherInfos } = updatedInfos;
+            const { marrain, ...otherInfos } = updatedInfos;
             await modifierInfos(id, { ...otherInfos, instruments });
 
             const newCoIds = selectedC.map(c => c.value);
@@ -81,7 +54,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
             await selectionnerFillots(id, selectedF.map(f => f.value));
         },
-        onSuccess: (updatedUser) => {
+        onSuccess: () => {
             queryClient.invalidateQueries(['donneesUtilisateur', id]);
             setIsGestion(false);
         }
@@ -183,7 +156,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
             <div className="list-question">
                 <div><b>Promo :</b> {userInfos.cycle !== "ic" && userInfos.cycle}{userInfos.promotion}</div>
                 <div><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</div>
-                <div><b>Ville d'origine :</b> {userInfos.ville_origine}</div>
+                <div><b>Ville d&apos;origine :</b> {userInfos.ville_origine}</div>
                 <div><b>Chambre :</b> {userInfos.chambre}</div>
                 {userInfos.instruments && userInfos.instruments.length > 0 &&
                     <div>
@@ -228,13 +201,13 @@ export default function TabInfo({ id, autoriseAModifier }) {
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Surnom</Form.Label>
                     <Col sm="10">
-                        <Form.Control type="text" name="surnom"  value={userInfos.surnom} onChange={handleChange} />
+                        <Form.Control type="text" name="surnom" value={userInfos.surnom} onChange={handleChange} />
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
                     <Form.Label column sm="2">Pronoms</Form.Label>
                     <Col sm="10">
-                        <Form.Control type="text" name="pronoms"  value={userInfos.pronoms} onChange={handleChange} />
+                        <Form.Control type="text" name="pronoms" value={userInfos.pronoms} onChange={handleChange} />
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
@@ -255,7 +228,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Ville d'origine</Form.Label>
+                    <Form.Label column sm="2">Ville d&apos;origine</Form.Label>
                     <Col sm="10">
                         <Form.Control type="text" name="ville_origine" value={userInfos.ville_origine} onChange={handleChange} />
                     </Col>
@@ -301,10 +274,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Col sm="10">
                         <Select
                             isMulti
-                            options={optionsC}
+                            options={options}
                             value={selectedC}
                             onChange={setSelectedC}
                             isClearable
+                            classNamePrefix="react-select"
                         />
                     </Col>
                 </Form.Group>
@@ -312,10 +286,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Form.Label column sm="2">Marrain</Form.Label>
                     <Col sm="10">
                         <Select
-                            options={optionsP}
+                            options={options}
                             value={selectedP}
                             onChange={setSelectedP}
                             isClearable
+                            classNamePrefix="react-select"
                         />
                     </Col>
                 </Form.Group>
@@ -324,9 +299,10 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Col sm="10">
                         <Select
                             isMulti
-                            options={optionsF}
+                            options={options}
                             value={selectedF}
                             onChange={setSelectedF}
+                            classNamePrefix="react-select"
                         />
                     </Col>
                 </Form.Group>

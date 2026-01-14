@@ -55,8 +55,8 @@ export default function BlocEvents() {
             <Card.Body>
                 {Object.keys(eventsByDate).map((key) => (<div key={key}>
                     <div className="event-date">{key}</div>
-                    {eventsByDate[key].map(event => (
-                        <GetAssoInfo event={event} />)
+                    {eventsByDate[key].map((event, i) => (
+                        <GetAssoInfo key={i} event={event} />)
                     )}
                 </div>)
                 )}

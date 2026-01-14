@@ -65,7 +65,7 @@ export default function ClassementSondage() {
             </Row>
 
             <h2 className="mt-5 mb-3">Classement Global</h2>
-            <p className="text-muted">Calculé grâce à l'intervalle de confiance à 95% d'une gaussienne.</p>
+            <p className="text-muted">Calculé grâce à l&apos;intervalle de confiance à 95% d&apos;une gaussienne.</p>
             <BlockMath math={GLOBAL_FORMULA} />
             <Row>
                 <Col md={6} className="mb-4">

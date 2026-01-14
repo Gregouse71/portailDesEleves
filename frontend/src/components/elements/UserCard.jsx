@@ -29,8 +29,8 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
                 {user.role ? <hr/> : null}
                 {!isModifying && <Card.Text className="small">{user.role}</Card.Text>}
                 {isModifying && <>
-                    {values.map((elt) =>
-                        <Form.Group className="mb-2">
+                    {values.map((elt, i) =>
+                        <Form.Group key={i} className="mb-2">
                             <Form.Label>{elt.label}</Form.Label>
                             <Form.Control value={elt.value} onChange={elt.onChange} />
                         </Form.Group>

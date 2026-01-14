@@ -163,7 +163,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                                 </Col>
                                 <Col>
                                     <Form.Group>
-                                        <Form.Label>Priorité d'affichage</Form.Label>
+                                        <Form.Label>Priorité d&apos;affichage</Form.Label>
                                         <Form.Control
                                             type="number"
                                             value={editingMandat.position}
@@ -216,6 +216,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                                         placeholder="Choisir une promo..."
                                         menuPortalTarget={document.body}
                                         styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                        classNamePrefix="react-select"
                                     />
                                 </Form.Group>
                                 <Form.Group className="mb-3 text-start">
@@ -228,6 +229,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                                         isDisabled={!promoAjoutMembre || listeNouveauxMembres.length === 0}
                                         menuPortalTarget={document.body}
                                         styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                        classNamePrefix="react-select"
                                     />
                                 </Form.Group>
                                 <Button variant="primary" onClick={handleAjoutMembre} disabled={!idAjoutMembre}>Ajouter</Button>

@@ -14,7 +14,6 @@ const tagOptions = [
 
 function AssoPosts({ asso_id }) {
     const queryClient = useQueryClient();
-    const [isGestion, setIsGestion] = useState(false);
     const [isNewPost, setIsNewPost] = useState(false);
     const [newPost, setNewPost] = useState({
         "titre": "",
@@ -29,7 +28,7 @@ function AssoPosts({ asso_id }) {
     const [newPostFile, setNewPostFile] = useState(null);
     const [newPostMiniatureFile, setNewPostMiniatureFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
-    const [fileInputKey, setFileInputKey] = useState(Date.now());
+    const [fileInputKey, setFileInputKey] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
     const observer = useRef();
@@ -116,13 +115,6 @@ function AssoPosts({ asso_id }) {
         setIsLoading(false);
     }
 
-    const handleSetIsGestion = (newState) => {
-        if (!newState) {
-            setIsNewPost(false)
-        }
-        setIsGestion(newState)
-    }
-
     const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
         queryKey: ['membreData', asso_id],
         queryFn: () => estUtilisateurDansAsso(asso_id),
@@ -160,12 +152,12 @@ function AssoPosts({ asso_id }) {
         let fileForPreview = newPostMiniatureFile || newPostFile;
 
         if (!fileForPreview) {
-            setPreviewUrl(null);
+            Promise.resolve().then(() => setPreviewUrl(null));
             return;
         }
 
         const objectUrl = URL.createObjectURL(fileForPreview);
-        setPreviewUrl(objectUrl);
+        Promise.resolve().then(() => setPreviewUrl(objectUrl));
         return () => URL.revokeObjectURL(objectUrl);
 
     }, [newPostFile, newPostMiniatureFile]);
@@ -250,7 +242,7 @@ function AssoPosts({ asso_id }) {
                                         name="tags"
                                         options={tagOptions}
                                         className="basic-multi-select"
-                                        classNamePrefix="select"
+                                        classNamePrefix="react-select"
                                         value={newPost.tags.map(tag => ({ value: tag, label: tag }))}
                                         onChange={handleSetNewPostTags}
                                         placeholder="Sélectionnez un ou plusieurs tags"

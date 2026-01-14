@@ -59,7 +59,7 @@ function Home() {
             <Card className="mb-3">
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">
-                        <a href="https://www.eleves.mines-paris.eu/media/abatage/Abatage2025compressed.pdf">L'abatage</a> 2025 est disponible !
+                        <a href="https://www.eleves.mines-paris.eu/media/abatage/Abatage2025compressed.pdf">L&apos;abatage</a> 2025 est disponible !
                     </Card.Title>
                 </Card.Body>
             </Card>
