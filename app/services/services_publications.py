@@ -351,8 +351,11 @@ def get_publications_by_tag(tag: str, limit: int = None, offset: int = None):
         # or the association might not be in current_user.associations
         # For now, I'll assume that if id_association is None, it's a global publication
         # and if it has an id_association, it needs to be checked.
-        query = query.filter((Publication.id_association is None) | (Publication.is_publication_interne.is_(False)) | (Publication.id_association.in_([role.mandat.association_id for role in current_user.associations])))
-
+        query = query.filter(
+            (Publication.id_association == None) |
+            (Publication.is_publication_interne.is_(False)) |
+            (Publication.id_association.in_([role.mandat.association_id for role in current_user.associations]))
+        )
         # Filter out sensitive publications if user is not 'baptise'
         if not (current_user.est_baptise or current_user.est_superutilisateur):
             query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
