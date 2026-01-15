@@ -1,0 +1,68 @@
+// react-select theming to support light and dark modes
+
+.react-select__control {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border-color) !important;
+    color: var(--text-color) !important;
+}
+
+.react-select__menu {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border-color) !important;
+    z-index: 1000 !important;
+}
+
+.react-select__option {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+
+    &--is-focused {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    &--is-selected {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    &:active {
+        background-color: var(--primary-color-hover) !important;
+    }
+}
+
+.react-select__single-value {
+    color: var(--text-color) !important;
+}
+
+.react-select__multi-value {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.react-select__multi-value__label {
+    color: white !important;
+}
+
+.react-select__multi-value__remove {
+    color: white !important;
+    &:hover {
+        background-color: var(--primary-color-hover) !important;
+        color: white !important;
+    }
+}
+
+.react-select__input-container {
+    color: var(--text-color) !important;
+}
+
+.react-select__placeholder {
+    color: var(--text-color-secondary) !important;
+}
+
+.react-select__indicator {
+    color: var(--text-color-secondary) !important;
+    &:hover {
+        color: var(--text-color) !important;
+    }
+}
