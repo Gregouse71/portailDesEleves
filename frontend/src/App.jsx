@@ -7,7 +7,6 @@ import Soifguard from "./pages/Soifguard";
 import Admin from "./pages/Admin";
 import ListeAssos from "./components/pages/AssoListe";
 import Home from "./components/pages/Home";
-import AccueilSoifguard from "./components/pages/AccueilSoifguard";
 import Asso from "./components/pages/Asso";
 import Trombi from "./components/pages/Trombi";
 import TrombiPromo from "./components/pages/TrombiPromo";
@@ -77,9 +76,7 @@ export default function App() {
             <Route path="vendomes" element={<Vendomes />} />
             <Route path="palums" element={<Palums />} />
           </Route>
-          <Route path="soifguard">
-            <Route path="accueil" element={<AccueilSoifguard />} />
-            <Route path="" element={<Soifguard />} />
+          <Route path="soifguard/*" element={<Soifguard />}>
           </Route>
           <Route path="/administration" element={<Admin />} />
         </Route>

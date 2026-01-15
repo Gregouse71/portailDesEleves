@@ -2,9 +2,10 @@
 # Contient les decorateurs personnalises pour s'assurer que les permissions sont respectees
 
 from functools import wraps
-from flask import jsonify, request
+from flask import jsonify, abort
 from flask_login import current_user
-from app.models import *
+from app.models.models_divers import Permission
+from app.models.models_soifguard import PermissionSoifguard
 
 # a utiliser en plus de @login_required, on ne verifie pas ici l'authentification
 # le superutilisateur a tous les droits
@@ -40,6 +41,23 @@ def est_membre_de_asso(f):
         if current_user.est_superutilisateur or is_membre:
             return f(*args, **kwargs)
         return jsonify({"message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
+    return decorated_function
+
+def a_permission(*args1):
+    """
+    Vérifie que l'utilisateur qui fait la requete a au moins une des permissions
+    """
+    print(args1)
+    def decorated_function(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if current_user.est_superutilisateur:
+                return f(*args, **kwargs)
+            
+            if any([Permission.query.filter_by(utilisateur_id=current_user.utilisateur_id, permission=perm)] for perm in args1):
+                return f(*args, **kwargs)
+            abort(403)
+        return wrapper
     return decorated_function
 
 def a_permission_soifguard_octo(f):

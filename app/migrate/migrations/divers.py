@@ -1,6 +1,6 @@
 import sqlite3
 from app import db
-from app.models.models_divers import Conso
+from app.models.models_divers import ConsoSoifguard
 
 def migrate_divers():
     # Connect to the old database
@@ -15,7 +15,7 @@ def migrate_divers():
         if row[2] == 'Biere':
             asso = 'biero'
         
-        new_conso = Conso(
+        new_conso = ConsoSoifguard(
             nom_conso=row[1],
             asso=asso,
             prix=row[5],

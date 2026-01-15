@@ -1,70 +1,72 @@
 from app.services import db
 from app.services.services_global import get_global_var, set_global_var
-from app.models import Utilisateur, Conso
+from app.models import Utilisateur, ConsoSoifguard
+from app.models.models_soifguard import OperationSoifguard
+from sqlalchemy import or_
 
 
-def _encaisser(utilisateur:Utilisateur, prix:float, asso:str, nom_conso:str):
-    if asso == 'octo' :
-        max_negatif_octo = get_global_var("max_negatif_octo")
-        if max_negatif_octo :
-            nouveau_solde = utilisateur.solde_octo - prix
-            if nouveau_solde >= max_negatif_octo :
-                utilisateur.solde_octo = nouveau_solde
-                db.session.commit()
-                return (True, f"{utilisateur.nom_utilisateur} : {nom_conso}, -{prix}€ dans compte octo. Nouveau solde : {utilisateur.solde_octo}.", prix, asso)
-            else :
-                return (False, f"Transaction avec {utilisateur.nom_utilisateur} refusée : fonds insuffisants ({utilisateur.solde_octo}).", 0, asso)
-        else :
-            utilisateur.solde_octo -= prix
-            db.session.commit()
-            return (True, f"{utilisateur.nom_utilisateur} : {nom_conso}, -{prix}€ dans compte octo. Nouveau solde : {utilisateur.solde_octo}." , prix, asso)
-    else :
-        max_negatif_biero = get_global_var("max_negatif_biero")
-        if max_negatif_biero :
-            nouveau_solde = utilisateur.solde_biero - prix
-            if nouveau_solde >= max_negatif_biero :
-                utilisateur.solde_biero = nouveau_solde
-                db.session.commit()
-                return (True, f"{utilisateur.nom_utilisateur} : {nom_conso}, -{prix}€ dans compte biero. Nouveau solde : {utilisateur.solde_biero}." , prix, asso)
-            else :
-                return (False, f"Transaction avec {utilisateur.nom_utilisateur} refusée : fonds insuffisants ({utilisateur.solde_biero}).", 0, asso)
-        else :
-            utilisateur.solde_biero -= prix
-            db.session.commit()
-            return (True, f"{utilisateur.nom_utilisateur} : {nom_conso}, -{prix}€ dans compte biero. Nouveau solde : {utilisateur.solde_biero}." , prix, asso)
+def _encaisser(utilisateur: Utilisateur, auteur: Utilisateur, prix: float, asso: str, nom_conso: str):
+    max_negatif = get_global_var("max_negatif_octo") if asso == 'octo' else get_global_var("max_negatif_biero")
+    solde_actuel = utilisateur.solde_octo if asso == "octo" else utilisateur.solde_biero
+    est_cotisant = utilisateur.est_cotisant_octo if asso == "octo" else utilisateur.est_cotisant_biero
 
-def encaisser_utilisateur(utilisateur:Utilisateur, conso:Conso) :
+    nouveau_solde = solde_actuel - prix
+    if max_negatif is not None and nouveau_solde <= max_negatif:
+        return None
+
+    operation = OperationSoifguard(
+        asso, utilisateur, auteur, est_cotisant, 
+        f"Conso {nom_conso} pour {utilisateur.nom_utilisateur} {"" if est_cotisant else "non "}cotisant à {prix}€. Avant : {solde_actuel}. Après : {nouveau_solde}",
+        -prix
+    )
+    db.session.add(operation)
+
+    if asso == "octo":
+        utilisateur.solde_octo = nouveau_solde
+    else:
+        utilisateur.solde_biero = nouveau_solde
+
+    db.session.commit()
+    return utilisateur.to_dict()
+
+
+def encaisser_utilisateur(utilisateur: Utilisateur, auteur: Utilisateur, conso: ConsoSoifguard) :
     """
     Encaisse un utilisateur a l'octo ou a la biero selon le prix de la conso, s'il est cotisant ou non, 
     si sa dette ne depasse pas la dette maximale autorisee par l'asso. 
-    Renvoie (etat, message, prix_encaisse, asso)
-    - etat : True si la transaction a eu lieu, ou False si le solde est insuffisant
-    - message : un message de log
-    - prix : le prix qui a ete debite si c'est True
-    - asso : l'asso concernee
+    Renvoie le nouvel état de l'utilisateur
     """
-    if conso.prix_cotisant != None :
-        if conso.asso == 'octo' and utilisateur.est_cotisant_octo :
-            return _encaisser(utilisateur, conso.prix_cotisant, 'octo',  conso.nom_conso)
-        elif conso.asso == 'biero' and utilisateur.est_cotisant_biero :
-            return _encaisser(utilisateur, conso.prix_cotisant, 'biero',  conso.nom_conso)
-        else :
-            return _encaisser(utilisateur, conso.prix, conso.asso, conso.nom_conso)
+    if conso.prix_cotisant is not None and (
+            (conso.asso == 'octo' and utilisateur.est_cotisant_octo) 
+         or (conso.asso == 'biero' and utilisateur.est_cotisant_biero)
+        ):
+            return _encaisser(utilisateur, auteur, conso.prix_cotisant, conso.asso, conso.nom_conso)
     else :
-        return _encaisser(utilisateur, conso.prix, conso.asso,  conso.nom_conso)
+        return _encaisser(utilisateur, auteur, conso.prix, conso.asso,  conso.nom_conso)
 
-def crediter_utilisateur(utilisateur:Utilisateur, somme_a_crediter:int=0, asso='octo'):
+def crediter_utilisateur(utilisateur: Utilisateur, auteur: Utilisateur, somme: str, asso: str):
     """
     credite le compte octo ou biero d'un utilisateu. La somme peut etre positive (gain) ou negative (perte)
     Renvoie un message de log
     """
+    solde_actuel = utilisateur.solde_octo if asso == "octo" else utilisateur.solde_biero
+    est_cotisant = utilisateur.est_cotisant_octo if asso == "octo" else utilisateur.est_cotisant_biero
+    nouveau_solde = solde_actuel + somme
+
+    operation = OperationSoifguard(
+        asso, utilisateur, auteur, est_cotisant, 
+        f"Credit de {utilisateur.nom_utilisateur} de {somme}€.",
+        somme
+    )
+
     if asso == 'octo' :
-        utilisateur.solde_octo += somme_a_crediter
-        return f"{utilisateur.nom_utilisateur} : ajout de {somme_a_crediter}€ sur compte octo. Nouveau solde : {utilisateur.solde_octo}."
-    elif asso == 'biero' :
-        utilisateur.solde_biero += somme_a_crediter
-        return f"{utilisateur.nom_utilisateur} : ajout de {somme_a_crediter}€ sur compte biero. Nouveau solde : {utilisateur.solde_biero}."
+        utilisateur.solde_octo = nouveau_solde
+    else:
+        utilisateur.solde_biero = nouveau_solde
+
+    db.session.add(operation)
     db.session.commit()
+    return utilisateur.to_dict()
 
 def fixer_negatif_maximum(asso:str, maximum:int) :
     """
@@ -75,35 +77,58 @@ def fixer_negatif_maximum(asso:str, maximum:int) :
         raise ValueError("La dette maximale doit etre positive ou nulle")
     if asso == 'octo' :
         set_global_var('max_negatif_octo', maximum)
+        return maximum
     elif asso == 'biero' :
         set_global_var('max_negatif_biero', maximum)
+        return maximum
     else :
         raise ValueError("asso doit etre 'octo' ou 'biero'")
     db.session.commit()
 
 def ajouter_nouvelle_conso(nom_conso:str, asso:str, prix:float, prix_cotisant:float=None) :
-    conso = Conso(nom_conso=nom_conso, asso=asso, prix=prix, prix_cotisant=prix_cotisant)
+    conso = ConsoSoifguard(nom_conso=nom_conso, asso=asso, prix=prix, prix_cotisant=prix_cotisant)
     db.session.add(conso)
     db.session.commit()
+    return conso.to_dict()
 
-def supprimer_conso(conso:Conso):
+def supprimer_conso(conso: ConsoSoifguard):
     db.session.delete(conso)
     db.session.commit()
+    return conso.to_dict()
 
-def modifier_prix_conso(conso:Conso, nouveau_prix:float, nouveau_prix_cotisant:float=None) :
+def modifier_conso(conso: ConsoSoifguard, data) :
     """
     Modifie le prix de la conso. Si prix cotisant n'existe pas ou est egal a nouveau prix, le met a None
     """
-    if not nouveau_prix_cotisant or nouveau_prix_cotisant == nouveau_prix :
-        conso.prix = nouveau_prix
-        conso.prix_cotisant = None
-    else :
-        conso.prix = nouveau_prix
-        conso.prix_cotisant = nouveau_prix_cotisant
+    conso = conso.patch(data)
     db.session.commit()
+    return conso.to_dict()
 
-def liste_des_consos(asso:str='octo'):
+def liste_des_consos():
     """
     Charge la liste des consos de la biero ou de l'octo
     """
-    return Conso.query.filter_by(asso=asso).all()
+    return {
+        key: [row.to_dict() for row in ConsoSoifguard.query.filter_by(asso=key).all()]
+        for key in ["octo", "biero"]
+    }
+
+def liste_operations(asso: str, page: int=0, per: int=20, query: str = ""):
+    """
+    Renvoie la liste des opérations récentes
+    """
+    query_obj = OperationSoifguard.query.filter_by(asso=asso)
+
+    if query:
+        query_obj = query_obj.join(OperationSoifguard.utilisateur).filter(
+            or_(
+                Utilisateur.nom_utilisateur.ilike(f"%{query}%"),
+                Utilisateur.prenom.ilike(f"%{query}%"),
+                Utilisateur.nom.ilike(f"%{query}%"),
+                Utilisateur.surnom.ilike(f"%{query}%")
+            )
+        )
+
+    page_res = query_obj.order_by(OperationSoifguard.date.desc()).paginate(page=page, per_page=per)
+
+    return {"operations": [o.to_dict() for o in page_res], "count": page_res.total}

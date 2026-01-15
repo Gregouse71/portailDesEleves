@@ -2,10 +2,10 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from app import db
-from app.models import Utilisateur, Conso, PermissionSoifguard
-from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_prix_conso, liste_des_consos
+from app.models import Utilisateur, ConsoSoifguard, PermissionSoifguard
+from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations
 from app.services.services_global import get_global_var
-from app.utils.decorators import superutilisateur_required, a_permission_soifguard_octo, a_permission_soifguard_biero
+from app.utils.decorators import superutilisateur_required, a_permission
 
 # Creer le blueprint pour soifguard
 controllers_soifguard = Blueprint('controllers_soifguard', __name__)
@@ -62,153 +62,92 @@ def ajouter_permission():
     db.session.commit()
     return jsonify({"success": True, "message": f"Permission '{asso}' ajoutée à l'utilisateur {id_utilisateur}."})
 
-@controllers_soifguard.route('/encaisser_octo', methods=['POST'])
+@controllers_soifguard.post('/encaisser/<string:asso>')
 @login_required
-@a_permission_soifguard_octo
-def encaisser_octo():
+@a_permission("octo", "biero")
+def encaisser_octo(asso: str):
+    """
+    Quand on consomme
+    """
     data = request.json
     utilisateur = Utilisateur.query.get(data['id_utilisateur'])
-    conso = Conso.query.get(data['id_conso'])
+    conso = ConsoSoifguard.query.get(data['id_conso'])
     if not utilisateur or not conso:
-        return jsonify({"success": False, "message": "Utilisateur ou conso introuvable"}), 404
-    if conso.asso != 'octo':
-        return jsonify({"success": False, "message": "Cette conso n'est pas gérée par l'octo"}), 403
-    etat, message, prix_encaisse, asso = encaisser_utilisateur(utilisateur, conso)
-    return jsonify({"success": etat, "message": message, "prix_encaisse": prix_encaisse, "asso": asso})
+        return jsonify({"message": "Utilisateur ou conso introuvable"}), 404
 
-@controllers_soifguard.route('/encaisser_biero', methods=['POST'])
-@login_required
-@a_permission_soifguard_biero
-def encaisser_biero():
-    data = request.json
-    utilisateur = Utilisateur.query.get(data['id_utilisateur'])
-    conso = Conso.query.get(data['id_conso'])
-    if not utilisateur or not conso:
-        return jsonify({"success": False, "message": "Utilisateur ou conso introuvable"}), 404
-    if conso.asso != 'biero':
-        return jsonify({"success": False, "message": "Cette conso n'est pas gérée par la biero"}), 403
-    etat, message, prix_encaisse, asso = encaisser_utilisateur(utilisateur, conso)
-    return jsonify({"success": etat, "message": message, "prix_encaisse": prix_encaisse, "asso": asso})
+    if conso.asso == "octo" or conso.asso == "biero":
+        return jsonify(encaisser_utilisateur(utilisateur, current_user, conso))
 
-@controllers_soifguard.route('/crediter_octo', methods=['POST'])
+    return jsonify({"message": "Asso invalide"}), 400
+
+@controllers_soifguard.post('/crediter/<string:asso>')
 @login_required
-@a_permission_soifguard_octo
-def crediter_octo():
+@a_permission("octo", "biero")
+def crediter_octo(asso: str):
+    """
+    Quand on mets de l'argent sur le compte
+    """
     data = request.json
     utilisateur = Utilisateur.query.get(data['id_utilisateur'])
     if not utilisateur:
         return jsonify({"success": False, "message": "Utilisateur introuvable"}), 404
-    message = crediter_utilisateur(utilisateur, data['somme'], 'octo')
-    db.session.commit()
-    return jsonify({"success": True, "message": message})
+    
+    return jsonify(crediter_utilisateur(utilisateur, current_user, data['somme'], asso))
 
-@controllers_soifguard.route('/crediter_biero', methods=['POST'])
+@controllers_soifguard.post('/fixer_negatif_maximum/<string:asso>')
 @login_required
-@a_permission_soifguard_biero
-def crediter_biero():
-    data = request.json
-    utilisateur = Utilisateur.query.get(data['id_utilisateur'])
-    if not utilisateur:
-        return jsonify({"success": False, "message": "Utilisateur introuvable"}), 404
-    message = crediter_utilisateur(utilisateur, data['somme'], 'biero')
-    db.session.commit()
-    return jsonify({"success": True, "message": message})
-
-@controllers_soifguard.route('/fixer_negatif_maximum_octo', methods=['POST'])
-@login_required
-@a_permission_soifguard_octo
-def fixer_negatif_maximum_octo():
+@a_permission("octo", "biero")
+def fixer_maximum(asso: str):
     data = request.json
     try:
-        fixer_negatif_maximum('octo', data['maximum'])
-        return jsonify({"success": True, "message": "Plafond de dette octo mis à jour"})
+        return jsonify(fixer_negatif_maximum(asso, data['maximum']))
     except ValueError as e:
         return jsonify({"success": False, "message": str(e)}), 400
 
-@controllers_soifguard.route('/fixer_negatif_maximum_biero', methods=['POST'])
+@controllers_soifguard.post('/conso')
 @login_required
-@a_permission_soifguard_biero
-def fixer_negatif_maximum_biero():
+@a_permission("octo", "biero")
+def post_conso():
+    """
+    Crée une consommation possible
+    """
     data = request.json
-    try:
-        fixer_negatif_maximum('biero', data['maximum'])
-        return jsonify({"success": True, "message": "Plafond de dette biero mis à jour"})
-    except ValueError as e:
-        return jsonify({"success": False, "message": str(e)}), 400
+    asso = data["asso"]
+    if asso not in ["octo", "biero"]:
+        return jsonify({"message": "Asso incorrecte"}), 400
+    return jsonify(ajouter_nouvelle_conso(data['nom_conso'], asso, data['prix'], data.get('prix_cotisant')))
 
-@controllers_soifguard.route('/ajouter_conso_octo', methods=['POST'])
+@controllers_soifguard.delete('/conso/<int:id>')
 @login_required
-@a_permission_soifguard_octo
-def ajouter_conso_octo():
-    data = request.json
-    if data['asso'] != 'octo':
-        return jsonify({"success": False, "message": "Cette conso n'est pas gérée par l'octo"}), 403
-    ajouter_nouvelle_conso(data['nom_conso'], 'octo', data['prix'], data.get('prix_cotisant'))
-    return jsonify({"success": True, "message": "Conso ajoutée avec succès pour l'octo"})
-
-@controllers_soifguard.route('/ajouter_conso_biero', methods=['POST'])
-@login_required
-@a_permission_soifguard_biero
-def ajouter_conso_biero():
-    data = request.json
-    if data['asso'] != 'biero':
-        return jsonify({"success": False, "message": "Cette conso n'est pas gérée par la biero"}), 403
-    ajouter_nouvelle_conso(data['nom_conso'], 'biero', data['prix'], data.get('prix_cotisant'))
-    return jsonify({"success": True, "message": "Conso ajoutée avec succès pour la biero"})
-
-@controllers_soifguard.route('/supprimer_conso_octo', methods=['DELETE'])
-@login_required
-@a_permission_soifguard_octo
-def supprimer_conso_octo():
-    data = request.json
-    conso = Conso.query.get(data['id_conso'])
-    if not conso or conso.asso != 'octo':
-        return jsonify({"success": False, "message": "Conso introuvable ou non gérée par l'octo"}), 404
+@a_permission("octo", "biero")
+def delete_conso(id: int):
+    """
+    Supprime une consommation
+    """
+    conso = ConsoSoifguard.query.get(id)
+    if not conso:
+        return jsonify({"success": False, "message": "Conso introuvable"}), 404
     supprimer_conso(conso)
-    return jsonify({"success": True, "message": "Conso supprimée avec succès de l'octo"})
+    return jsonify(supprimer_conso(conso))
 
-@controllers_soifguard.route('/supprimer_conso_biero', methods=['DELETE'])
+@controllers_soifguard.put('/conso/<int:id>')
 @login_required
-@a_permission_soifguard_biero
-def supprimer_conso_biero():
+@a_permission("octo", "biero")
+def put_conso(id: int):
+    """
+    Modifie une conso
+    """
     data = request.json
-    conso = Conso.query.get(data['id_conso'])
-    if not conso or conso.asso != 'biero':
-        return jsonify({"success": False, "message": "Conso introuvable ou non gérée par la biero"}), 404
-    supprimer_conso(conso)
-    return jsonify({"success": True, "message": "Conso supprimée avec succès de la biero"})
+    conso = ConsoSoifguard.query.get(id)
+    if not conso:
+        return jsonify({"success": False, "message": "Conso introuvable"}), 404
 
-@controllers_soifguard.route('/modifier_prix_conso_octo', methods=['PUT'])
-@login_required
-@a_permission_soifguard_octo
-def modifier_prix_conso_octo():
-    data = request.json
-    conso = Conso.query.get(data['id_conso'])
-    if not conso or conso.asso != 'octo':
-        return jsonify({"success": False, "message": "Conso introuvable ou non gérée par l'octo"}), 404
-    modifier_prix_conso(conso, data['nouveau_prix'], data.get('nouveau_prix_cotisant'))
-    return jsonify({"success": True, "message": "Prix de la conso octo modifié avec succès"})
+    return jsonify(modifier_conso(conso, data))
 
-@controllers_soifguard.route('/modifier_prix_conso_biero', methods=['PUT'])
+@controllers_soifguard.get('/liste_consos')
 @login_required
-@a_permission_soifguard_biero
-def modifier_prix_conso_biero():
-    data = request.json
-    conso = Conso.query.get(data['id_conso'])
-    if not conso or conso.asso != 'biero':
-        return jsonify({"success": False, "message": "Conso introuvable ou non gérée par la biero"}), 404
-    modifier_prix_conso(conso, data['nouveau_prix'], data.get('nouveau_prix_cotisant'))
-    return jsonify({"success": True, "message": "Prix de la conso biero modifié avec succès"})
-
-@controllers_soifguard.route('/liste_consos/<asso>', methods=['GET'])
-@login_required
-def liste_consos(asso):
-    consos = liste_des_consos(asso)
-    consos_json = [
-        {"id": conso.id, "nom_conso": conso.nom_conso, "prix": conso.prix, "prix_cotisant": conso.prix_cotisant}
-        for conso in consos
-    ]
-    return jsonify({"success": True, "consos": consos_json})
+def liste_consos():
+    return jsonify(liste_des_consos())
 
 @controllers_soifguard.route("/verifier_permission", methods=["POST"])
 @login_required
@@ -222,43 +161,26 @@ def verifier_permission():
     has_permission = permission is not None or current_user.est_superutilisateur
     return jsonify({"success": True, "has_permission": has_permission}), 200
 
-@controllers_soifguard.route('/switch_cotisation_octo/<int:id_utilisateur>', methods=['POST'])
+@controllers_soifguard.put('/toggle_cotisation/<int:id_utilisateur>')
 @login_required
-@a_permission_soifguard_octo
+@a_permission("octo", "biero")
 def switch_cotisation_octo(id_utilisateur:int) :
     """
     Rend cotisant un utilisateur non cotisant, et rend non cotisant un utilisateur cotisant
-    Pour l'octo
     """
-    utilisateur = db.session.get(Utilisateur, id_utilisateur)
-    if utilisateur:
-        if utilisateur.est_cotisant_octo :
-            utilisateur.est_cotisant_octo = False
-        else :
-            utilisateur.est_cotisant_octo = True
-        db.session.commit()
-        return jsonify({"message":"cotisation mise à jour avec succes"}), 200
-    else :
-        return jsonify({"message":"utilisateur introuvable"}), 400
-    
-@controllers_soifguard.route('/switch_cotisation_biero/<int:id_utilisateur>', methods=['POST'])
-@login_required
-@a_permission_soifguard_biero
-def switch_cotisation_biero(id_utilisateur:int) :
-    """
-    Rend cotisant un utilisateur non cotisant, et rend non cotisant un utilisateur cotisant
-    Pour la biero
-    """
-    utilisateur = db.session.get(Utilisateur, id_utilisateur)
-    if utilisateur:
-        if utilisateur.est_cotisant_biero :
-            utilisateur.est_cotisant_biero = False
-        else :
-            utilisateur.est_cotisant_biero = True
-        db.session.commit()
-        return jsonify({"message":"cotisation mise à jour avec succes"}), 200
-    else :
-        return jsonify({"message":"utilisateur introuvable"}), 400
+    data = request.json
+    asso = data.get("asso")
+    utilisateur = Utilisateur.query.get(id_utilisateur)
+
+    if asso not in ["octo", "biero"] or not utilisateur:
+        return jsonify({"message":"utilisateur introuvable ou asso invalide"}), 400
+
+    if asso == "octo":
+        utilisateur.est_cotisant_octo = not utilisateur.est_cotisant_octo
+    elif asso == "biero":
+        utilisateur.est_cotisant_biero = not utilisateur.est_cotisant_biero
+    db.session.commit()
+    return jsonify(utilisateur.to_dict()), 200
 
 @controllers_soifguard.route('/get_negatif_max/<string:asso>', methods=['GET'])
 @login_required
@@ -273,6 +195,19 @@ def get_negatif_max(asso:str) :
     else :
         return jsonify({"message": "erreur : asso doit etre octo ou biero"}), 400
 
-    
-      
-    
+
+@controllers_soifguard.post('/operations')
+@login_required
+@a_permission("octo", "biero")
+def get_liste_operations():
+    """
+    Renvoie la liste des opérations récentes
+    """
+    data = request.json
+    page = data.get("page", 0)
+    per = data.get("per", 20)
+    asso = data.get("asso", "")
+    query = data.get("query", "")
+
+    return jsonify(liste_operations(asso, page=page, per=per, query=query)), 200
+

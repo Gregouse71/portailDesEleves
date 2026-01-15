@@ -11,7 +11,7 @@ export default function Search() {
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchResults', query],
-    queryFn: () => searchUsers(query),
+    queryFn: () => searchUsers({ query }),
   });
 
   return (

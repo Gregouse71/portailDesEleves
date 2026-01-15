@@ -1,4 +1,4 @@
-import { API_BASE_URL, handleResponse } from "./base";
+import { API_BASE_URL, createApiPost, handleResponse } from "./base";
 
 
 export async function obtenirAssosUtilisateur(id_utilisateur) {
@@ -131,13 +131,11 @@ export async function supprimerCo(co_id) {
   return handleResponse(response);
 }
 
-export async function searchUsers(query) {
-  const response = await fetch(`${API_BASE_URL}/users/search/${query}`, {
-    method: "GET",
-    credentials: "include",
-  });
-  return handleResponse(response);
-}
+/** Creation d'une consommation
+ * args :
+ *  - data : { query, limit=None, offset=None }
+ */
+export const searchUsers = createApiPost(`${API_BASE_URL}/users/search`)
 
 export async function ajouterContenuUtilisateur(id_utilisateur, file) {
   try {

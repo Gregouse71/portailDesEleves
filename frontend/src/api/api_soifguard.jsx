@@ -1,187 +1,48 @@
-import { SOIFGUARD_BASE_URL, handleResponse } from "./base";
+import { SOIFGUARD_BASE_URL, createApiPost, createApiDelete, createApiPut, createApiGet } from "./base";
 
+/** Fait l'encaissement pour une des assos
+ * args :
+ *  - data : { id_utilisateur, somme }
+ *  - asso : "octo" ou "biero"
+ */
+export const encaisserAsso = createApiPost(`${SOIFGUARD_BASE_URL}/encaisser`)
 
-export async function encaisserOcto(id_utilisateur, id_conso) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/encaisser_octo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_utilisateur, id_conso }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
+/** Ajoute de l'argent sur un compte
+ * args :
+ *  - data : { id_utilisateur, somme }
+ *  - asso : "octo" ou "biero"
+ */
+export const crediterAsso = createApiPost(`${SOIFGUARD_BASE_URL}/crediter`)
 
-export async function encaisserBiero(id_utilisateur, id_conso) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/encaisser_biero`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_utilisateur, id_conso }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
+/** Ajoute de l'argent sur un compte
+ * args :
+ *  - data : { maximum }
+ *  - asso : "octo" ou "biero"
+ */
+export const fixerDetteMax = createApiPost(`${SOIFGUARD_BASE_URL}/fixer_negatif_maximum`)
 
-export async function crediterOcto(id_utilisateur, somme) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/crediter_octo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_utilisateur, somme }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
+/** Creation d'une consommation
+ * args :
+ *  - data : { nom_conso, prix, prix_cotisant, asso : "octo" ou "biero" }
+ */
+export const ajouterConso = createApiPost(`${SOIFGUARD_BASE_URL}/conso`)
 
-export async function crediterBiero(id_utilisateur, somme) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/crediter_biero`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_utilisateur, somme }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
+/** Suppression d'une consommation
+ * args :
+ *  - id : id a supprimer
+ */
+export const supprimerConso = createApiDelete(`${SOIFGUARD_BASE_URL}/conso`)
 
-export async function fixerNegatifMaximumOcto(maximum) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/fixer_negatif_maximum_octo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ maximum }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
+/** Modification d'une consommation
+ * args :
+ *  - data : { nom_conso, prix, prix_cotisant }
+ *  - id : id de la conso
+ */
+export const modifierConso = createApiPut(`${SOIFGUARD_BASE_URL}/conso`)
 
-export async function fixerNegatifMaximumBiero(maximum) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/fixer_negatif_maximum_biero`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ maximum }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export async function ajouterConsoOcto(nom_conso, prix, prix_cotisant) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/ajouter_conso_octo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ nom_conso, asso: "octo", prix, prix_cotisant }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export async function ajouterConsoBiero(nom_conso, prix, prix_cotisant) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/ajouter_conso_biero`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ nom_conso, asso: "biero", prix, prix_cotisant }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export async function supprimerConsoOcto(id_conso) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/supprimer_conso_octo`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_conso }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export async function supprimerConsoBiero(id_conso) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/supprimer_conso_biero`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_conso }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export async function modifierPrixConsoOcto(id_conso, nouveau_prix, nouveau_prix_cotisant) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/modifier_prix_conso_octo`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_conso, nouveau_prix, nouveau_prix_cotisant }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export async function modifierPrixConsoBiero(id_conso, nouveau_prix, nouveau_prix_cotisant) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/modifier_prix_conso_biero`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_conso, nouveau_prix, nouveau_prix_cotisant }),
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-
-export async function getListeConsos(asso = "octo") {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/liste_consos/${asso}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Erreur lors de la récupération des consos :", error);
-  }
-}
+/** Recupere la liste des consos
+ */
+export const getListeConsos = createApiGet(`${SOIFGUARD_BASE_URL}/liste_consos`)
 
 export async function verifierPermission(asso) {
   try {
@@ -239,30 +100,12 @@ export async function obtenirPermissionsSoifguard() {
   }
 }
 
-
-export async function switchCotisationOcto(idUtilisateur) {
-  try {
-    await fetch(`${SOIFGUARD_BASE_URL}/switch_cotisation_octo/${idUtilisateur}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-  } catch (error) {
-    console.error("Erreur lors du changement de cotisation Octo :", error);
-  }
-}
-
-export async function switchCotisationBiero(idUtilisateur) {
-  try {
-    await fetch(`${SOIFGUARD_BASE_URL}/switch_cotisation_biero/${idUtilisateur}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-  } catch (error) {
-    console.error("Erreur lors du changement de cotisation Biero :", error);
-  }
-}
+/** Modification de la cotiz
+ * args :
+ *  - data : { asso }
+ *  - id : id de l'utilisateur
+ */
+export const toggleCotisation = createApiPut(`${SOIFGUARD_BASE_URL}/toggle_cotisation`)
 
 export async function obtenirDetteMaxi(asso) {
   const res = await fetch(`${SOIFGUARD_BASE_URL}/get_negatif_max/${asso}`,
@@ -271,3 +114,9 @@ export async function obtenirDetteMaxi(asso) {
   const data = await res.json();
   return data;
 }
+
+/** Liste des dernières opérations
+ * args :
+ *  - data : { asso : "octo" ou "biero", offset, limit }
+ */
+export const listeOperations = createApiPost(`${SOIFGUARD_BASE_URL}/operations`)

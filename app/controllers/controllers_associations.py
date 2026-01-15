@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 
 from app import db
-from app.utils.decorators import est_membre_de_asso, superutilisateur_required
+from app.utils.decorators import est_membre_de_asso, superutilisateur_required, a_permission
 from app.services.services_utilisateurs import get_utilisateur
 from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position
 
@@ -322,6 +322,7 @@ def route_get_assos():
 
 @controllers_associations.route('/<int:association_id>', methods=['GET'])
 @login_required
+@a_permission("octo")
 def route_get_asso(association_id):
     if current_user.est_baptise or current_user.est_superutilisateur:
         asso = Association.query.filter_by(id=association_id).first()

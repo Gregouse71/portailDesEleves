@@ -1,14 +1,15 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime, date
+from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
 
-from app.services import *
-from app.utils.decorators import *
-from app.utils.verification_format import *
-from app.services.services_utilisateurs import *
-from app.models.models_associations import AssociationMembre
+from app import db
+from app.utils.verification_format import valider_questions_du_portail
+from app.utils.decorators import superutilisateur_required
+from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo
+from app.models.models_utilisateurs import Utilisateur
+from app.models.models_associations import AssociationMembre, AssociationMandat
 
 
 # Creer le blueprint pour les utilisateurs
@@ -112,7 +113,7 @@ def obtenir_infos_profil(user_id: int):
     """
     Fournit les informations affichees sur le profil d'un utilisateur
     """
-    utilisateur = get_utilisateur(user_id)
+    utilisateur = Utilisateur.query.get(user_id)
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
     else:
@@ -125,7 +126,7 @@ def assos_utilisateur(user_id: int):
     """
     Renvoie les assos de l'utilisateur, avec leurs noms et le rôle dans l'asso
     """
-    utilisateur = get_utilisateur(user_id)
+    utilisateur = Utilisateur.query.get(user_id)
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
@@ -164,7 +165,7 @@ def questions_reponses(user_id: int):
     """
     Renvoie ou modifie les réponses au questions du portail
     """
-    utilisateur = get_utilisateur(user_id)
+    utilisateur = Utilisateur.query.get(user_id)
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
@@ -190,7 +191,7 @@ def set_user_infos(user_id: int):
     """
     Renvoie ou modifie les réponses au questions du portail
     """
-    utilisateur = get_utilisateur(user_id)
+    utilisateur = Utilisateur.query.get(user_id)
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
@@ -239,7 +240,7 @@ def modifier_photo_utilisateur(user_id: int, new_name: str):
     """
     Modifie la photo de profil d'un utilisateur.
     """
-    utilisateur = get_utilisateur(user_id)
+    utilisateur = Utilisateur.query.get(user_id)
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
@@ -258,7 +259,7 @@ def route_supprimer_co(co_id: int):
     Supprime un co de l'utilisateur connecte et de son co
     """
     utilisateur = current_user
-    co = get_utilisateur(co_id)
+    co = Utilisateur.query.get(co_id)
     if not co:
         return jsonify({"message": "Co non trouvé"}), 404
     try:
@@ -274,7 +275,7 @@ def route_ajouter_co(new_co_id: int):
     """
     Cree un lien de colocation entre deux utilisateurs en modifiant leurs attributs.
     """
-    co = get_utilisateur(new_co_id)
+    co = Utilisateur.query.get(new_co_id)
     if not co:
         return jsonify({"message": "Utilisateur Co non trouve"}), 404
     try:
@@ -294,7 +295,7 @@ def route_changer_co():
     user_id = int(data.get('user_id'))
     co_ids = data.get('co_ids')
 
-    user = get_utilisateur(user_id)
+    user = Utilisateur.query.get(user_id)
     if not user:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
@@ -302,7 +303,7 @@ def route_changer_co():
         return jsonify({"message": "Action non autorisée"}), 403
 
     if co_ids:
-        cos = [get_utilisateur(co_id) for co_id in co_ids]
+        cos = [Utilisateur.query.get(co_id) for co_id in co_ids]
         if None in cos:
             return jsonify({"message": "Un ou plusieurs cos n'ont pas été trouvés"}), 404
         changer_co(user, cos)
@@ -332,14 +333,14 @@ def route_selectionner_fillots():
     if not (current_user.id == user_id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
 
-    marrain = get_utilisateur(user_id)
+    marrain = Utilisateur.query.get(user_id)
     if not marrain:
         return jsonify({"message": "Utilisateur (marrain) non trouvé"}), 404
 
     if not isinstance(fillots_id_list, list) or not all(isinstance(i, int) for i in fillots_id_list):
         return jsonify({"message": "La liste d'IDs de fillots est invalide"}), 400
 
-    fillots_list = [get_utilisateur(id_fillot) for id_fillot in fillots_id_list]
+    fillots_list = [Utilisateur.query.get(id_fillot) for id_fillot in fillots_id_list]
 
     if None in fillots_list:
         return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
@@ -450,32 +451,31 @@ def route_add_utilisateur():
         db.session.rollback()
         return jsonify({"message": f"Erreur lors de l'ajout d'un utilisateur : {str(e)}"}), 500
 
-@controllers_utilisateurs.route('/search/<string:query>', methods=['GET'])
+@controllers_utilisateurs.post('/search')
 @login_required
-def search_users(query):
+def search_users():
     """
     Search for users by username, first name, last name or phone number.
     """
+    data = request.json
+    query = data.get("query")
+    limit = data.get("limit")
+    offset = data.get("offset")
     try:
         search_term = f"%{query}%"
-        users = Utilisateur.query.filter(
+        query = Utilisateur.query.filter(
             (Utilisateur.nom_utilisateur.ilike(search_term)) |
             (Utilisateur.prenom.ilike(search_term)) |
             (Utilisateur.nom.ilike(search_term)) |
             (Utilisateur.telephone.ilike(search_term))
-        ).all()
+        )
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+        users = query.all()
 
-        user_list = [
-            {
-                "id": user.id,
-                "nom_utilisateur": user.nom_utilisateur,
-                "prenom": user.prenom,
-                "nom": user.nom,
-                "promotion": user.promotion,
-                "photo": user.photo
-            }
-            for user in users
-        ]
+        user_list = [user.to_dict() for user in users]
 
         return jsonify(user_list)
     except Exception as e:

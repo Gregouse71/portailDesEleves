@@ -90,6 +90,11 @@ class Utilisateur(db.Model, UserMixin) :
     
     # Parties pour les jeux
     parties = db.relationship('JeuxPartie', back_populates='utilisateur')
+    # Permissions
+    permissions = db.relationship('Permission', back_populates='utilisateur')
+    # Operations soifguard
+    operations = db.relationship('OperationSoifguard', back_populates='utilisateur', foreign_keys='OperationSoifguard.utilisateur_id')
+    credits_asso = db.relationship('OperationSoifguard', back_populates='auteur', foreign_keys='OperationSoifguard.auteur_id')
 
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
@@ -257,5 +262,7 @@ class Utilisateur(db.Model, UserMixin) :
             "nombre_votes": self.nombre_votes,
             "solde_octo": self.solde_octo,
             "solde_biero": self.solde_biero,
-            "meilleur_score_2048": self.meilleur_score_2048
+            "meilleur_score_2048": self.meilleur_score_2048,
+            "est_cotisant_biero": self.est_cotisant_biero,
+            "est_cotisant_octo": self.est_cotisant_octo
         }
