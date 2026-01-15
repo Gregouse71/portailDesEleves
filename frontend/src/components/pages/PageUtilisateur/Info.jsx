@@ -16,7 +16,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         queryFn: () => obtenirDataUser(id),
     });
 
-    const [selectedP, setSelectedP] = useState({ value: donneesUtilisateur?.marrain.id, label: donneesUtilisateur?.marrain.nom_utilisateur });
+    const [selectedP, setSelectedP] = useState({ value: donneesUtilisateur?.marrain?.id, label: donneesUtilisateur?.marrain?.nom_utilisateur });
     const [selectedC, setSelectedC] = useState(donneesUtilisateur?.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
     const [selectedF, setSelectedF] = useState(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
     const [instruments, setInstruments] = useState(donneesUtilisateur?.instruments);

@@ -138,3 +138,36 @@ export async function searchUsers(query) {
   });
   return handleResponse(response);
 }
+
+export async function ajouterContenuUtilisateur(id_utilisateur, file) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/users/${id_utilisateur}/add_content`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+      },
+      credentials: "include",
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Erreur lors du téléversement du fichier");
+    }
+    return { success: true, message: data.message, fileName: data.file_name };
+  } catch (error) {
+    console.error("Erreur réseau :", error);
+    return { success: false, message: error.message };
+  }
+}
+
+export async function changerPhotoUtilisateur(id_utilisateur, new_name) {
+  const res = await fetch(`${API_BASE_URL}/users/${id_utilisateur}/modifier_photo/${new_name}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+  return handleResponse(res);
+}

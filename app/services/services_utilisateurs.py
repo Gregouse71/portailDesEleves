@@ -40,6 +40,13 @@ def get_utilisateur(utilisateur_id) -> Utilisateur:
     else:
         return None
 
+def set_user_photo(user_id: int, photo_filename: str):
+    """Met à jour la photo de profil d'un utilisateur."""
+    user = get_utilisateur(user_id)
+    if user:
+        user.photo = photo_filename
+        db.session.commit()
+
 def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     """
     Supprime le lien de colocation entre les deux utilisateurs. 

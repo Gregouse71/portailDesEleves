@@ -6,9 +6,10 @@ import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
-import { Container, Row, Col, Nav, Image, Button, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Nav, Image, Badge } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
+import DropdownEditer from "../elements/DropdownEditer";
 
 function Asso() {
     const navigate = useNavigate();
@@ -79,14 +80,13 @@ function Asso() {
                     <div className="position-relative">
                         <div className="asso-banner rounded-top" style={bannerStyle}>
                             {membreData.autorise && (
-                                <>
-                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 start-0 m-2" onClick={() => changerPhotoLogoOuBanniere('logo')}>
-                                        <img src="/assets/icons/add_photo.svg" alt="Changer le logo" style={{ width: '24px', height: '24px' }} /> Changer le logo
-                                    </Button>
-                                    <Button variant="primary" className="asso-primary-btn position-absolute top-0 end-0 m-2" onClick={() => changerPhotoLogoOuBanniere('banniere')}>
-                                        <img src="/assets/icons/upload_photo.svg" alt="Changer la bannière" style={{ width: '24px', height: '24px' }} /> Changer la bannière
-                                    </Button>
-                                </>)}
+                                <div className="position-absolute top-0 end-0 m-2">
+                                    <DropdownEditer list={[
+                                        { can: true, onClick: () => changerPhotoLogoOuBanniere('logo'), name: "Changer le logo" },
+                                        { can: true, onClick: () => changerPhotoLogoOuBanniere('banniere'), name: "Changer la bannière" },
+                                    ]}
+                                    />
+                                </div>)}
                         </div>
                     </div>
                 </Col>

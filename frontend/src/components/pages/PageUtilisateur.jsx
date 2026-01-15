@@ -1,17 +1,41 @@
-import { obtenirDataUser } from '../../api/api_utilisateurs';
+import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur } from '../../api/api_utilisateurs';
 import { useLayout } from '../../layouts/Layout';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
-import { useParams, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { useParams, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
+import DropdownEditer from '../elements/DropdownEditer';
 
 function PageUtilisateur() {
     const { userData } = useLayout();
     const { id } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const changerPhoto = () => {
+        document.getElementById('file-upload').click();
+    };
+
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+
+        if (file) {
+            try {
+                const result = await ajouterContenuUtilisateur(id, file);
+                if (result.success) {
+                    await changerPhotoUtilisateur(id, result.fileName);
+                    navigate(0);
+                } else {
+                    alert(`Erreur lors du téléversement : ${result.message}`);
+                }
+            } catch (error) {
+                alert(`Erreur lors du téléversement : ${error.message}`);
+            }
+        }
+    };
 
     const { data: donneesUtilisateur, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
@@ -31,6 +55,12 @@ function PageUtilisateur() {
 
     return (
         <Container className="py-4">
+            <input
+                type="file"
+                id="file-upload"
+                className="d-none"
+                onChange={handleFileChange}
+            />
             <Card>
                 <Card.Header
                     style={{
@@ -40,6 +70,13 @@ function PageUtilisateur() {
                         backgroundPosition: 'center'
                     }}
                 >
+                    {autoriseAModifier &&
+                        <div className="position-absolute top-0 end-0 m-2">
+                            <DropdownEditer list={[
+                                { can: true, onClick: changerPhoto, name: "Changer la photo" },
+                            ]} />
+                        </div>
+                    }
                     <Image
                         src={`${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.photo}`}
                         alt={donneesUtilisateur.nom_utilisateur}

@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from datetime import datetime, date
+import os
+from werkzeug.utils import secure_filename
 
 from app.services import *
 from app.utils.decorators import *
@@ -200,6 +202,53 @@ def set_user_infos(user_id: int):
     db.session.add(utilisateur)
     db.session.commit()
     return jsonify(utilisateur.to_dict()), 200
+
+
+@controllers_utilisateurs.route('/<int:user_id>/add_content', methods=['POST'])
+@login_required
+def add_content_to_user(user_id: int):
+    """
+    Ajoute un contenu (photo) pour un utilisateur.
+    """
+    if not (user_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    if 'file' not in request.files:
+        return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        name, ext = os.path.splitext(filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        unique_filename = f"{name}_{user_id}_{timestamp}{ext}"
+        
+        UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        
+        file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
+        return jsonify({"message": "Fichier téléversé avec succès", "file_name": unique_filename}), 200
+
+@controllers_utilisateurs.route('/<int:user_id>/modifier_photo/<string:new_name>', methods=['POST'])
+@login_required
+def modifier_photo_utilisateur(user_id: int, new_name: str):
+    """
+    Modifie la photo de profil d'un utilisateur.
+    """
+    utilisateur = get_utilisateur(user_id)
+    if not utilisateur:
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
+
+    if not (user_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+    
+    set_user_photo(user_id, new_name)
+
+    return jsonify({"message": "Photo de profil mise à jour avec succès"}), 200
 
 
 @controllers_utilisateurs.route('/supprimer_co/<int:co_id>', methods=['DELETE'])
