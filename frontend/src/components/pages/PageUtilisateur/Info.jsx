@@ -16,9 +16,9 @@ export default function TabInfo({ id, autoriseAModifier }) {
         queryFn: () => obtenirDataUser(id),
     });
 
-    const [selectedP, setSelectedP] = useState({ value: donneesUtilisateur?.marrain?.id, label: donneesUtilisateur?.marrain?.nom_utilisateur });
-    const [selectedC, setSelectedC] = useState(donneesUtilisateur?.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
-    const [selectedF, setSelectedF] = useState(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
+    const [selectedP, setSelectedP] = useState();
+    const [selectedC, setSelectedC] = useState();
+    const [selectedF, setSelectedF] = useState();
     const [instruments, setInstruments] = useState(donneesUtilisateur?.instruments);
 
     const [userInfos, setUserInfos] = useState(donneesUtilisateur);
@@ -92,6 +92,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
         if (isGestion) {
             handleCancel();
         } else {
+            setSelectedP({ value: donneesUtilisateur?.marrain?.id, label: donneesUtilisateur?.marrain?.nom_utilisateur });
+            setSelectedC(donneesUtilisateur?.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
+            setSelectedF(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })))
+            setUserInfos(donneesUtilisateur);
+            setInstruments(donneesUtilisateur?.instruments);
             setIsGestion(true);
         }
     };
@@ -108,7 +113,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         return date.toISOString().split('T')[0];
     };
 
-    if (isPendingUser || !userInfos) {
+    if (isPendingUser || !donneesUtilisateur) {
         return <p>Chargement des informations...</p>
     }
 
@@ -129,12 +134,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <InputGroup.Text><img src="/assets/icons/phone.svg" alt="Phone" style={{ width: '20px' }} /></InputGroup.Text>
                     <Form.Control
                         name="telephone"
-                        value={userInfos.telephone || ''}
+                        value={(isGestion ? userInfos?.telephone : donneesUtilisateur.telephone) || ''}
                         placeholder="01 23 45 67 89"
                         disabled={!isGestion}
                         onChange={handleChange}
                     />
-                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.telephone || '')}>Copier</Button>
+                    <Button variant="outline-secondary" onClick={() => copyToClipboard((isGestion ? userInfos?.telephone : donneesUtilisateur.telephone) || '')}>Copier</Button>
                 </InputGroup>
             </Col>
             <Col md={6}>
@@ -142,54 +147,54 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <InputGroup.Text><img src="/assets/icons/mail.svg" alt="Mail" style={{ width: '20px' }} /></InputGroup.Text>
                     <Form.Control
                         name="email"
-                        value={userInfos.email || ''}
+                        value={(isGestion ? userInfos?.email : donneesUtilisateur.email) || ''}
                         placeholder="example@mail.com"
                         disabled={!isGestion}
                         onChange={handleChange}
                     />
-                    <Button variant="outline-secondary" onClick={() => copyToClipboard(userInfos.email || '')}>Copier</Button>
+                    <Button variant="outline-secondary" onClick={() => copyToClipboard((isGestion ? userInfos?.email : donneesUtilisateur.email) || '')}>Copier</Button>
                 </InputGroup>
             </Col>
         </Row>
 
         {!isGestion ?
             <div className="list-question">
-                <div><b>Promo :</b> {userInfos.cycle !== "ic" && userInfos.cycle}{userInfos.promotion}</div>
-                <div><b>Date de naissance :</b> {formaterDate(userInfos.date_de_naissance)}</div>
-                <div><b>Ville d&apos;origine :</b> {userInfos.ville_origine}</div>
-                <div><b>Chambre :</b> {userInfos.chambre}</div>
-                {userInfos.instruments && userInfos.instruments.length > 0 &&
+                <div><b>Promo :</b> {donneesUtilisateur.cycle !== "ic" && donneesUtilisateur.cycle}{donneesUtilisateur.promotion}</div>
+                <div><b>Date de naissance :</b> {formaterDate(donneesUtilisateur.date_de_naissance)}</div>
+                <div><b>Ville d&apos;origine :</b> {donneesUtilisateur.ville_origine}</div>
+                <div><b>Chambre :</b> {donneesUtilisateur.chambre}</div>
+                {donneesUtilisateur.instruments && donneesUtilisateur.instruments.length > 0 &&
                     <div>
                         <b>Instruments :</b>{' '}
-                        {userInfos.instruments.map((instrument, index) => (
+                        {donneesUtilisateur.instruments.map((instrument, index) => (
                             <span key={index}>
                                 {instrument.name}{instrument.niveau ? ` (${instrument.niveau})` : ''}
-                                {index < userInfos.instruments.length - 1 ? ', ' : ''}
+                                {index < donneesUtilisateur.instruments.length - 1 ? ', ' : ''}
                             </span>
                         ))}
                     </div>
                 }
                 <div>
-                    {userInfos.cos && userInfos.cos.length > 0 &&
+                    {donneesUtilisateur.cos && donneesUtilisateur.cos.length > 0 &&
                         <div><b>Cos :</b>{' '}
-                            {userInfos.cos.map((co, index) => (
+                            {donneesUtilisateur.cos.map((co, index) => (
                                 <span key={co.id}>
                                     <Link to={`/utilisateur/${co.id}`}>{co.nom_utilisateur}</Link>
-                                    {index < userInfos.cos.length - 1 ? ', ' : ''}
+                                    {index < donneesUtilisateur.cos.length - 1 ? ', ' : ''}
                                 </span>
                             ))}
                         </div>
                     }
-                    {userInfos.marrain &&
-                        <div><b>Marrain :</b> <Link to={`/utilisateur/${userInfos.marrain.id}`}>{userInfos.marrain.nom_utilisateur}</Link></div>
+                    {donneesUtilisateur.marrain &&
+                        <div><b>Marrain :</b> <Link to={`/utilisateur/${donneesUtilisateur.marrain.id}`}>{donneesUtilisateur.marrain.nom_utilisateur}</Link></div>
                     }
-                    {userInfos.fillots && userInfos.fillots.length > 0 &&
+                    {donneesUtilisateur.fillots && donneesUtilisateur.fillots.length > 0 &&
                         <div>
                             <b>Fillots :</b>{' '}
-                            {userInfos.fillots.map((fillot, index) => (
+                            {donneesUtilisateur.fillots.map((fillot, index) => (
                                 <span key={fillot.id}>
                                     <Link to={`/utilisateur/${fillot.id}`}>{fillot.nom_utilisateur}</Link>
-                                    {index < userInfos.fillots.length - 1 ? ', ' : ''}
+                                    {index < donneesUtilisateur.fillots.length - 1 ? ', ' : ''}
                                 </span>
                             ))}
                         </div>
