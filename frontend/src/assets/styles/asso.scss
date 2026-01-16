@@ -40,16 +40,6 @@
     object-fit: contain;
 }
 
-.nav-tabs .nav-link {
-    color: var(--text-color);
-    font-weight: bold;
-}
-
-.nav-tabs .nav-link.active {
-    color: var(--primary-color);
-    border-bottom: 3px solid var(--primary-color);
-}
-
 .member-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /*6 cards per row*/

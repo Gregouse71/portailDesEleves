@@ -4,7 +4,7 @@ import '../../assets/styles/dropdownedit.scss'
 
 export default function DropdownEditer({ list }) {
     return <Dropdown align="end">
-        <Dropdown.Toggle as="div" className="no-caret p-0 border-0 bg-transparent" style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
+        <Dropdown.Toggle as="div" className="no-caret p-2 border-0 bg-transparent" style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
             ⋮
         </Dropdown.Toggle>
 

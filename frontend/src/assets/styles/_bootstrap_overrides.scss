@@ -1,3 +1,7 @@
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
 // _bootstrap_overrides.scss
 // This file contains overrides for default Bootstrap components to make them theme-aware.
 
@@ -56,4 +60,16 @@ body[data-theme] .btn-outline-secondary .theme-icon {
 }
 body[data-theme] .btn-outline-secondary:hover .theme-icon {
     filter: var(--icon-filter-color);
+}
+
+// Nav Tabs Overrides
+body[data-theme] .nav-tabs .nav-link {
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+body[data-theme] .nav-tabs .nav-link.active {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-bottom: 3px solid var();
 }
