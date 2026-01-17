@@ -8,24 +8,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react-quill-new')) {
-              return 'quill';
-            }
-            if (id.includes('katex') || id.includes('react-katex')) {
-              return 'katex';
-            }
-            if (id.includes('bootstrap') || id.includes('react-bootstrap') || id.includes('react-bootstrap-icons')) {
-              return 'bootstrap';
-            }
-            return 'vendor';
-          }
-        },
-      },
-    },
   },
   css: {
     preprocessorOptions: {

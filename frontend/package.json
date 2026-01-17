@@ -17,7 +17,9 @@
     "react-select": "^5.10.2",
     "sass": "^1.93.3",
     "sass-loader": "^16.0.6",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "@vitejs/plugin-react": "^5.1.2",
+    "vite": "^7.3.1"
   },
   "scripts": {
     "dev": "vite",
@@ -39,12 +41,10 @@
     ]
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.1.2",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "vite": "^7.3.1"
+    "eslint-plugin-react-hooks": "^7.0.1"
   }
 }
