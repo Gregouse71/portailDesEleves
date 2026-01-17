@@ -54,7 +54,7 @@ def a_permission(*args1):
             if current_user.est_superutilisateur:
                 return f(*args, **kwargs)
             
-            if any([Permission.query.filter_by(utilisateur_id=current_user.utilisateur_id, permission=perm)] for perm in args1):
+            if any([Permission.query.filter_by(utilisateur_id=current_user.id, permission=perm)] for perm in args1):
                 return f(*args, **kwargs)
             abort(403)
         return wrapper
