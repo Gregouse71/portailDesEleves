@@ -1,10 +1,11 @@
 import { API_BASE_URL, handleResponse } from "./base";
 
-export async function getPublicationsByTag(tag, offset, limit) {
+export async function getPublicationsByTag(tag, page, per, query) {
   try {
     const params = new URLSearchParams();
-    if (offset !== undefined) params.append("offset", offset);
-    if (limit !== undefined) params.append("limit", limit);
+    if (page !== undefined) params.append("page", page);
+    if (per !== undefined) params.append("per", per);
+    if (query) params.append("query", query);
     const queryString = params.toString();
     const res = await fetch(`${API_BASE_URL}/publications/tag/${tag}${queryString ? `?${queryString}` : ""}`, {
       method: "GET",

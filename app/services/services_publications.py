@@ -338,12 +338,15 @@ def remove_like_from_comment(utilisateur: Utilisateur, commentaire: Commentaire)
         raise ValueError("Le commentaire n'existe pas")
 
 
-def get_publications_by_tag(tag: str, limit: int = None, offset: int = None):
+def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query: str = None):
     """
     Renvoie toutes les publications avec un tag spécifique,
     en tenant compte des permissions de l'utilisateur actuel.
     """
     query = Publication.query.filter(Publication.tags.contains(tag))
+
+    if search_query:
+        query = query.filter(Publication.titre.ilike(f"%{search_query}%"))
 
     if not current_user.est_superutilisateur:
         # Filter out internal publications if user is not a member of the associated association
@@ -363,13 +366,6 @@ def get_publications_by_tag(tag: str, limit: int = None, offset: int = None):
         # Filter out cycle-specific publications
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
 
-    query = query.order_by(desc(Publication.date_publication))
+    query = query.order_by(desc(Publication.date_publication)).paginate(page=page, per_page=per)
 
-    if limit is not None:
-        query = query.limit(limit)
-
-    if offset is not None:
-        query = query.offset(offset)
-
-    publications = query.all()
-    return publications
+    return query.items, query.total, query.pages

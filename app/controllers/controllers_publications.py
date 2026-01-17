@@ -16,23 +16,14 @@ def route_get_publications_by_tag(tag: str):
     Renvoie toutes les publications avec un tag spécifique.
     """
     try:
-        limit = request.args.get('limit', type=int)
-        offset = request.args.get('offset', type=int)
+        page = request.args.get('page', type=int)
+        per = request.args.get('per', type=int)
+        query = request.args.get('query', type=str)
 
-        publications = get_publications_by_tag(tag, limit=limit, offset=offset)
-        return jsonify({"publications": [{"id": e.id,
-                                          "auteur": e.auteur.nom_utilisateur if e.auteur else None,
-                                          "titre": e.titre,
-                                          "contenu": e.contenu,
-                                          "date_publication": e.date_publication,
-                                          "likes": e.likes,
-                                          "is_commentable": e.is_commentable,
-                                          "commentaires": [comment.to_dict() for comment in e.commentaires],
-                                          "fichier_joint": e.fichier_joint,
-                                          "miniature": e.miniature,
-                                          "tags": e.tags,
-                                          "association": {"id": e.association.id, "nom": e.association.nom, "nom_dossier": e.association.nom_dossier} if e.association else None}
-                                         for e in publications]}), 200
+        publications, count, pages = get_publications_by_tag(tag, page=page, per=per, search_query=query)
+        return jsonify({"publications": [e.to_dict() for e in publications],
+                        "count": count,
+                        "totalPages": pages}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 

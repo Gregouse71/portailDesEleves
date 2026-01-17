@@ -73,3 +73,32 @@ body[data-theme] .nav-tabs .nav-link.active {
     color: var(--text-color);
     border-bottom: 3px solid var();
 }
+// Pagination Overrides
+body[data-theme] .pagination .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--card-border-color);
+    color: var(--primary-color);
+
+    &:hover {
+        background-color: var(--card-hover-bg);
+        border-color: var(--card-border-color);
+        color: var(--primary-color-hover);
+    }
+
+    &:focus {
+        background-color: var(--card-hover-bg);
+        box-shadow: 0 0 0 0.25rem var(--shadow-color);
+    }
+}
+
+body[data-theme] .pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--global-white);
+}
+
+body[data-theme] .pagination .page-item.disabled .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--card-border-color);
+    color: var(--text-color-secondary);
+}
