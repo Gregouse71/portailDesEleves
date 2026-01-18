@@ -83,21 +83,3 @@ class ConsoSoifguard(db.Model):
     def to_dict(self):
         return {"id": self.id, "nom_conso": self.nom_conso, "prix": self.prix, "prix_cotisant": self.prix_cotisant}
 
-
-class PermissionSoifguard(db.Model):
-    """
-    Contient les utilisateurs qui ont les permissions pour soifguard, pour l'octo ou pour la biero
-    TODO : supprimer et remplacer par les perms plus générales
-    """
-
-    __tablename__ = "permissions_soifguard"
-    id = db.Column(db.Integer, primary_key=True)
-    id_utilisateur = db.Column(db.Integer, nullable=False)
-    asso = db.Column(db.String(10), nullable=False, default="octo")
-
-    def __init__(self, id_utilisateur: int, asso: str = "octo"):
-        self.id_utilisateur = id_utilisateur
-        if asso == "octo" or asso == "biero":
-            self.asso = asso
-        else:
-            raise ValueError(f"Erreur du champ {asso}. Doit etre 'octo' ou 'biero'")

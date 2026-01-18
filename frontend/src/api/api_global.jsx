@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./base";
+import { API_BASE_URL, createApiGet } from "./base";
 
 export async function estAuthentifie() {
   const res = await fetch(`${API_BASE_URL}/login/est_auth`, { credentials: "include" });
@@ -54,3 +54,10 @@ export async function setNouveauMDP(token, password) {
   const data = await res.json();
   return data.set; // Flask renvoie { "connecte": true/false }
 }
+
+/** Vérifie si la permission *perm* appartient à l'utilisateur *user_id*
+ *  args :
+ *    - perm : la chaine de caractères représentant la permission
+ *    - user_id : l'id de l'utilisateur
+ */
+export const verifierPermission = createApiGet(`${API_BASE_URL}/login/verifier_permission`)

@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useLayout } from '../../layouts/Layout';
-import { seDeconnecter } from '../../api/api_global';
+import { seDeconnecter, verifierPermission } from '../../api/api_global';
 import { useState } from 'react';
-import { verifierPermission } from '../../api/api_soifguard';
 import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
 import '../../assets/styles/header.scss';
 import { useQuery } from '@tanstack/react-query';
@@ -15,11 +14,11 @@ export default function Header() {
 
     const { data: octoPermission = false } = useQuery({
         queryKey: ['permOcto'],
-        queryFn: () => verifierPermission("octo"),
+        queryFn: () => verifierPermission("octo", userData.id),
     });
     const { data: bieroPermission = false } = useQuery({
         queryKey: ['permBiero'],
-        queryFn: () => verifierPermission("biero"),
+        queryFn: () => verifierPermission("biero", userData.id),
     });
 
     const handleSearchSubmit = (e) => {

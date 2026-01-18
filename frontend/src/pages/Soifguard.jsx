@@ -4,7 +4,6 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 import {
     getListeConsos,
     obtenirDetteMaxi,
-    verifierPermission,
     encaisserAsso,
     ajouterConso,
     supprimerConso,
@@ -12,9 +11,11 @@ import {
     listeOperations,
     crediterAsso
 } from "../api/api_soifguard";
+import { verifierPermission } from "../api/api_global";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { searchUsers } from "../api/api_utilisateurs";
 import { Button, Dropdown, Form, Table, Pagination } from "react-bootstrap";
+import { useLayout } from "../layouts/Layout";
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -364,6 +365,7 @@ function Consommation({ categorie }) {
 }
 
 export default function SoifGuard() {
+    const { userData } = useLayout();
     const navigate = useNavigate();
     const [categorie, setCategorie] = useState("");
     const [mode, setMode] = useState("conso");
@@ -371,11 +373,11 @@ export default function SoifGuard() {
     // pour les permissions de lancer octo ou biero
     const { data: octoPermission = false } = useQuery({
         queryKey: ['permOcto'],
-        queryFn: () => verifierPermission("octo"),
+        queryFn: () => verifierPermission("octo", userData.id),
     });
     const { data: bieroPermission = false } = useQuery({
         queryKey: ['permBiero'],
-        queryFn: () => verifierPermission("biero"),
+        queryFn: () => verifierPermission("biero", userData.id),
     });
     const { data: detteMaxiOcto = false } = useQuery({
         queryKey: ['detteOcto'],

@@ -8,4 +8,4 @@ from app.models.models_chat import Message
 from app.models.models_elections import Election, ElectionVote
 from app.models.models_jeux import JeuxPartie
 from app.models.models_publications import Publication, Commentaire
-from app.models.models_soifguard import OperationSoifguard, PermissionSoifguard, ConsoSoifguard
+from app.models.models_soifguard import OperationSoifguard, ConsoSoifguard

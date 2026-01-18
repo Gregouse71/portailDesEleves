@@ -44,22 +44,6 @@ export const modifierConso = createApiPut(`${SOIFGUARD_BASE_URL}/conso`)
  */
 export const getListeConsos = createApiGet(`${SOIFGUARD_BASE_URL}/liste_consos`)
 
-export async function verifierPermission(asso) {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/verifier_permission`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ asso })
-    });
-    const data = await response.json();
-    return data.has_permission;
-  } catch (error) {
-    console.error("Erreur lors de la vérification des permissions:", error);
-    return false;
-  }
-}
-
 export async function ajouterPermission(id_utilisateur, asso = "octo") {
   try {
     const response = await fetch(`${SOIFGUARD_BASE_URL}/ajouter_permission`, {
@@ -77,26 +61,6 @@ export async function ajouterPermission(id_utilisateur, asso = "octo") {
   } catch (error) {
     console.error("Erreur réseau :", error);
     return { success: false, message: "Erreur réseau" };
-  }
-}
-
-export async function obtenirPermissionsSoifguard() {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/get_permissions_soifguard`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Assurez-vous que vous avez les bonnes permissions pour l'appel
-    });
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des permissions');
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Erreur API:', error);
-    return [];
   }
 }
 

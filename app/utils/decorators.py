@@ -5,7 +5,6 @@ from functools import wraps
 from flask import jsonify, abort
 from flask_login import current_user
 from app.models.models_divers import Permission
-from app.models.models_soifguard import PermissionSoifguard
 
 # a utiliser en plus de @login_required, on ne verifie pas ici l'authentification
 # le superutilisateur a tous les droits
@@ -58,24 +57,4 @@ def a_permission(*args1):
                 return f(*args, **kwargs)
             abort(403)
         return wrapper
-    return decorated_function
-
-def a_permission_soifguard_octo(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        permission = PermissionSoifguard.query.filter_by(id_utilisateur=current_user.id, asso='octo').first()
-        if permission or current_user.est_superutilisateur:
-            return f(*args, **kwargs)
-        else :
-            return jsonify({"success": False, "message": "Accès refusé : permission Octo requise"}), 403
-    return decorated_function
-
-def a_permission_soifguard_biero(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        permission = PermissionSoifguard.query.filter_by(id_utilisateur=current_user.id, asso='biero').first()
-        if permission or current_user.est_superutilisateur:
-            return f(*args, **kwargs)
-        else :
-            return jsonify({"success": False, "message": "Accès refusé : permission Biero requise"}), 403
     return decorated_function
