@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card, Placeholder } from "react-bootstrap";
+import "../../assets/styles/leaderboard.scss"
 
 export default function Leaderboard({ data, title = "Classement", scoreKey = "score", formatScore = (s) => s, isLoading }) {
     if (isLoading || !data) {

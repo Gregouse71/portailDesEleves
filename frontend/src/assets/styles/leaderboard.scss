@@ -1,0 +1,103 @@
+/* Leaderboard Styles */
+
+.leaderboard-container {
+  width: 100%;
+  max-width: 100%; /* Allow it to fill the column */
+  margin-top: 0; /* Remove top margin for side-by-side layout */
+}
+
+.leaderboard-card {
+  border: 1px solid var(--card-border-color); /* Simpler border */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: none; /* Remove heavy shadow */
+}
+
+.leaderboard-header {
+  background-color: var(--card-header-bg); /* Use theme header bg instead of primary */
+  color: var(--text-color);
+  font-weight: bold;
+  text-align: center;
+  padding: 0.75rem; /* Reduced padding */
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--card-border-color);
+}
+
+.leaderboard-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem; /* Reduced padding for thinner lines */
+  border-bottom: 1px solid var(--card-border-color);
+  transition: background-color 0.2s;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--card-hover-bg);
+  }
+}
+
+
+
+.leaderboard-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* Smaller rank circle */
+  height: 24px;
+  border-radius: 50%;
+  font-weight: bold;
+  margin-right: 10px;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  
+  &.rank-1 { background-color: #FFD700; color: #fff; }
+  &.rank-2 { background-color: #C0C0C0; color: #fff; }
+  &.rank-3 { background-color: #CD7F32; color: #fff; }
+  &.rank-other { background-color: var(--secondary-color); color: #fff; }
+}
+
+
+
+.leaderboard-user-info {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.leaderboard-avatar {
+  width: 30px; /* Smaller avatar */
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 1px solid var(--card-border-color);
+}
+
+.leaderboard-name {
+  font-weight: normal; /* Less bold */
+  text-decoration: none;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+
+  &:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+}
+
+.leaderboard-score {
+  font-weight: bold;
+  color: var(--text-color); /* Neutral color for score */
+  margin-left: 10px;
+  font-size: 1rem;
+}
