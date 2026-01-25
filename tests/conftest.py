@@ -4,8 +4,8 @@ from app import create_app, db
 from app.models import Utilisateur, Sondage, GlobalVariable
 from config import Config
 
-@pytest.fixture(scope='class')
-def app():
+@pytest.fixture()
+def app(scope="function"):
     config_test = Config()
     config_test.SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     _, app = create_app(config_test)

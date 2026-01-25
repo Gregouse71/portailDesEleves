@@ -46,7 +46,6 @@ def a_permission(*args1):
     """
     Vérifie que l'utilisateur qui fait la requete a au moins une des permissions
     """
-    print(args1)
     def decorated_function(f):
         @wraps(f)
         def wrapper(*args, **kwargs):

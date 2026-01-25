@@ -1,11 +1,13 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
+import csv
+import io
 
 from app import db
-from app.utils.verification_format import valider_questions_du_portail
+from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
 from app.utils.decorators import superutilisateur_required
 from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo
 from app.models.models_utilisateurs import Utilisateur
@@ -218,21 +220,7 @@ def add_content_to_user(user_id: int):
         return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
 
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
-
-    if file:
-        filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(filename)
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        unique_filename = f"{name}_{user_id}_{timestamp}{ext}"
-        
-        UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-        
-        file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
-        return jsonify({"message": "Fichier téléversé avec succès", "file_name": unique_filename}), 200
+    return upload_user_photo(file, user_id)
 
 @controllers_utilisateurs.route('/<int:user_id>/modifier_photo/<string:new_name>', methods=['POST'])
 @login_required
@@ -384,6 +372,25 @@ def route_get_anniv():
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
 
+@controllers_utilisateurs.route('/ajouter_photo', methods=["POST"])
+@superutilisateur_required
+def route_ajouter_photo():
+    uploaded_photo = request.files['file']
+    filename = secure_filename(uploaded_photo.filename)
+    if filename != '':
+        file_extension = os.path.splitext(filename)[1]
+        if file_extension not in verifier_extension_photo(file_extension):
+            return jsonify({"message": "Nom de fichier ou contenu du fichier invalide"}), 400
+    nom_utilisateur = secure_filename(request.json['nom_utilisateur'])
+    if not valider_chaine_texte(nom_utilisateur):
+        return jsonify({"message": "Nom d'utilisateur spécifié invalide"}), 400
+    final_filename = os.path.join(current_app.config['UPLOAD_PATH'], 'utilisateurs', nom_utilisateur, file_extension)
+    if os.path.isfile(final_filename):
+        return jsonify({"message": "Une photo est déjà présente pour cet utilisateur"}), 400
+    uploaded_photo.save(final_filename)
+    return jsonify({"message": "Photo téléversée avec succès"}), 200
+    
+
 @controllers_utilisateurs.route('/changer_marrain', methods=["POST"])
 @login_required
 def route_changer_marrain():
@@ -425,28 +432,31 @@ def route_changer_marrain():
 @controllers_utilisateurs.route('/add_utilisateur', methods=['POST'])
 @superutilisateur_required
 def route_add_utilisateur():
-    data = request.get_json()
+    data = request.form
+    photo = request.files['photo']
+    # TODO : upload photo en même temps, ou faire interface pour upload bcp de photos
     try:
         nom_utilisateur = data['nom_utilisateur']
         email = data['email']
         nom = data['nom']
         prenom = data['prenom']
         promotion = data['promotion']
-        cycle = data['cycle']
-        mot_de_passe_en_clair = data['mot_de_passe_en_clair']
+        cycle = data['cycle'].lower()
     except KeyError as e:
-        return jsonify({"message": f"Au moins un champ est manquant pour l'ajout d'un utilisateur: {str(e)}"}), 500
+        return jsonify({"message": f"Au moins un champ est manquant pour l'ajout d'un utilisateur: {str(e)}"}), 400
     try:
-        add_utilisateur(nom_utilisateur=nom_utilisateur,
+        user_id = add_utilisateur(nom_utilisateur=nom_utilisateur,
                         email=email,
                         prenom=prenom,
                         nom=nom,
                         promotion=promotion,
-                        cycle=cycle,
-                        mot_de_passe_en_clair=mot_de_passe_en_clair)
+                        cycle=cycle)
+        req = upload_user_photo(photo, user_id)
+        filename = req[0].json['file_name']
+        set_user_photo(user_id, filename) #TODO: better error handling. Currently photo upload and user creation are decoupled in code but coupled in error handling. Bad for logging + side effects
         return jsonify({"message": "Utilisateur ajouté avec succès"}), 203
     except ValueError as e:
-        return jsonify({"message": f"Au moins un champ est invalide pour l'ajout d'un utilisateur: {str(e)}"}), 500
+        return jsonify({"message": f"Au moins un champ est invalide pour l'ajout d'un utilisateur: {str(e)}"}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Erreur lors de l'ajout d'un utilisateur : {str(e)}"}), 500
@@ -480,3 +490,60 @@ def search_users():
         return jsonify(user_list)
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la recherche : {str(e)}"}), 500
+    
+
+def upload_user_photo(file, user_id):
+    if file.filename == '':
+        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        name, ext = os.path.splitext(filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        unique_filename = f"{name}_{user_id}_{timestamp}{ext}"
+        
+        UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        
+        file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
+        return jsonify({"message": "Fichier téléversé avec succès", "file_name": unique_filename}), 200
+
+
+@controllers_utilisateurs.post("/process_list")
+@login_required
+@superutilisateur_required
+def process_list_utilisateurs():
+    file = request.files.get("file")
+
+    if not file:
+        abort(400)
+    
+    stream = io.StringIO(file.read().decode("UTF8"), newline=None)
+    reader = csv.DictReader(stream)
+    
+    users = []
+    for row in reader:
+        print(row)
+        uid = row["Promo"] + row["Nom"].lower()
+        user = Utilisateur(uid, row["Prenom"], row["Nom"], row["Promo"], row["Email"], row["Cycle"], "1111")
+        users.append(user)
+        
+    return jsonify([u.to_dict() for u in users]), 200
+
+
+@controllers_utilisateurs.post("/create_bulk")
+@login_required
+@superutilisateur_required
+def add_many_users():
+    lst = request.json.get("list")
+    if not lst:
+        abort(400)
+
+    for row in lst:
+        user = Utilisateur(row["nom_utilisateur"], row["prenom"], row["nom"], row["promotion"], row["email"], row["cycle"], "1111")
+        user.photo = row["nom_utilisateur"] + ".jpg"
+        db.session.add(user)
+    db.session.commit()
+    return jsonify(True), 200
+

@@ -121,7 +121,7 @@ class Utilisateur(db.Model, UserMixin) :
     # Commentaires
     commentaires = db.relationship('Commentaire', back_populates='auteur')
 
-    def __init__(self, nom_utilisateur:str, prenom:str, nom:str, promotion:int, email:str, cycle:str, mot_de_passe_en_clair:str, date_de_naissance:date=date(year=2000, month=1, day=1)) :
+    def __init__(self, nom_utilisateur:str, prenom:str, nom:str, promotion:int, email:str, cycle:str, mot_de_passe_en_clair:str, date_de_naissance:date= None) :
         """
         Cree un nouvel utilisateur
         cycle doit etre "ic", "ast", "isup", "vs", "ev" ou "de" # pour matmaz
