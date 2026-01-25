@@ -3,7 +3,7 @@ import re
 
 def verifier_chaine_mail(chaine: str) -> bool:
     # Ceci n'est pas une bonne manière : une adresse mail peut être plus complexe
-    return bool(re.fullmatch(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", chaine))
+    return bool(re.fullmatch(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{1,}$", chaine))
 
 def valider_chaine_date_naissance(chaine: str) -> bool:
     try:

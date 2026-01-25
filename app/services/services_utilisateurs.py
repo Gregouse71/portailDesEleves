@@ -5,6 +5,8 @@ from app.models.models_utilisateurs import Utilisateur
 from datetime import date, timedelta
 from itertools import groupby
 from sqlalchemy import func
+import secrets
+import string
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurDeLienUtilisateurs(Exception):
@@ -17,9 +19,15 @@ def add_utilisateur(nom_utilisateur: str,
                     nom: str, 
                     promotion: str, 
                     cycle: str,
-                    mot_de_passe_en_clair: str) -> Utilisateur:
-    """Ajoute un utilisateur dans la base de données s'il n'existe pas déjà"""
+                    mot_de_passe_en_clair: None | str = None) -> Utilisateur:
+    """Ajoute un utilisateur dans la base de données s'il n'existe pas déjà
     
+    Renvoie l'id de l'utilisateur créé"""
+    
+    if mot_de_passe_en_clair is None:
+        alphabet = string.ascii_letters + string.digits
+        mot_de_passe_en_clair = ''.join(secrets.choice(alphabet) for i in range(20)) # mdp random de 20 caractères, que l'utilisateur devra changer
+
     user = Utilisateur(
         nom_utilisateur=nom_utilisateur,
         email=email,
@@ -31,6 +39,7 @@ def add_utilisateur(nom_utilisateur: str,
     )
     db.session.add(user) # try except ?
     db.session.commit()
+    return user.id
 # CO
 
 def get_utilisateur(utilisateur_id) -> Utilisateur:  

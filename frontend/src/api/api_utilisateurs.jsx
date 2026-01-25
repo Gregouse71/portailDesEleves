@@ -1,5 +1,50 @@
 import { API_BASE_URL, createApiPost, handleResponse } from "./base";
 
+const UTILISATEUR_BASE_URL = `${API_BASE_URL}/users`;
+
+/** Envoie le fichier pour vérification des infos
+ * args :
+ *  - data : { file : fichier csv }
+ */
+export async function processList(data) {
+  const formData = new FormData();
+  formData.append("file", data.file);
+  const response = await fetch(`${UTILISATEUR_BASE_URL}/process_list`, {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  });
+  return handleResponse(response);
+}
+
+/** Envoie une liste d'utilisateurs à créer. Elle doit avoir été créée par processList
+ * args :
+ *  - data : { list: liste des utilisateurs }
+ */
+export const createBulk = createApiPost(`${UTILISATEUR_BASE_URL}/create_bulk`)
+
+export async function ajouterUtilisateur(nomUtilisateur, email, prenom, nom, cycle, promotion, photo, sucessStateSetter) {
+
+  const formData = new FormData();
+    formData.append("nom_utilisateur", nomUtilisateur);
+    formData.append("prenom", prenom);
+    formData.append("nom", nom);
+    formData.append("cycle", cycle);
+    formData.append("promotion", promotion)
+    formData.append("email", email);
+    formData.append("photo", photo);
+
+    const res = await fetch(`${API_BASE_URL}/users/add_utilisateur`, {
+      method: "POST",
+      body: formData,
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur lors de l'ajout de l'utilisateur");
+    }
+    return res
+}
 
 export async function obtenirAssosUtilisateur(id_utilisateur) {
   const res = await fetch(`${API_BASE_URL}/users/assos_utilisateur/${id_utilisateur}`,
