@@ -33,7 +33,7 @@ const GetAssoInfo = ({ assoId }) => {
 const Tableau = ({ value }) => {
     const { data: events, isLoading } = useQuery({
         queryKey: ['evenements', value],
-        queryFn: () => getEvenementsMois(value)
+        queryFn: () => getEvenementsMois({}, value)
     });
 
     console.log(events)

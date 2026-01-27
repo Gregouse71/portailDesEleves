@@ -4,10 +4,12 @@ from datetime import datetime, timedelta, timezone
 from config import Config
 import jwt
 from argon2 import exceptions
+from sqlalchemy import or_
 
 from app.services import db
 from app.utils.divers_utils import ph
 from app.models.models_utilisateurs import Utilisateur
+from app.models.models_divers import Permission
 
 key = Config.SECRET_KEY_MAIL
 algorithm = Config.ALGORITHM
@@ -22,6 +24,39 @@ mailBody = """
     <div>Le VP Geek BDE, Adria</div>
 </html>
 """
+
+def get_permissions(page: int, per_page: int, query_str: str=""):
+    """
+    Récupère tous les utilisateurs avec leurs permissions, avec pagination.
+    """
+    query = Permission.query
+    if len(query_str) >= 1:
+        query = query.join(Permission.utilisateur).filter(
+            or_(
+                Utilisateur.nom_utilisateur.ilike(f"%{query_str}%"),
+                Permission.permission.ilike(f"%{query_str}%")
+            )
+        )
+    perms = query.paginate(page=page, per_page=per_page)
+    return {"permissions": [p.to_dict() for p in perms], "count": perms.total}
+
+def update_user_permissions(user_id, new_permissions):
+    """
+    Met à jour les permissions d'un utilisateur.
+    """
+    user = Utilisateur.query.get(user_id)
+    if not user:
+        raise ValueError("Utilisateur non trouvé")
+
+    # Supprimer les anciennes permissions
+    user.permissions = []
+
+    # Ajouter les nouvelles permissions
+    for perm in new_permissions:
+        permission = Permission(utilisateur=user, permission=perm)
+        db.session.add(permission)
+    
+    db.session.commit()
 
 def send_reset_mail(username: str):
     """

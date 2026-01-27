@@ -190,7 +190,7 @@ function Consommation({ categorie }) {
 
     const { data: consos = { "octo": [], "biero": [] } } = useQuery({
         queryKey: ['consos'],
-        queryFn: () => getListeConsos(),
+        queryFn: () => getListeConsos({}),
     });
     const { data: utilisateurs = [] } = useQuery({
         queryKey: ['searchResults', query],
@@ -373,11 +373,11 @@ export default function SoifGuard() {
     // pour les permissions de lancer octo ou biero
     const { data: octoPermission = false } = useQuery({
         queryKey: ['permOcto'],
-        queryFn: () => verifierPermission("octo", userData.id),
+        queryFn: () => verifierPermission({}, "octo", userData.id),
     });
     const { data: bieroPermission = false } = useQuery({
         queryKey: ['permBiero'],
-        queryFn: () => verifierPermission("biero", userData.id),
+        queryFn: () => verifierPermission({}, "biero", userData.id),
     });
     const { data: detteMaxiOcto = false } = useQuery({
         queryKey: ['detteOcto'],

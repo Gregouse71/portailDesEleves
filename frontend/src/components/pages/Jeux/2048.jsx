@@ -27,12 +27,12 @@ export default function Jeux2048() {
     const queryClient = useQueryClient();
     const { data: partie, isLoading } = useQuery({
         queryKey: [JEU],
-        queryFn: () => { return partieEnCours(JEU) },
+        queryFn: () => { return partieEnCours({}, JEU) },
     });
 
     const { data: fetchedData, isLoading2 } = useQuery({
         queryKey: ["leaderboard", JEU],
-        queryFn: () => leaderboardJeu(JEU)
+        queryFn: () => leaderboardJeu({}, JEU)
     })
 
     const nouvellePartieMutation = useMutation({

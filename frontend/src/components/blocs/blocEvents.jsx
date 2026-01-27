@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 export default function BlocEvents() {
     const { data: events = [], isLoading } = useQuery({
         queryKey: ['evenements', 'next_week'],
-        queryFn: () => getEvenementsMois('next_week')
+        queryFn: () => getEvenementsMois({}, 'next_week')
     });
 
     const formatDate = (dateString) => {

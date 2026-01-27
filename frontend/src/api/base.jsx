@@ -41,9 +41,11 @@ export function createApiPost(route) {
 }
 
 export function createApiGet(route) {
-  return async (...params) => {
+  return async (data, ...params) => {
     try {
-      const url = [route, ...params].join('/');
+      const search_param = new URLSearchParams(data);
+      const string = search_param.toString();
+      const url = `${[route, ...params].join('/')}${string ? `?${string}` : ""}`;
       const response = await fetch(url, {
         method: "GET",
         headers: { "Content-Type": "application/json", }, credentials: "include",

@@ -14,11 +14,11 @@ export default function Header() {
 
     const { data: octoPermission = false } = useQuery({
         queryKey: ['permOcto'],
-        queryFn: () => verifierPermission("octo", userData.id),
+        queryFn: () => verifierPermission({}, "octo", userData.id),
     });
     const { data: bieroPermission = false } = useQuery({
         queryKey: ['permBiero'],
-        queryFn: () => verifierPermission("biero", userData.id),
+        queryFn: () => verifierPermission({}, "biero", userData.id),
     });
 
     const handleSearchSubmit = (e) => {

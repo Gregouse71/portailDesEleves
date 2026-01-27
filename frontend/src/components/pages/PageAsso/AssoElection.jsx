@@ -15,7 +15,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 
     const { data: election, isLoading } = useQuery({
         queryKey: ['election', id],
-        queryFn: () => obtenirElection(id),
+        queryFn: () => obtenirElection({}, id),
         enabled: !isNew,
     });
     const { data: listePromos = [] } = useQuery({
@@ -195,7 +195,7 @@ export default function AssoElection({ asso_id }) {
 
     const { data: elections = [] } = useQuery({
         queryKey: ['elections_asso', asso_id],
-        queryFn: () => obtenirElectionsAsso(asso_id),
+        queryFn: () => obtenirElectionsAsso({}, asso_id),
     });
 
     return (

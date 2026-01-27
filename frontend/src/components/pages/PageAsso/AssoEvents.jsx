@@ -39,7 +39,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
 
     const { data: event, isLoading } = useQuery({
         queryKey: ['event', id],
-        queryFn: () => obteniEvenement(id),
+        queryFn: () => obteniEvenement({}, id),
         enabled: !isNew,
     });
 
@@ -273,7 +273,7 @@ export default function AssoEvents({ asso_id }) {
 
     const { data: events = [], isLoading } = useQuery({
         queryKey: ['eventsAsso', asso_id],
-        queryFn: () => obtenirEvenementsAsso(asso_id),
+        queryFn: () => obtenirEvenementsAsso({}, asso_id),
         enabled: !!asso_id,
     });
 

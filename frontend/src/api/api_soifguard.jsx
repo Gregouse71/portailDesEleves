@@ -44,26 +44,6 @@ export const modifierConso = createApiPut(`${SOIFGUARD_BASE_URL}/conso`)
  */
 export const getListeConsos = createApiGet(`${SOIFGUARD_BASE_URL}/liste_consos`)
 
-export async function ajouterPermission(id_utilisateur, asso = "octo") {
-  try {
-    const response = await fetch(`${SOIFGUARD_BASE_URL}/ajouter_permission`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id_utilisateur, asso }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      console.error("Erreur lors de l'ajout de la permission :", data.message);
-      return { success: false, message: data.message };
-    }
-    return { success: true, message: data.message };
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    return { success: false, message: "Erreur réseau" };
-  }
-}
-
 /** Modification de la cotiz
  * args :
  *  - data : { asso }

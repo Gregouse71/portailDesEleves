@@ -1,4 +1,25 @@
-import { API_BASE_URL, createApiGet } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPost } from "./base";
+
+const LOGIN_BASE_URL = `${API_BASE_URL}/login`;
+
+
+/** Récupère la liste des permissions, avec pagination
+ * args :
+ *  - { per_page, page, query }
+ */
+export const getPermissions = createApiGet(`${LOGIN_BASE_URL}/permissions`);
+
+/** Supprime la permission
+ * args :
+ *  - id : id de la perm à supprimer
+ */
+export const deletePermission = createApiDelete(`${LOGIN_BASE_URL}/permissions`);
+
+/** Supprime la permission
+ * args :
+ *  - { user_id, permission }
+ */
+export const addPermission = createApiPost(`${LOGIN_BASE_URL}/permissions`);
 
 export async function estAuthentifie() {
   const res = await fetch(`${API_BASE_URL}/login/est_auth`, { credentials: "include" });

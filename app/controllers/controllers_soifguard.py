@@ -5,34 +5,11 @@ from app import db
 from app.models import Utilisateur, ConsoSoifguard
 from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations
 from app.services.services_global import get_global_var
-from app.utils.decorators import superutilisateur_required, a_permission
+from app.utils.decorators import a_permission
 
 # Creer le blueprint pour soifguard
 controllers_soifguard = Blueprint('controllers_soifguard', __name__)
 
-# @controllers_soifguard.route('/ajouter_permission', methods=['POST'])
-# @login_required
-# @superutilisateur_required
-# def ajouter_permission():
-#     """
-#     Ajoute une permission Soifguard pour un utilisateur.
-#     """
-#     data = request.json
-#     id_utilisateur = int(data.get("id_utilisateur"))
-#     asso = data.get("asso", "octo")  # Par défaut, "octo"
-#     if not id_utilisateur:
-#         return jsonify({"success": False, "message": "ID utilisateur requis"}), 400
-#     if asso not in ["octo", "biero"]:
-#         return jsonify({"success": False, "message": "Association invalide"}), 400
-#     # Vérifie si l'utilisateur a déjà la permission
-#     permission_existante = PermissionSoifguard.query.filter_by(id_utilisateur=id_utilisateur, asso=asso).first()
-#     if permission_existante:
-#         return jsonify({"success": False, "message": "L'utilisateur a déjà cette permission"}), 400
-#     # Ajoute la permission
-#     nouvelle_permission = PermissionSoifguard(id_utilisateur=id_utilisateur, asso=asso)
-#     db.session.add(nouvelle_permission)
-#     db.session.commit()
-#     return jsonify({"success": True, "message": f"Permission '{asso}' ajoutée à l'utilisateur {id_utilisateur}."})
 
 @controllers_soifguard.post('/encaisser/<string:asso>')
 @login_required

@@ -21,3 +21,11 @@ class Permission(db.Model):
         """
         self.permission = permission
         self.utilisateur = utilisateur
+        
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "permission": self.permission,
+            "utilisateur_id": self.utilisateur_id,
+            "utilisateur": self.utilisateur.nom_utilisateur
+        }

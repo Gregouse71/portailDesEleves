@@ -3,7 +3,9 @@ from flask_login import current_user, login_user, logout_user, login_required
 
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_divers import Permission
-from app.services.services_login import send_reset_mail, set_new_password, check_pw
+from app.services.services_login import send_reset_mail, set_new_password, check_pw, get_permissions, update_user_permissions
+from app.utils.decorators import superutilisateur_required
+from app import db
 
 controllers_login = Blueprint('controllers_login', __name__)
 
@@ -68,7 +70,54 @@ def verifier_permission(perm: str, user_id: int):
     if perm is None or user_id is None:
         return jsonify({"success": False, "message": "Nom de premission ou user id invalide"}), 400
 
-    perms = Permission.query.filter_by(utilisateur_id=user_id, permission=perm)
+    perms = Permission.query.filter_by(utilisateur_id=user_id, permission=perm).all()
     if perms:
         return jsonify(True), 200
     return jsonify(False), 200
+
+@controllers_login.get("/permissions")
+@superutilisateur_required
+def get_get_permissions():
+    """
+    Renvoie la liste des utilisateurs avec leurs permissions, avec pagination.
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    query = request.args.get('query', "", type=str)
+    return jsonify(get_permissions(page, per_page, query)), 200
+
+@controllers_login.delete("/permissions/<int:id>")
+@superutilisateur_required
+def delete_permission (id):
+    """
+    Supprime la permission
+    """
+    perm = Permission.query.get(id)
+    db.session.delete(perm)
+    db.session.commit()
+    return jsonify(perm.to_dict())
+
+@controllers_login.post('/permissions')
+@superutilisateur_required
+def update_permissions():
+    """
+    Met à jour les permissions d'un utilisateur.
+    """
+    data = request.get_json()
+    user_id = data.get('user_id')
+    permission = data.get('permission')
+
+    if not user_id or permission is None:
+        return jsonify({"message": "user_id et permissions requis"}), 400
+    user = Utilisateur.query.get(user_id)
+
+    if not user:
+        return jsonify({"message": "L'utilisateur n'existe pas"}), 400
+
+    try:
+        perm = Permission(user, permission)
+        db.session.add(perm)
+        db.session.commit()
+        return jsonify(perm.to_dict()), 200
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 404
