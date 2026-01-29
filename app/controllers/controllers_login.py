@@ -3,7 +3,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_divers import Permission
-from app.services.services_login import send_reset_mail, set_new_password, check_pw, get_permissions, update_user_permissions
+from app.services.services_login import send_reset_mail, set_new_password, check_pw, get_permissions
 from app.utils.decorators import superutilisateur_required
 from app import db
 
@@ -71,7 +71,7 @@ def verifier_permission(perm: str, user_id: int):
         return jsonify({"success": False, "message": "Nom de premission ou user id invalide"}), 400
 
     perms = Permission.query.filter_by(utilisateur_id=user_id, permission=perm).all()
-    if perms:
+    if perms or current_user.est_superutilisateur:
         return jsonify(True), 200
     return jsonify(False), 200
 

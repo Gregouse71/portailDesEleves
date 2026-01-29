@@ -47,7 +47,6 @@ class Utilisateur(db.Model, UserMixin) :
     promotion = db.Column(db.String(4), nullable=True)
     cycle = db.Column(db.String(10), nullable=False) # Parmi 'ic', 'ast', 'vs', 'ev', 'isup', 'de'
     est_visible = db.Column(db.Boolean, nullable=False, default=True)
-    est_vp_sondaj = db.Column(db.Boolean, nullable=False, default=False)
     est_superutilisateur = db.Column(db.Boolean, nullable=False, default=False)
 
     # Modifiable avec un formulaire prevu a cet effet
@@ -144,7 +143,6 @@ class Utilisateur(db.Model, UserMixin) :
         else :
             raise ValueError("Cycle invalide. doit etre dans {'ic', 'ast', 'vs', 'isup', 'ev', 'de'}")
         self.est_visible = True
-        self.est_vp_sondaj = False
         self.est_superutilisateur = False
         self.est_baptise = False
         if verifier_chaine_mail(email):

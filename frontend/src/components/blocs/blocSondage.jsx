@@ -4,6 +4,7 @@ import { useLayout } from './../../layouts/Layout';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, ProgressBar } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { verifierPermission } from '../../api/api_global';
 
 export default function BlocSondage() {
     const queryClient = useQueryClient();
@@ -13,6 +14,10 @@ export default function BlocSondage() {
     const { data: sondage = { is_sondage: false } } = useQuery({
         queryKey: ['sondage_du_jour'],
         queryFn: obtenirSondageDuJour,
+    });
+    const { data: vpSondaj = false } = useQuery({
+        queryKey: ['permSondaj'],
+        queryFn: () => verifierPermission({}, "sondaj", userData.id),
     });
 
     const voterEtReload = async (id_vote) => {
@@ -127,7 +132,7 @@ export default function BlocSondage() {
                 >
                     <img src="/assets/icons/stats.svg" alt="classement" className="theme-icon" />
                 </Button>
-                {userData.is_superuser && <Button
+                {vpSondaj && <Button
                     variant="outline-secondary"
                     onClick={() => navigate("/sondage/gerer")}
                 >

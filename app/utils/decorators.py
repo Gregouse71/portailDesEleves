@@ -9,15 +9,6 @@ from app.models.models_divers import Permission
 # a utiliser en plus de @login_required, on ne verifie pas ici l'authentification
 # le superutilisateur a tous les droits
 
-def vp_sondaj_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if current_user.est_vp_sondaj or current_user.est_superutilisateur:
-            return f(*args, **kwargs)
-        else :
-            return jsonify({"message": "Vous devez etre un VP_sondage pour effectuer cette action"}), 403 
-    return decorated_function
-
 def superutilisateur_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

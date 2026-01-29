@@ -40,24 +40,6 @@ def get_permissions(page: int, per_page: int, query_str: str=""):
     perms = query.paginate(page=page, per_page=per_page)
     return {"permissions": [p.to_dict() for p in perms], "count": perms.total}
 
-def update_user_permissions(user_id, new_permissions):
-    """
-    Met à jour les permissions d'un utilisateur.
-    """
-    user = Utilisateur.query.get(user_id)
-    if not user:
-        raise ValueError("Utilisateur non trouvé")
-
-    # Supprimer les anciennes permissions
-    user.permissions = []
-
-    # Ajouter les nouvelles permissions
-    for perm in new_permissions:
-        permission = Permission(utilisateur=user, permission=perm)
-        db.session.add(permission)
-    
-    db.session.commit()
-
 def send_reset_mail(username: str):
     """
     Envoie le mail pour renouveler le mot de passe de l'utilisateur
