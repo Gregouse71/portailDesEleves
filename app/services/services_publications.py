@@ -126,7 +126,10 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
         raise ValueError("Publication introuvable")
 
     if fichier_joint_file:
-        if publication.fichier_joint:
+        mime_type_new, _ = mimetypes.guess_type(fichier_joint_file.filename)
+
+        # Remplace uniquement les fichiers PDF existants
+        if mime_type_new == "application/pdf" and publication.fichier_joint and mimetypes.guess_type(publication.fichier_joint)[0] == "application/pdf":
             _overwrite_file(fichier_joint_file, publication.association.nom_dossier, publication.fichier_joint)
             fichier_joint_path_for_save = os.path.join("upload", "associations", publication.association.nom_dossier, "publications", publication.fichier_joint)
         else:
@@ -138,14 +141,13 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
                 _delete_file(publication.miniature, publication.association.nom_dossier, "thumbnails")
                 publication.miniature = None
 
-            mime_type, _ = mimetypes.guess_type(fichier_joint_path_for_save)
-            if mime_type == "application/pdf":
+            if mime_type_new == "application/pdf":
                 output_dir = os.path.join("upload", "associations", publication.association.nom_dossier, "thumbnails")
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
                 publication.miniature = _generate_pdf_thumbnail(fichier_joint_path_for_save, output_dir)
-                
-            elif mime_type and mime_type.startswith("image"):
+
+            elif mime_type_new and mime_type_new.startswith("image"):
                 publication.miniature = publication.fichier_joint
                 source_path = fichier_joint_path_for_save
                 thumbnail_dir = os.path.join("upload", "associations", publication.association.nom_dossier, "thumbnails")
