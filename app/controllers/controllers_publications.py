@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import desc
+from sqlalchemy import desc, or_, and_
 
 from app.models import Publication, Association, Commentaire
 from app.utils.decorators import est_membre_de_asso
@@ -97,13 +97,35 @@ def route_obtenir_publication(post_id: int):
 @login_required
 def route_add_get_publications_recentes():
     """
-    Renvoie les dernieres publications
+    Renvoie les dernieres publications auxquelles l'utilisateur a accès.
     """
     try:
         limit = request.args.get('limit', 10, type=int)
-        publications = Publication.query.order_by(desc(Publication.date_publication)).limit(limit).all()
+        query = Publication.query
+
+        if not current_user.est_superutilisateur:
+            user_associations_ids = [membre.mandat.association.id for membre in current_user.associations]
+            
+            # L'utilisateur a accès si la publication n'est pas interne, ou si elle l'est mais qu'il est membre de l'asso
+            is_accessible_interne = or_(
+                Publication.is_publication_interne.isnot(True),
+                Publication.id_association.in_(user_associations_ids)
+            )
+
+            # L'utilisateur a accès si la publication n'est pas cachée aux nouveaux, ou si l'utilisateur est baptisé
+            is_accessible_nouveaux = or_(
+                Publication.a_cacher_aux_nouveaux.isnot(True),
+                current_user.est_baptise
+            )
+            
+            # L'utilisateur a accès si la publication n'est pas cachée à son cycle
+            is_accessible_cycle = ~Publication.a_cacher_to_cycles.contains(current_user.cycle)
+
+            query = query.filter(and_(is_accessible_interne, is_accessible_nouveaux, is_accessible_cycle))
+
+        publications = query.order_by(desc(Publication.date_publication)).limit(limit).all()
         return jsonify([p.id for p in publications]), 200
-    except ValueError as e:
+    except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
 
