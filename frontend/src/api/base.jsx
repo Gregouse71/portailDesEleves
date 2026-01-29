@@ -40,7 +40,7 @@ export function createApiPost(route) {
   };
 }
 
-export function createApiGet(route) {
+export function createApiGet(route, getFile = false) {
   return async (data, ...params) => {
     try {
       const search_param = new URLSearchParams(data);
@@ -56,8 +56,31 @@ export function createApiGet(route) {
         console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
         return
       }
+      if (getFile) {
+        const blob = await response.blob();
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'download.csv'; // default filename
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+          if (filenameMatch && filenameMatch.length > 1) {
+            filename = filenameMatch[1];
+          }
+        }
 
-      return await response.json();
+        const link = document.createElement('a');
+        const urlObject = window.URL.createObjectURL(blob);
+        link.href = urlObject;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(urlObject);
+
+        return true; // Indicate success
+      }
+      else {
+        return await response.json();
+      }
     } catch (erreur) {
       console.error("Erreur réseau :", erreur);
       throw erreur;

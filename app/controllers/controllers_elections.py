@@ -1,5 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 from flask_login import login_required, current_user
+from sqlalchemy.orm import joinedload
+import io
+import csv
 
 from app import db
 from app.models.models_elections import Election, ElectionVote
@@ -34,7 +37,7 @@ def get_election_by_id(id: int):
         return jsonify({"message": ""}), 403
 
 
-@controller_elections.post("election/<int:asso_id>")
+@controller_elections.post("/election/<int:asso_id>")
 @login_required
 @superutilisateur_required
 def post_election(asso_id: int):
@@ -47,7 +50,7 @@ def post_election(asso_id: int):
     return jsonify(election.to_dict())
 
 
-@controller_elections.delete("election/<int:id>")
+@controller_elections.delete("/election/<int:id>")
 @login_required
 @superutilisateur_required
 def delete_election(id: int):
@@ -64,7 +67,7 @@ def delete_election(id: int):
     return jsonify({"message": ""}), 200 
 
 
-@controller_elections.put("election/<int:id>")
+@controller_elections.put("/election/<int:id>")
 @login_required
 @superutilisateur_required
 def patch_election_by_id(id: int):
@@ -79,7 +82,7 @@ def patch_election_by_id(id: int):
     return jsonify(election.to_dict())
 
 
-@controller_elections.post("voter/<int:id>")
+@controller_elections.post("/voter/<int:id>")
 @login_required
 def voter_election(id: int):
     choix = request.json.get("choix")
@@ -99,3 +102,41 @@ def voter_election(id: int):
     db.session.commit()
 
     return jsonify({"status": "success"}), 200
+
+
+@controller_elections.get("/resultats/<int:id>")
+@login_required
+@superutilisateur_required
+def resultats_election(id: int):
+    proxy = io.StringIO()
+
+    votes = db.session.query(ElectionVote).options(joinedload(ElectionVote.utilisateur)).filter_by(election_id=id).all()
+
+    if votes:
+        fieldnames = ["choix", "utilisateur_id", "election_id", "utilisateur.nom_utilisateur", "utilisateur.chambre", "utilisateur.promotion", "utilisateur.cycle"]
+        writer = csv.DictWriter(proxy, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for vote in votes:
+            row = {}
+            for col in fieldnames:
+                if "." in col:
+                    obj, attr = col.split(".")
+                    row[col] = getattr(getattr(vote, obj), attr) if hasattr(vote, obj) and getattr(vote, obj) is not None else ""
+                else:
+                    row[col] = getattr(vote, col)
+            writer.writerow(row)
+
+    proxy.seek(0)
+
+    mem = io.BytesIO()
+    mem.write(proxy.getvalue().encode('utf-8'))
+    mem.seek(0)
+    proxy.close()
+
+    return send_file(
+        mem,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='users_export.csv'
+    )

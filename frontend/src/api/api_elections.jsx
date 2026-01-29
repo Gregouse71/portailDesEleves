@@ -45,3 +45,9 @@ export const modifierElection = createApiPut(`${ELECTIONS_BASE_URL}/election`)
  *  - id    : id de l'election
  */
 export const voterElection = createApiPost(`${ELECTIONS_BASE_URL}/voter`)
+
+/** Obtenir les résultats d'une élection sous forme de fichier csv
+ * args :
+ *  - election_id : id de l'election
+ */
+export const resultatsElection = createApiGet(`${ELECTIONS_BASE_URL}/resultats`, true)
