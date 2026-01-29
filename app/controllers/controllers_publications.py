@@ -149,7 +149,7 @@ def route_supprimer_publication(association_id, publication_id):
     publication = Publication.query.get(publication_id)
     if not publication:
         return jsonify({"message": "publication non trouvé"}), 404
-    if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise):
+    if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise) and not current_user.est_superutilisateur:
         # Les non baptisés n'ont pas le droit de supprimer les posts cachés
         return jsonify({"message": "publication non trouvé"}), 404
     remove_publication(publication)
@@ -201,7 +201,9 @@ def route_modifier_publication(association_id, publication_id):
             data["a_cacher_to_cycles"],
             data["a_cacher_aux_nouveaux"],
             data["is_publication_interne"],
-            data.get("tags")
+            tags=data.get("tags"),
+            fichier_joint=data.get("fichier_joint"),
+            miniature=data.get("miniature"),
         )
         return jsonify({"message": "publication modifiée avec succès"}), 200
     else:

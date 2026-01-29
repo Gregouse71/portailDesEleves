@@ -14,7 +14,7 @@ from sqlalchemy import desc
 # Gestion de publications
 
 
-def _save_file(file, association_name, is_miniature=False):
+def _save_new_file(file, association_name, is_miniature=False):
     if not file:
         return None, None
 
@@ -36,12 +36,33 @@ def _save_file(file, association_name, is_miniature=False):
         os.makedirs(UPLOAD_FOLDER)
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"{name}_{timestamp}.{ext}"
+    if is_miniature:
+        filename = f"{name}_{timestamp}_thumb.{ext}"
+    else:
+        filename = f"{name}_{timestamp}.{ext}"
 
     file_path_for_save = os.path.join(UPLOAD_FOLDER, filename)
 
     file.save(file_path_for_save)
     return filename, file_path_for_save
+
+
+def _overwrite_file(file, association_name, existing_filename, is_miniature=False):
+    if not file:
+        return
+
+    if is_miniature:
+        UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, "thumbnails")
+    else:
+        UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, "publications")
+
+    file_path_for_save = os.path.join(UPLOAD_FOLDER, existing_filename)
+
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+    file.save(file_path_for_save)
+
 
 
 def _delete_file(filename, association_name, directory_name):
@@ -62,12 +83,12 @@ def _delete_publication_files(publication):
         _delete_file(publication.miniature, publication.association.nom_dossier, "thumbnails")
 
 
-def _generate_pdf_thumbnail(pdf_path, output_dir, association_name):
-    images = convert_from_path(pdf_path, first_page=1, last_page=1, fmt="png")
+def _generate_pdf_thumbnail(pdf_path, output_dir):
+    images = convert_from_path(pdf_path, first_page=1, last_page=1, fmt="jpg")
     if images:
-        thumbnail_name = os.path.splitext(os.path.basename(pdf_path))[0] + "_thumb.png"
+        thumbnail_name = os.path.splitext(os.path.basename(pdf_path))[0] + "_thumb.jpg"
         thumbnail_path_for_save = os.path.join(output_dir, thumbnail_name)
-        images[0].save(thumbnail_path_for_save, "PNG")
+        images[0].save(thumbnail_path_for_save, "JPEG")
         return thumbnail_name
     return None
 
@@ -104,34 +125,41 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
     if not publication:
         raise ValueError("Publication introuvable")
 
-    _delete_publication_files(publication)
     if fichier_joint_file:
-        fichier_joint_path_for_db, fichier_joint_path_for_save = _save_file(fichier_joint_file, publication.association.nom_dossier)
-        publication.fichier_joint = fichier_joint_path_for_db
-
-        # If no miniature is provided with it, generate one from the new file
+        if publication.fichier_joint:
+            _overwrite_file(fichier_joint_file, publication.association.nom_dossier, publication.fichier_joint)
+            fichier_joint_path_for_save = os.path.join("upload", "associations", publication.association.nom_dossier, "publications", publication.fichier_joint)
+        else:
+            new_filename, fichier_joint_path_for_save = _save_new_file(fichier_joint_file, publication.association.nom_dossier)
+            publication.fichier_joint = new_filename
+        
         if not miniature_file:
-            mime_type, _ = mimetypes.guess_type(fichier_joint_path_for_db)
+            if publication.miniature:
+                _delete_file(publication.miniature, publication.association.nom_dossier, "thumbnails")
+                publication.miniature = None
+
+            mime_type, _ = mimetypes.guess_type(fichier_joint_path_for_save)
             if mime_type == "application/pdf":
                 output_dir = os.path.join("upload", "associations", publication.association.nom_dossier, "thumbnails")
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
-                publication.miniature = _generate_pdf_thumbnail(fichier_joint_path_for_save, output_dir, publication.association.nom_dossier)
+                publication.miniature = _generate_pdf_thumbnail(fichier_joint_path_for_save, output_dir)
+                
             elif mime_type and mime_type.startswith("image"):
+                publication.miniature = publication.fichier_joint
+                source_path = fichier_joint_path_for_save
                 thumbnail_dir = os.path.join("upload", "associations", publication.association.nom_dossier, "thumbnails")
                 if not os.path.exists(thumbnail_dir):
                     os.makedirs(thumbnail_dir)
-
-                shutil.copy(fichier_joint_path_for_save, os.path.join(thumbnail_dir, fichier_joint_path_for_db))
-                publication.miniature = fichier_joint_path_for_db
-            else:
-                # New file is not an image/pdf, and no miniature provided.
-                # Remove old miniature.
-                publication.miniature = None
+                destination_path = os.path.join(thumbnail_dir, publication.fichier_joint)
+                shutil.copy(source_path, destination_path)
 
     if miniature_file:
-        miniature_path, _ = _save_file(miniature_file, publication.association.nom_dossier, is_miniature=True)
-        publication.miniature = miniature_path
+        if publication.miniature:
+            _overwrite_file(miniature_file, publication.association.nom_dossier, publication.miniature, is_miniature=True)
+        else:
+            new_filename, _ = _save_new_file(miniature_file, publication.association.nom_dossier, is_miniature=True)
+            publication.miniature = new_filename
 
     db.session.commit()
 
@@ -139,7 +167,16 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
 
 
 def modify_publication(
-    publication: Publication, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, tags: list = None
+    publication: Publication,
+    titre: str,
+    contenu: str,
+    is_commentable: bool,
+    a_cacher_to_cycles: list,
+    a_cacher_aux_nouveaux: bool,
+    is_publication_interne: bool,
+    tags: list = None,
+    fichier_joint: str = "",
+    miniature: str = "",
 ):
     """
     Modifie une publication de l'association
@@ -152,8 +189,15 @@ def modify_publication(
         publication.a_cacher_to_cycles = a_cacher_to_cycles
         publication.a_cacher_aux_nouveaux = a_cacher_aux_nouveaux
         publication.is_publication_interne = is_publication_interne
-
         publication.tags = tags
+
+        if not fichier_joint and publication.fichier_joint:
+            _delete_file(publication.fichier_joint, publication.association.nom_dossier, "publications")
+            publication.fichier_joint = None
+        
+        if not miniature and publication.miniature:
+            _delete_file(publication.miniature, publication.association.nom_dossier, "thumbnails")
+            publication.miniature = None
 
         db.session.commit()
 

@@ -120,6 +120,13 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
         try {
             let updatedModifyPost = { ...modifyPost };
 
+            // Only trigger deletion if the user wants to remove the file and NOT replace it.
+            // If replacing, the add_content endpoint will handle overwriting.
+            if (shouldRemoveExistingAttachment && !modifyPostFile) {
+                updatedModifyPost.fichier_joint = "";
+                updatedModifyPost.miniature = "";
+            }
+
             await modifierPublication(post.association.id, postId, updatedModifyPost);
 
             if (modifyPostFile || modifyPostMiniatureFile) {
