@@ -8,7 +8,7 @@ import '../../../assets/styles/classement_sondage.scss';
 import Leaderboard from "../../elements/Leaderboard";
 
 const RECENT_FORMULA = 'S_r = \\sum_{i=1}^N w_i V_i \\quad \\text{où } w_i = e^{-\\lambda t_i} \\quad \\text{et } V_i = \\begin{cases} 1 \\quad \\text{si le vote est gagnant}\\\\ -1 \\quad \\text{sinon} \\end{cases}';
-const GLOBAL_FORMULA = 'S_g = \\frac{100}{1 + \\frac{z_\\alpha^2}{N}} \\left[\\bar X + \\frac{z_\\alpha^2}{2N} - z_\\alpha\\sqrt{\\frac{\\bar X(1-\\bar X) + \\frac{z_\\alpha^2}{4N}}{N}}\\right] \\text{où } \\begin{cases}\\hat{X} = \\frac{1}{N} \\sum_{i \\in {gagants} \\;\\text{ou}\\; i \\in {perdants}} V_i\\\\z_\\alpha = 1.96\\end{cases}';
+const GLOBAL_FORMULA = 'S_g = \\frac{100}{1 + \\frac{z_\\alpha^2}{N}} \\left[\\hat X + \\frac{z_\\alpha^2}{2N} - z_\\alpha\\sqrt{\\frac{\\hat X(1-\\hat X) + \\frac{z_\\alpha^2}{4N}}{N}}\\right] \\text{où } \\begin{cases}\\hat{X} = \\frac{1}{N} \\sum_{i \\in {gagants} \\;\\text{ou}\\; i \\in {perdants}} V_i\\\\z_\\alpha = 1.96\\end{cases}';
 
 export default function ClassementSondage() {
     const { userData } = useLayout();

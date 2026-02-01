@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
-import "../../../assets/styles/utilisateur.scss"
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();

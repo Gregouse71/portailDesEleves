@@ -61,7 +61,7 @@ function PageUtilisateur() {
                 className="d-none"
                 onChange={handleFileChange}
             />
-            <Card>
+            <Card className='mb-3'>
                 <Card.Header
                     style={{
                         backgroundImage: `url(${UPLOAD_BASE_URL}/utilisateurs/minesvert.jpg)`,
@@ -77,22 +77,25 @@ function PageUtilisateur() {
                             ]} />
                         </div>
                     }
-                    <Image
-                        src={`${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.photo}`}
-                        alt={donneesUtilisateur.nom_utilisateur}
-                        rounded
-                        style={{
-                            position: 'absolute',
-                            top: 'calc(170px * 0.2)',
-                            right: 'calc(170px * 0.2)',
-                            width: 'calc(170px * 0.75)',
-                            border: '5px solid white'
-                        }}
-                    />
                 </Card.Header>
                 <Card.Body>
-                    <Row>
-                        <Col style={{ paddingRight: '200px' }}>
+                    <Row className="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
+                        <Col xs="auto" md="auto" className="order-md-last">
+                            <Image
+                                className="rounded-3"
+                                src={`${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.photo}`}
+                                alt={donneesUtilisateur.nom_utilisateur}
+                                rounded
+                                style={{
+                                    position: 'relative',
+                                    top: '-120px',
+                                    height: '200px',
+                                    border: '2px solid white',
+                                    marginBottom: '-120px'
+                                }}
+                            />
+                        </Col>
+                        <Col className="text-center text-md-end">
                             <h2>
                                 {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
                                 {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
@@ -102,7 +105,7 @@ function PageUtilisateur() {
                 </Card.Body>
             </Card>
 
-            <Nav variant="tabs" className="my-3" activeKey={getActiveKey()}>
+            <Nav variant="tabs" className="mb-3" activeKey={getActiveKey()}>
                 <Nav.Item>
                     <Nav.Link key={1} as={Link} to={`/utilisateur/${id}`} eventKey="info">
                         Infos

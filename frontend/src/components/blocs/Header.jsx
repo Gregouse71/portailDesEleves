@@ -38,7 +38,7 @@ export default function Header() {
     };
 
     return (
-        <Navbar expand="md" className="global-header-header">
+        <Navbar expand="md" className="global-header-header navbar-dark">
             <Container fluid>
                 <Navbar.Brand href="#" onClick={() => navigate("/")}>Le portail des élèves (WIP)</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
