@@ -4,6 +4,7 @@ import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
+import AssoAudio from './PageAsso/AssoAudio';
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Image, Badge } from 'react-bootstrap';
@@ -55,13 +56,17 @@ function Asso() {
         backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
     };
 
-    const tabs = [
-        { key: "", titre: "Infos", element: <AssoInfo id={asso.id} /> },
-        { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} /> },
-        { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} /> },
-        { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} /> },
-        ...asso.elections ? [{ key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} /> }] : []
-    ]
+    const moduleToTab = {
+        'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} /> },
+        'Events': { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} /> },
+        'Membres': { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} /> },
+        'Posts': { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} /> },
+        'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} /> },
+        'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} /> },
+    };
+
+    const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
+
 
     const currentPath = location.pathname.split('/').pop();
     const activeKey = currentPath === id ? "" : currentPath;
@@ -114,7 +119,8 @@ function Asso() {
                         <Nav variant="tabs" className="mb-3" activeKey={activeKey}>
                             {tabs.map((elt, ind) =>
                                 <Nav.Item key={ind}>
-                                    <Nav.Link as={Link} eventKey={elt.key} to={`/assos/get/${id}/${elt.key}`}                                    >
+                                    <Nav.Link as={Link} eventKey={elt.key} to={`/assos/get/${id}/${elt.key}`}
+                                    >
                                         {elt.titre}
                                     </Nav.Link>
                                 </Nav.Item>
@@ -136,3 +142,4 @@ function Asso() {
 }
 
 export default Asso;
+

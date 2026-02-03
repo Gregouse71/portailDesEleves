@@ -40,6 +40,30 @@ export function createApiPost(route) {
   };
 }
 
+export function createApiPostFormData(route) {
+  return async (data, ...params) => {
+    try {
+      const url = [route, ...params].join('/');
+      const response = await fetch(url, {
+        method: "POST",
+        body: data,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.json();
+        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+        return
+      }
+
+      return await response.json();
+    } catch (erreur) {
+      console.error("Erreur réseau :", erreur);
+      throw erreur;
+    }
+  };
+}
+
 export function createApiGet(route, getFile = false) {
   return async (data, ...params) => {
     try {
@@ -117,6 +141,30 @@ export function createApiPut(route) {
       const url = [route, ...params].join('/');
       const response = await fetch(url, {
         method: "PUT",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json", }, credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.json();
+        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+        return
+      }
+
+      return await response.json();
+    } catch (erreur) {
+      console.error("Erreur réseau :", erreur);
+      throw erreur;
+    }
+  };
+}
+
+export function createApiPatch(route) {
+  return async (data, ...params) => {
+    try {
+      const url = [route, ...params].join('/');
+      const response = await fetch(url, {
+        method: "PATCH",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json", }, credentials: "include",
       });
