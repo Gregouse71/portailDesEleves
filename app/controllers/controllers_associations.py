@@ -24,6 +24,23 @@ controllers_associations = Blueprint('controllers_associations', __name__)
 # routes API : /!\ AVANT DEPLOIEMENT : ajouter la securite
 
 
+@controllers_associations.route("/<int:association_id>/editer_modules", methods=['PATCH'])
+@login_required
+@est_membre_de_asso
+def route_editer_modules(association_id: int):
+    """
+    Modifie les modules d'une asso
+    """
+    try:
+        new_modules = request.json.get("modules")
+        asso = db.session.get(Association, association_id)
+        asso.modules = new_modules
+        db.session.commit()
+        return jsonify({"message": "modules modifiés avec succès"}), 200
+    except Exception as e:
+        return jsonify({"message": f"echec dans la modification des modules : {e}"}), 500
+
+
 @controllers_associations.route("/<int:association_id>/editer_description", methods=['PATCH'])
 @login_required
 @est_membre_de_asso

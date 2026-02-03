@@ -85,7 +85,6 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Liste des assos actuelles
     associations = db.relationship('AssociationMembre', back_populates='utilisateur')
-    votes_elections = db.relationship('ElectionVote', back_populates='utilisateur')
     
     # Parties pour les jeux
     parties = db.relationship('JeuxPartie', back_populates='utilisateur')

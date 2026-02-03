@@ -29,10 +29,10 @@ class Election(db.Model):
 
     # Association
     association_id = db.Column(db.Integer, db.ForeignKey('associations_association.id'))
-    association = db.relationship('Association', back_populates='elections')
+    association = db.relationship('Association', backref=db.backref('elections', lazy='dynamic'))
     
     # Votes
-    votes = db.relationship('ElectionVote', back_populates='election')
+    votes = db.relationship('ElectionVote', backref='election', cascade="all, delete-orphan")
 
     def __init__(
         self, association, nom: str, options: list[str]
@@ -89,11 +89,10 @@ class ElectionVote(db.Model):
 
     # Association
     election_id = db.Column(db.Integer, db.ForeignKey('elections_election.id'), primary_key=True)
-    election = db.relationship('Election', back_populates='votes')
     
     # Utilisateur
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), primary_key=True)
-    utilisateur = db.relationship('Utilisateur', back_populates='votes_elections')
+    utilisateur = db.relationship('Utilisateur', backref='votes_elections')
 
     def __init__(
         self, choix: int, election: Election, utilisateur: Utilisateur

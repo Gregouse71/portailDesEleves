@@ -5,7 +5,8 @@ from app.models.models_general import *
 from app.models.models_sondages import *
 from app.models.models_divers import *
 from app.models.models_chat import Message
-from app.models.models_elections import Election, ElectionVote
+from app.models.modules.models_elections import Election, ElectionVote
+from app.models.modules.models_audio import AssoAudio, AssoAlbum
 from app.models.models_jeux import JeuxPartie
 from app.models.models_publications import Publication, Commentaire
 from app.models.models_soifguard import OperationSoifguard, ConsoSoifguard

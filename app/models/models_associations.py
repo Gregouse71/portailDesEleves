@@ -24,19 +24,17 @@ class Association(db.Model):
     publications = db.relationship('Publication', back_populates='association')
     # Mandats de l'asso
     mandats = db.relationship('AssociationMandat', back_populates='association')
-    # Elections
-    elections = db.relationship('Election', back_populates='association')
 
     type_association = db.Column(db.String(1000), nullable=True)
     ordre_importance = db.Column(db.Integer, nullable=True)
 
     # Affichage d'une tab election sur la page du portail
-    tab_election = db.Column(db.Boolean, nullable=False, default=False)
+    modules = db.Column(db.JSON, nullable=False)
 
     def __init__(
         self, nom: str, ordre_importance: int,description: str = None,
         type_association: str = None, logo_path: str = None,  banniere_path: str = None,
-        a_cacher_aux_nouveaux: bool = False, tab_election: bool = False
+        a_cacher_aux_nouveaux: bool = False, modules: list = None
     ):
         """
         Crée une nouvelle association
@@ -48,6 +46,7 @@ class Association(db.Model):
         self.ordre_importance = ordre_importance
         self.banniere_path = banniere_path
         self.a_cacher_aux_nouveaux = a_cacher_aux_nouveaux
+        self.modules = modules or ['Info', 'Membres', 'Events', 'Posts']
 
         # Créer un dossier pour l'association
         self.create_association_folder()
@@ -122,7 +121,7 @@ class Association(db.Model):
             "ordre_importance": self.ordre_importance,
             "banniere_path": self.banniere_path,
             "description": self.description,
-            "elections": self.tab_election,
+            "modules": self.modules,
             "mandats": mandats_data
         }
 

@@ -3,7 +3,7 @@ import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLayout } from "../../../layouts/Layout";
-import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection } from "../../../api/api_elections";
+import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection } from "../../../api/modules/api_elections";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
 

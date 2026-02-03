@@ -5,13 +5,13 @@ import io
 import csv
 
 from app import db
-from app.models.models_elections import Election, ElectionVote
+from app.models.modules.models_elections import Election, ElectionVote
 from app.utils.decorators import superutilisateur_required
-from app.services.services_elections import creer_election
+from app.services.modules.services_elections import creer_election
 
-controller_elections = Blueprint('controller_elections', __name__)
+controllers_elections = Blueprint('controllers_elections', __name__)
 
-@controller_elections.get("/asso/<int:id>")
+@controllers_elections.get("/asso/<int:id>")
 @login_required
 def get_elections_par_asso(id: int):
     """
@@ -21,7 +21,7 @@ def get_elections_par_asso(id: int):
     return jsonify([e.id for e in elections])
 
 
-@controller_elections.get("/election/<int:id>")
+@controllers_elections.get("/election/<int:id>")
 @login_required
 def get_election_by_id(id: int):
     """
@@ -37,7 +37,7 @@ def get_election_by_id(id: int):
         return jsonify({"message": ""}), 403
 
 
-@controller_elections.post("/election/<int:asso_id>")
+@controllers_elections.post("/election/<int:asso_id>")
 @login_required
 @superutilisateur_required
 def post_election(asso_id: int):
@@ -50,7 +50,7 @@ def post_election(asso_id: int):
     return jsonify(election.to_dict())
 
 
-@controller_elections.delete("/election/<int:id>")
+@controllers_elections.delete("/election/<int:id>")
 @login_required
 @superutilisateur_required
 def delete_election(id: int):
@@ -67,7 +67,7 @@ def delete_election(id: int):
     return jsonify({"message": ""}), 200 
 
 
-@controller_elections.put("/election/<int:id>")
+@controllers_elections.put("/election/<int:id>")
 @login_required
 @superutilisateur_required
 def patch_election_by_id(id: int):
@@ -82,7 +82,7 @@ def patch_election_by_id(id: int):
     return jsonify(election.to_dict())
 
 
-@controller_elections.post("/voter/<int:id>")
+@controllers_elections.post("/voter/<int:id>")
 @login_required
 def voter_election(id: int):
     choix = request.json.get("choix")
@@ -104,7 +104,7 @@ def voter_election(id: int):
     return jsonify({"status": "success"}), 200
 
 
-@controller_elections.get("/resultats/<int:id>")
+@controllers_elections.get("/resultats/<int:id>")
 @login_required
 @superutilisateur_required
 def resultats_election(id: int):

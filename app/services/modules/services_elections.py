@@ -1,4 +1,5 @@
-from app.models import Association, Election
+from app.models.models_associations import Association
+from app.models.modules.models_elections import Election
 from app import db
 
 def creer_election (asso_id, data):
