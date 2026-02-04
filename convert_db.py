@@ -1,7 +1,6 @@
 import sqlite3
 import re
 import os
-import sys
 
 def convert_mysql_to_sqlite(sql_file_path, db_file_path):
     """

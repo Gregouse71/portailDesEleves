@@ -1,4 +1,3 @@
-import "../assets/styles/admin.scss";
 import { useNavigate } from "react-router-dom";
 import { Button, Container, Collapse } from "react-bootstrap";
 import { ArrowLeft, ChevronDown, ChevronUp } from "react-bootstrap-icons";

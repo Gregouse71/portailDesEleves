@@ -171,7 +171,7 @@ function User({ user, isSelected, select, categorie, query }) {
     </div>
 }
 
-function Consommation({ categorie }) {
+function Consommation({ categorie, reset }) {
     const queryClient = useQueryClient();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -222,6 +222,11 @@ function Consommation({ categorie }) {
         encaisserEtRafraichir();
     }, [selectedUser, selectedConso, categorie, query, queryClient]);
 
+    useEffect(() => {
+        setSelectedUser(null);
+        setSelectedConso(null);
+    }, [reset])
+
     const addMutation = useMutation({
         mutationFn: async ({ nom_conso, prix, prix_cotisant, asso }) => {
             const prixCotisantValue = prix_cotisant === "" ? null : parseFloat(prixCotisant);
@@ -266,8 +271,7 @@ function Consommation({ categorie }) {
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedConso(conso.id); }}
             >
-                <strong>{conso.nom_conso}</strong> - {parseFloat(conso.prix).toFixed(2)}€
-                {conso.prix_cotisant !== null && <span> ({parseFloat(conso.prix_cotisant).toFixed(2)}€ cotisant)</span>}
+                <strong>{conso.nom_conso}</strong> - {parseFloat(conso.prix).toFixed(2)}€ {conso.prix_cotisant !== null && <span> ({parseFloat(conso.prix_cotisant).toFixed(2)}€)</span>}
 
                 {/* Affichage des boutons de modification et suppression */}
                 {gestionConsos && (
@@ -318,7 +322,7 @@ function Consommation({ categorie }) {
                 {categorie && (
                     <div className="consos-header">
                         <button onClick={() => setGestionConsos(!gestionConsos)}>
-                            {gestionConsos ? "Sauvegarder et quitter" : "Gérer les consos"}
+                            {gestionConsos ? "Quitter" : "Gérer les consos"}
                         </button>
                     </div>
                 )}
@@ -327,9 +331,9 @@ function Consommation({ categorie }) {
                 ) : (
                     <div className="soifguard-grid-container">
                         {content}
-                        <div className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)}>
+                        {gestionConsos && <div className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)}>
                             + Ajouter
-                        </div>
+                        </div>}
                     </div>
                 )}
             </div>
@@ -347,11 +351,11 @@ function Consommation({ categorie }) {
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Prix :</Form.Label>
-                        <Form.Control type="number" value={nomConso} onChange={(e) => setPrix(e.target.value)}></Form.Control>
+                        <Form.Control type="number" value={prix} onChange={(e) => setPrix(e.target.value)}></Form.Control>
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Prix cotisant (optionnel) :</Form.Label>
-                        <Form.Control type="number" value={nomConso} onChange={(e) => setPrixCotisant(e.target.value)}></Form.Control>
+                        <Form.Control type="number" value={prixCotisant} onChange={(e) => setPrixCotisant(e.target.value)}></Form.Control>
                     </Form.Group>
 
                     <Button variant="success" disabled={!prix || !nomConso} onClick={() => addMutation.mutate({
@@ -369,6 +373,7 @@ export default function SoifGuard() {
     const navigate = useNavigate();
     const [categorie, setCategorie] = useState("");
     const [mode, setMode] = useState("conso");
+    const [reset, setReset] = useState(false);
 
     // pour les permissions de lancer octo ou biero
     const { data: octoPermission = false } = useQuery({
@@ -393,6 +398,10 @@ export default function SoifGuard() {
         navigate(mode === "conso" ? "/soifguard/operations" : "/soifguard")
     }
 
+    const changeCategorie = (cat) => {
+        setCategorie(cat);
+        setReset(!reset)
+    }
 
     return (
         <div className="soifguard-container">
@@ -427,7 +436,7 @@ export default function SoifGuard() {
                     {/* Bouton Octo : affiché seulement si l'utilisateur a la permission */}
                     {octoPermission && (
                         <button
-                            onClick={() => setCategorie("octo")}
+                            onClick={() => changeCategorie("octo")}
                             className={categorie === "octo" ? "octo-active" : ""}
                         >
                             Octo
@@ -437,7 +446,7 @@ export default function SoifGuard() {
                     {/* Bouton Biero : affiché seulement si l'utilisateur a la permission */}
                     {bieroPermission && (
                         <button
-                            onClick={() => setCategorie("biero")}
+                            onClick={() => changeCategorie("biero")}
                             className={categorie === "biero" ? "biero-active" : ""}
                         >
                             Biero
@@ -446,7 +455,7 @@ export default function SoifGuard() {
                 </div>
             </div>
             <Routes>
-                <Route index element={<Consommation categorie={categorie} />} />
+                <Route index element={<Consommation categorie={categorie} reset={reset} />} />
                 <Route path="operations" element={<Operations categorie={categorie} />} />
             </Routes>
         </div>

@@ -1,4 +1,3 @@
-import "../../assets/styles/admin.scss";
 import { useState } from "react";
 import { Button, Form, Table, Row, Col, Card, Alert, InputGroup } from "react-bootstrap";
 import {

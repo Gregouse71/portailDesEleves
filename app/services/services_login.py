@@ -46,6 +46,8 @@ def send_reset_mail(username: str):
     """
     user = Utilisateur.query.filter_by(nom_utilisateur=username).first()
     if not user:
+        user = Utilisateur.query.filter_by(email=username).first()
+    if not user:
         return False
 
     expire = datetime.now(timezone.utc) + timedelta(minutes=15)
