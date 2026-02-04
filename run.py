@@ -1,6 +1,4 @@
 # Permet de run l'application
-import eventlet
-eventlet.monkey_patch()  #
 from app import create_app
 from config import Config
 

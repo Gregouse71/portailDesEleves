@@ -12,7 +12,7 @@ dependencies:
   - Flask-Apscheduler
   - pytest
   - requests
-  - eventlet
+  - gevent
   - redis-py
   - pdf2image
   - poppler
