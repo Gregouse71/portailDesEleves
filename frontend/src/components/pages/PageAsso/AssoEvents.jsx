@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
     creerNouvelEvenement,
     modifierEvenement,
@@ -7,9 +7,11 @@ import {
     supprimerEvenement
 } from "../../../api/api_evenements";
 import { estUtilisateurDansAsso } from "../../../api/api_associations";
-import { Card, Button, Form, Row, Col } from "react-bootstrap";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Card, Button, Form, Row, Col, Spinner } from "react-bootstrap";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import DropdownEditer from "../../elements/DropdownEditer";
+
+const PER_PAGE = 20;
 
 const formatEventDate = (event) => {
     if (event.evenement_periodique) {
@@ -235,8 +237,8 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                         </Col>
                     </Form.Group>
                     <div className="d-flex gap-2">
-                        <Button variant="success" onClick={validerModifierEvent}>Valider</Button>
-                        <Button variant="danger" onClick={() => setIsModifying(false)}>Annuler</Button>
+                        <Button variant="success" onClick={validerModifierEvent} disabled={!modifierEvent.evenement_periodique ? !modifierEventTemps.date_de_debut || !modifierEventTemps.date_de_fin : !modifierEventTempsPeriodique.heure_de_debut || !modifierEventTempsPeriodique.heure_de_fin || !modifierEventTempsPeriodique.jours_de_la_semaine}>Valider</Button>
+                        <Button variant="danger" onClick={() => isNew ? setIsNewEvent(false) : setIsModifying(false)}>Annuler</Button>
                     </div>
                 </Form>}
         </Card.Body>
@@ -247,6 +249,7 @@ export default function AssoEvents({ asso_id }) {
     const [isNewEvent, setIsNewEvent] = useState(false);
 
     function sortEvents(events) {
+        console.log(events)
         return events.toSorted((a, b) => {
             // Les événements périodiques d'abord
             if (a.evenement_periodique && !b.evenement_periodique) {
@@ -271,11 +274,34 @@ export default function AssoEvents({ asso_id }) {
         enabled: !!asso_id,
     });
 
-    const { data: events = [], isLoading } = useQuery({
+    const {
+        data,
+        isLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
         queryKey: ['eventsAsso', asso_id],
-        queryFn: () => obtenirEvenementsAsso({}, asso_id),
+        queryFn: ({ pageParam = 1 }) => obtenirEvenementsAsso({ page: pageParam, per: PER_PAGE }, asso_id),
+        getNextPageParam: (lastPage, allPages) => { console.log(allPages.length, lastPage.length); return lastPage.length >= PER_PAGE ? allPages.length + 1 : undefined },
         enabled: !!asso_id,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
+    const events = data?.pages.flat() || [];
+
+    const observer = useRef();
+    const lastEventRef = useCallback(node => {
+        console.log(hasNextPage)
+        if (isFetchingNextPage) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage();
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
 
     if (isLoading) return <>Chargement...</>
 
@@ -295,11 +321,14 @@ export default function AssoEvents({ asso_id }) {
             {isNewEvent && <Event key={-1} asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={true} />}
 
             {/* Les événements existants */}
-            {sortEvents(events).map((event) => (
-                <Event key={event.id} id={event.id} canModify={membreData.autorise}
-                    asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={false} />
+            {sortEvents(events).map((event, ind) => (
+                <div ref={ind === events.length - 1 ? lastEventRef : null}>
+                    <Event key={event.id} id={event.id} canModify={membreData.autorise}
+                        asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={false} />
+                </div>
             ))}
+
+            {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}
         </div>
     </>
-
 }

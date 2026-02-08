@@ -5,7 +5,7 @@ from datetime import datetime, time
 from app import db
 from app.models.models_evenements import Evenement
 from app.utils.decorators import est_membre_de_asso
-from app.services.services_evenements import verifier_format, est_date_AAAAMMJJ, get_evenements_par_date, supprimer_evenement, change_event_visibility
+from app.services.services_evenements import verifier_format, est_date_AAAAMMJJ, get_evenements_par_date, supprimer_evenement, change_event_visibility, get_events
 
 # Creer le blueprint pour les evenements
 controllers_evenements = Blueprint('controllers_evenements', __name__)
@@ -16,8 +16,14 @@ def get_events_par_asso(id: int):
     """
     Renvoie la liste des evenements de l'association, ordonnés par date
     """
-    events = Evenement.query.filter_by(id_association=id).all()
-    return jsonify([{"id": e.id, "evenement_periodique": e.evenement_periodique, "date_de_debut": e.date_de_debut} for e in events])
+    page = request.args.get('page', type=int)
+    per = request.args.get('per', type=int)
+
+    try:
+        events = get_events (id, page, per)
+        return jsonify([{"id": e.id, "evenement_periodique": e.evenement_periodique, "date_de_debut": e.date_de_debut} for e in events])
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400 
 
 
 @controllers_evenements.get("/event/<int:id>")

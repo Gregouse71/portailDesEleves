@@ -1,8 +1,26 @@
 from datetime import datetime, timedelta, time, date
 from copy import copy
+from sqlalchemy import desc
 
 from app.services import db
 from app.models.models_evenements import Evenement
+
+def get_events (id, page=1, per=20):
+    """
+    Renvoie la liste des événements de l'asso, par ordre de date et paginés
+    """
+    if page == 1:
+        evenements_periodiques_db = Evenement.query.filter_by(id_association=id, evenement_masque=False, evenement_periodique=True).all()
+    else:
+        evenements_periodiques_db = []
+
+    query = Evenement.query.filter_by(
+        id_association=id, evenement_masque=False, evenement_periodique=False
+    ).order_by(desc(Evenement.date_de_debut))
+
+    if per == 0:
+        return evenements_periodiques_db + query.all()
+    return evenements_periodiques_db + query.paginate(page=page, per_page=per, error_out=False).items
 
 def est_heure_HH_colon_MM(heure_str):
     try:
