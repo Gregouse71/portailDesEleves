@@ -5,9 +5,9 @@ import PostCard from '../elements/PostCard';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 
 function Palums() {
-  const { data: publications, isLoading, error } = useQuery({
+  const { data: data, isLoading, error } = useQuery({
     queryKey: ['palumsPublications'],
-    queryFn: () => getPublicationsByTag("Palum"),
+    queryFn: () => getPublicationsByTag("Palum", 1, 0),
   });
 
   if (isLoading) {
@@ -34,12 +34,25 @@ function Palums() {
     <Container className="py-4">
       <h1 className="mb-3">Palums</h1>
       <p className="text-muted">Retrouvez ici toutes les Palums</p>
+      <h2>1A</h2>
       <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
-        {publications && publications.publications.filter(p => p.fichier_joint).map((post) => (
+        {data.publications.filter(p => p.titre.includes("1")).map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
-      {publications && publications.publications.length === 0 && (
+      <h2>2A</h2>
+      <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
+        {data.publications.filter(p => p.titre.includes("2")).map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+      <h2>3A</h2>
+      <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
+        {data.publications.filter(p => p.titre.includes("3")).map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+      {data.publications.length === 0 && (
         <Alert variant="info" className="mt-4">
           Aucune publication trouvée avec le tag &quot;Palum&quot;.
         </Alert>

@@ -412,6 +412,9 @@ def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query
         # Filter out cycle-specific publications
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
 
-    query = query.order_by(desc(Publication.date_publication)).paginate(page=page, per_page=per)
+    query = query.order_by(desc(Publication.date_publication))
+    if per == 0:
+        return query.all(), query.count(), 1
 
+    query = query.paginate(page=page, per_page=per)
     return query.items, query.total, query.pages

@@ -19,7 +19,7 @@ def route_get_publications_by_tag(tag: str):
         page = request.args.get('page', type=int)
         per = request.args.get('per', type=int)
         query = request.args.get('query', type=str)
-
+        print(page)
         publications, count, pages = get_publications_by_tag(tag, page=page, per=per, search_query=query)
         return jsonify({"publications": [e.to_dict() for e in publications],
                         "count": count,
