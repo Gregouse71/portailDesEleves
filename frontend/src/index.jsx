@@ -10,6 +10,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const queryClient = new QueryClient();
+queryClient.setQueryDefaults({ staleTime: 3000 })
+
 
 root.render(
   <React.StrictMode>

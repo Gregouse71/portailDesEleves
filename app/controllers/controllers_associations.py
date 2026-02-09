@@ -334,7 +334,7 @@ def route_get_assos():
     else:
         assos = Association.query.filter_by(a_cacher_aux_nouveaux=False).all()
 
-    return jsonify([{"id": asso.id, "ordre_importance": asso.ordre_importance} for asso in assos])
+    return jsonify([{"id": asso.id, "ordre_importance": asso.ordre_importance, "nom": asso.nom} for asso in assos])
 
 
 @controllers_associations.route('/<int:association_id>', methods=['GET'])
