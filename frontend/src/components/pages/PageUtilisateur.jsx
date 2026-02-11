@@ -70,16 +70,16 @@ function PageUtilisateur() {
                         backgroundPosition: 'center'
                     }}
                 >
-                    {autoriseAModifier &&
-                        <div className="position-absolute top-0 end-0 m-2">
-                            <DropdownEditer list={[
-                                { can: true, onClick: changerPhoto, name: "Changer la photo" },
-                            ]} />
-                        </div>
-                    }
                 </Card.Header>
                 <Card.Body>
                     <Row className="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
+                        {autoriseAModifier &&
+                            <Col md="auto" className="text-center">
+                                <DropdownEditer list={[
+                                    { can: true, onClick: changerPhoto, name: "Changer la photo" },
+                                ]} />
+                            </Col>
+                        }
                         <Col xs="auto" md="auto" className="order-md-last">
                             <Image
                                 className="rounded-3"
@@ -88,10 +88,10 @@ function PageUtilisateur() {
                                 rounded
                                 style={{
                                     position: 'relative',
-                                    top: '-120px',
+                                    top: '-170px',
                                     height: '200px',
                                     border: '2px solid white',
-                                    marginBottom: '-120px'
+                                    marginBottom: '-170px'
                                 }}
                             />
                         </Col>

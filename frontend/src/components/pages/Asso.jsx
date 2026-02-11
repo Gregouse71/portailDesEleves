@@ -89,15 +89,6 @@ function Asso() {
                         backgroundPosition: 'center'
                     }}
                 >
-                    {membreData.autorise && (
-                        <div className="position-absolute top-0 end-0 m-2">
-                            <DropdownEditer list={[
-                                { can: true, onClick: () => changerPhotoLogoOuBanniere('logo'), name: "Changer le logo" },
-                                { can: true, onClick: () => changerPhotoLogoOuBanniere('banniere'), name: "Changer la bannière" },
-                            ]}
-                            />
-                        </div>
-                    )}
                 </Card.Header>
                 <Card.Body>
                     <Row className="d-flex flex-column flex-md-row align-items-center">
@@ -116,10 +107,21 @@ function Asso() {
                                 }}
                             />
                         </Col>
-                        <Col className="text-center text-md-start">
+                        <Col md="auto" className="text-center text-md-start">
                             <h2>{asso.nom}</h2>
+                        </Col>
+                        <Col className="text-left text-md-start">
                             {membreData.is_membre && <Badge className="asso-member-badge ms-3">membre</Badge>}
                         </Col>
+                        {membreData.autorise && (
+                            <Col md="auto" className="text-right text-md-start">
+                                <DropdownEditer list={[
+                                    { can: true, onClick: () => changerPhotoLogoOuBanniere('logo'), name: "Changer le logo" },
+                                    { can: true, onClick: () => changerPhotoLogoOuBanniere('banniere'), name: "Changer la bannière" },
+                                ]}
+                                />
+                            </Col>
+                        )}
                     </Row>
                 </Card.Body>
             </Card>

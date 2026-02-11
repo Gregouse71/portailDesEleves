@@ -69,10 +69,9 @@ function Home() {
                     <Card.Title as="h2" className="text-end">Contacts en cas de mal-être</Card.Title>
                     {contacts.map((contact, index) => (
                         <div key={index} className="text-end small text-wrap mb-2">
-                            {contact.name} :
-                            {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
-                            {contact.phone && <> / <a href={`tel:${contact.phone}`}>{contact.phone}</a></>}
-                            {contact.website && <a href={contact.website} target="_blank" rel="noopener noreferrer">{contact.website}</a>}
+                            {contact.name} : {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
+                            {contact.phone && <>{contact.email && <> / </>} <a href={`tel:${contact.phone}`}>{contact.phone}</a></>}
+                            {contact.website && <> / <a href={contact.website} target="_blank" rel="noopener noreferrer">{contact.website}</a></>}
                         </div>
                     ))}
                     <h3 className="text-end">Contacts des VP Soutien :</h3>

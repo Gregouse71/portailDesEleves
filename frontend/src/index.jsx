@@ -9,9 +9,13 @@ import App from "./App";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-const queryClient = new QueryClient();
-queryClient.setQueryDefaults({ staleTime: 3000 })
-
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+    },
+  },
+});
 
 root.render(
   <React.StrictMode>
