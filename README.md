@@ -12,7 +12,7 @@ Il faut d'abord installer tous les modules nécessaires avec ```conda env create
 
 **À chaque fois**
 
-Ensuite, le portail est démarré avec ```gunicorn --worker-class eventlet -w 1 run:app -b localhost:5000```. Pour le développement, on peut rajouter ```--reload --log-level debug``` pour voir exactement ce qui se passe et rechager le backend quand on sauvegarde des modification. Si l'utilisation du chat n'est pas essentielle, un simple ```python run.py``` suffit.
+Ensuite, le portail est démarré avec ```gunicorn --worker-class gevent -w 1 run:app -b localhost:5000```. Pour le développement, on peut rajouter ```--reload --log-level debug``` pour voir exactement ce qui se passe et rechager le backend quand on sauvegarde des modification. Si l'utilisation du chat n'est pas essentielle, un simple ```python run.py``` suffit.
 run.py fait appel à `__init__.py` qui crée l'application et démarre la base de donnée (`db = SQLAlchemy()`).  `config.py` contient la configuration utilisée lors de l'initialisation, elle contient le lien à la base, les clefs secrètes, etc.
 
 ### B - Le frontend
