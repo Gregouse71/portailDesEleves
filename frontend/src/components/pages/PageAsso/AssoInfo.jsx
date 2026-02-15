@@ -20,7 +20,7 @@ function AssoInfo({ id }) {
     });
 
     const mutation = useMutation({
-        mutationFn: async () => { modifierDescriptionAsso(id, description); },
+        mutationFn: async () => { await modifierDescriptionAsso(id, description); },
         onSuccess: () => {
             queryClient.invalidateQueries(['asso', id]);
             setIsEdition(false);

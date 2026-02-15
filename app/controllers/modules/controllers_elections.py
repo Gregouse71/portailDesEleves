@@ -28,7 +28,7 @@ def get_election_by_id(id: int):
     Renvoie l'election qui a pour id *id*
     """
     election = Election.query.filter_by(id=id).first()
-    if election.visible or current_user.est_superutilisateur:
+    if election and (election.visible or current_user.est_superutilisateur):
         ret = election.to_dict()
         ret["deja_vote"] = ElectionVote.query.filter_by(election_id=id, utilisateur_id=current_user.id).count() > 0
         ret["votant"] = current_user.promotion in election.promos
@@ -77,7 +77,6 @@ def patch_election_by_id(id: int):
     data = request.json
     election = Election.query.filter_by(id=id).first()
     election.patch(data)
-    db.session.add(election)
     db.session.commit()
     return jsonify(election.to_dict())
 

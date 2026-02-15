@@ -1,6 +1,6 @@
 import { useState } from "react";
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Badge, Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLayout } from "../../../layouts/Layout";
 import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection } from "../../../api/modules/api_elections";
@@ -55,10 +55,9 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     const mutation = useMutation({
         mutationFn: async () => {
             if (isNew) {
-                creerNouvelleElection(modifyingElection, asso_id);
+                await creerNouvelleElection(modifyingElection, asso_id);
             }
-            else modifierElection(modifyingElection, id);
-
+            else await modifierElection(modifyingElection, id);
         },
         onSuccess: () => {
             if (!isNew) queryClient.invalidateQueries(['election', id]);
@@ -82,20 +81,20 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 
     if (isLoading) return <>Chargement...</>;
 
+    // L'utilisateur peut-il voter actuellement ?
     const canVote = election ? election.votant && !election.deja_vote && election.ouvert : false;
 
     return <Card><Card.Body>
         {!isModifying ?
             <>
                 <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                        {canVote ? <>🟢</> : <>🔴</>}
-                        {election.ouvert ? <>🟢</> : <>🔴</>}
-                    </div>
+                    {userData.is_superuser && election.visible ? <Badge bg="success" className="m-2">visible</Badge> : <Badge bg="danger" className="m-2">cachée</Badge>}
                     <Card.Title className="mb-0 d-flex align-items-center">
                         {election.nom}
                     </Card.Title>
-                    {userData.is_superuser && election.visible ? <>🟢</> : <>🔴</>}
+                    {election.votant && <Badge bg="primary" className="m-2">Électeur</Badge>}
+                    {election.deja_vote && <Badge bg="info" className="m-2">A voté</Badge>}
+                    {election.ouvert && <Badge bg="warning" className="m-2">En cours</Badge>}
                     <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
                         {canModify && <DropdownEditer list={[
                             { can: true, onClick: handleStartModifying, name: "Modifier" },
@@ -109,10 +108,10 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 <div>
                     <RichTextDisplay content={election.description} />
                 </div>
-                <Row md="10">
-                    <Col as="h6">Collège électoral : </Col>
+                {userData.is_superuser && <Row md="10">
+                    <Col as="h6" md="auto">Collège électoral : </Col>
                     <Col>Promotions {election.promos.join(", ")}</Col>
-                </Row>
+                </Row>}
                 <Row>
                     {election.options.map((options, i) =>
                         <Col key={i} className="d-flex justify-content-center"><Button key={i} disabled={!canVote} className="m-2"
