@@ -12,6 +12,13 @@ const AUDIO_BASE_URL = `${API_BASE_URL}/audio`;
 export const getAlbums = (associationId) => createApiGet(`${AUDIO_BASE_URL}/${associationId}/albums`)();
 
 /**
+ * Gets all albums and their songs for an association.
+ * @param {number} associationId - The ID of the association.
+ * @returns {Promise<Array<object>>} - A promise that resolves to an array of album objects with nested songs.
+ */
+export const getAlbum = createApiGet(`${AUDIO_BASE_URL}/album`);
+
+/**
  * Adds a new album to an association.
  * @param {number} associationId - The ID of the association.
  * @param {string} name - The name of the new album.
@@ -28,7 +35,7 @@ export const addAlbum = (associationId, name) => {
  * @param {number} albumId - The ID of the album to delete.
  * @returns {Promise<object>}
  */
-export const deleteAlbum = (associationId, albumId) => createApiDelete(`${AUDIO_BASE_URL}/${associationId}/album/${albumId}`)();
+export const deleteAlbum = createApiDelete(`${AUDIO_BASE_URL}/album`);
 
 /**
  * Updates an album's details.

@@ -15,6 +15,20 @@ class AssoAlbum(db.Model):
         self.name = name
         self.association_id = association_id
         self.position = position
+    
+    def to_dict(self):
+        audios = sorted(self.audios, key=lambda x: x.position)
+        return {
+            "id": self.id,
+            "name": self.name,
+            "position": self.position,
+            "audios": [{
+                "id": audio.id,
+                "nom": audio.nom,
+                "position": audio.position,
+                "file_path": f"associations/{self.association.nom_dossier}/media/{audio.file_path}"
+            } for audio in audios]
+        }
 
 class AssoAudio(db.Model):
     __tablename__ = 'associations_audio'

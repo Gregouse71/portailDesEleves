@@ -31,7 +31,8 @@ def get_album(album_id):
 
 def get_albums_for_association(association_id):
     """Gets all albums for a given association, ordered by position."""
-    return AssoAlbum.query.filter_by(association_id=association_id).order_by(AssoAlbum.position).all()
+    albums = AssoAlbum.query.filter_by(association_id=association_id).order_by(AssoAlbum.position).all()
+    return [{"id": a.id, "position": a.position} for a in albums]
 
 def update_album(album_id, name, position):
     """Updates the name and position of an album."""

@@ -4,8 +4,9 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 
-from app.services.modules import services_audio
+from app.services.modules.services_audio import get_albums_for_association, add_album, get_album, delete_album, update_audio, update_album, add_audio, get_audio, delete_audio
 from app.services.services_associations import get_association
+from app.models.modules.models_audio import AssoAlbum
 from app.utils.decorators import est_membre_de_asso
 
 controllers_audio = Blueprint('controllers_audio', __name__)
@@ -15,6 +16,16 @@ ALLOWED_EXTENSIONS = {'mp3', 'wav', 'ogg', 'flac'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@controllers_audio.get('/album/<int:id>')
+@login_required
+def get_album_by_id(id):
+    """Gets all albums and their nested songs for an association."""
+    album = AssoAlbum.query.get(id)
+    if not album:
+        return jsonify({"message": "Association not found"}), 404
+
+    return jsonify(album.to_dict())
+
 # Album Routes
 @controllers_audio.route('/<int:association_id>/albums', methods=['GET'])
 @login_required
@@ -23,23 +34,8 @@ def route_get_albums(association_id):
     asso = get_association(association_id)
     if not asso:
         return jsonify({"message": "Association not found"}), 404
-        
-    albums = services_audio.get_albums_for_association(association_id)
-    album_list = []
-    for album in albums:
-        audios = sorted(album.audios, key=lambda x: x.position)
-        album_list.append({
-            "id": album.id,
-            "name": album.name,
-            "position": album.position,
-            "audios": [{
-                "id": audio.id,
-                "nom": audio.nom,
-                "position": audio.position,
-                "file_path": f"associations/{asso.nom_dossier}/media/{audio.file_path}"
-            } for audio in audios]
-        })
-    return jsonify(album_list)
+
+    return jsonify(get_albums_for_association(association_id))
 
 @controllers_audio.route('/<int:association_id>/album', methods=['POST'])
 @login_required
@@ -50,7 +46,7 @@ def route_add_album(association_id):
     if not data or not data.get('name'):
         return jsonify({"success": False, "message": "Le nom de l'album est requis"}), 400
 
-    new_album = services_audio.add_album(name=data['name'], association_id=association_id)
+    new_album = add_album(name=data['name'], association_id=association_id)
     if new_album:
         return jsonify({"success": True, "message": "Album ajouté avec succès", "album": {"id": new_album.id, "name": new_album.name, "position": new_album.position, "audios": []}}), 201
     return jsonify({"success": False, "message": "Erreur lors de l'ajout de l'album"}), 500
@@ -67,24 +63,24 @@ def route_update_album(association_id, album_id):
     if not name or position is None:
         return jsonify({"success": False, "message": "Le nom et la position sont requis"}), 400
     
-    album = services_audio.get_album(album_id)
+    album = get_album(album_id)
     if not album or album.association_id != association_id:
         return jsonify({"success": False, "message": "Album introuvable ou non associé à cette association"}), 404
 
-    if services_audio.update_album(album_id, name, position):
+    if update_album(album_id, name, position):
         return jsonify({"success": True, "message": "Album mis à jour."}), 200
     return jsonify({"success": False, "message": "Erreur lors de la mise à jour."}), 500
 
-@controllers_audio.route('/<int:association_id>/album/<int:album_id>', methods=['DELETE'])
+@controllers_audio.route('/album/<int:association_id>/<int:album_id>', methods=['DELETE'])
 @login_required
 @est_membre_de_asso
 def route_delete_album(association_id, album_id):
     """Deletes an album."""
-    album = services_audio.get_album(album_id)
+    album = get_album(album_id)
     if not album or album.association_id != association_id:
         return jsonify({"success": False, "message": "Album introuvable ou non associé à cette association"}), 404
 
-    if services_audio.delete_album(album_id):
+    if delete_album(album_id):
         return jsonify({"success": True, "message": "Album supprimé avec succès."}), 200
     return jsonify({"success": False, "message": "Erreur lors de la suppression."}), 500
 
@@ -94,7 +90,7 @@ def route_delete_album(association_id, album_id):
 @est_membre_de_asso
 def route_add_audio(association_id, album_id):
     """Adds a new song to a specific album."""
-    album = services_audio.get_album(album_id)
+    album = get_album(album_id)
     if not album or album.association_id != association_id:
         return jsonify({"success": False, "message": "Album introuvable ou non associé à cette association"}), 404
     
@@ -121,7 +117,7 @@ def route_add_audio(association_id, album_id):
     full_path = os.path.join(media_folder, unique_filename)
     file.save(full_path)
 
-    new_audio = services_audio.add_audio(
+    new_audio = add_audio(
         nom=nom,
         file_path=unique_filename,
         association_id=asso.id,
@@ -140,11 +136,11 @@ def route_add_audio(association_id, album_id):
 @est_membre_de_asso
 def route_delete_audio(association_id, audio_id):
     """Deletes a song."""
-    audio = services_audio.get_audio(audio_id)
+    audio = get_audio(audio_id)
     if not audio or audio.association_id != association_id:
         return jsonify({"success": False, "message": "Son introuvable ou non associé à cette association"}), 404
 
-    if services_audio.delete_audio(audio_id):
+    if delete_audio(audio_id):
         return jsonify({"success": True, "message": "Son supprimé avec succès"}), 200
     
     return jsonify({"success": False, "message": "Erreur lors de la suppression du son"}), 500
@@ -161,10 +157,10 @@ def route_update_audio(association_id, audio_id):
     if not name or position is None:
         return jsonify({"success": False, "message": "Le nom et la position sont requis"}), 400
     
-    audio = services_audio.get_audio(audio_id)
+    audio = get_audio(audio_id)
     if not audio or audio.association_id != association_id:
         return jsonify({"success": False, "message": "Son introuvable ou non associé à cette association"}), 404
 
-    if services_audio.update_audio(audio_id, name, position):
+    if update_audio(audio_id, name, position):
         return jsonify({"success": True, "message": "Son mis à jour."}), 200
     return jsonify({"success": False, "message": "Erreur lors de la mise à jour."}), 500
