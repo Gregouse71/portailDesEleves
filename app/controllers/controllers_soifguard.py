@@ -1,11 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_login import login_required, current_user
 
 from app import db
-from app.models import Utilisateur, ConsoSoifguard
-from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations
+from app.models import Utilisateur, ConsoSoifguard, Permission
+from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations, get_permissions
 from app.services.services_global import get_global_var
 from app.utils.decorators import a_permission
+from app.services.services_login import has_permission
 
 # Creer le blueprint pour soifguard
 controllers_soifguard = Blueprint('controllers_soifguard', __name__)
@@ -13,7 +14,7 @@ controllers_soifguard = Blueprint('controllers_soifguard', __name__)
 
 @controllers_soifguard.post('/encaisser/<string:asso>')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "octo", "admin_biero", "biero")
 def encaisser_octo(asso: str):
     """
     Quand on consomme
@@ -31,7 +32,7 @@ def encaisser_octo(asso: str):
 
 @controllers_soifguard.post('/crediter/<string:asso>')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def crediter_octo(asso: str):
     """
     Quand on mets de l'argent sur le compte
@@ -45,7 +46,7 @@ def crediter_octo(asso: str):
 
 @controllers_soifguard.post('/fixer_negatif_maximum/<string:asso>')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def fixer_maximum(asso: str):
     data = request.json
     try:
@@ -55,7 +56,7 @@ def fixer_maximum(asso: str):
 
 @controllers_soifguard.post('/conso')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def post_conso():
     """
     Crée une consommation possible
@@ -68,7 +69,7 @@ def post_conso():
 
 @controllers_soifguard.delete('/conso/<int:id>')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def delete_conso(id: int):
     """
     Supprime une consommation
@@ -81,7 +82,7 @@ def delete_conso(id: int):
 
 @controllers_soifguard.put('/conso/<int:id>')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def put_conso(id: int):
     """
     Modifie une conso
@@ -100,7 +101,7 @@ def liste_consos():
 
 @controllers_soifguard.put('/toggle_cotisation/<int:id_utilisateur>')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def switch_cotisation_octo(id_utilisateur:int) :
     """
     Rend cotisant un utilisateur non cotisant, et rend non cotisant un utilisateur cotisant
@@ -135,7 +136,7 @@ def get_negatif_max(asso:str) :
 
 @controllers_soifguard.post('/operations')
 @login_required
-@a_permission("octo", "biero")
+@a_permission("admin_octo", "admin_biero")
 def get_liste_operations():
     """
     Renvoie la liste des opérations récentes
@@ -148,3 +149,58 @@ def get_liste_operations():
 
     return jsonify(liste_operations(asso, page=page, per=per, query=query)), 200
 
+
+@controllers_soifguard.get("/permissions")
+@a_permission("admin_octo", "admin_biero")
+def get_get_permissions():
+    """
+    Renvoie la liste des utilisateurs avec leurs permissions, avec pagination.
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    query = request.args.get('query', "", type=str)
+    asso = request.args.get('asso', "", type=str)
+    if not ((asso == "octo" and has_permission(current_user, "admin_octo")) or (asso == "biero" and has_permission(current_user, "admin_biero"))):
+        abort(403)
+    return jsonify(get_permissions(page, per_page, query, asso)), 200
+
+@controllers_soifguard.delete("/permissions/<int:id>")
+@a_permission("admin_octo", "admin_biero")
+def delete_permission (id):
+    """
+    Supprime la permission
+    """
+    perm = Permission.query.get(id)
+    if not (("octo" in perm.permission and has_permission(current_user, "admin_octo")) or ("biero" in perm.permission and has_permission(current_user, "admin_biero"))):
+        abort(403)
+    db.session.delete(perm)
+    db.session.commit()
+    return jsonify(perm.to_dict())
+
+@controllers_soifguard.post('/permissions')
+@a_permission("admin_octo", "admin_biero")
+def update_permissions():
+    """
+    Met à jour les permissions d'un utilisateur.
+    """
+    data = request.get_json()
+    user_id = data.get('user_id')
+    permission = data.get('permission')
+
+    if user_id is None or permission is None:
+        return jsonify({"message": "user_id et permissions requis"}), 400
+    user = Utilisateur.query.get(user_id)
+
+    if not user:
+        return jsonify({"message": "L'utilisateur n'existe pas"}), 400
+
+    if not (("octo" in permission and has_permission(current_user, "admin_octo")) or ("biero" in permission and has_permission(current_user, "admin_biero"))):
+        abort(403)
+
+    try:
+        perm = Permission(user, permission)
+        db.session.add(perm)
+        db.session.commit()
+        return jsonify(perm.to_dict()), 200
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 404

@@ -339,7 +339,6 @@ def route_get_assos():
 
 @controllers_associations.route('/<int:association_id>', methods=['GET'])
 @login_required
-@a_permission("octo")
 def route_get_asso(association_id):
     if current_user.est_baptise or current_user.est_superutilisateur:
         asso = Association.query.filter_by(id=association_id).first()

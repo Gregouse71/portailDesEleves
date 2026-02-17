@@ -4,7 +4,8 @@
 from functools import wraps
 from flask import jsonify, abort
 from flask_login import current_user
-from app.models.models_divers import Permission
+
+from app.services.services_login import has_permission
 
 # a utiliser en plus de @login_required, on ne verifie pas ici l'authentification
 # le superutilisateur a tous les droits
@@ -42,8 +43,8 @@ def a_permission(*args1):
         def wrapper(*args, **kwargs):
             if current_user.est_superutilisateur:
                 return f(*args, **kwargs)
-            
-            if any([Permission.query.filter_by(utilisateur_id=current_user.id, permission=perm)] for perm in args1):
+
+            if any([has_permission(current_user, perm) for perm in args1]):
                 return f(*args, **kwargs)
             abort(403)
         return wrapper

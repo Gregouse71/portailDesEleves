@@ -9,13 +9,19 @@ import {
     supprimerConso,
     toggleCotisation,
     listeOperations,
-    crediterAsso
+    crediterAsso,
+    getPermissionsSoifguard,
+    addPermissionsSoifguard,
+    deletePermissionsSoifguard
 } from "../api/api_soifguard";
 import { verifierPermission } from "../api/api_global";
+import RenderPagination from "../components/elements/RenderPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { searchUsers } from "../api/api_utilisateurs";
-import { Button, Dropdown, Form, Table, Pagination } from "react-bootstrap";
+import { chargerUtilisateurs, searchUsers } from "../api/api_utilisateurs";
+import { Button, Dropdown, Form, Table, Pagination, InputGroup, FormControl } from "react-bootstrap";
 import { useLayout } from "../layouts/Layout";
+import Select from "react-select";
+import DropdownEditer from "../components/elements/DropdownEditer";
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -24,6 +30,115 @@ const formatDate = (dateString) => {
 };
 
 const PER_PAGE = 20;
+
+function PermissionUser({ perm, deleteMe }) {
+    return <>
+        <tr>
+            <td>{perm.utilisateur}</td>
+            <td>{perm.permission}</td>
+            <td>
+                <Button size="sm" variant="danger" deleteMe onClick={deleteMe}>
+                    Supprimer
+                </Button>
+            </td>
+        </tr>
+    </>
+}
+
+function Permissions({ categorie }) {
+    const queryClient = useQueryClient();
+    const [query, setQuery] = useState("");
+    const [page, setPage] = useState(1);
+    const [selectedUser, setSelectedUser] = useState();
+    const [permission, setPermission] = useState();
+
+    const { data: allUsers = [] } = useQuery({
+        queryKey: ["allUsers"],
+        queryFn: () => chargerUtilisateurs(),
+    });
+    const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
+
+    const { data = { permissions: [], count: 0 }, isLoading, isError } = useQuery({
+        queryKey: ["permissionsSoifguard", page, query],
+        queryFn: () => getPermissionsSoifguard({ page, per_page: PER_PAGE, query, asso: categorie }),
+        placeholderData: (previousData) => previousData,
+    });
+    const { permissions, count } = data;
+    const totalPages = Math.ceil(count / PER_PAGE);
+
+
+    const addMutation = useMutation({
+        mutationFn: async () => {
+            const ret = { user_id: selectedUser.value, permission }
+            await addPermissionsSoifguard({ user_id: selectedUser.value, permission })
+            return
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(["permissionsSoifguard", page, query]);
+            return
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async id => {
+            await deletePermissionsSoifguard(id)
+            return
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(["permissionsSoifguard", page, query]);
+        }
+    });
+
+    return <div className="main-content flex-column">
+        <div className="justify-content-between align-items-center w-100 mb-3">
+            <h2>Permissions</h2>
+            <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="d-flex mb-0" />
+            <Table striped bordered hover>
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Permissions</th>
+                        <td>
+                            <InputGroup>
+                                <FormControl
+                                    placeholder="Filtre"
+                                    value={query}
+                                    onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                                />
+                            </InputGroup>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><Form>
+                            <Select options={options} value={selectedUser} onChange={setSelectedUser}
+                                isClearable classNamePrefix="react-select"
+                            />
+                        </Form></td>
+                        <td><Form>
+                            <Form.Select
+                                style={{ width: 'auto' }}
+                                value={permission}
+                                onChange={(e) => setPermission(e.target.value)}
+                                aria-label="Permission"
+                            >
+                                <option value={categorie}>Soifguard</option>
+                                <option value={`admin_${categorie}`}>Admin</option>
+                            </Form.Select>
+                        </Form></td>
+                        <td><Button variant="info" onClick={addMutation.mutate} disabled={!selectedUser}>
+                            Ajouter
+                        </Button></td>
+                    </tr>
+                    {permissions.map((perm, i) => (
+                        <PermissionUser key={i} perm={perm} deleteMe={() => deleteMutation.mutate(perm.id)} />
+                    ))}
+                </tbody>
+            </Table>
+        </div>
+    </div>
+}
 
 function Operations({ categorie }) {
     const [page, setPage] = useState(1)
@@ -171,7 +286,7 @@ function User({ user, isSelected, select, categorie, query }) {
     </div>
 }
 
-function Consommation({ categorie, reset }) {
+function Consommation({ categorie, reset, perms }) {
     const queryClient = useQueryClient();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -266,7 +381,7 @@ function Consommation({ categorie, reset }) {
             <div
                 key={conso.id}
                 className={`soifguard-grid-item ${selectedConso === conso.id ? "soifguard-selected" : ""}`}  // Appliquer la classe de surbrillance
-                onClick={() => setSelectedConso(conso.id)}  // Clic pour sélectionner/désélectionner
+                onClick={() => setSelectedConso(selectedConso ? null : conso.id)}  // Clic pour sélectionner/désélectionner
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedConso(conso.id); }}
@@ -309,7 +424,7 @@ function Consommation({ categorie, reset }) {
                 </div>
                 {utilisateurs.length > 0 ?
                     <div className="soifguard-grid-container">
-                        {utilisateurs.map((user) => (<User key={user.id} isSelected={user.id === selectedUser} user={user} select={() => setSelectedUser(user.id)} categorie={categorie} query={query} />))}
+                        {utilisateurs.map((user) => (<User key={user.id} isSelected={user.id === selectedUser} user={user} select={() => setSelectedUser(selectedUser ? null : user.id)} categorie={categorie} query={query} />))}
                     </div>
                     : (
                         <p>Aucun utilisateur ne correspond à la recherche.</p>
@@ -317,21 +432,19 @@ function Consommation({ categorie, reset }) {
             </div>
 
             <div className={`right-section ${categorie}`}>
-                <h2>Consos {categorie && `(${categorie})`}</h2>
-                {/* HEADER POUR GÉRER LES CONSOS */}
-                {categorie && (
-                    <div className="consos-header">
-                        <button onClick={() => setGestionConsos(!gestionConsos)}>
-                            {gestionConsos ? "Quitter" : "Gérer les consos"}
-                        </button>
-                    </div>
-                )}
+                <div className="soifguard-user-header">
+                    <h2>Consos {categorie && `(${categorie})`}</h2>
+                    {perms && <DropdownEditer list={[
+                        { can: true, onClick: () => setGestionConsos(!gestionConsos), name: "Modifier" },
+                    ]}
+                    />}
+                </div>
                 {categorie === "" ? (
                     <p className="default-message">Veuillez sélectionner Octo ou Biero</p>
                 ) : (
                     <div className="soifguard-grid-container">
                         {content}
-                        {gestionConsos && <div className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)}>
+                        {gestionConsos && perms && <div className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)}>
                             + Ajouter
                         </div>}
                     </div>
@@ -384,6 +497,14 @@ export default function SoifGuard() {
         queryKey: ['permBiero'],
         queryFn: () => verifierPermission({}, "biero", userData.id),
     });
+    const { data: octoAdminPermission = false } = useQuery({
+        queryKey: ['permAdminOcto'],
+        queryFn: () => verifierPermission({}, "admin_octo", userData.id),
+    });
+    const { data: bieroAdminPermission = false } = useQuery({
+        queryKey: ['permAdminBiero'],
+        queryFn: () => verifierPermission({}, "admin_biero", userData.id),
+    });
     const { data: detteMaxiOcto = false } = useQuery({
         queryKey: ['detteOcto'],
         queryFn: () => obtenirDetteMaxi("octo"),
@@ -393,9 +514,16 @@ export default function SoifGuard() {
         queryFn: () => obtenirDetteMaxi("biero"),
     });
 
-    const toggleMode = () => {
-        setMode(mode === "conso" ? "operations" : "conso");
-        navigate(mode === "conso" ? "/soifguard/operations" : "/soifguard")
+    const changeMode = (e) => {
+        const newMode = e.target.value;
+        if (!["conso", "operations", "permissions"].includes(newMode)) return
+
+        setMode(newMode);
+        switch (newMode) {
+            case "conso": navigate("/soifguard"); break;
+            case "operations": navigate("/soifguard/operations"); break;
+            case "permissions": navigate("/soifguard/permissions"); break;
+        }
     }
 
     const changeCategorie = (cat) => {
@@ -428,13 +556,22 @@ export default function SoifGuard() {
                 </>
                 }
 
-                <Button onClick={toggleMode}>
-                    {mode === "conso" ? "Opérations" : "Consommation"}
-                </Button>
+                {((categorie === "biero" && bieroAdminPermission) || (categorie === "octo" && octoAdminPermission))
+                    &&
+                    <Form.Select
+                        style={{ width: 'auto' }}
+                        value={mode}
+                        onChange={changeMode}
+                        aria-label="Mode"
+                    >
+                        <option value="conso">Consommation</option>
+                        <option value="operations">Opérations</option>
+                        <option value="permissions">Permissions</option>
+                    </Form.Select>}
 
                 <div className="header-buttons">
                     {/* Bouton Octo : affiché seulement si l'utilisateur a la permission */}
-                    {octoPermission && (
+                    {(octoPermission || octoAdminPermission) && (
                         <button
                             onClick={() => changeCategorie("octo")}
                             className={categorie === "octo" ? "octo-active" : ""}
@@ -444,7 +581,7 @@ export default function SoifGuard() {
                     )}
 
                     {/* Bouton Biero : affiché seulement si l'utilisateur a la permission */}
-                    {bieroPermission && (
+                    {(bieroPermission || bieroAdminPermission) && (
                         <button
                             onClick={() => changeCategorie("biero")}
                             className={categorie === "biero" ? "biero-active" : ""}
@@ -455,8 +592,10 @@ export default function SoifGuard() {
                 </div>
             </div>
             <Routes>
-                <Route index element={<Consommation categorie={categorie} reset={reset} />} />
+                <Route index element={<Consommation categorie={categorie} reset={reset}
+                    perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)} />} />
                 <Route path="operations" element={<Operations categorie={categorie} />} />
+                <Route path="permissions" element={<Permissions categorie={categorie} />} />
             </Routes>
         </div>
     );

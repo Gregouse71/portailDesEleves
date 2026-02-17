@@ -25,6 +25,12 @@ mailBody = """
 </html>
 """
 
+def has_permission(user: Utilisateur, perm: str):
+    """
+    Vérifie si un l'utilisateur a la permission perm
+    """
+    return Permission.query.filter_by(utilisateur=user, permission=perm).count() > 0
+
 def get_permissions(page: int, per_page: int, query_str: str=""):
     """
     Récupère tous les utilisateurs avec leurs permissions, avec pagination.
