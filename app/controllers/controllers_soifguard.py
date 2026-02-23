@@ -160,7 +160,7 @@ def get_get_permissions():
     per_page = request.args.get('per_page', 10, type=int)
     query = request.args.get('query', "", type=str)
     asso = request.args.get('asso', "", type=str)
-    if not ((asso == "octo" and has_permission(current_user, "admin_octo")) or (asso == "biero" and has_permission(current_user, "admin_biero"))):
+    if not ((asso == "octo" and has_permission(current_user, "admin_octo")) or (asso == "biero" and has_permission(current_user, "admin_biero")) or current_user.est_superutilisateur):
         abort(403)
     return jsonify(get_permissions(page, per_page, query, asso)), 200
 
@@ -171,7 +171,7 @@ def delete_permission (id):
     Supprime la permission
     """
     perm = Permission.query.get(id)
-    if not (("octo" in perm.permission and has_permission(current_user, "admin_octo")) or ("biero" in perm.permission and has_permission(current_user, "admin_biero"))):
+    if not (("octo" in perm.permission and has_permission(current_user, "admin_octo")) or ("biero" in perm.permission and has_permission(current_user, "admin_biero")) or current_user.est_superutilisateur):
         abort(403)
     db.session.delete(perm)
     db.session.commit()
@@ -194,7 +194,7 @@ def update_permissions():
     if not user:
         return jsonify({"message": "L'utilisateur n'existe pas"}), 400
 
-    if not (("octo" in permission and has_permission(current_user, "admin_octo")) or ("biero" in permission and has_permission(current_user, "admin_biero"))):
+    if not (("octo" in permission and has_permission(current_user, "admin_octo")) or ("biero" in permission and has_permission(current_user, "admin_biero")) or current_user.est_superutilisateur):
         abort(403)
 
     try:

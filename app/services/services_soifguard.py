@@ -16,7 +16,7 @@ def _encaisser(utilisateur: Utilisateur, auteur: Utilisateur, prix: float, asso:
 
     operation = OperationSoifguard(
         asso, utilisateur, auteur, est_cotisant, 
-        f"Conso {nom_conso} pour {utilisateur.nom_utilisateur} {"" if est_cotisant else "non "}cotisant à {prix}€. Avant : {solde_actuel}. Après : {nouveau_solde}",
+        f"{nom_conso} {"" if est_cotisant else "non "} cotisant",
         -prix
     )
     db.session.add(operation)
@@ -55,7 +55,7 @@ def crediter_utilisateur(utilisateur: Utilisateur, auteur: Utilisateur, somme: s
 
     operation = OperationSoifguard(
         asso, utilisateur, auteur, est_cotisant, 
-        f"Credit de {utilisateur.nom_utilisateur} de {somme}€.",
+        "crédit",
         somme
     )
 

@@ -8,7 +8,7 @@ import '../../assets/styles/_TrombiPromo.scss';
 import { useQuery } from '@tanstack/react-query';
 
 function TrombiPromo() {
-    const [cyclesSelectionnes, setCyclesSelectionnes] = useState(["ic", "ast", "ev", "vs"]); // Les cycles sont pré-cochés
+    const [cyclesSelectionnes, setCyclesSelectionnes] = useState(["ic", "ast", "ev", "vs", "isup"]); // Les cycles sont pré-cochés
     const navigate = useNavigate();
 
     const cyclesDisponibles = ["ic", "ast", "ev", "vs", "isup"];

@@ -20,6 +20,14 @@ export default function Header() {
         queryKey: ['permBiero'],
         queryFn: () => verifierPermission({}, "biero", userData.id),
     });
+    const { data: octoAdminPermission = false } = useQuery({
+        queryKey: ['permAdminOcto'],
+        queryFn: () => verifierPermission({}, "admin_octo", userData.id),
+    });
+    const { data: bieroAdminPermission = false } = useQuery({
+        queryKey: ['permAdminBiero'],
+        queryFn: () => verifierPermission({}, "admin_biero", userData.id),
+    });
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -61,7 +69,7 @@ export default function Header() {
                         <Button variant="danger" size="sm" href="https://discord.gg/3MtV8cgTRu">Serveur Discord</Button>
 
                         <div className="d-flex flex-column flex-md-row gap-2">
-                            {(octoPermission || bieroPermission) && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
+                            {(octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) && <Button variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</Button>}
                             {userData.is_superuser && <Button variant="danger" size="sm" onClick={() => navigate("/administration")}>Administration</Button>}
                         </div>
 

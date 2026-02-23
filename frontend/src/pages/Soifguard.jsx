@@ -195,6 +195,7 @@ function Operations({ categorie }) {
                         <th>Utilisateur</th>
                         <th>Auteur</th>
                         <th>Somme</th>
+                        <th>Libellé</th>
                         <th>Solde avant</th>
                         <th>Solde après</th>
                     </tr>
@@ -210,6 +211,7 @@ function Operations({ categorie }) {
                             <td>{elt.utilisateur}</td>
                             <td>{elt.auteur}</td>
                             <td>{elt.somme}</td>
+                            <td>{elt.libelle}</td>
                             <td>{elt.solde_avant}</td>
                             <td>{elt.solde_apres}</td>
                         </tr>
