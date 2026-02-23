@@ -13,7 +13,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     const { userData } = useLayout();
     const queryClient = useQueryClient();
 
-    const { data: election, isLoading } = useQuery({
+    const { data: election, isLoading, isError } = useQuery({
         queryKey: ['election', id],
         queryFn: () => obtenirElection({}, id),
         enabled: !isNew,
@@ -69,6 +69,15 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
         }
     });
 
+    const voterMutation = useMutation({
+        mutationFn: async (i) => {
+            await voterElection({ choix: i }, id);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['election', id])
+        }
+    })
+
     const handleChangeSelectedPromo = (e) => {
         const { value, checked } = e.target;
         if (checked) {
@@ -80,6 +89,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     }
 
     if (isLoading) return <>Chargement...</>;
+    if (isError) return <>Pas d'élection à afficher.</>
 
     // L'utilisateur peut-il voter actuellement ?
     const canVote = election ? election.votant && !election.deja_vote && election.ouvert : false;
@@ -88,7 +98,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
         {!isModifying ?
             <>
                 <div className="d-flex justify-content-between align-items-center">
-                    {userData.is_superuser && election.visible ? <Badge bg="success" className="m-2">visible</Badge> : <Badge bg="danger" className="m-2">cachée</Badge>}
+                    {userData.is_superuser && (election.visible ? <Badge bg="success" className="m-2">visible</Badge> : <Badge bg="danger" className="m-2">cachée</Badge>)}
                     <Card.Title className="mb-0 d-flex align-items-center">
                         {election.nom}
                     </Card.Title>
@@ -115,7 +125,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 <Row>
                     {election.options.map((options, i) =>
                         <Col key={i} className="d-flex justify-content-center"><Button key={i} disabled={!canVote} className="m-2"
-                            onClick={() => { voterElection({ choix: i }, id); queryClient.invalidateQueries(['election', id]) }}                        >
+                            onClick={() => voterMutation.mutate(i)}                        >
                             {options}
                         </Button></Col>)
                     }
@@ -128,12 +138,12 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 <Form>
                     <div className="d-flex gap-2 mb-3">
                         <Button variant="success" onClick={mutation.mutate}>Valider</Button>
-                        <Button variant="danger" onClick={() => {if(isNew){stopCreating()} setIsModifying(false)}}>Annuler</Button>
+                        <Button variant="danger" onClick={() => { if (isNew) { stopCreating() } setIsModifying(false) }}>Annuler</Button>
                     </div>
                     <Form.Group as={Row} className="mb-3">
                         <Form.Label column sm="2">Nom</Form.Label>
                         <Col><Form.Control name="nom" value={modifyingElection.nom}
-                        onChange={(e) => setModifyingElection({ ...modifyingElection, nom: e.target.value })}/></Col>
+                            onChange={(e) => setModifyingElection({ ...modifyingElection, nom: e.target.value })} /></Col>
                     </Form.Group>
                     <RichEditor value={modifyingElection.description}
                         onChange={(e) => setModifyingElection({ ...modifyingElection, description: e })} />
@@ -202,9 +212,9 @@ export default function AssoElection({ asso_id }) {
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Élections</h2>
-                <Button variant='outline-secondary' onClick={() => setIsCreating(true)}>
+                {userData.is_superuser && <Button variant='outline-secondary' onClick={() => setIsCreating(true)}>
                     <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
-                </Button>
+                </Button>}
             </div>
             {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}
             {elections.map(id => <Election key={id} id={id} canModify={userData.is_superuser} isNew={false} asso_id={asso_id} />)}

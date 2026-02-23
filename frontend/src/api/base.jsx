@@ -8,177 +8,188 @@ export const SOIFGUARD_BASE_URL = `${API_BASE_URL}/soifguard`;
 export const SOCKET_BASE_URL = `${BASE_URL}`
 
 export async function handleResponse(response) {
-  if (!response.ok) {
-    const errorMessage = await response.json();
-    console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-    throw new Error(errorMessage.message || "Erreur inconnue");
-  }
-  return response.json();
+    if (!response.ok) {
+        const errorMessage = await response.json();
+        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+        throw new Error(errorMessage.message || "Erreur inconnue");
+    }
+    return response.json();
 }
 
 export function createApiPost(route) {
-  return async (data, ...params) => {
-    try {
-      const url = [route, ...params].join('/');
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json", }, credentials: "include",
-      });
+    return async (data, ...params) => {
+        try {
+            const url = [route, ...params].join('/');
+            const response = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json", }, credentials: "include",
+            });
 
-      if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        return
-      }
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+                return
+            }
 
-      return await response.json();
-    } catch (erreur) {
-      console.error("Erreur réseau :", erreur);
-      throw erreur;
-    }
-  };
+            return await response.json();
+        } catch (erreur) {
+            console.error("Erreur réseau :", erreur);
+            throw erreur;
+        }
+    };
 }
 
 export function createApiPostFormData(route) {
-  return async (data, ...params) => {
-    try {
-      const url = [route, ...params].join('/');
-      const response = await fetch(url, {
-        method: "POST",
-        body: data,
-        credentials: "include",
-      });
+    return async (data, ...params) => {
+        try {
+            const url = [route, ...params].join('/');
+            const response = await fetch(url, {
+                method: "POST",
+                body: data,
+                credentials: "include",
+            });
 
-      if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        return
-      }
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+                return
+            }
 
-      return await response.json();
-    } catch (erreur) {
-      console.error("Erreur réseau :", erreur);
-      throw erreur;
-    }
-  };
+            return await response.json();
+        } catch (erreur) {
+            console.error("Erreur réseau :", erreur);
+            throw erreur;
+        }
+    };
 }
 
 export function createApiGet(route, getFile = false) {
-  return async (data, ...params) => {
-    try {
-      const search_param = new URLSearchParams(data);
-      const string = search_param.toString();
-      const url = `${[route, ...params].join('/')}${string ? `?${string}` : ""}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { "Content-Type": "application/json", }, credentials: "include",
-      });
+    return async (data, ...params) => {
+        try {
+            const search_param = new URLSearchParams(data);
+            const string = search_param.toString();
+            const url = `${[route, ...params].join('/')}${string ? `?${string}` : ""}`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: { "Content-Type": "application/json", }, credentials: "include",
+            });
 
-      if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        return
-      }
-      if (getFile) {
-        const blob = await response.blob();
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = 'download.csv'; // default filename
-        if (contentDisposition) {
-          const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-          if (filenameMatch && filenameMatch.length > 1) {
-            filename = filenameMatch[1];
-          }
+            if (!response.ok) {
+                let errorMessage = "Erreur inconnue";
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } else {
+                    // If it's HTML/Text, grab the text or just use the status text
+                    const textError = await response.text();
+                    console.error("Server returned non-JSON error:", textError.substring(0, 100));
+                    errorMessage = `Error ${response.status}: ${response.statusText}`;
+                }
+                const error = new Error(errorMessage);
+                error.response = response;
+                throw error;
+            }
+            if (getFile) {
+                const blob = await response.blob();
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'download.csv'; // default filename
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                    if (filenameMatch && filenameMatch.length > 1) {
+                        filename = filenameMatch[1];
+                    }
+                }
+
+                const link = document.createElement('a');
+                const urlObject = window.URL.createObjectURL(blob);
+                link.href = urlObject;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(urlObject);
+
+                return true; // Indicate success
+            }
+            else {
+                return await response.json();
+            }
+        } catch (erreur) {
+            console.error("Erreur réseau :", erreur);
+            throw erreur;
         }
-
-        const link = document.createElement('a');
-        const urlObject = window.URL.createObjectURL(blob);
-        link.href = urlObject;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(urlObject);
-
-        return true; // Indicate success
-      }
-      else {
-        return await response.json();
-      }
-    } catch (erreur) {
-      console.error("Erreur réseau :", erreur);
-      throw erreur;
-    }
-  };
+    };
 }
 
 export function createApiDelete(route) {
-  return async (...params) => {
-    try {
-      const url = [route, ...params].join('/');
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json", }, credentials: "include",
-      });
+    return async (...params) => {
+        try {
+            const url = [route, ...params].join('/');
+            const response = await fetch(url, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json", }, credentials: "include",
+            });
 
-      if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        return
-      }
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+                return
+            }
 
-      return await response.json();
-    } catch (erreur) {
-      console.error("Erreur réseau :", erreur);
-      throw erreur;
-    }
-  };
+            return await response.json();
+        } catch (erreur) {
+            console.error("Erreur réseau :", erreur);
+            throw erreur;
+        }
+    };
 }
 
 export function createApiPut(route) {
-  return async (data, ...params) => {
-    try {
-      const url = [route, ...params].join('/');
-      const response = await fetch(url, {
-        method: "PUT",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json", }, credentials: "include",
-      });
+    return async (data, ...params) => {
+        try {
+            const url = [route, ...params].join('/');
+            const response = await fetch(url, {
+                method: "PUT",
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json", }, credentials: "include",
+            });
 
-      if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        return
-      }
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+                return
+            }
 
-      return await response.json();
-    } catch (erreur) {
-      console.error("Erreur réseau :", erreur);
-      throw erreur;
-    }
-  };
+            return await response.json();
+        } catch (erreur) {
+            console.error("Erreur réseau :", erreur);
+            throw erreur;
+        }
+    };
 }
 
 export function createApiPatch(route) {
-  return async (data, ...params) => {
-    try {
-      const url = [route, ...params].join('/');
-      const response = await fetch(url, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json", }, credentials: "include",
-      });
+    return async (data, ...params) => {
+        try {
+            const url = [route, ...params].join('/');
+            const response = await fetch(url, {
+                method: "PATCH",
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json", }, credentials: "include",
+            });
 
-      if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        return
-      }
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
+                return
+            }
 
-      return await response.json();
-    } catch (erreur) {
-      console.error("Erreur réseau :", erreur);
-      throw erreur;
-    }
-  };
+            return await response.json();
+        } catch (erreur) {
+            console.error("Erreur réseau :", erreur);
+            throw erreur;
+        }
+    };
 }

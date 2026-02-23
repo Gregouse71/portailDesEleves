@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, send_file
+from flask import Blueprint, jsonify, request, send_file, abort
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 import io
@@ -28,13 +28,15 @@ def get_election_by_id(id: int):
     Renvoie l'election qui a pour id *id*
     """
     election = Election.query.filter_by(id=id).first()
-    if election and (election.visible or current_user.est_superutilisateur):
+    if election is None:
+        return abort(404)
+    if election.visible or current_user.est_superutilisateur:
         ret = election.to_dict()
         ret["deja_vote"] = ElectionVote.query.filter_by(election_id=id, utilisateur_id=current_user.id).count() > 0
         ret["votant"] = current_user.promotion in election.promos
         return jsonify(ret)
     else:
-        return jsonify({"message": ""}), 403
+        return abort(403)
 
 
 @controllers_elections.post("/election/<int:asso_id>")
