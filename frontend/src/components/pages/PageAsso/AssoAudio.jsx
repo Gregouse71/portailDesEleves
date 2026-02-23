@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAlbums, addAlbum, addAudio, removeAudio, updateAlbum, deleteAlbum, updateAudio, getAlbum } from '../../../api/modules/api_audio';
 import { estUtilisateurDansAsso } from '../../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../../api/base';
 import { Button, Form, Card, ListGroup, Spinner, Col, Row } from 'react-bootstrap';
 import DropdownEditer from '../../elements/DropdownEditer';
+import ConfirmationModal from '../../elements/ConfirmationModal';
 
 function AddAlbumForm({ mutation, onCancel }) {
     const [name, setName] = useState('');
@@ -23,7 +24,7 @@ function AddAlbumForm({ mutation, onCancel }) {
             <Card.Body>
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
-                        <Form.Label>Nom de l'album</Form.Label>
+                        <Form.Label>Nom de l&apos;album</Form.Label>
                         <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="Nouveau nom d'album" />
                     </Form.Group>
                     <div className="d-flex gap-2">
@@ -81,180 +82,165 @@ function AddSongForm({ mutation, assoId, albumId, onCancel }) {
     );
 }
 
-const Audio = ({ audio, asso_id, isEditing, invalidateQueries, validate }) => {
-    const [editingAudio, setEditingAudio] = useState(audio);
-
-    const removeAudioMutation = useMutation({
-        mutationFn: async () => {
-            if (window.confirm("Êtes-vous sûr de vouloir supprimer ce son ?")) {
-                await removeAudio(asso_id, audio.id)
-            }
-        },
-        onSuccess: invalidateQueries
-    });
-    const updateAudioMutation = useMutation({
-        mutationFn: async () => {
-            await updateAudio(asso_id, audio.id, editingAudio.nom, editingAudio.position)
-        },
-        onSuccess: () => {
-            invalidateQueries();
-        }
-    });
+const Audio = ({ album, audio, asso_id, isEditing, onLocalChange }) => {
+    const [localName, setLocalName] = useState(audio.nom);
+    const [localPos, setLocalPos] = useState(audio.position);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     useEffect(() => {
-        updateAudioMutation.mutate();
-    }, [validate]);
+        onLocalChange(audio.id, { nom: localName, position: localPos });
+    }, [localName, localPos, audio.id, onLocalChange]);
 
-    return <>
-        {isEditing ? (
-            <Form className="w-100">
+    const queryClient = useQueryClient();
+    const removeMutation = useMutation({
+        mutationFn: () => removeAudio(asso_id, audio.id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['audioAlbum', album.id] })
+    });
+
+    if (!isEditing) {
+        return (
+            <Row className="py-2 border-bottom">
+                <Col md={3}>{audio.nom}</Col>
+                <Col><audio controls src={`${UPLOAD_BASE_URL}/${audio.file_path}`} className="w-100" ><track kind="captions" /></audio></Col>
+            </Row>
+        );
+    }
+
+    return (
+        <>
+            <Form className="w-100 py-2 border-bottom">
                 <Row className="align-items-end">
                     <Col>
-                        <Form.Group>
-                            <Form.Label>Nom</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={editingAudio.nom}
-                                onChange={(e) => setEditingAudio({ ...editingAudio, nom: e.target.value })}
-                            />
-                        </Form.Group>
+                        <Form.Control
+                            value={localName}
+                            onChange={(e) => setLocalName(e.target.value)}
+                            placeholder="Nom du son"
+                        />
                     </Col>
-                    <Col>
-                        <Form.Group>
-                            <Form.Label>Position</Form.Label>
-                            <Form.Control
-                                type="number"
-                                value={editingAudio.position}
-                                onChange={(e) => setEditingAudio({ ...editingAudio, position: parseInt(e.target.value) || 0 })}
-                            />
-                        </Form.Group>
+                    <Col md={2}>
+                        <Form.Control
+                            type="number"
+                            value={localPos}
+                            onChange={(e) => setLocalPos(parseInt(e.target.value) || 0)}
+                        />
                     </Col>
-                    <Col md="auto" className="d-flex gap-2 mt-2 mt-md-0">
-                        <Button variant="danger" size="sm" onClick={removeAudioMutation.mutate}>Supprimer</Button>
+                    <Col md="auto">
+                        <Button variant="outline-danger" size="sm" onClick={() => setShowConfirm(true)}>✕</Button>
                     </Col>
                 </Row>
             </Form>
-        ) : (
-            <Row>
-                <Col md={3} className="d-flex justify-content-between align-items-center">
-                    {audio.nom}
-                </Col>
-                <Col as="audio" controls src={`${UPLOAD_BASE_URL}/${audio.file_path}`} style={{ width: '100%' }}>
-                    Votre navigateur ne supporte pas l'élément audio.
-                </Col>
-            </Row>
-        )}
-    </>
-}
+            <ConfirmationModal
+                show={showConfirm}
+                onHide={() => setShowConfirm(false)}
+                onConfirm={removeMutation.mutate}
+                title="Supprimer le son"
+                body={`Êtes-vous sûr de vouloir supprimer "${audio.nom}" ?`}
+            />
+        </>
+    );
+};
 
 const Album = ({ id, autorise, asso_id }) => {
     const queryClient = useQueryClient();
 
     const [isEditing, setIsEditing] = useState(false);
-    const [validate, setValidate] = useState(false);
-    const [addSongState, setAddSongState] = useState(false);
+    const [isAddingSong, setIsAddingSong] = useState(false);
     const [editingAlbum, setEditingAlbum] = useState(null);
+    const [pendingChanges, setPendingChanges] = useState({});
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
     const { data: album, isLoading } = useQuery({
         queryKey: ['audioAlbum', id],
         queryFn: () => getAlbum({}, id),
     });
 
-    const invalidateQueries = () => queryClient.invalidateQueries({ queryKey: ['audioAlbum', id] });
-    const deleteAlbumMutation = useMutation({
-        mutationFn: async () => {
-            if (window.confirm("Êtes-vous sûr de vouloir supprimer cet album et tous les sons qu'il contient ?")) {
-                await deleteAlbum(asso_id, album.id);
-            }
-        },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['audioAlbums', asso_id] })
-    });
-    const updateAlbumMutation = useMutation({
+    const handleAudioChange = useCallback((audioId, data) => {
+        setPendingChanges(prev => ({ ...prev, [audioId]: data }));
+    }, []);
+
+    const updateAllMutation = useMutation({
         mutationFn: async () => {
             await updateAlbum(asso_id, album.id, editingAlbum.name, editingAlbum.position);
-            setValidate(!validate);
+            const audioUpdates = Object.entries(pendingChanges).map(([audioId, data]) =>
+                updateAudio(asso_id, audioId, data.nom, data.position)
+            );
+            return Promise.all(audioUpdates);
         },
         onSuccess: () => {
-            invalidateQueries();
+            queryClient.invalidateQueries({ queryKey: ['audioAlbum', id] });
             setIsEditing(false);
+            setPendingChanges({});
         }
+    });
+    const deleteAlbumMutation = useMutation({
+        mutationFn: () => deleteAlbum(asso_id, album.id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['audioAlbums', asso_id] })
     });
     const addAudioMutation = useMutation({
         mutationFn: async ({ assoId, formData }) => await addAudio(assoId, album.id, formData),
-        onSuccess: invalidateQueries
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['audioAlbum', id] }),
     });
 
-    const startEditing = () => {
-        setEditingAlbum({ ...album });
-        setIsEditing(true);
-    };
+    const sortedAudios = useMemo(() => {
+        if (!album?.audios) return [];
+        return [...album.audios].sort((a, b) => b.position - a.position);
+    }, [album]);
 
     if (isLoading) return <Spinner animation="border" size="sm" />;
 
-    return <Card>
-        <Card.Header>
-            {isEditing ?
-                <Form className="w-100">
-                    <Row className="align-items-end">
-                        <Col>
-                            <Form.Group>
-                                <Form.Label>Nom</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={editingAlbum.name}
-                                    onChange={(e) => setEditingAlbum({ ...editingAlbum, name: e.target.value })}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col>
-                            <Form.Group>
-                                <Form.Label>Priorité d&apos;affichage</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    value={editingAlbum.position}
-                                    onChange={(e) => setEditingAlbum({ ...editingAlbum, position: parseInt(e.target.value) || 0 })}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col md="auto" className="d-flex gap-2 mt-2 mt-md-0">
-                            <Button variant="primary" onClick={() => setAddSongState(!addSongState)}>Ajouter un son</Button>
-                            <Button variant="success" onClick={updateAlbumMutation.mutate}>Valider</Button>
+    return <>
+        <Card className="mb-4">
+            <Card.Header>
+                {isEditing ? (
+                    <Row>
+                        <Col><Form.Control value={editingAlbum.name} onChange={e => setEditingAlbum({ ...editingAlbum, name: e.target.value })} /></Col>
+                        <Col md={2}><Form.Control type="number" value={editingAlbum.position} onChange={e => setEditingAlbum({ ...editingAlbum, position: e.target.value })} /></Col>
+                        <Col md="auto" className="d-flex gap-2">
+                            <Button variant="success" onClick={() => updateAllMutation.mutate()} disabled={updateAllMutation.isPending}>
+                                {updateAllMutation.isPending ? 'Enregistrement...' : 'Valider'}
+                            </Button>
+                            <Button variant="primary" onClick={() => setIsAddingSong(!isAddingSong)}>Ajouter un son</Button>
                             <Button variant="secondary" onClick={() => setIsEditing(false)}>Annuler</Button>
                         </Col>
                     </Row>
-                </Form>
-                :
-                <div className="d-flex align-items-center justify-content-between w-100">
-                    <span className="h5 mb-0">{album.name}</span>
-                    {autorise && (
-                        <DropdownEditer list={[
-                            { can: true, name: "Modifier", onClick: startEditing },
-                            { can: true, name: "Supprimer", onClick: deleteAlbumMutation.mutate }
-                        ]} />
-                    )}
-                </div>
-            }
-        </Card.Header>
-        <Card.Body>
-            {addSongState && (
-                <AddSongForm
-                    mutation={addAudioMutation}
-                    assoId={asso_id}
-                    albumId={album.id}
-                    onCancel={() => setAddSongState(false)}
-                />
-            )}
-            <ListGroup variant="flush">
-                {[...album.audios].sort((a, b) => b.position - a.position).map(audio => (
-                    <Audio key={audio.id} audio={audio} asso_id={asso_id} autorise={autorise}
-                        isEditing={isEditing} invalidateQueries={invalidateQueries}
-                        validate={validate}
+                ) : (
+                    <div className="d-flex justify-content-between align-items-center">
+                        <span className="h5 mb-0">{album.name}</span>
+                        {autorise && (
+                            <DropdownEditer list={[
+                                { can: true, name: "Modifier", onClick: () => { setEditingAlbum(album); setIsEditing(true); } },
+                                { can: true, name: "Supprimer", onClick: () => setShowConfirmDelete(true) }
+                            ]} />
+                        )}
+                    </div>
+                )}
+            </Card.Header>
+            <Card.Body>
+                {isAddingSong && (
+                    <AddSongForm
+                        mutation={addAudioMutation}
+                        assoId={asso_id}
+                        albumId={album.id}
+                        onCancel={() => setIsAddingSong(false)}
                     />
-                ))}
-                {album.audios.length === 0 && !addSongState.show && <p className="text-muted">Cet album est vide.</p>}
-            </ListGroup>
-        </Card.Body>
-    </Card>
+                )}
+                <ListGroup variant="flush">
+                    {sortedAudios.map(audio => (
+                        <Audio key={audio.id} album={album} audio={audio} asso_id={asso_id} isEditing={isEditing}
+                            onLocalChange={handleAudioChange}
+                        />
+                    ))}
+                </ListGroup>
+            </Card.Body>
+        </Card>
+        <ConfirmationModal
+            show={showConfirmDelete}
+            onHide={() => setShowConfirmDelete(false)}
+            onConfirm={deleteAlbumMutation.mutate}
+            title="Supprimer l'album"
+            body={`Êtes-vous sûr de vouloir supprimer l'album "${album?.name}" et tous les sons qu'il contient ?`}
+        />
+    </>
 }
 
 function AssoAudio({ asso_id }) {
