@@ -82,7 +82,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
         setUserInfos(donneesUtilisateur);
         setInstruments(donneesUtilisateur.instruments || []);
         setSelectedC(donneesUtilisateur.cos?.map(c => ({ value: c.id, label: c.nom_utilisateur })) || []);
-        setSelectedP(donneesUtilisateur.marrain ? { value: donneesUtilisateur.marrain.id, label: donneesUtilisateur.marrain.nom_utilisateur } : null);
+        setSelectedP(
+            donneesUtilisateur.marrains && donneesUtilisateur.marrains.length > 0
+                ? { value: donneesUtilisateur.marrains[0].id, label: donneesUtilisateur.marrains[0].nom_utilisateur }
+                : null
+        );
         setSelectedF(donneesUtilisateur.fillots?.map(f => ({ value: f.id, label: f.nom_utilisateur })) || []);
         setIsGestion(false);
     };
@@ -91,7 +95,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         if (isGestion) {
             handleCancel();
         } else {
-            setSelectedP({ value: donneesUtilisateur?.marrain?.id, label: donneesUtilisateur?.marrain?.nom_utilisateur });
+            setSelectedP({ value: donneesUtilisateur?.marrains[0]?.id, label: donneesUtilisateur?.marrains[0]?.nom_utilisateur });
             setSelectedC(donneesUtilisateur?.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
             setSelectedF(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })))
             setUserInfos(donneesUtilisateur);
@@ -184,8 +188,15 @@ export default function TabInfo({ id, autoriseAModifier }) {
                             ))}
                         </div>
                     }
-                    {donneesUtilisateur.marrain &&
-                        <div><b>Marrain :</b> <Link to={`/utilisateur/${donneesUtilisateur.marrain.id}`}>{donneesUtilisateur.marrain.nom_utilisateur}</Link></div>
+                    {donneesUtilisateur.marrains && donneesUtilisateur.marrains.length > 0 &&
+                        <div><b>Marrains :</b>{' '}
+                            {donneesUtilisateur.marrains.map((marrain, index) => (
+                                <span key={marrain.id}>
+                                    <Link to={`/utilisateur/${marrain.id}`}>{marrain.nom_utilisateur}</Link>
+                                    {index < donneesUtilisateur.marrains.length - 1 ? ', ' : ''}
+                                </span>
+                            ))}
+                        </div>
                     }
                     {donneesUtilisateur.fillots && donneesUtilisateur.fillots.length > 0 &&
                         <div>

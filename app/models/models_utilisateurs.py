@@ -37,6 +37,11 @@ cos_association = db.Table('utilisateurs_cos',
     db.Column('co_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
 )
 
+parrainage_association = db.Table('utilisateurs_marrains',
+    db.Column('marrain_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), primary_key=True),
+    db.Column('fillot_id', db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), primary_key=True)
+)
+
 class Utilisateur(db.Model, UserMixin) :
     __tablename__ = 'utilisateurs_utilisateur'
     # Initialise lors de l'ajout d'une promotion. Ne dois pas etre modifiable par l'utilisateur
@@ -65,10 +70,21 @@ class Utilisateur(db.Model, UserMixin) :
     instruments = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
 
     # Gestion du parrainnage :
-    # Une fonction sera prevue pour mofifier son marrain et fillot et faire en sorte que son parrain et fillot soit modifie en consequence. N'est pas mofifiable tel quel
-    marrain_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
-    marrain = db.relationship('Utilisateur', remote_side=[id], back_populates='fillots', foreign_keys=[marrain_id], post_update=True)
-    fillots = db.relationship('Utilisateur', back_populates='marrain', foreign_keys=[marrain_id])
+    marrains = db.relationship(
+        'Utilisateur',
+        secondary=parrainage_association,
+        primaryjoin=(parrainage_association.c.fillot_id == id),
+        secondaryjoin=(parrainage_association.c.marrain_id == id),
+        back_populates='fillots'
+    )
+
+    fillots = db.relationship(
+        'Utilisateur',
+        secondary=parrainage_association,
+        primaryjoin=(parrainage_association.c.marrain_id == id),
+        secondaryjoin=(parrainage_association.c.fillot_id == id),
+        back_populates='marrains'
+    )
     est_baptise = db.Column(db.Boolean, nullable=False, default=False)
 
     # Gestion des colocations
@@ -248,7 +264,7 @@ class Utilisateur(db.Model, UserMixin) :
             "ville_origine": self.ville_origine,
             "sports": self.sports,
             "instruments": self.instruments if self.instruments is not None else [],
-            "marrain": {"id": self.marrain.id, "nom_utilisateur": f"{self.marrain.prenom} {self.marrain.nom}"} if self.marrain else None,
+            "marrains": [{"id": marrain.id, "nom_utilisateur": f"{marrain.prenom} {marrain.nom}"} for marrain in self.marrains],
             "cos": [{"id": co.id, "nom_utilisateur": f"{co.prenom} {co.nom}"} for co in self.cos],
             "fillots": [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in self.fillots],
             "vote_sondaj_du_jour": self.vote_sondaj_du_jour,

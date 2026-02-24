@@ -102,11 +102,11 @@ def ajouter_fillots_a_la_famille(marrain:Utilisateur, liste_fillots:list[Utilisa
     fillots_a_ajouter = []
     for fillot in liste_fillots:
         # si le fillot a un marrain qui n'est pas le marrain actuel
-        if fillot.marrain is not None and fillot.marrain.id != marrain.id:
-            fillot.marrain = None
+        if fillot.marrains != [] and fillot not in marrain.fillots:
+            fillot.marrains = []
             fillots_a_ajouter.append(fillot)
         # si le fillot n'a pas de marrain
-        elif fillot.marrain is None:
+        elif fillot.marrains == []:
             fillots_a_ajouter.append(fillot)
         # si le fillot a déjà le marrain actuel comme marrain, on ne fait rien
 
@@ -129,7 +129,7 @@ def changer_marrain(marrain:Utilisateur, fillot:Utilisateur):
     Change le marrain d'un fillot.
     Si le fillot avait déjà un marrain, le lien est détruit.
     """
-    fillot.marrain = marrain
+    fillot.marrains = [marrain]
     db.session.commit()
 
 # AUTRES

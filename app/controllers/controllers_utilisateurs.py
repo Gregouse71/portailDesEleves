@@ -334,6 +334,8 @@ def route_selectionner_fillots():
         return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
 
     try:
+        for f in fillots_list:
+            f.marrain = [marrain]
         marrain.fillots = fillots_list
         db.session.commit()
         return jsonify({"message": "Fillots mis à jour avec succès"}), 200
@@ -422,7 +424,7 @@ def route_changer_marrain():
             changer_marrain(marrain, fillot)
         else:
             # Remove marrain
-            fillot.marrain = None
+            fillot.marrains = []
             db.session.commit()
         return jsonify({"message": "Marrain mis à jour avec succès"}), 200
     except Exception as e:
