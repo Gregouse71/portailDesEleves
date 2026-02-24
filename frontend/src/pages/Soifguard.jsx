@@ -435,7 +435,8 @@ function Consommation({ categorie, reset, perms }) {
 
             <div className={`right-section ${categorie}`}>
                 <div className="soifguard-user-header">
-                    <h2>Consos {categorie && `(${categorie})`}</h2>
+                    <h2>Consos</h2>
+                    {categorie && <p><strong>Nom</strong> - Prix (Prix cotisant)</p>}
                     {perms && <DropdownEditer list={[
                         { can: true, onClick: () => setGestionConsos(!gestionConsos), name: "Modifier" },
                     ]}
@@ -507,14 +508,14 @@ export default function SoifGuard() {
         queryKey: ['permAdminBiero'],
         queryFn: () => verifierPermission({}, "admin_biero", userData.id),
     });
-    const { data: detteMaxiOcto = false } = useQuery({
-        queryKey: ['detteOcto'],
-        queryFn: () => obtenirDetteMaxi("octo"),
-    });
-    const { data: detteMaxiBiero = false } = useQuery({
-        queryKey: ['detteBiero'],
-        queryFn: () => obtenirDetteMaxi("biero"),
-    });
+    // const { data: detteMaxiOcto = false } = useQuery({
+    //     queryKey: ['detteOcto'],
+    //     queryFn: () => obtenirDetteMaxi("octo"),
+    // });
+    // const { data: detteMaxiBiero = false } = useQuery({
+    //     queryKey: ['detteBiero'],
+    //     queryFn: () => obtenirDetteMaxi("biero"),
+    // });
 
     const changeMode = (e) => {
         const newMode = e.target.value;
@@ -537,10 +538,10 @@ export default function SoifGuard() {
         <div className="soifguard-container">
             {/* HEADER */}
             <div className="header">
-                <button onClick={() => navigate("/direction")}>Retour au portail</button>
-                <h1>SoifGuard</h1>
+                <Button variant="secondary" onClick={() => navigate("/direction")} className="center">Retour</Button>
+                <h1>SoifGuard {categorie && `(${categorie})`}</h1>
 
-                {mode === "conso" && <>
+                {/* {mode === "conso" && <>
                     {categorie === "octo" &&
                         (detteMaxiOcto !== null ? (
                             <p>Dette maximale autorisée : {detteMaxiOcto}€</p>
@@ -556,7 +557,7 @@ export default function SoifGuard() {
                         ))
                     }
                 </>
-                }
+                } */}
 
                 {((categorie === "biero" && bieroAdminPermission) || (categorie === "octo" && octoAdminPermission))
                     &&
