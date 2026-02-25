@@ -67,19 +67,6 @@ class Election(db.Model):
             "ouvert" : (self.date_ouverture <= datetime.now() <= self.date_fermeture) if self.date_ouverture is not None and self.date_fermeture is not None else None
         }
 
-    def patch(self, data):
-        """
-        Modifie l'objet avec les clés dans data.
-        Ce qui n'est pas précisé n'est pas changé.
-        """
-        self.nom = data.get("nom", self.nom)
-        self.description = data.get("description", self.description)
-        self.visible = data.get("visible", self.visible)
-        self.options = data.get("options", self.options)
-        self.promos = data.get("promos", self.promos)
-        self.date_ouverture = data.get("date_ouverture", self.date_ouverture)
-        self.date_fermeture = data.get("date_fermeture", self.date_fermeture)
-
 
 class ElectionVote(db.Model):
     __tablename__ = 'elections_vote'

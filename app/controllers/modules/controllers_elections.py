@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, send_file, abort
+from flask import Blueprint, jsonify, request, abort, send_file
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 import io
@@ -7,9 +7,33 @@ import csv
 from app import db
 from app.models.modules.models_elections import Election, ElectionVote
 from app.utils.decorators import superutilisateur_required
-from app.services.modules.services_elections import creer_election
+from app.services.modules.services_elections import creer_election, ajouter_photo, supprimer_election, patch_election
 
 controllers_elections = Blueprint('controllers_elections', __name__)
+
+UPLOAD_FOLDER = 'upload/associations'
+
+@controllers_elections.post("/election/image/<int:id>/<int:choix>")
+@login_required
+@superutilisateur_required
+def upload_election_choice_image(id, choix):
+    election = db.session.query(Election).get(id)
+    if not election:
+        return jsonify({"success": False, "message": "Election introuvable"}), 404
+
+    if 'file' not in request.files:
+        return jsonify({"message": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "No selected file"}), 400
+
+    if file:
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+        if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
+            return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
+        path = ajouter_photo(file, election, choix)
+    return jsonify({"path": path})
+
 
 @controllers_elections.get("/asso/<int:id>")
 @login_required
@@ -59,13 +83,10 @@ def delete_election(id: int):
     """
     Supprime l'election
     """
-    election = Election.query.filter_by(id=id).first()
+    election = db.session.query(Election).get(id)
     if not election:
         return jsonify({"message": "L'election n'existe pas"}), 400
-    for vote in election.votes:
-        db.session.delete(vote)
-    db.session.delete(election)
-    db.session.commit()
+    supprimer_election(election)
     return jsonify({"message": ""}), 200 
 
 
@@ -78,7 +99,7 @@ def patch_election_by_id(id: int):
     """
     data = request.json
     election = Election.query.filter_by(id=id).first()
-    election.patch(data)
+    patch_election(election, data)
     db.session.commit()
     return jsonify(election.to_dict())
 

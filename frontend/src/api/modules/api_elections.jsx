@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, createApiPut } from "../base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, createApiPostFormData, createApiPut } from "../base";
 
 const ELECTIONS_BASE_URL = `${API_BASE_URL}/elections`;
 
@@ -51,3 +51,14 @@ export const voterElection = createApiPost(`${ELECTIONS_BASE_URL}/voter`)
  *  - election_id : id de l'election
  */
 export const resultatsElection = createApiGet(`${ELECTIONS_BASE_URL}/resultats`, true)
+
+/** Upload une image pour une option d'élection
+ * args :
+ *  - file : fichier image à uploader
+ *  - election_id : id de l'election
+ *  - option : numero de l'option
+ * 
+ * renvoie :
+ *  - le path de l'image uploadée
+ */
+export const uploadElectionChoiceImage = createApiPostFormData(`${ELECTIONS_BASE_URL}/election/image`);

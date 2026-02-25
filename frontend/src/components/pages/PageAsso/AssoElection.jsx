@@ -1,11 +1,12 @@
 import { useState } from "react";
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
-import { Badge, Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Badge, Button, Card, Col, Form, Image, Row } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLayout } from "../../../layouts/Layout";
-import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection } from "../../../api/modules/api_elections";
+import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection, uploadElectionChoiceImage } from "../../../api/modules/api_elections";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
+import { UPLOAD_BASE_URL } from "../../../api/base";
 
 const format_date = (s) => s ? new Date(s).toLocaleString("fr-FR") : "Non précisé"
 
@@ -24,27 +25,39 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     });
 
     const [isModifying, setIsModifying] = useState(isNew);
+    const [files, setFiles] = useState([]);
     const [modifyingElection, setModifyingElection] = useState({
         nom: "",
         visible: false,
-        options: ["", ""],
+        options: [{ name: "", image: "" }, { name: "", image: "" }],
         promos: [],
         date_ouverture: null,
         date_fermeture: null
     });
 
     const handleOptionChange = (index, value) => {
-        const newOption = [...modifyingElection.options];
-        newOption[index] = value;
-        setModifyingElection({ ...modifyingElection, options: newOption })
+        const newOptions = [...modifyingElection.options];
+        newOptions[index] = { ...newOptions[index], name: value };
+        setModifyingElection({ ...modifyingElection, options: newOptions });
     };
 
     const ajouterOption = () => {
-        setModifyingElection({ ...modifyingElection, options: [...modifyingElection.options, ""] });
+        setModifyingElection({ ...modifyingElection, options: [...modifyingElection.options, { name: "", image: "" }] });
     }
 
     const supprimerOption = (index) => {
+        const temp = [...files];
+        temp.splice(index, 1);
+        setFiles(temp);
         setModifyingElection({ ...modifyingElection, options: modifyingElection.options.filter((_, i) => i !== index) });
+    };
+
+    const setOptionFile = async (index, file) => {
+        let newFiles = files
+        while (index > newFiles.length) newFiles.push(null);
+        newFiles[index] = file;
+        setFiles(newFiles);
+        console.log(newFiles)
     };
 
     const handleStartModifying = () => {
@@ -54,16 +67,28 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 
     const mutation = useMutation({
         mutationFn: async () => {
+            let newElection;
             if (isNew) {
-                await creerNouvelleElection(modifyingElection, asso_id);
+                newElection = await creerNouvelleElection(modifyingElection, asso_id);
             }
-            else await modifierElection(modifyingElection, id);
+            else {
+                newElection = await modifierElection(modifyingElection, id);
+            }
+            console.log(files)
+            files.forEach(async (file, index) => {
+                if (!file) return
+                const formData = new FormData();
+                formData.append('file', file);
+                await uploadElectionChoiceImage(formData, newElection.id, index);
+            })
         },
         onSuccess: () => {
-            if (!isNew) queryClient.invalidateQueries(['election', id]);
-            else {
+            if (isNew) {
                 queryClient.invalidateQueries(['elections_asso', asso_id]);
                 stopCreating();
+            }
+            else {
+                queryClient.invalidateQueries(['election', id]);
             }
             setIsModifying(false);
         }
@@ -98,36 +123,49 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
         {!isModifying ?
             <>
                 <div className="d-flex justify-content-between align-items-center">
-                    {userData.is_superuser && (election.visible ? <Badge bg="success" className="m-2">visible</Badge> : <Badge bg="danger" className="m-2">cachée</Badge>)}
-                    <Card.Title className="mb-0 d-flex align-items-center">
+                    {userData.is_superuser && (election.visible ? <Badge bg="success" className="me-3">visible</Badge> : <Badge bg="danger" className="me-3">cachée</Badge>)}
+                    <Card.Title className="me-3 mb-0 d-flex align-items-center">
                         {election.nom}
                     </Card.Title>
-                    {election.votant && <Badge bg="primary" className="m-2">Électeur</Badge>}
-                    {election.deja_vote && <Badge bg="info" className="m-2">A voté</Badge>}
-                    {election.ouvert && <Badge bg="warning" className="m-2">En cours</Badge>}
+                    {election.votant && <Badge bg="primary" className="me-4">Électeur</Badge>}
+                    {election.deja_vote && <Badge bg="info" className="me-4">A voté</Badge>}
+                    {election.ouvert && <Badge bg="warning" className="me-4">En cours</Badge>}
                     <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
                         {canModify && <DropdownEditer list={[
                             { can: true, onClick: handleStartModifying, name: "Modifier" },
                             { can: true, onClick: () => resultatsElection({}, election.id), name: "Résultats" },
-                            { can: true, onClick: () => { supprimerElection(election.id); queryClient.invalidateQueries(['election', id]) }, name: "Supprimer" },
+                            { can: true, onClick: () => { supprimerElection(election.id); queryClient.invalidateQueries(['elections_asso', asso_id]) }, name: "Supprimer" },
                         ]}
                         />
                         }
                     </div>
                 </div>
-                <div>
+                <div className="mb-3 mt-2">
                     <RichTextDisplay content={election.description} />
                 </div>
-                {userData.is_superuser && <Row md="10">
+                {userData.is_superuser && <Row md={12} className="mb-2">
                     <Col as="h6" md="auto">Collège électoral : </Col>
                     <Col>Promotions {election.promos.join(", ")}</Col>
                 </Row>}
+                <Row className="mb-2">
+                    {election.options.map((option, i) =>
+                        <Col md={6} key={i} className="d-flex justify-content-center">
+                            {option.image &&
+                                <Image src={`${UPLOAD_BASE_URL}/${option.image}`} alt={option.name}
+                                    style={{ maxWidth: "300px", maxHeight: "300px" }}
+                                />}
+                        </Col>)
+                    }
+                </Row>
                 <Row>
-                    {election.options.map((options, i) =>
-                        <Col key={i} className="d-flex justify-content-center"><Button key={i} disabled={!canVote} className="m-2"
-                            onClick={() => voterMutation.mutate(i)}                        >
-                            {options}
-                        </Button></Col>)
+                    {election.options.map((option, i) =>
+                        <Col key={i} className="d-flex justify-content-center">
+                            <Button key={i} disabled={!canVote} className="m-2 fs-4"
+                                onClick={() => voterMutation.mutate(i)}
+                            >
+                                {option.name}
+                            </Button>
+                        </Col>)
                     }
                 </Row>
                 Début des votes : {format_date(election.date_ouverture)}<br />
@@ -164,12 +202,23 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                     <Form.Group as={Row} className="mb-3">
                         <Form.Label as={Col} sm="2" column>Options</Form.Label>
                         <Col>
-                            {modifyingElection.options && modifyingElection.options.map((elt, ind) => (
+                            {modifyingElection.options && modifyingElection.options.map((option, ind) => (
                                 <Row key={ind} className="mb-3 align-items-center">
                                     <Col>
-                                        <Form.Control value={elt}
+                                        <Form.Control value={option.name}
                                             onChange={(e) => handleOptionChange(ind, e.target.value)} placeholder={`Option ${ind + 1}`}
                                         />
+                                    </Col>
+                                    <Col>
+                                        <Form.Control type="file" accept="image/png, image/jpeg, image/jpg"
+                                            onChange={(e) => setOptionFile(ind, e.target.files[0])}
+                                        />
+                                        {option.image && (
+                                            <div className="mt-2">
+                                                <img src={`${UPLOAD_BASE_URL}/${option.image}`} alt="Option"
+                                                    style={{ maxWidth: "50px", maxHeight: "50px" }} />
+                                            </div>
+                                        )}
                                     </Col>
                                     <Col xs="auto">
                                         <Button variant="danger" onClick={() => supprimerOption(ind)}>
