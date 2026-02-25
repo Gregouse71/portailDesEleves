@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
+from sqlalchemy import desc
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -475,7 +476,7 @@ def search_users():
     offset = data.get("offset")
     try:
         search_term = f"%{query}%"
-        query = Utilisateur.query.filter(
+        query = Utilisateur.query.order_by(desc(Utilisateur.promotion)).filter(
             (Utilisateur.nom_utilisateur.ilike(search_term)) |
             (Utilisateur.prenom.ilike(search_term)) |
             (Utilisateur.nom.ilike(search_term)) |

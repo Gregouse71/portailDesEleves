@@ -38,11 +38,18 @@ def crediter_octo(asso: str):
     Quand on mets de l'argent sur le compte
     """
     data = request.json
+    somme = data.get("somme")
+    if not somme:
+        abort(400)
+    try:
+        somme = float(somme)
+    except ValueError:
+        abort(400)
     utilisateur = Utilisateur.query.get(data['id_utilisateur'])
     if not utilisateur:
         return jsonify({"success": False, "message": "Utilisateur introuvable"}), 404
     
-    return jsonify(crediter_utilisateur(utilisateur, current_user, data['somme'], asso))
+    return jsonify(crediter_utilisateur(utilisateur, current_user, somme, asso))
 
 @controllers_soifguard.post('/fixer_negatif_maximum/<string:asso>')
 @login_required
@@ -101,7 +108,7 @@ def liste_consos():
 
 @controllers_soifguard.put('/toggle_cotisation/<int:id_utilisateur>')
 @login_required
-@a_permission("admin_octo", "admin_biero")
+@a_permission("admin_octo", "octo", "admin_biero", "biero")
 def switch_cotisation_octo(id_utilisateur:int) :
     """
     Rend cotisant un utilisateur non cotisant, et rend non cotisant un utilisateur cotisant

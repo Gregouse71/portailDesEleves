@@ -32,10 +32,10 @@ class OperationSoifguard(db.Model):
 
         if asso == "octo":
             self.solde_avant = utilisateur.solde_octo
-            self.solde_apres = utilisateur.solde_octo + somme
+            self.solde_apres = float(utilisateur.solde_octo) + float(somme)
         else:
             self.solde_avant = utilisateur.solde_biero
-            self.solde_apres = utilisateur.solde_biero + somme
+            self.solde_apres = float(utilisateur.solde_biero) + float(somme)
     
     def to_dict(self):
         return {

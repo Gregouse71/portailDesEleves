@@ -10,7 +10,7 @@ def _encaisser(utilisateur: Utilisateur, auteur: Utilisateur, prix: float, asso:
     solde_actuel = utilisateur.solde_octo if asso == "octo" else utilisateur.solde_biero
     est_cotisant = utilisateur.est_cotisant_octo if asso == "octo" else utilisateur.est_cotisant_biero
 
-    nouveau_solde = solde_actuel - prix
+    nouveau_solde = float(solde_actuel) - float(prix)
     if max_negatif is not None and nouveau_solde <= max_negatif:
         return None
 
@@ -51,7 +51,7 @@ def crediter_utilisateur(utilisateur: Utilisateur, auteur: Utilisateur, somme: s
     """
     solde_actuel = utilisateur.solde_octo if asso == "octo" else utilisateur.solde_biero
     est_cotisant = utilisateur.est_cotisant_octo if asso == "octo" else utilisateur.est_cotisant_biero
-    nouveau_solde = solde_actuel + somme
+    nouveau_solde = float(solde_actuel) + float(somme)
 
     operation = OperationSoifguard(
         asso, utilisateur, auteur, est_cotisant, 

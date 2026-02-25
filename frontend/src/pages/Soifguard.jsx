@@ -18,10 +18,11 @@ import { verifierPermission } from "../api/api_global";
 import RenderPagination from "../components/elements/RenderPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { chargerUtilisateurs, searchUsers } from "../api/api_utilisateurs";
-import { Button, Dropdown, Form, Table, Pagination, InputGroup, FormControl } from "react-bootstrap";
+import { Button, Form, Table, Pagination, InputGroup, FormControl, Image } from "react-bootstrap";
 import { useLayout } from "../layouts/Layout";
 import Select from "react-select";
 import DropdownEditer from "../components/elements/DropdownEditer";
+import { UPLOAD_BASE_URL } from "../api/base";
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -222,14 +223,14 @@ function Operations({ categorie }) {
     </div>
 }
 
-function User({ user, isSelected, select, categorie, query }) {
+function User({ user, isSelected, select, categorie, query, perms }) {
     const queryClient = useQueryClient();
     const [isCrediting, setIsCrediting] = useState(false);
     const [somme, setSomme] = useState(0);
 
     const mutation = useMutation({
         mutationFn: async () => {
-            await crediterAsso({ id_utilisateur: user.id, somme: parseFloat(somme) }, categorie);
+            await crediterAsso({ id_utilisateur: user.id, somme: somme }, categorie);
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['searchResults', query]);
@@ -256,35 +257,38 @@ function User({ user, isSelected, select, categorie, query }) {
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') select(); }}
     >
         <div className="d-flex justify-content-between align-items-center">
-            <strong>{user.prenom} {user.nom}</strong>
-            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0">
-                <Dropdown align="end" onClick={(e) => { e.stopPropagation(); }}>
-                    <Dropdown.Toggle as="div" className="no-caret p-0 border-0 bg-transparent" style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
-                        ⋮
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <Dropdown.Item key="cotiz" onClick={() => cotizMutation.mutate({ id: user.id, asso: categorie })}>
-                            {user[`est_cotisant_${categorie}`] ? <>Ne cotise pas</> : <>Cotise</>}
-                        </Dropdown.Item>
-                        <Dropdown.Item key="credit" onClick={() => setIsCrediting(!isCrediting)}>
-                            Créditer le compte
-                        </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+            <Image
+                className="rounded-3"
+                src={`${UPLOAD_BASE_URL}/utilisateurs/${user.photo}`}
+                alt={user.nom_utilisateur}
+                rounded
+                style={{
+                    height: '100px',
+                    border: '2px solid white'
+                }}
+            />
+            <div>
+                <strong>{user.prenom} {user.nom} P{user.promotion}</strong>
+                {user[`est_cotisant_${categorie}`] ? <span className="soifguard-cotisant-badge ms-1">Cotisant</span> : null}
             </div>
+            <DropdownEditer list={[
+                {
+                    can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
+                    name: user[`est_cotisant_${categorie}`] ? <>Ne cotise pas</> : <>Cotise</>
+                },
+                { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
+            ]}
+            />
         </div>
-
-        <br />
         {isCrediting && <Form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); mutation.mutate(); }}>
             <Form.Group>
                 <Form.Label>Somme à créditer :</Form.Label>
-                <Form.Control type="number" onChange={(e) => setSomme(e.target.value)} onClick={(e) => e.stopPropagation()}></Form.Control>
+                <Form.Control type="text" inputMode="decimal" onChange={(e) => setSomme(e.target.value.replace(',', '.'))} onClick={(e) => e.stopPropagation()}></Form.Control>
             </Form.Group>
             <Button onClick={(e) => { e.stopPropagation(); mutation.mutate() }}>Valider</Button>
         </Form>}
         {categorie === "octo" && <span>Solde Octo : {user.solde_octo}€</span>}
         {categorie === "biero" && <span>Solde Biero : {user.solde_biero}€</span>}
-        {user[`est_cotisant_${categorie}`] ? <span className="soifguard-cotisant-badge">Cotisant</span> : null}
     </div>
 }
 
@@ -426,7 +430,11 @@ function Consommation({ categorie, reset, perms }) {
                 </div>
                 {utilisateurs.length > 0 ?
                     <div className="soifguard-grid-container">
-                        {utilisateurs.map((user) => (<User key={user.id} isSelected={user.id === selectedUser} user={user} select={() => setSelectedUser(selectedUser ? null : user.id)} categorie={categorie} query={query} />))}
+                        {utilisateurs.map((user) => (
+                            <User key={user.id} isSelected={user.id === selectedUser} user={user}
+                                select={() => setSelectedUser(selectedUser ? null : user.id)} categorie={categorie}
+                                query={query} perms={perms} />)
+                        )}
                     </div>
                     : (
                         <p>Aucun utilisateur ne correspond à la recherche.</p>
@@ -595,8 +603,10 @@ export default function SoifGuard() {
                 </div>
             </div>
             <Routes>
-                <Route index element={<Consommation categorie={categorie} reset={reset}
-                    perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)} />} />
+                <Route index element={
+                    <Consommation categorie={categorie} reset={reset}
+                        perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)}
+                    />} />
                 <Route path="operations" element={<Operations categorie={categorie} />} />
                 <Route path="permissions" element={<Permissions categorie={categorie} />} />
             </Routes>
