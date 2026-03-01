@@ -8,16 +8,17 @@ Le site est composé de deux éléments : le frontend, ce qui tourne sur le navi
 
 **La première fois**
 
-Il faut d'abord installer tous les modules nécessaires avec ```conda env create -f environment.yml```, et renommer le fichier `config.example.py` en `config.py` pour que la configuration marche. Pour créer la base de données, le portail doit-être initialisé pour la première fois avec `$ python ./init_db.py`. Cela crée les tables à partir des modèles des modèles. Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier ou d'ajouter les colonnes nécessaires. Ensuite, pour avoir des données à afficher, il faut exécuter `creer_db_pour_dev.py` et `creer_user_pour_dev.py`. De plus, il faut installer *redis* pour permettre au chat de fonctionner.
+Pour windows, passez par wsl.
+Il faut d'abord installer tous les modules nécessaires avec ```conda env create -f environment.yml```, et renommer le fichier `config.example.py` en `config.py` pour que la configuration marche. Pour créer la base de données, le portail doit-être initialisé pour la première fois avec `$ python ./init_db.py`. Cela crée les tables à partir des modèles des modèles. Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier ou d'ajouter les colonnes nécessaires. Ensuite, pour avoir des données à afficher, il faut exécuter `creer_environnement_dev.py`. De plus, il faut installer *redis* pour permettre au chat de fonctionner.
 
 **À chaque fois**
 
-Ensuite, le portail est démarré avec ```gunicorn --worker-class gevent -w 1 run:app -b localhost:5000```. Pour le développement, on peut rajouter ```--reload --log-level debug``` pour voir exactement ce qui se passe et rechager le backend quand on sauvegarde des modification. Si l'utilisation du chat n'est pas essentielle, un simple ```python run.py``` suffit.
+Ensuite, le portail est démarré avec ```gunicorn --worker-class gevent -w 1 run:app -b localhost:5000```. Si ça ne fonctionne pas, on peut essayer d'utiliser une version légèrement plus ancienne de Gunicorn avec : ```pip install "gunicorn<25"``` avant de réessayer le démarrage. Pour le développement, on peut rajouter ```--reload --log-level debug``` pour voir exactement ce qui se passe et rechager le backend quand on sauvegarde des modification. Si l'utilisation du chat n'est pas essentielle, un simple ```python run.py``` suffit.
 run.py fait appel à `__init__.py` qui crée l'application et démarre la base de donnée (`db = SQLAlchemy()`).  `config.py` contient la configuration utilisée lors de l'initialisation, elle contient le lien à la base, les clefs secrètes, etc.
 
 ### B - Le frontend
 
-D'abord, il faut créer le fichier `frontend/src/api/base_url.js` qui contient l'adresse du backend `export const _BASE_URL = 'http://localhost:5000'`. De plus, il faut installer *npm*, le gestionnaire de packets (l'équivalent de *pip* ou *conda* pour le javascript). Ensuite, on se place dans *frontend* et on exécute `npm install`, ce qui installe tous les packets nécessaires (dont le besoin est indiqué dans `package.json`). Enfin, on démarre le serveur avec `npm run start`, et on peut alors se connecter à l'adresse *http://localhost:5000*.
+D'abord, il faut créer le fichier `frontend/src/api/base_url.js` qui contient l'adresse du backend `export const _BASE_URL = 'http://localhost:5000'`. De plus, il faut installer *npm*, le gestionnaire de packets (l'équivalent de *pip* ou *conda* pour le javascript). Ensuite, on se place dans *frontend* et on exécute `npm install`, ce qui installe tous les packets nécessaires (dont le besoin est indiqué dans `package.json`). Enfin, on démarre le serveur avec `npm run dev`, et on peut alors se connecter à l'adresse *http://localhost:5000*. La connexion se fait avec les logins créés lors de l'exécution de `creer_environnement_dev.py` et le MdP : 1234.
 
 
 ## II. Consignes pour contribuer
