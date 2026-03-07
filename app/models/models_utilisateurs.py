@@ -7,6 +7,8 @@ from datetime import date
 from app.utils.divers_utils import ph
 from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
+from ..utils.verification_format import valider_langues
+
 
 import locale
 locale.setlocale (locale.LC_ALL, 'fr_FR.UTF-8')
@@ -68,6 +70,7 @@ class Utilisateur(db.Model, UserMixin) :
     chambre = db.Column(db.String(1000), nullable=True)
     sports = db.Column(db.String(1000), nullable=True)
     instruments = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
+    langues = db.Column(MutableList.as_mutable(db.JSON), nullable=True)
 
     # Gestion du parrainnage :
     marrains = db.relationship(
@@ -192,7 +195,9 @@ class Utilisateur(db.Model, UserMixin) :
         - telephone : str
             Au format "0612345678" ou "0033612345678" ou "+33612345678". En cas d'extension telephonique, ne verifie pas la validite
         - chambre : str
-        instruments : str
+        - instruments : str
+            Du texte, avec accents et caracteres speciaux autorises mais pas emojis. 
+        - langues : str
             Du texte, avec accents et caracteres speciaux autorises mais pas emojis. 
         - publications : liste d'objets Publication
             Liste des publications d'utilisateur
@@ -244,6 +249,11 @@ class Utilisateur(db.Model, UserMixin) :
                     self.instruments = value
                 else :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
+            elif key=="langues" :
+                if value is None or valider_langues(value):
+                    self.langues = value
+                else :
+                    raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
 
 
     def to_dict(self):
@@ -264,6 +274,7 @@ class Utilisateur(db.Model, UserMixin) :
             "ville_origine": self.ville_origine,
             "sports": self.sports,
             "instruments": self.instruments if self.instruments is not None else [],
+            "langues": self.langues if self.langues is not None else [],
             "marrains": [{"id": marrain.id, "nom_utilisateur": f"{marrain.prenom} {marrain.nom}"} for marrain in self.marrains],
             "cos": [{"id": co.id, "nom_utilisateur": f"{co.prenom} {co.nom}"} for co in self.cos],
             "fillots": [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in self.fillots],
