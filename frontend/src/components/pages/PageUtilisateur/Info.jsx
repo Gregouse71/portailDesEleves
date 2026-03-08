@@ -19,6 +19,8 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const [selectedC, setSelectedC] = useState();
     const [selectedF, setSelectedF] = useState();
     const [instruments, setInstruments] = useState(donneesUtilisateur?.instruments);
+    const [langues, setLangues] = useState(donneesUtilisateur?.langues);
+
 
     const [userInfos, setUserInfos] = useState(donneesUtilisateur);
 
@@ -44,6 +46,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         mutationFn: async (updatedInfos) => {
             const { marrain, ...otherInfos } = updatedInfos;
             await modifierInfos(id, { ...otherInfos, instruments });
+            await modifierInfos(id, { ...otherInfos, langues });
 
             const newCoIds = selectedC.map(c => c.value);
             await changerCo(id, newCoIds);
@@ -78,9 +81,24 @@ export default function TabInfo({ id, autoriseAModifier }) {
         setInstruments(instruments.filter((_, i) => i !== index));
     };
 
+    const handleLangueChange = (index, field, value) => {
+        const newLangues = [...langues];
+        newLangues[index] = { ...newLangues[index], [field]: value };
+        setLangues(newLangues);
+    };
+
+    const ajouterLangue = () => {
+        setLangues([...langues, { name: "", niveau: "" }]);
+    };
+
+    const supprimerLangue = (index) => {
+        setLangues(langues.filter((_, i) => i !== index));
+    };
+
     const handleCancel = () => {
         setUserInfos(donneesUtilisateur);
         setInstruments(donneesUtilisateur.instruments || []);
+        setLangues(donneesUtilisateur.langues || []);
         setSelectedC(donneesUtilisateur.cos?.map(c => ({ value: c.id, label: c.nom_utilisateur })) || []);
         setSelectedP(
             donneesUtilisateur.marrains && donneesUtilisateur.marrains.length > 0
@@ -100,6 +118,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
             setSelectedF(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })))
             setUserInfos(donneesUtilisateur);
             setInstruments(donneesUtilisateur?.instruments);
+            setLangues(donneesUtilisateur?.langues);
             setIsGestion(true);
         }
     };
@@ -173,6 +192,17 @@ export default function TabInfo({ id, autoriseAModifier }) {
                             <span key={index}>
                                 {instrument.name}{instrument.niveau ? ` (${instrument.niveau})` : ''}
                                 {index < donneesUtilisateur.instruments.length - 1 ? ', ' : ''}
+                            </span>
+                        ))}
+                    </div>
+                }
+                {donneesUtilisateur.langues && donneesUtilisateur.langues.length > 0 &&
+                    <div>
+                        <b>Langues :</b>{' '}
+                        {donneesUtilisateur.langues.map((langue, index) => (
+                            <span key={index}>
+                                {langue.name}{langue.niveau ? ` (${langue.niveau})` : ''}
+                                {index < donneesUtilisateur.langues.length - 1 ? ', ' : ''}
                             </span>
                         ))}
                     </div>
@@ -282,6 +312,35 @@ export default function TabInfo({ id, autoriseAModifier }) {
                             </Row>
                         ))}
                         <Button variant="outline-primary" size="sm" onClick={ajouterInstru}>Ajouter instrument</Button>
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row} className="mb-3">
+                    <Form.Label column sm="2">Langues</Form.Label>
+                    <Col sm="10">
+                        {langues && langues.map((elt, ind) => (
+                            <Row key={ind} className="mb-2 align-items-center">
+                                <Col>
+                                    <Form.Control
+                                        value={elt.name}
+                                        onChange={(e) => handleLangueChange(ind, 'name', e.target.value)}
+                                        placeholder="Langue"
+                                    />
+                                </Col>
+                                <Col>
+                                    <Form.Control
+                                        value={elt.niveau}
+                                        onChange={(e) => handleLangueChange(ind, 'niveau', e.target.value)}
+                                        placeholder="Niveau (ex: Débutant)"
+                                    />
+                                </Col>
+                                <Col xs="auto">
+                                    <Button variant="danger" onClick={() => supprimerLangue(ind)}>
+                                        <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                                    </Button>
+                                </Col>
+                            </Row>
+                        ))}
+                        <Button variant="outline-primary" size="sm" onClick={ajouterLangue}>Ajouter langue</Button>
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row} className="mb-3">

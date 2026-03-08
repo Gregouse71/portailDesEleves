@@ -61,6 +61,12 @@ def migrate_users():
             instruments_by_user[eleve_id] = []
         instruments_by_user[eleve_id].append({"name": instrument_nom, "niveau": niveau})
 
+    langues_by_user = {}
+    for eleve_id, langue_nom, niveau in bda_maitrise_data:
+        if eleve_id not in langues_by_user:
+            langues_by_user[eleve_id] = []
+        langues_by_user[eleve_id].append({"name": langue_nom, "niveau": niveau})
+
     # Fetch questions and responses from old database
     old_db_cursor.execute("SELECT tur.userprofile_id, tq.enonce, tr.contenu FROM trombi_userprofile_reponses tur JOIN trombi_reponse tr ON tur.reponse_id = tr.id JOIN trombi_question tq ON tr.question_id = tq.id")
     trombi_qa_data = old_db_cursor.fetchall()
@@ -198,6 +204,7 @@ def migrate_users():
             new_user.solde_octo = profile[20]
             new_user.solde_biero = profile[21]
             new_user.instruments = instruments_by_user.get(user_id, [])
+            new_user.langues = langues_by_user.get(user_id, [])
             
             # Initialize with default questions and merge existing responses
             user_questions = default_questions.copy()

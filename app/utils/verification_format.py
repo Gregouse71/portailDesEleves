@@ -42,3 +42,20 @@ def valider_instruments(instruments: list) -> bool:
             if not isinstance(item['niveau'], str) or not valider_chaine_texte(item['niveau']):
                 return False
     return True
+
+def valider_langues(langues: list) -> bool:
+    """
+    Validates that langues is a list of objects,
+    where each object has a 'name' (string) and an optional 'niveau' (string).
+    """
+    if not isinstance(langues, list):
+        return False
+    for item in langues:
+        if not isinstance(item, dict):
+            return False
+        if 'name' not in item or not isinstance(item['name'], str) or not valider_chaine_texte(item['name']):
+            return False
+        if 'niveau' in item and item['niveau'] is not None:
+            if not isinstance(item['niveau'], str) or not valider_chaine_texte(item['niveau']):
+                return False
+    return True
