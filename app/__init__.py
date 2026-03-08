@@ -14,10 +14,9 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_apscheduler import APScheduler
 import json
-
-# from flask_session import Session
-from config import Config
 import os
+
+from config import Config
 
 socketio = SocketIO(
     async_mode='gevent',

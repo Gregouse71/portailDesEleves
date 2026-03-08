@@ -31,7 +31,7 @@ def faire_un_coup(s: str, id: int, data: dict):
     """
     Fait le coup contenu dans *data* pour la partie du jeu *s* pour le joueur *id*
     """
-    partie = JeuxPartie.query.filter_by(utilisateur_id=id, jeu=s, terminee=False).first()
+    partie = JeuxPartie.query.with_for_update().filter_by(utilisateur_id=id, jeu=s, terminee=False).first()
     if partie is None:
         return None
     if partie.jeu == "2048" and s == partie.jeu:

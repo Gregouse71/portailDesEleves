@@ -39,19 +39,21 @@ def deconnexion():
     logout_user()
     return jsonify({'connecte': False}), 200
 
-@controllers_login.route('reset', methods=['POST'])
+@controllers_login.route('/reset', methods=['POST'])
 def reset_mail():
     data = request.get_json()
     username = data.get('username')
-    print(send_reset_mail(username))
+    send_reset_mail(username)
     return jsonify({'sent': True}), 200
 
 
-@controllers_login.route('new', methods=['POST'])
+@controllers_login.route('/new', methods=['POST'])
 def new_password():
     data = request.get_json()
     token = data.get('token')
     password = data.get('password')
+    if not password:
+        abort(400)
     if set_new_password(token, password):
         return jsonify({'set': True}), 200
     else:
