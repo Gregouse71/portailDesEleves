@@ -36,7 +36,9 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
         "a_cacher_to_cycles": [],
         "a_cacher_aux_nouveaux": false,
         "is_publication_interne": false,
-        "tags": []
+        "tags": [],
+        "publier_maintenant": true,
+        "date_publication": ""
     })
     const [isModifying, setIsModifying] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +72,9 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
             "a_cacher_to_cycles": [],
             "a_cacher_aux_nouveaux": false,
             "is_publication_interne": false,
-            "tags": []
+            "tags": [],
+            "publier_maintenant": true,
+            "date_publication": ""
         })
     }
 
@@ -94,7 +98,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
     const handleSetModifyPost = (e) => {
         const { name, value, checked } = e.target;
         setModifyPost(prevState => {
-            if (['is_commentable', 'is_publication_interne', 'a_cacher_aux_nouveaux'].includes(name)) {
+            if (['is_commentable', 'is_publication_interne', 'a_cacher_aux_nouveaux', 'publier_maintenant'].includes(name)) {
                 return {
                     ...prevState,
                     [name]: checked
@@ -119,6 +123,13 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
         setIsSubmitting(true);
         try {
             let updatedModifyPost = { ...modifyPost };
+
+            if (updatedModifyPost.publier_maintenant) {
+                updatedModifyPost.date_publication = null;
+            } else if (updatedModifyPost.date_publication) {
+                updatedModifyPost.date_publication = new Date(updatedModifyPost.date_publication).toISOString();
+            }
+            delete updatedModifyPost.publier_maintenant;
 
             // Only trigger deletion if the user wants to remove the file and NOT replace it.
             // If replacing, the add_content endpoint will handle overwriting.
@@ -166,8 +177,21 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
             setModifyPreviewUrl(null);
             setModifyFileInputKey(Date.now()); // Reset key
             setShouldRemoveExistingAttachment(false); // Reset deletion flag
-            const { titre, contenu, is_commentable, fichier_joint, miniature, tags } = post;
-            setModifyPost(prevState => ({ ...prevState, titre, contenu, is_commentable, fichier_joint, miniature, tags: tags || [] }));
+            const { titre, contenu, is_commentable, is_publication_interne, a_cacher_aux_nouveaux, a_cacher_to_cycles, fichier_joint, miniature, tags, date_publication } = post;
+            
+            setModifyPost({ 
+                titre, 
+                contenu, 
+                is_commentable, 
+                is_publication_interne,
+                a_cacher_aux_nouveaux,
+                a_cacher_to_cycles: a_cacher_to_cycles || [],
+                fichier_joint, 
+                miniature, 
+                tags: tags || [],
+                publier_maintenant: false,
+                date_publication: date_publication ? new Date(new Date(date_publication).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""
+            });
         }
     };
 
@@ -204,6 +228,22 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 <Form.Check type="checkbox" label="Autoriser les commentaires" checked={modifyPost.is_commentable} name='is_commentable' onChange={handleSetModifyPost} />
                                 <Form.Check type="checkbox" label="Publication interne" checked={modifyPost.is_publication_interne} name='is_publication_interne' onChange={handleSetModifyPost} />
                                 <Form.Check type="checkbox" label="Cacher aux 1A" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Check type="checkbox" label="Publier maintenant" checked={modifyPost.publier_maintenant} name='publier_maintenant' onChange={handleSetModifyPost} />
+                                {!modifyPost.publier_maintenant && (
+                                    <Form.Group as={Row} className="mt-2">
+                                        <Form.Label column sm="3">Date de publication</Form.Label>
+                                        <Col sm="9">
+                                            <Form.Control 
+                                                type="datetime-local" 
+                                                name="date_publication" 
+                                                value={modifyPost.date_publication} 
+                                                onChange={handleSetModifyPost} 
+                                            />
+                                        </Col>
+                                    </Form.Group>
+                                )}
                             </Form.Group>
                             <Form.Group as={Row} className="mb-3">
                                 <Form.Label>Cacher aux cycles</Form.Label>
@@ -341,7 +381,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 <Button variant="secondary" size="sm" onClick={() => setShowNewCommentForm(prev => !prev)}>Commenter</Button>
                             </>}
                         </div>
-                        <small className="text-muted">Publié le : {formatPublicationDate(post.date_publication)}</small>
+                        <small className="text-muted">{new Date(post.date_publication) > new Date() ? "Sera publié le : " : "Publié le : "}{formatPublicationDate(post.date_publication)}</small>
                     </div>
                     <div className="comments content-container">
                         {post.is_commentable && <CommentSection post={post} userData={userData} isGestion={isModifying} showNewCommentForm={showNewCommentForm} setShowNewCommentForm={setShowNewCommentForm} />}

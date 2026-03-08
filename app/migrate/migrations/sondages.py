@@ -3,7 +3,7 @@ from app import db
 from app.models.models_sondages import Sondage, VoteSondage
 from app.models.models_utilisateurs import Utilisateur
 from app.services.services_sondages import _resultat_sondage, _donner_votes_gagnants_perdants
-from datetime import datetime
+from datetime import datetime, timezone
 
 def migrate_sondages():
     # Connect to the old database
@@ -17,7 +17,7 @@ def migrate_sondages():
         reponses = [row[3], row[4]]
         new_sondage = Sondage(
             propose_par_user_id=row[1],
-            date_proposition = datetime.now(),
+            date_proposition = datetime.now(timezone.utc),
             question=row[2],
             reponses=reponses,
             autorise=bool(row[7])
@@ -60,7 +60,7 @@ def migrate_sondages():
                     vote=row[3] - 1
                 )
                 db.session.add(new_vote)
-                
+
                 if row[0] % 100 == 0:
                     print(f"Migrated vote {row[0]}")
             else:

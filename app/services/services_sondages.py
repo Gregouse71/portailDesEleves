@@ -6,7 +6,7 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurSondage(Exception):
@@ -18,7 +18,7 @@ def proposer_sondage(question:str, reponses:list, utilisateur:Utilisateur) :
     """
     Ajouter un sondage dans la bdd. La liste des reponses possibles est au format ["reponse1", "reponse2", "reponse3"], de taille entre 2 et 4
     """
-    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_proposition=date.today())
+    proposition =  Sondage(question=question, reponses=reponses, propose_par_user_id=utilisateur.id, date_proposition=datetime.now(timezone.utc).date())
     db.session.add(proposition)
     db.session.commit()
 
@@ -110,7 +110,7 @@ def sondage_suivant() -> None:
     nouveau_sondage_du_jour = Sondage.query.filter_by(autorise=True, archive=False).order_by(Sondage.date_proposition).first()
     if nouveau_sondage_du_jour :
         nouveau_sondage_du_jour.archive = True  # On archive le sondage
-        nouveau_sondage_du_jour.date_publication = date.today ()  # On garde sa date de publication
+        nouveau_sondage_du_jour.date_publication = datetime.now(timezone.utc).date()  # On garde sa date de publication
         db.session.add(nouveau_sondage_du_jour)
         set_global_var("id_sondage_du_jour", nouveau_sondage_du_jour.id)
     else :
@@ -146,24 +146,14 @@ def obtenir_sondages_non_valide() :
     """
     # Récupérer les sondages non validés triés par date décroissante
     sondages_non_valides = Sondage.query.filter_by(autorise=False, archive=False).order_by(Sondage.date_proposition.desc()).all()
-    sondages_data = []
-    for sondage in sondages_non_valides:
-        sondages_data.append({
-            "id": sondage.id,
-            "question": sondage.question,
-            "reponses": sondage.reponses,
-            "propose_par_user_id": sondage.propose_par_user_id,
-            "date_proposition": sondage.date_proposition,
-            "status": sondage.autorise
-        })
-    return sondages_data
+    return [sondage.to_dict() for sondage in sondages_non_valides]
 
 def sondage_dhier ():
     """
     Renvoie le résultat du sondage d'hier
     ("question ?", ["reponse1", "reponse2"], [1, 96])
     """
-    sondage = Sondage.query.filter_by(date_publication=date.today() - timedelta(days=1)).all()
+    sondage = Sondage.query.filter_by(date_publication=datetime.now(timezone.utc).date() - timedelta(days=1)).all()
     if not sondage:
         return None
     s = sondage[0]

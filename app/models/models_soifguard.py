@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app import db
 
@@ -22,7 +22,7 @@ class OperationSoifguard(db.Model):
     auteur = db.relationship("Utilisateur", back_populates="credits_asso", foreign_keys=[auteur_id])
 
     def __init__(self, asso, utilisateur, auteur, est_cotisant, libelle: str, somme: float):
-        self.date = datetime.now()
+        self.date = datetime.now(timezone.utc)
         self.est_cotisant = est_cotisant
         self.utilisateur = utilisateur
         self.auteur = auteur
@@ -39,7 +39,7 @@ class OperationSoifguard(db.Model):
     
     def to_dict(self):
         return {
-            "date": self.date,
+            "date": self.date.isoformat() + "Z" if self.date else None,
             "est_cotisant": self.est_cotisant,
             "libelle": self.libelle,
             "somme": self.somme,

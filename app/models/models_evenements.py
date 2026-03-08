@@ -158,12 +158,12 @@ class Evenement (db.Model):
             "lieu": self.lieu,
             "evenement_periodique": self.evenement_periodique,
             "evenement_masque": self.evenement_masque,
-            "date_de_debut": self.date_de_debut.isoformat() if self.date_de_debut else None,
-            "date_de_fin": self.date_de_fin.isoformat() if self.date_de_fin else None,
+            "date_de_debut": self.date_de_debut.isoformat() + "Z" if self.date_de_debut else None,
+            "date_de_fin": self.date_de_fin.isoformat() + "Z" if self.date_de_fin else None,
             "jours_de_la_semaine": self.jours_de_la_semaine,
             "heure_de_debut": self.heure_de_debut.strftime("%H:%M") if self.heure_de_debut else None,
             "heure_de_fin": self.heure_de_fin.strftime("%H:%M") if self.heure_de_fin else None,
-            "dates_annulation": [date.isoformat() for date in self.dates_annulation]
+            "dates_annulation": [date.isoformat() + "Z" for date in self.dates_annulation]
         }
 
  #   def create_evenement_folder(self) :

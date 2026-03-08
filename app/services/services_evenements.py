@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta, time, date, timezone
 from copy import copy
 from sqlalchemy import desc
 
@@ -111,7 +111,7 @@ def get_evenements_par_date(date_str: str):
     - "AAAAMM" : événements du mois spécifié
     - "AAAA" : événements de l'année spécifiée (sans événements périodiques)
     """
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     if date_str == "ajd":
         return _filtrer_par_jour(now.date(), include_periodiques=True)
     elif date_str == "week":
@@ -140,7 +140,7 @@ def _filtrer_par_prochains_jours(nb_jours: int):
     Récupère les événements des 'nb_jours' prochains jours.
     Pour les événements périodiques, crée une instance virtuelle pour chaque occurrence.
     """
-    today = date.today()
+    today = datetime.now(timezone.utc).date()
     end_date = today + timedelta(days=nb_jours)
 
     # 1. Événements ponctuels
@@ -214,7 +214,7 @@ def _filtrer_par_jour(date_filtre: datetime.date, include_periodiques: bool):
 
 def _filtrer_par_semaine():
     """ Récupère les événements de la semaine actuelle (lundi-dimanche) """
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     lundi = now - timedelta(days=now.weekday())
     dimanche = lundi + timedelta(days=6)
     evenements = Evenement.query.filter(
