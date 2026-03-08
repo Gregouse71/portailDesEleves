@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from sqlalchemy import desc
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from werkzeug.utils import secure_filename
 import csv
@@ -502,7 +502,7 @@ def upload_user_photo(file, user_id):
     if file:
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
         unique_filename = f"{name}_{user_id}_{timestamp}{ext}"
         
         UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')

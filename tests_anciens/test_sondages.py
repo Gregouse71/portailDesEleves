@@ -31,12 +31,12 @@ def test_creer_utilisateur():
             # TESTS ICI
             #
             #
-            from datetime import datetime
+            from datetime import datetime, timezone
             import re
 
             def proposer_sondage(question, id_user) :
                 """Ajouter un sondage dans la bdd"""
-                proposition =  Sondage(question=question, reponse1="reponse1", reponse2="reponse2", reponse3="reponse3", reponse4="reponse4", propose_par_user_id=id_user, date_proposition=datetime.now(), status=False)
+                proposition =  Sondage(question=question, reponse1="reponse1", reponse2="reponse2", reponse3="reponse3", reponse4="reponse4", propose_par_user_id=id_user, date_proposition=datetime.now(timezone.utc), status=False)
                 db.session.add(proposition)
                 db.session.commit()
                 return proposition

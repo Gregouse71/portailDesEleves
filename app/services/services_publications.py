@@ -7,9 +7,9 @@ import os
 import shutil
 import mimetypes
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timezone
 from pdf2image import convert_from_path
-from sqlalchemy import desc
+from sqlalchemy import desc, or_, and_
 
 # Gestion de publications
 
@@ -35,7 +35,7 @@ def _save_new_file(file, association_name, is_miniature=False):
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     if is_miniature:
         filename = f"{name}_{timestamp}_thumb.{ext}"
     else:
@@ -93,7 +93,7 @@ def _generate_pdf_thumbnail(pdf_path, output_dir):
     return None
 
 
-def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, fichier_joint: str = None, miniature: str = None, tags: list = None):
+def add_publication(association: Association, titre: str, contenu: str, is_commentable: bool, a_cacher_to_cycles: list, a_cacher_aux_nouveaux: bool, is_publication_interne: bool, date_publication: datetime = None, fichier_joint: str = None, miniature: str = None, tags: list = None):
     """
     Ajoute une publication à l'association
     """
@@ -104,7 +104,7 @@ def add_publication(association: Association, titre: str, contenu: str, is_comme
             auteur=current_user,
             titre=titre,
             contenu=contenu,
-            date_publication=datetime.now(),
+            date_publication=date_publication if date_publication else datetime.now(timezone.utc),
             is_commentable=is_commentable,
             a_cacher_to_cycles=a_cacher_to_cycles,
             a_cacher_aux_nouveaux=a_cacher_aux_nouveaux,
@@ -176,9 +176,11 @@ def modify_publication(
     a_cacher_to_cycles: list,
     a_cacher_aux_nouveaux: bool,
     is_publication_interne: bool,
+    date_publication: datetime = None,
     tags: list = None,
     fichier_joint: str = "",
     miniature: str = "",
+    update_date: bool = False
 ):
     """
     Modifie une publication de l'association
@@ -191,6 +193,10 @@ def modify_publication(
         publication.a_cacher_to_cycles = a_cacher_to_cycles
         publication.a_cacher_aux_nouveaux = a_cacher_aux_nouveaux
         publication.is_publication_interne = is_publication_interne
+        
+        if update_date:
+            publication.date_publication = date_publication if date_publication else datetime.now(timezone.utc)
+            
         publication.tags = tags
 
         if not fichier_joint and publication.fichier_joint:
@@ -325,7 +331,7 @@ def add_comment(publication: Publication, auteur: Utilisateur, contenu: str):
         auteur = Utilisateur.query.get(auteur.id)
         if auteur:
             if publication.is_commentable:
-                new_comment = Commentaire(auteur=auteur, contenu=contenu, date=datetime.now(), publication=publication)
+                new_comment = Commentaire(auteur=auteur, contenu=contenu, date=datetime.now(timezone.utc), publication=publication)
                 db.session.add(new_comment)
                 db.session.commit()
                 return new_comment.id
@@ -395,6 +401,7 @@ def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query
         query = query.filter(Publication.titre.ilike(f"%{search_query}%"))
 
     if not current_user.est_superutilisateur:
+        user_associations_ids = [role.mandat.association_id for role in current_user.associations]
         # Filter out internal publications if user is not a member of the associated association
         # This part needs to be carefully handled as Publication might not have an association
         # or the association might not be in current_user.associations
@@ -403,7 +410,7 @@ def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query
         query = query.filter(
             (Publication.id_association == None) |
             (Publication.is_publication_interne.is_(False)) |
-            (Publication.id_association.in_([role.mandat.association_id for role in current_user.associations]))
+            (Publication.id_association.in_(user_associations_ids))
         )
         # Filter out sensitive publications if user is not 'baptise'
         if not (current_user.est_baptise or current_user.est_superutilisateur):
@@ -411,6 +418,9 @@ def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query
 
         # Filter out cycle-specific publications
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
+
+        # Filter by publication date
+        query = query.filter(Publication.date_publication <= datetime.now(timezone.utc))
 
     query = query.order_by(desc(Publication.date_publication))
     if per == 0:

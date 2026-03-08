@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import desc, or_, and_
+from datetime import datetime, timezone
 
 from app.models import Publication, Association, Commentaire
 from app.utils.decorators import est_membre_de_asso
@@ -40,14 +41,21 @@ def route_obtenir_publications_asso(association_id: int):
 
         query = Publication.query.filter(Publication.id_association == association_id)
         if not (current_user.est_superutilisateur):
+            user_asso_ids = [role.mandat.association_id for role in current_user.associations]
             # publications internes
-            if not any(role.mandat.association_id == association_id for role in current_user.associations):
+            if not association_id in user_asso_ids:
                 query = query.filter(Publication.is_publication_interne.is_(False))
             # publications sensibles
-            if not current_user.est_baptise and not current_user.est_superutilisateur:
+            if not current_user.est_baptise:
                 query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
             # publications spécifiques aux differents cycles
             query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
+            
+            # Filter by publication date
+            query = query.filter(
+                (Publication.date_publication <= datetime.now(timezone.utc)) |
+                (Publication.id_association.in_(user_asso_ids))
+            )
         
         query = query.order_by(desc(Publication.date_publication))
 
@@ -79,18 +87,26 @@ def route_obtenir_publication(post_id: int):
 
     query = Publication.query.filter(Publication.id == post_id)
     if not (current_user.est_superutilisateur):
+        user_asso_ids = [role.mandat.association_id for role in current_user.associations]
         # publications internes
-        if not any(role.mandat.association_id == association_id for role in current_user.associations):
+        if not association_id in user_asso_ids:
             query = query.filter(Publication.is_publication_interne.is_(False))
         # publications sensibles
-        if not current_user.est_baptise and not current_user.est_superutilisateur:
+        if not current_user.est_baptise:
             query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
         # publications spécifiques aux differents cycles
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
+
+        # Filter by publication date
+        query = query.filter(
+            (Publication.date_publication <= datetime.now(timezone.utc)) |
+            (Publication.id_association.in_(user_asso_ids))
+        )
+
     publication = query.order_by(desc(Publication.date_publication)).all()
+    if not publication:
+         return jsonify({"error": "Publication non accessible ou non trouvée"}), 404
     return jsonify(publication[0].to_dict()), 200
-    # except ValueError as e:
-    #     return jsonify({"error": str(e)}), 400
 
 
 @controllers_publications.route('/recent', methods=['GET'])
@@ -121,7 +137,10 @@ def route_add_get_publications_recentes():
             # L'utilisateur a accès si la publication n'est pas cachée à son cycle
             is_accessible_cycle = ~Publication.a_cacher_to_cycles.contains(current_user.cycle)
 
-            query = query.filter(and_(is_accessible_interne, is_accessible_nouveaux, is_accessible_cycle))
+            # Filter by publication date
+            is_accessible_date = Publication.date_publication <= datetime.now(timezone.utc)
+
+            query = query.filter(and_(is_accessible_interne, is_accessible_nouveaux, is_accessible_cycle, is_accessible_date))
 
         publications = query.order_by(desc(Publication.date_publication)).limit(limit).all()
         return jsonify([p.id for p in publications]), 200
@@ -141,17 +160,23 @@ def route_creer_publication(association_id: int):
         asso = Association.query.get(association_id)
         if asso:
             data = request.json
+            date_pub_str = data.get("date_publication")
+            date_pub = None
+            if date_pub_str:
+                date_pub = datetime.fromisoformat(date_pub_str.replace('Z', '+00:00'))
+
             id_publication = add_publication(
                 association=asso,
-                titre=data["titre"],
-                contenu=data["contenu"],
-                is_commentable=data["is_commentable"],
-                a_cacher_to_cycles=data["a_cacher_to_cycles"],
-                a_cacher_aux_nouveaux=data["a_cacher_aux_nouveaux"],
-                is_publication_interne=data["is_publication_interne"],
+                titre=data.get("titre", ""),
+                contenu=data.get("contenu", ""),
+                is_commentable=data.get("is_commentable", True),
+                a_cacher_to_cycles=data.get("a_cacher_to_cycles", []),
+                a_cacher_aux_nouveaux=data.get("a_cacher_aux_nouveaux", False),
+                is_publication_interne=data.get("is_publication_interne", False),
+                date_publication=date_pub,
                 fichier_joint=data.get("fichier_joint"),
                 miniature=data.get("miniature"),
-                tags=data.get("tags")
+                tags=data.get("tags", [])
             )
             return jsonify({"message": "événement créé avec succès", "id_publication": id_publication}), 201
         else:
@@ -215,17 +240,26 @@ def route_modifier_publication(association_id, publication_id):
         if publication.a_cacher_aux_nouveaux and (not current_user.est_baptise) and not current_user.est_superutilisateur:
             # Les non baptisés n'ont pas le droit de modifier les posts cachés
             return jsonify({"message": "publication non trouvé"}), 404
+        
+        update_date = "date_publication" in data
+        date_pub_str = data.get("date_publication")
+        date_pub = None
+        if date_pub_str:
+            date_pub = datetime.fromisoformat(date_pub_str.replace('Z', '+00:00'))
+
         modify_publication(
             publication,
-            data["titre"],
-            data["contenu"],
-            data["is_commentable"],
-            data["a_cacher_to_cycles"],
-            data["a_cacher_aux_nouveaux"],
-            data["is_publication_interne"],
-            tags=data.get("tags"),
-            fichier_joint=data.get("fichier_joint"),
-            miniature=data.get("miniature"),
+            data.get("titre", publication.titre),
+            data.get("contenu", publication.contenu),
+            data.get("is_commentable", publication.is_commentable),
+            data.get("a_cacher_to_cycles", publication.a_cacher_to_cycles),
+            data.get("a_cacher_aux_nouveaux", publication.a_cacher_aux_nouveaux),
+            data.get("is_publication_interne", publication.is_publication_interne),
+            date_publication=date_pub,
+            tags=data.get("tags", publication.tags),
+            fichier_joint=data.get("fichier_joint", publication.fichier_joint),
+            miniature=data.get("miniature", publication.miniature),
+            update_date=update_date
         )
         return jsonify({"message": "publication modifiée avec succès"}), 200
     else:

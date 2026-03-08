@@ -43,7 +43,7 @@ class Commentaire(db.Model):
             "publication": self.publication.titre,
             "id_publication": self.id_publication,
             "contenu": self.contenu,
-            "date": self.date.isoformat() if self.date else None,
+            "date": self.date.isoformat() + "Z" if self.date else None,
             "likes": self.likes
         }
 
@@ -219,7 +219,7 @@ class Publication(db.Model):
             "auteur": self.auteur.nom_utilisateur if self.auteur else None,
             "titre": self.titre,
             "contenu": self.contenu,
-            "date_publication": self.date_publication,
+            "date_publication": self.date_publication.isoformat() + "Z" if self.date_publication else None,
             "likes": self.likes,
             "is_commentable": self.is_commentable,
             "commentaires": [comment.to_dict() for comment in self.commentaires],

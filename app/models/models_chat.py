@@ -26,7 +26,7 @@ class Message(db.Model):
     def to_dict(self):
         return {
             "text": self.text,
-            "time": self.date.strftime ("%d/%m/%Y %H:%M"),
+            "time": self.date.isoformat() + "Z" if self.date else None,
             "author": self.utilisateur.nom_utilisateur,
             "author_id": self.utilisateur.id,
             "id": self.id

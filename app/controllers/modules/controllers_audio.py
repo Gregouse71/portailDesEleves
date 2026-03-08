@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.services.modules.services_audio import get_albums_for_association, add_album, get_album, delete_album, update_audio, update_album, add_audio, get_audio, delete_audio
 from app.services.services_associations import get_association
@@ -62,7 +62,7 @@ def route_update_album(association_id, album_id):
 
     if not name or position is None:
         return jsonify({"success": False, "message": "Le nom et la position sont requis"}), 400
-    
+
     album = get_album(album_id)
     if not album or album.association_id != association_id:
         return jsonify({"success": False, "message": "Album introuvable ou non associé à cette association"}), 404
@@ -93,23 +93,23 @@ def route_add_audio(association_id, album_id):
     album = get_album(album_id)
     if not album or album.association_id != association_id:
         return jsonify({"success": False, "message": "Album introuvable ou non associé à cette association"}), 404
-    
+
     asso = get_association(association_id)
     if not asso:
         return jsonify({"success": False, "message": "Association parente introuvable"}), 404
 
     if 'file' not in request.files or 'nom' not in request.form:
         return jsonify({"success": False, "message": "Les champs 'file' et 'nom' sont requis"}), 400
-    
+
     file = request.files['file']
     nom = request.form.get('nom')
-        
+
     if file.filename == '' or not allowed_file(file.filename):
         return jsonify({"success": False, "message": "Fichier invalide ou non autorisé"}), 400
 
     filename = secure_filename(file.filename)
     name, ext = os.path.splitext(filename)
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     unique_filename = f"{name}_{timestamp}{ext}"
 
     media_folder = os.path.join('upload', 'associations', asso.nom_dossier, 'media')
@@ -126,7 +126,7 @@ def route_add_audio(association_id, album_id):
 
     if new_audio:
         return jsonify({"success": True, "message": "Son ajouté avec succès", "audio": {"id": new_audio.id, "nom": new_audio.nom, "position": new_audio.position, "file_path": f"associations/{asso.nom_dossier}/media/{new_audio.file_path}"}}), 201
-    
+
     if os.path.exists(full_path):
         os.remove(full_path)
     return jsonify({"success": False, "message": "Erreur lors de l'ajout du son"}), 500
@@ -142,7 +142,7 @@ def route_delete_audio(association_id, audio_id):
 
     if delete_audio(audio_id):
         return jsonify({"success": True, "message": "Son supprimé avec succès"}), 200
-    
+
     return jsonify({"success": False, "message": "Erreur lors de la suppression du son"}), 500
 
 @controllers_audio.route('/<int:association_id>/audio/<int:audio_id>', methods=['PATCH'])
@@ -156,7 +156,7 @@ def route_update_audio(association_id, audio_id):
 
     if not name or position is None:
         return jsonify({"success": False, "message": "Le nom et la position sont requis"}), 400
-    
+
     audio = get_audio(audio_id)
     if not audio or audio.association_id != association_id:
         return jsonify({"success": False, "message": "Son introuvable ou non associé à cette association"}), 404

@@ -2,7 +2,7 @@
 from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from itertools import groupby
 from sqlalchemy import func
 import secrets
@@ -21,9 +21,9 @@ def add_utilisateur(nom_utilisateur: str,
                     cycle: str,
                     mot_de_passe_en_clair: None | str = None) -> Utilisateur:
     """Ajoute un utilisateur dans la base de données s'il n'existe pas déjà
-    
+
     Renvoie l'id de l'utilisateur créé"""
-    
+
     if mot_de_passe_en_clair is None:
         alphabet = string.ascii_letters + string.digits
         mot_de_passe_en_clair = ''.join(secrets.choice(alphabet) for i in range(20)) # mdp random de 20 caractères, que l'utilisateur devra changer
@@ -84,12 +84,12 @@ def changer_co(utilisateur:Utilisateur, liste_cos:list[Utilisateur]) :
     # Supprimer les anciennes relations
     for co in utilisateur.cos:
         co.cos.remove(utilisateur)
-    
+
     # Ajouter les nouvelles relations
     utilisateur.cos = liste_cos
     for co in liste_cos:
         co.cos.append(utilisateur)
-    
+
     db.session.commit()
 
 # PARRAINAGE
@@ -138,13 +138,14 @@ def prochains_anniv():
     def must_display(d):
         if d is None:
             return False
+        today = datetime.now(timezone.utc).date()
         date1 = date(year=2000, month=d.month, day=d.day)
-        date2 = date(year=2000, month=date.today().month, day=date.today().day)
+        date2 = date(year=2000, month=today.month, day=today.day)
 
         return (date2 <= date1 <= date2 + timedelta(days=7)
                 or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
 
-    now = date.today().replace(year=2000)
+    now = datetime.now(timezone.utc).date().replace(year=2000)
     def aux(user):
         """
         Renvoie la distance entre la date de naissance de use et la date d'aujourd'hui
@@ -162,7 +163,7 @@ def prochains_anniv():
     users = db.session.query(Utilisateur.id, Utilisateur.prenom, Utilisateur.nom, Utilisateur.cycle, Utilisateur.promotion, Utilisateur.date_de_naissance)\
         .filter(Utilisateur.promotion.in_(promos_to_consider))\
         .all()
-        
+
 
     ret = sorted(
             [(user.date_de_naissance.replace(year=2000), user.prenom, user.nom, user.cycle, user.promotion, user.id) for user in users if must_display(user.date_de_naissance)],

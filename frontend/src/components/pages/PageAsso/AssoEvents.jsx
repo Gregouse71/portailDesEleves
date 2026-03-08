@@ -125,6 +125,16 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                 ...modifierEventTempsPeriodique,
                 ...modifierEventTemps
             };
+
+            if (!newEvent.evenement_periodique) {
+                if (newEvent.date_de_debut) {
+                    newEvent.date_de_debut = new Date(newEvent.date_de_debut).toISOString();
+                }
+                if (newEvent.date_de_fin) {
+                    newEvent.date_de_fin = new Date(newEvent.date_de_fin).toISOString();
+                }
+            }
+
             if (isNew) await creerNouvelEvenement(newEvent, asso_id);
             else await modifierEvenement(newEvent, event.id_association, event.id);
 

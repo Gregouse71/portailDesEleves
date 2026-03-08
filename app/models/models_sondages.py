@@ -1,6 +1,6 @@
 from app import db
 from sqlalchemy.ext.mutable import MutableList
-from datetime import date
+from datetime import date, datetime, timezone
 
 from app.models.models_utilisateurs import Utilisateur
 
@@ -54,7 +54,18 @@ class Sondage(db.Model):
             return -1
         if self.date_publication is None:
             return 1e6
-        return (date.today() - self.date_publication).days
+        return (datetime.now(timezone.utc).date() - self.date_publication).days
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "question": self.question,
+            "reponses": self.reponses,
+            "propose_par_user_id": self.propose_par_user_id,
+            "date_proposition": self.date_proposition.isoformat() + "Z" if self.date_proposition else None,
+            "date_publication": self.date_publication.isoformat() + "Z" if self.date_publication else None,
+            "status": self.autorise
+        }
 
 
 class VoteSondage(db.Model):

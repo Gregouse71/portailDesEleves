@@ -5,7 +5,7 @@ from app import db
 
 from .. import socketio
 from flask_socketio import emit
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @socketio.on('connect')
@@ -24,7 +24,7 @@ def join():
 @socketio.on('message')
 def handle_message(data):
     if current_user.is_authenticated:
-        message = Message (data["text"], current_user, datetime.now ())
+        message = Message (data["text"], current_user, datetime.now (timezone.utc))
         db.session.add(message)
         db.session.commit()
         

@@ -22,7 +22,9 @@ function AssoPosts({ asso_id }) {
         "a_cacher_to_cycles": [],
         "a_cacher_aux_nouveaux": false,
         "is_publication_interne": false,
-        "tags": []
+        "tags": [],
+        "publier_maintenant": true,
+        "date_publication": ""
     })
 
     const [newPostFile, setNewPostFile] = useState(null);
@@ -41,7 +43,9 @@ function AssoPosts({ asso_id }) {
             "a_cacher_to_cycles": [],
             "a_cacher_aux_nouveaux": false,
             "is_publication_interne": false,
-            "tags": []
+            "tags": [],
+            "publier_maintenant": true,
+            "date_publication": ""
         });
         setNewPostFile(null);
         setNewPostMiniatureFile(null);
@@ -50,7 +54,7 @@ function AssoPosts({ asso_id }) {
     const handleSetNewPost = (e) => {
         const { name, value, checked } = e.target;
         setNewPost(prevState => {
-            if (['is_commentable', 'is_publication_interne', 'a_cacher_aux_nouveaux'].includes(name)) {
+            if (['is_commentable', 'is_publication_interne', 'a_cacher_aux_nouveaux', 'publier_maintenant'].includes(name)) {
                 return {
                     ...prevState,
                     [name]: checked
@@ -98,7 +102,15 @@ function AssoPosts({ asso_id }) {
     const validateNewPost = async () => {
         setIsLoading(true);
         try {
-            const newPublication = await creerNouvellePublication(asso_id, newPost);
+            const postData = { ...newPost };
+            if (postData.publier_maintenant) {
+                postData.date_publication = null;
+            } else if (postData.date_publication) {
+                postData.date_publication = new Date(postData.date_publication).toISOString();
+            }
+            delete postData.publier_maintenant;
+
+            const newPublication = await creerNouvellePublication(asso_id, postData);
             if (newPostFile || newPostMiniatureFile) {
                 try {
                     await ajouterContenuPublication(asso_id, newPublication.id_publication, newPostFile, newPostMiniatureFile);
@@ -192,6 +204,22 @@ function AssoPosts({ asso_id }) {
                                     <Form.Check type="checkbox" label="Autoriser les commentaires" checked={newPost.is_commentable} name='is_commentable' onChange={handleSetNewPost} />
                                     <Form.Check type="checkbox" label="Publication interne" checked={newPost.is_publication_interne} name='is_publication_interne' onChange={handleSetNewPost} />
                                     <Form.Check type="checkbox" label="Cacher aux 1A" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Check type="checkbox" label="Publier maintenant" checked={newPost.publier_maintenant} name='publier_maintenant' onChange={handleSetNewPost} />
+                                    {!newPost.publier_maintenant && (
+                                        <Form.Group as={Row} className="mt-2">
+                                            <Form.Label column sm="3">Date de publication</Form.Label>
+                                            <Col sm="9">
+                                                <Form.Control 
+                                                    type="datetime-local" 
+                                                    name="date_publication" 
+                                                    value={newPost.date_publication} 
+                                                    onChange={handleSetNewPost} 
+                                                />
+                                            </Col>
+                                        </Form.Group>
+                                    )}
                                 </Form.Group>
                                 <Form.Group as={Row} className="mb-3">
                                     <Form.Label>Cacher aux cycles</Form.Label>
