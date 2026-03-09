@@ -4,7 +4,7 @@ from app.services.services_sondages import sondage_suivant
 from app import db
 
 # A client to connect to Redis
-redis_client = redis.Redis(host='localhost', port=6379, db=1)
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 
 @scheduler.task("cron", id="task_sondage", day="*", hour="4")

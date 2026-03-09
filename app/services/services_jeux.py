@@ -1,7 +1,10 @@
-from sqlalchemy import desc 
+from sqlalchemy import desc
+import redis
 
 from app import db
 from app.models import JeuxPartie
+
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 def leaderboard(jeu: str):
     top = JeuxPartie.query.filter_by(jeu=jeu, terminee=True).order_by(desc(JeuxPartie.score)).limit(10)
@@ -31,22 +34,30 @@ def faire_un_coup(s: str, id: int, data: dict):
     """
     Fait le coup contenu dans *data* pour la partie du jeu *s* pour le joueur *id*
     """
-    partie = JeuxPartie.query.with_for_update().filter_by(utilisateur_id=id, jeu=s, terminee=False).first()
-    if partie is None:
-        return None
-    if partie.jeu == "2048" and s == partie.jeu:
-        if data.get("score") != partie.score:
-            return partie.to_dict()
-        partie = coup_2048(partie, data)
-        if partie.is_game_over():
-            partie.terminee = True
-            if partie.score > partie.utilisateur.meilleur_score_2048:
-                partie.utilisateur.meilleur_score_2048 = partie.score
-                db.session.add(partie.utilisateur)
+    lock_key = f"lock:game:{s}:{id}"
+    lock_acquired = redis_client.set(lock_key, "locked", ex=5, nx=True)
 
-        db.session.add(partie)
-        db.session.commit()
+    partie = JeuxPartie.query.filter_by(utilisateur_id=id, jeu=s, terminee=False).first()
+    if partie is None or not lock_acquired:
+        redis_client.delete(lock_key)
         return partie.to_dict()
+
+    try:
+        if partie.jeu == "2048" and s == partie.jeu:
+            if data.get("score") != partie.score:
+                return partie.to_dict()
+            partie = coup_2048(partie, data)
+            if partie.is_game_over():
+                partie.terminee = True
+                if partie.score > partie.utilisateur.meilleur_score_2048:
+                    partie.utilisateur.meilleur_score_2048 = partie.score
+                    db.session.add(partie.utilisateur)
+
+            db.session.add(partie)
+            db.session.commit()
+            return partie.to_dict()
+    finally:
+        redis_client.delete(lock_key)
     
     return None
 
