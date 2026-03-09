@@ -4,7 +4,7 @@ import { SOCKET_BASE_URL } from '../../api/base';
 import "../../assets/styles/chat.scss"
 import { obtenirPlusDeMessages } from '../../api/api_chat';
 import { Card, Form, InputGroup } from 'react-bootstrap';
-import { useLayout } from '../../layouts/Layout';
+import { useProtected } from '../../Protected';
 import { Link } from 'react-router-dom';
 
 export default function BlocChat() {
@@ -22,7 +22,7 @@ export default function BlocChat() {
   // Ref for Intersection Observer
   const firstMessageRef = useRef(null);
 
-  const { userData } = useLayout();
+  const { userData } = useProtected();
 
   useEffect(() => {
     const newSocket = io(`${SOCKET_BASE_URL}`, {

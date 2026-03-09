@@ -15,6 +15,7 @@ const queryClient = new QueryClient({
             staleTime: 1000 * 60 * 5,
             retry: (failureCount, error) => {
                 switch (error?.response?.status) {
+                    case 401:
                     case 403:
                     case 404:
                         return false;

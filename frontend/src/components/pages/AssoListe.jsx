@@ -4,7 +4,7 @@ import { Container, Form } from 'react-bootstrap';
 import AssoCard from '../elements/AssoCard';
 import { useQuery } from '@tanstack/react-query';
 import '../../assets/styles/asso.scss';
-import { useLayout } from '../../layouts/Layout';
+import { useProtected } from '../../Protected';
 import { useState } from 'react';
 import DropdownEditer from '../elements/DropdownEditer';
 
@@ -20,7 +20,7 @@ String.prototype.localeContains = function (sub) {
 
 export default function ListeAssos() {
     const navigate = useNavigate();
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const [editMode, setEditMode] = useState(false);
     const [editingAssoId, setEditingAssoId] = useState(null);
     const [query, setQuery] = useState("");

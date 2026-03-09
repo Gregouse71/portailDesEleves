@@ -1,15 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import { useLayout } from '../../layouts/Layout';
 import { seDeconnecter, verifierPermission } from '../../api/api_global';
 import { useState } from 'react';
 import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
 import '../../assets/styles/header.scss';
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
 import ThemeSwitcher from '../elements/ThemeSwitcher';
+import { useProtected } from '../../Protected';
+import { useLayout } from '../../layouts/Layout';
 
 export default function Header() {
-    const { userData, theme, setTheme } = useLayout();
+    const { userData } = useProtected();
+    const { theme, setTheme } = useLayout();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState("");
 
     const { data: octoPermission = false } = useQuery({
@@ -39,6 +42,7 @@ export default function Header() {
     async function handleLogout() {
         await seDeconnecter();
         navigate("/login");  // Rediriger après déconnexion
+        queryClient.invalidateQueries(['id']);
     }
 
     const toggleTheme = () => {

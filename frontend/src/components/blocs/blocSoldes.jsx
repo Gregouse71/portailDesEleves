@@ -1,4 +1,4 @@
-import { useLayout } from '../../layouts/Layout';
+import { useProtected } from '../../Protected';
 import { Link } from 'react-router-dom';
 import { Card, Button, Row, Col, Image } from 'react-bootstrap';
 
@@ -12,7 +12,7 @@ const formatter = new Intl.NumberFormat('fr-FR', {
 });
 
 export default function BlocSoldes() {
-    const { userData } = useLayout();
+    const { userData } = useProtected();
 
     return (
         <Card className="bloc-global mb-3">

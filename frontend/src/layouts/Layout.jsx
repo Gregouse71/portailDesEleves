@@ -34,31 +34,11 @@ function ScrollToTop() {
 }
 
 export function LayoutProvider({ children, theme, setTheme }) {
-    const { data: id } = useQuery({
-        queryKey: ['id'],
-        queryFn: obtenirIdUser
-    })
-
-    const { data: userData = {
-        promotion: 2,
-        date_de_naissance: "0",
-        chambre: "0",
-        ville_origine: "",
-        instruments: [],
-        co: null,
-        marrain: null,
-        fillots: [],
-        vote_sondaj_du_jour: null
-    }, isLoading } = useQuery({
-        queryKey: ['donneesUtilisateur', id],
-        queryFn: () => obtenirDataUser(id),
-        enabled: !!id
-    });
 
     return (
-        <LayoutContext.Provider value={{ userData, theme, setTheme }}>
+        <LayoutContext.Provider value={{ theme, setTheme }}>
             <ScrollToTop />
-            {!isLoading && children}
+            {children}
         </LayoutContext.Provider>
     );
 }
@@ -69,10 +49,6 @@ export function useLayout() {
 
 // Actual layout UI wrapper
 export function Layout() {
-    const { userData } = useLayout();
-
-    if (!userData) return null;
-
     return (
         <div className="layout">
             <Header />

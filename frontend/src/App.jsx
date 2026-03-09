@@ -4,8 +4,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Spinner } from "react-bootstrap";
+import { ProtectedRoute } from "./Protected";
 import { Layout, LayoutProvider } from "./layouts/Layout";
-import ProtectedRoute from "./Protected";
 
 // Lazy imports
 const Soifguard = lazy(() => import("./pages/Soifguard"));
@@ -52,17 +52,17 @@ export default function App() {
           <Route path="/login" element={<FormulaireConnexion />} />
           <Route path="/reset/:token" element={<NouveauMDP />} />
           <Route path="/oublie" element={<MDPoublie />} />
-          <Route element={<ProtectedRoute/>}>
-            <Route path="/" element={<Layout />}>
-              <Route path="/" element={<Home />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route index element={<Home />} />
               <Route path="assos">
-                <Route path="" element={<ListeAssos />} />
+                <Route index element={<ListeAssos />} />
                 <Route path="get/:id/*" element={<Asso />} />
                 <Route path="planning" element={<PlanningAsso />} />
                 <Route path="ajouter" element={<AjouterAssociation />} />
               </Route>
               <Route path="trombi">
-                <Route path="" element={<Trombi />} />
+                <Route index element={<Trombi />} />
                 <Route path="get/:promo" element={<TrombiPromo />} />
               </Route>
               <Route path="sondage">

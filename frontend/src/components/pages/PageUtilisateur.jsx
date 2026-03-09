@@ -1,5 +1,5 @@
 import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur } from '../../api/api_utilisateurs';
-import { useLayout } from '../../layouts/Layout';
+import { useProtected } from '../../Protected';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import DropdownEditer from '../elements/DropdownEditer';
 
 function PageUtilisateur() {
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const { id } = useParams();
     const location = useLocation();
     const navigate = useNavigate();

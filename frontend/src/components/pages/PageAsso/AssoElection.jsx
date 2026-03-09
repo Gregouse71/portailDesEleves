@@ -2,7 +2,7 @@ import { useState } from "react";
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
 import { Badge, Button, Card, Col, Form, Image, Row } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLayout } from "../../../layouts/Layout";
+import { useProtected } from "../../../Protected";
 import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection, uploadElectionChoiceImage } from "../../../api/modules/api_elections";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
@@ -11,7 +11,7 @@ import { UPLOAD_BASE_URL } from "../../../api/base";
 const format_date = (s) => s ? new Date(s).toLocaleString("fr-FR") : "Non précisé"
 
 function Election({ isNew, id, canModify, asso_id, stopCreating }) {
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const queryClient = useQueryClient();
 
     const { data: election, isLoading, isError } = useQuery({
@@ -249,7 +249,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 }
 
 export default function AssoElection({ asso_id }) {
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const [isCreating, setIsCreating] = useState(false);
 
     const { data: elections = [] } = useQuery({

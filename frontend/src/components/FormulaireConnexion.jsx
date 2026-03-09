@@ -13,8 +13,8 @@ export default function FormulaireConnexion() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [erreur, setErreur] = useState(null);
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const location = useLocation();
 
     const from = location.state?.from?.pathname || "/";
@@ -23,7 +23,8 @@ export default function FormulaireConnexion() {
         e.preventDefault();
         const success = await seConnecter(username, password);
         if (success) {
-            queryClient.setQueryData(['isAuthenticated'], true);
+            queryClient.removeQueries({ queryKey: ['id'] })
+            queryClient.removeQueries({ queryKey: ['donneesUtilisateur'] })
             navigate(from, { replace: true });
         } else {
             setErreur("Identifiants incorrects");

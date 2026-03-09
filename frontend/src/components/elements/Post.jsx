@@ -1,7 +1,7 @@
 import { Card, Col, Row, Image, Button, Form, Spinner, InputGroup } from "react-bootstrap";
 import Select from 'react-select';
 import { UPLOAD_BASE_URL } from "../../api/base";
-import { useLayout } from "../../layouts/Layout";
+import { useProtected } from "../../Protected";
 import RichEditor, { RichTextDisplay } from "./RichEditor";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ajouterContenuPublication, modifierPublication, obtenirPublication, modifierLikePost } from "../../api/api_publications";
@@ -52,7 +52,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
     const [modifyFileInputKey, setModifyFileInputKey] = useState(Date.now());
     const [shouldRemoveExistingAttachment, setShouldRemoveExistingAttachment] = useState(false);
 
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const queryClient = useQueryClient();
     const { data: postData, isLoading } = useQuery({
         queryKey: ['publications', postId],

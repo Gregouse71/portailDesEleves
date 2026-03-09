@@ -2,7 +2,7 @@ import { Button, Row, Col, Container } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { nouvellePartie, partieEnCours, faireUnCoup, leaderboardJeu } from "../../../api/api_jeux";
-import { useLayout } from '../../../layouts/Layout';
+import { useProtected } from '../../../Protected';
 import '../../../assets/styles/jeux2048.scss';
 import Leaderboard from "../../elements/Leaderboard";
 
@@ -23,7 +23,7 @@ function Plateau({ arr, ...props }) {
 }
 
 export default function Jeux2048() {
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const queryClient = useQueryClient();
     const { data: partie, isLoading } = useQuery({
         queryKey: [JEU],

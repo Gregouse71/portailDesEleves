@@ -1,6 +1,6 @@
 // src/components/blocs/BlocSondage.jsx
 import { obtenirSondageDuJour, voterSondage } from '../../api/api_sondages';
-import { useLayout } from './../../layouts/Layout';
+import { useProtected } from './../../Protected';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, ProgressBar } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import { verifierPermission } from '../../api/api_global';
 
 export default function BlocSondage() {
     const queryClient = useQueryClient();
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const navigate = useNavigate();
 
     const { data: sondage = { is_sondage: false } } = useQuery({

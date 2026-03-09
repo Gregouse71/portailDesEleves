@@ -19,7 +19,7 @@ import RenderPagination from "../components/elements/RenderPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { chargerUtilisateurs, searchUsers } from "../api/api_utilisateurs";
 import { Button, Form, Table, Pagination, InputGroup, FormControl, Image } from "react-bootstrap";
-import { useLayout } from "../layouts/Layout";
+import { useProtected } from "../Protected";
 import Select from "react-select";
 import DropdownEditer from "../components/elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../api/base";
@@ -493,7 +493,7 @@ function Consommation({ categorie, reset, perms }) {
 }
 
 export default function SoifGuard() {
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const navigate = useNavigate();
     const [categorie, setCategorie] = useState("");
     const [mode, setMode] = useState("conso");

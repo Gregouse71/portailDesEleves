@@ -1,4 +1,4 @@
-import { useLayout } from '../../../layouts/Layout';
+import { useProtected } from '../../../Protected';
 import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuivant } from '../../../api/api_sondages';
 import { chargerUtilisateurs } from '../../../api/api_utilisateurs';
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 function GererSondages() {
     const queryClient = useQueryClient();
-    const { userData } = useLayout();
+    const { userData } = useProtected();
     const navigate = useNavigate();
 
     const formatDate = (dateString) => {
