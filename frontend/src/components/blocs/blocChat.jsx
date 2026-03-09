@@ -161,6 +161,12 @@ export default function BlocChat() {
     isAtBottomRef.current = scrollHeight - scrollTop <= clientHeight + 1;
   }
 
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
   return (
     <Card id="chat-container" className='mw-100 mb-3'>
       <Card.Header as="h5" className="text-center">Chat</Card.Header>
@@ -168,7 +174,7 @@ export default function BlocChat() {
         <div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
           {messages.map((msg, idx) => (
             <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="p-1 rounded-lg chat-message">
-              <span className="text-muted">{msg.time}</span>{" "}
+              <span className="text-muted">{formatTime(msg.time)}</span>{" "}
               <Link
                 className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}
                 to={`/utilisateur/${msg.author_id}`}
