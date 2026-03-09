@@ -39,33 +39,6 @@ const Tableau = ({ value }) => {
     console.log(events)
 
     return <>
-        <h3>Événements périodiques</h3>
-        <Table responsive hover>
-            <thead key="header">
-                <tr className="fw-bold align-items-center">
-                    <th>Quel(s) jour(s)</th>
-                    <th>Asso</th>
-                    <th>Quoi</th>
-                    <th>Où</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                {isLoading ?
-                    <tr>
-                        <td>Chargement</td>
-                    </tr>
-                    :
-                    events.filter(e => e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
-                        <td>{formatDate(event.date_de_debut)}</td>
-                        <td><GetAssoInfo assoId={event.id_association} /></td>
-                        <td>{event.nom}</td>
-                        <td>{event.lieu}</td>
-                        <td className="text-break">{event.description}</td>
-                    </tr>
-                    )}
-            </tbody >
-        </Table>
         <h3>Événements sporadiques</h3>
         <Table responsive hover>
             <thead key="header">
@@ -84,6 +57,33 @@ const Tableau = ({ value }) => {
                     </tr>
                     :
                     events.filter(e => !e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
+                        <td>{formatDate(event.date_de_debut)}</td>
+                        <td><GetAssoInfo assoId={event.id_association} /></td>
+                        <td>{event.nom}</td>
+                        <td>{event.lieu}</td>
+                        <td className="text-break">{event.description}</td>
+                    </tr>
+                    )}
+            </tbody >
+        </Table>
+        <h3>Événements périodiques</h3>
+        <Table responsive hover>
+            <thead key="header">
+                <tr className="fw-bold align-items-center">
+                    <th>Quel(s) jour(s)</th>
+                    <th>Asso</th>
+                    <th>Quoi</th>
+                    <th>Où</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {isLoading ?
+                    <tr>
+                        <td>Chargement</td>
+                    </tr>
+                    :
+                    events.filter(e => e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
                         <td>{formatDate(event.date_de_debut)}</td>
                         <td><GetAssoInfo assoId={event.id_association} /></td>
                         <td>{event.nom}</td>
