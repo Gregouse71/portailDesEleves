@@ -176,7 +176,7 @@ export async function supprimerCo(co_id) {
   return handleResponse(response);
 }
 
-/** Creation d'une consommation
+/** Renvoie les utilisateurs correspondants à la recherche
  * args :
  *  - data : { query, limit=None, offset=None }
  */

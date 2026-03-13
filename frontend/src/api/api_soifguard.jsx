@@ -83,3 +83,8 @@ export const deletePermissionsSoifguard = createApiDelete(`${SOIFGUARD_BASE_URL}
  *  - { user_id, permission }
  */
 export const addPermissionsSoifguard = createApiPost(`${SOIFGUARD_BASE_URL}/permissions`);
+
+/** Cherche les utilisateurs pour les denières opérations
+ * @param \{ limit = 10, categorie } : nombre d'utilisateurs à renvoyer
+ */
+export const derniersUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/derniers`)

@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, abort
 from flask_login import login_required, current_user
+from sqlalchemy import distinct, desc
 
 from app import db
-from app.models import Utilisateur, ConsoSoifguard, Permission
+from app.models import Utilisateur, ConsoSoifguard, Permission, OperationSoifguard
 from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations, get_permissions
 from app.services.services_global import get_global_var
 from app.utils.decorators import a_permission
@@ -211,3 +212,19 @@ def update_permissions():
         return jsonify(perm.to_dict()), 200
     except ValueError as e:
         return jsonify({"message": str(e)}), 404
+
+
+@controllers_soifguard.get('/derniers')
+@a_permission("octo", "biero", "admin_octo", "admin_biero")
+def derniers_utilisateurs():
+    limit = request.args.get('limit', 10)
+    asso = request.args.get('asso', "octo")
+
+    users = db.session.query(distinct(Utilisateur.id)
+    ).join(OperationSoifguard, Utilisateur.id == OperationSoifguard.utilisateur_id).filter(
+        Utilisateur.id == OperationSoifguard.utilisateur_id,
+        OperationSoifguard.asso == asso
+    ).order_by(desc(OperationSoifguard.date)).limit(limit).all()
+
+
+    return jsonify([db.session.query(Utilisateur).get(u[0]).to_dict() for u in users])

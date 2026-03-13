@@ -12,7 +12,8 @@ import {
     crediterAsso,
     getPermissionsSoifguard,
     addPermissionsSoifguard,
-    deletePermissionsSoifguard
+    deletePermissionsSoifguard,
+    derniersUtilisateurs
 } from "../api/api_soifguard";
 import { verifierPermission } from "../api/api_global";
 import RenderPagination from "../components/elements/RenderPagination";
@@ -234,6 +235,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['searchResults', query]);
+            queryClient.invalidateQueries(['lastUtilisateurs']);
             setIsCrediting(false);
             setSomme(0);
         }
@@ -244,19 +246,32 @@ function User({ user, isSelected, select, categorie, query, perms }) {
             await toggleCotisation({ asso }, id);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['searchResults', query])
+            queryClient.invalidateQueries(['searchResults', query]);
+            queryClient.invalidateQueries(['lastUtilisateurs']);
         }
     })
 
     return <div
         key={user.id}
-        className={`soifguard-grid-item ${isSelected ? "soifguard-selected" : ""}`}  // Appliquer la classe de surbrillance
-        onClick={select}  // Clic pour sélectionner/désélectionner
+        className={`soifguard-grid-item ${isSelected ? "soifguard-selected" : ""}`}
+        onClick={select}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') select(); }}
+        style={{ position: 'relative' }}
     >
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="position-absolute top-0 end-0 m-2">
+            <DropdownEditer
+                list={[
+                    {
+                        can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
+                        name: user[`est_cotisant_${categorie}`] ? <>Ne cotise pas</> : <>Cotise</>
+                    },
+                    { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
+                ]}
+            />
+        </div>
+        <div className="d-flex align-items-center">
             <Image
                 className="rounded-3"
                 src={`${UPLOAD_BASE_URL}/utilisateurs/${user.photo}`}
@@ -267,18 +282,16 @@ function User({ user, isSelected, select, categorie, query, perms }) {
                     border: '2px solid white'
                 }}
             />
-            <div>
-                <strong>{user.prenom} {user.nom} P{user.promotion}</strong>
-                {user[`est_cotisant_${categorie}`] ? <span className="soifguard-cotisant-badge ms-1">Cotisant</span> : null}
+            <div className="ms-3 me-5">
+                <div className="fw-bold">{user.prenom} {user.nom} P{user.promotion}</div>
+                <div>
+                    {user[`est_cotisant_${categorie}`] ? <span className="soifguard-cotisant-badge">Cotisant</span> : null}
+                    <span className="ms-2">
+                        {categorie === "octo" && `${user.solde_octo}€`}
+                        {categorie === "biero" && `${user.solde_biero}€`}
+                    </span>
+                </div>
             </div>
-            <DropdownEditer list={[
-                {
-                    can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
-                    name: user[`est_cotisant_${categorie}`] ? <>Ne cotise pas</> : <>Cotise</>
-                },
-                { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
-            ]}
-            />
         </div>
         {isCrediting && <Form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); mutation.mutate(); }}>
             <Form.Group>
@@ -287,8 +300,6 @@ function User({ user, isSelected, select, categorie, query, perms }) {
             </Form.Group>
             <Button onClick={(e) => { e.stopPropagation(); mutation.mutate() }}>Valider</Button>
         </Form>}
-        {categorie === "octo" && <span>Solde Octo : {user.solde_octo}€</span>}
-        {categorie === "biero" && <span>Solde Biero : {user.solde_biero}€</span>}
     </div>
 }
 
@@ -313,12 +324,19 @@ function Consommation({ categorie, reset, perms }) {
         queryKey: ['consos'],
         queryFn: () => getListeConsos({}),
     });
-    const { data: utilisateurs = [] } = useQuery({
+    const { data: chercheUtilisateurs = [] } = useQuery({
         queryKey: ['searchResults', query],
         queryFn: () => searchUsers({ query, limit: 30 }),
         enabled: !!query
     });
+    const { data: lastUtilisateurs = [] } = useQuery({
+        queryKey: ['lastUtilisateurs'],
+        queryFn: () => derniersUtilisateurs({ limit: 10, asso: categorie }),
+        enabled: !query
+    });
 
+    const utilisateurs = chercheUtilisateurs.length > 0 ? chercheUtilisateurs : lastUtilisateurs;
+    console.log(utilisateurs)
 
     // Fonction pour jouer le son
     const jouerSon = () => {
@@ -336,7 +354,8 @@ function Consommation({ categorie, reset, perms }) {
 
                 setSelectedUser(null);
                 setSelectedConso(null);
-                queryClient.invalidateQueries(['searchResults', query])
+                queryClient.invalidateQueries(['searchResults', query]);
+                queryClient.invalidateQueries(['lastUtilisateurs']);
             }
         };
 
