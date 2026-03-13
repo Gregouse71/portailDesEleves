@@ -123,3 +123,12 @@ def update_permissions():
         return jsonify(perm.to_dict()), 200
     except ValueError as e:
         return jsonify({"message": str(e)}), 404
+
+@controllers_login.post('/baptiser_tous')
+@superutilisateur_required
+def baptiser_tout_le_monde():
+    users = db.session.query(Utilisateur).filter_by(est_baptise=False)
+    for u in users:
+        u.est_baptise = True
+    db.session.commit()
+    return jsonify({"message": "Utilisateurs baptisés"}), 200

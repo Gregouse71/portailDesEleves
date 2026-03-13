@@ -5,10 +5,12 @@ import { useState } from "react";
 
 import PermissionsManager from "../components/pages/PermissionsManager";
 import UserCreation from "../components/pages/UserCreation";
+import BaptemeManager from "../components/pages/BaptemeManager";
 
 
 export default function Admin() {
     const navigate = useNavigate();
+    const [baptemeOpen, setBaptemeOpen] = useState(true);
     const [permissionsOpen, setPermissionsOpen] = useState(true);
     const [userCreationOpen, setUserCreationOpen] = useState(true);
 
@@ -19,6 +21,13 @@ export default function Admin() {
                     <ArrowLeft size={20} />
                 </Button>
                 <h1 className="mb-0">Panneau Administrateur</h1>
+            </div>
+
+            <div className="admin-section my-4">
+                <h2 className="d-flex justify-content-between" onClick={() => setBaptemeOpen(!baptemeOpen)} style={{ cursor: "pointer" }}>
+                    Gestion du baptême {baptemeOpen ? <ChevronUp /> : <ChevronDown />}
+                </h2>
+                <Collapse in={baptemeOpen}><div><BaptemeManager /></div></Collapse>
             </div>
 
             <div className="admin-section my-4">

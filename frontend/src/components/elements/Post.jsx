@@ -227,7 +227,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                             <Form.Group className="mb-3">
                                 <Form.Check type="checkbox" label="Autoriser les commentaires" checked={modifyPost.is_commentable} name='is_commentable' onChange={handleSetModifyPost} />
                                 <Form.Check type="checkbox" label="Publication interne" checked={modifyPost.is_publication_interne} name='is_publication_interne' onChange={handleSetModifyPost} />
-                                <Form.Check type="checkbox" label="Cacher aux 1A" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
+                                <Form.Check type="checkbox" label="Cacher aux nouveaux" checked={modifyPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetModifyPost} />
                             </Form.Group>
                             <Form.Group className="mb-3">
                                 <Form.Check type="checkbox" label="Publier maintenant" checked={modifyPost.publier_maintenant} name='publier_maintenant' onChange={handleSetModifyPost} />

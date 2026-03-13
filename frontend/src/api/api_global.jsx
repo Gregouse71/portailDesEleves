@@ -77,8 +77,12 @@ export async function setNouveauMDP(token, password) {
 }
 
 /** Vérifie si la permission *perm* appartient à l'utilisateur *user_id*
- *  args :
- *    - perm : la chaine de caractères représentant la permission
- *    - user_id : l'id de l'utilisateur
+ *   @param {string} perm : la chaine de caractères représentant la permission
+ *   @param {number} user_id : l'id de l'utilisateur
  */
-export const verifierPermission = createApiGet(`${API_BASE_URL}/login/verifier_permission`)
+export const verifierPermission = createApiGet(`${LOGIN_BASE_URL}/verifier_permission`)
+
+/** Marque tous les utilisateurs comme baptisés, sauf ceux de P00
+ * 
+ */
+export const baptiserToutLeMonde = createApiPost(`${LOGIN_BASE_URL}/baptiser_tous`)

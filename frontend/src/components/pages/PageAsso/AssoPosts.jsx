@@ -203,7 +203,7 @@ function AssoPosts({ asso_id }) {
                                 <Form.Group className="mb-3">
                                     <Form.Check type="checkbox" label="Autoriser les commentaires" checked={newPost.is_commentable} name='is_commentable' onChange={handleSetNewPost} />
                                     <Form.Check type="checkbox" label="Publication interne" checked={newPost.is_publication_interne} name='is_publication_interne' onChange={handleSetNewPost} />
-                                    <Form.Check type="checkbox" label="Cacher aux 1A" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
+                                    <Form.Check type="checkbox" label="Cacher aux nouveaux" checked={newPost.a_cacher_aux_nouveaux} name='a_cacher_aux_nouveaux' onChange={handleSetNewPost} />
                                 </Form.Group>
                                 <Form.Group className="mb-3">
                                     <Form.Check type="checkbox" label="Publier maintenant" checked={newPost.publier_maintenant} name='publier_maintenant' onChange={handleSetNewPost} />
