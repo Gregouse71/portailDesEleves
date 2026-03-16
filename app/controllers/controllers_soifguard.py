@@ -179,11 +179,14 @@ def delete_permission (id):
     Supprime la permission
     """
     perm = Permission.query.get(id)
+    if not perm:
+        abort(404)
     if not (("octo" in perm.permission and has_permission(current_user, "admin_octo")) or ("biero" in perm.permission and has_permission(current_user, "admin_biero")) or current_user.est_superutilisateur):
         abort(403)
     db.session.delete(perm)
+    d = perm.to_dict()
     db.session.commit()
-    return jsonify(perm.to_dict())
+    return jsonify(d)
 
 @controllers_soifguard.post('/permissions')
 @a_permission("admin_octo", "admin_biero")
@@ -201,8 +204,9 @@ def update_permissions():
 
     if not user:
         return jsonify({"message": "L'utilisateur n'existe pas"}), 400
-
+    print(has_permission(current_user, "admin_biero"))
     if not (("octo" in permission and has_permission(current_user, "admin_octo")) or ("biero" in permission and has_permission(current_user, "admin_biero")) or current_user.est_superutilisateur):
+        print("A")
         abort(403)
 
     try:

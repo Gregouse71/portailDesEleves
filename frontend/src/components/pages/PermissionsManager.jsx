@@ -14,7 +14,7 @@ function Permission({ perm, deleteMe }) {
             <td>{perm.utilisateur}</td>
             <td>{perm.permission}</td>
             <td>
-                <Button size="sm" variant="danger" deleteMe onClick={deleteMe}>
+                <Button size="sm" variant="danger" onClick={deleteMe}>
                     Supprimer
                 </Button>
             </td>

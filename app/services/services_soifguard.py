@@ -2,7 +2,7 @@ from app.services import db
 from app.services.services_global import get_global_var, set_global_var
 from app.models import Utilisateur, ConsoSoifguard, Permission
 from app.models.models_soifguard import OperationSoifguard
-from sqlalchemy import or_, and_
+from sqlalchemy import or_
 
 
 def _encaisser(utilisateur: Utilisateur, auteur: Utilisateur, prix: float, asso: str, nom_conso: str):
@@ -138,13 +138,10 @@ def get_permissions(page: int, per_page: int, query_str: str="", asso: str="bier
     """
     Récupère tous les utilisateurs avec leurs permissions, avec pagination.
     """
-    query = Permission.query
+    query = Permission.query.filter(Permission.permission.ilike(f"%{asso}%"))
     if len(query_str) >= 1:
         query = query.join(Permission.utilisateur).filter(
-            and_(
-                Utilisateur.nom_utilisateur.ilike(f"%{query_str}%"),
-                Permission.permission.ilike(f"admin_{asso}")
-            )
+            Utilisateur.nom_utilisateur.ilike(f"%{query_str}%")
         )
     perms = query.paginate(page=page, per_page=per_page, error_out=False)
     return {"permissions": [p.to_dict() for p in perms], "count": perms.total}

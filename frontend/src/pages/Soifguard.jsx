@@ -39,7 +39,7 @@ function PermissionUser({ perm, deleteMe }) {
             <td>{perm.utilisateur}</td>
             <td>{perm.permission}</td>
             <td>
-                <Button size="sm" variant="danger" deleteMe onClick={deleteMe}>
+                <Button size="sm" variant="danger" onClick={deleteMe}>
                     Supprimer
                 </Button>
             </td>
@@ -52,7 +52,7 @@ function Permissions({ categorie }) {
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(1);
     const [selectedUser, setSelectedUser] = useState();
-    const [permission, setPermission] = useState();
+    const [permission, setPermission] = useState(categorie);
 
     const { data: allUsers = [] } = useQuery({
         queryKey: ["allUsers"],
@@ -60,8 +60,8 @@ function Permissions({ categorie }) {
     });
     const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
 
-    const { data = { permissions: [], count: 0 }, isLoading, isError } = useQuery({
-        queryKey: ["permissionsSoifguard", page, query],
+    const { data = { permissions: [], count: 0 } } = useQuery({
+        queryKey: ["permissionsSoifguard", categorie, page, query],
         queryFn: () => getPermissionsSoifguard({ page, per_page: PER_PAGE, query, asso: categorie }),
         placeholderData: (previousData) => previousData,
     });
@@ -70,13 +70,12 @@ function Permissions({ categorie }) {
 
 
     const addMutation = useMutation({
-        mutationFn: async () => {
-            const ret = { user_id: selectedUser.value, permission }
-            await addPermissionsSoifguard({ user_id: selectedUser.value, permission })
+        mutationFn: async (perm) => {
+            await addPermissionsSoifguard({ user_id: selectedUser.value, permission: perm })
             return
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(["permissionsSoifguard", page, query]);
+            queryClient.invalidateQueries(["permissionsSoifguard", categorie]);
             return
         }
     });
@@ -87,7 +86,7 @@ function Permissions({ categorie }) {
             return
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(["permissionsSoifguard", page, query]);
+            queryClient.invalidateQueries(["permissionsSoifguard", categorie]);
         }
     });
 
@@ -125,11 +124,11 @@ function Permissions({ categorie }) {
                                 onChange={(e) => setPermission(e.target.value)}
                                 aria-label="Permission"
                             >
-                                <option value={categorie}>Soifguard</option>
+                                <option value={`${categorie}`}>Soifguard</option>
                                 <option value={`admin_${categorie}`}>Admin</option>
                             </Form.Select>
                         </Form></td>
-                        <td><Button variant="info" onClick={addMutation.mutate} disabled={!selectedUser}>
+                        <td><Button variant="info" onClick={() => addMutation.mutate(permission)} disabled={!selectedUser}>
                             Ajouter
                         </Button></td>
                     </tr>
@@ -336,7 +335,6 @@ function Consommation({ categorie, reset, perms }) {
     });
 
     const utilisateurs = chercheUtilisateurs.length > 0 ? chercheUtilisateurs : lastUtilisateurs;
-    console.log(utilisateurs)
 
     // Fonction pour jouer le son
     const jouerSon = () => {
@@ -514,24 +512,24 @@ function Consommation({ categorie, reset, perms }) {
 export default function SoifGuard() {
     const { userData } = useProtected();
     const navigate = useNavigate();
-    const [categorie, setCategorie] = useState("");
+    const [categorie, setCategorie] = useState();
     const [mode, setMode] = useState("conso");
     const [reset, setReset] = useState(false);
 
     // pour les permissions de lancer octo ou biero
-    const { data: octoPermission = false } = useQuery({
+    const { data: octoPermission = false, isLoading: isLoadingOcto } = useQuery({
         queryKey: ['permOcto'],
         queryFn: () => verifierPermission({}, "octo", userData.id),
     });
-    const { data: bieroPermission = false } = useQuery({
+    const { data: bieroPermission = false, isLoading: isLoadingOctoA } = useQuery({
         queryKey: ['permBiero'],
         queryFn: () => verifierPermission({}, "biero", userData.id),
     });
-    const { data: octoAdminPermission = false } = useQuery({
+    const { data: octoAdminPermission = false, isLoading: isLoadingBiero } = useQuery({
         queryKey: ['permAdminOcto'],
         queryFn: () => verifierPermission({}, "admin_octo", userData.id),
     });
-    const { data: bieroAdminPermission = false } = useQuery({
+    const { data: bieroAdminPermission = false, isLoading: isLoadingBieroA } = useQuery({
         queryKey: ['permAdminBiero'],
         queryFn: () => verifierPermission({}, "admin_biero", userData.id),
     });
@@ -543,6 +541,13 @@ export default function SoifGuard() {
     //     queryKey: ['detteBiero'],
     //     queryFn: () => obtenirDetteMaxi("biero"),
     // });
+
+    // Si l'utilisateur n'est que biéro ou que octo, on affiche directement la bonne catégorie
+    useEffect(() => {
+        if (categorie) return;
+        if (octoPermission || octoAdminPermission && !(bieroPermission || bieroAdminPermission)) setCategorie("octo");
+        else if (bieroPermission || bieroAdminPermission && !(octoPermission || octoAdminPermission)) setCategorie("biero");
+    }, [octoPermission, octoAdminPermission, bieroPermission, bieroAdminPermission, categorie])
 
     const changeMode = (e) => {
         const newMode = e.target.value;
@@ -626,8 +631,8 @@ export default function SoifGuard() {
                     <Consommation categorie={categorie} reset={reset}
                         perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)}
                     />} />
-                <Route path="operations" element={<Operations categorie={categorie} />} />
-                <Route path="permissions" element={<Permissions categorie={categorie} />} />
+                <Route path="operations" element={categorie ? <Operations categorie={categorie} /> : <></>} />
+                <Route path="permissions" element={categorie ? <Permissions categorie={categorie} /> : <></>} />
             </Routes>
         </div>
     );
