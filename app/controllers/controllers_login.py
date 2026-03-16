@@ -5,7 +5,7 @@ from app.models.models_utilisateurs import Utilisateur
 from app.models.models_divers import Permission
 from app.services.services_login import send_reset_mail, set_new_password, check_pw, get_permissions, has_permission
 from app.utils.decorators import superutilisateur_required
-from app import db
+from app import db, limiter
 
 controllers_login = Blueprint('controllers_login', __name__)
 
@@ -20,6 +20,7 @@ def get_current_user_id():
     return jsonify({"id_utilisateur": current_user.id}), 200
 
 @controllers_login.route('/connexion', methods=['POST'])
+@limiter.limit("10/minute")
 def connexion():
     data = request.get_json() or {}
     username = data.get('username')

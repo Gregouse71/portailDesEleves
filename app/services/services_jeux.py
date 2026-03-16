@@ -34,11 +34,14 @@ def faire_un_coup(s: str, id: int, data: dict):
     """
     Fait le coup contenu dans *data* pour la partie du jeu *s* pour le joueur *id*
     """
+    partie = JeuxPartie.query.filter_by(utilisateur_id=id, jeu=s, terminee=False).first()
+    if partie is None:
+        return None
+
     lock_key = f"lock:game:{s}:{id}"
     lock_acquired = redis_client.set(lock_key, "locked", ex=5, nx=True)
 
-    partie = JeuxPartie.query.filter_by(utilisateur_id=id, jeu=s, terminee=False).first()
-    if partie is None or not lock_acquired:
+    if not lock_acquired:
         redis_client.delete(lock_key)
         return partie.to_dict()
 

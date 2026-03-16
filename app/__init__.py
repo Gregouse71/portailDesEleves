@@ -5,26 +5,29 @@ Ce fichier crée et initialise l'application et les extensions. Il charge la con
 et enregistre les blueprints. 
 
 Il est execute pour initialiser l'application. 
-
 """
+
 from flask import Flask, send_from_directory
 from flask_cors import CORS # permet d'accepter les requetes provenant de n'importe quelle origine
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_apscheduler import APScheduler
-import json
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 
 from config import Config
 
+
+# Initialisation des extensions (sans encore les attacher à l'application)
+limiter = Limiter(get_remote_address)
 socketio = SocketIO(
     async_mode='gevent',
     cors_allowed_origins="*",
     message_queue="redis://localhost:6379/0"
 )
-
-# Initialisation des extensions (sans encore les attacher à l'application)
 db = SQLAlchemy()
 login_manager = LoginManager()
 # session = Session()
@@ -36,21 +39,18 @@ def create_app(config: Config):
     # Chargement de la configuration
     app.config.from_object(config)
 
-    # Permet de stocker les caractères UTF dans les objets JSON
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        "json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False)
-    }
-
     # Active CORS pour toutes les routes de l'application
     CORS(app, origins="*", supports_credentials=True)
 
     
     # Initialisation des extensions avec l'application
+    limiter.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
     socketio.init_app(app)
     scheduler.init_app(app)
     # session.init_app(app)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
     from .models import Utilisateur  # Importer la classe Utilisateur
 

@@ -127,6 +127,8 @@ def set_new_password(token: str, password: str):
 
     uid = payload.get("sub")
     user = Utilisateur.query.filter_by(nom_utilisateur=uid).first()
+    if not user:
+        return False
     user.mot_de_passe = ph.hash(password)
     db.session.commit()
     return True

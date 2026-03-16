@@ -9,16 +9,21 @@ Pour le developpement, on commence par utiliser une bdd locale avec sqlite. Ce f
 par __init__.py lors de l'initialisation.
 """
 
-import os
+import json
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'une_cle_secrete_pour_developpement'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
+    SECRET_KEY                  = 'une_cle_secrete_pour_developpement'  # générée avec `openssl rand -hex 32`
+    SQLALCHEMY_DATABASE_URI     = 'sqlite:///app.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Permet de stocker les caractères UTF dans les objets JSON
+    SQLALCHEMY_ENGINE_OPTIONS   = {"json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False)}
+
     SESSION_COOKIE_SAMESITE='Lax'
     SESSION_COOKIE_SECURE=False
-    #SESSION_COOKIE_SAMESITE = 'None'  # Nécessaire pour que le cookie soit envoyé dans des requêtes cross-origin
-    #SESSION_COOKIE_SECURE = False  # Important si tu utilises HTTPS, sinon mets à False pour développement local
 
     ALGORITHM = "HS256"
-    SECRET_KEY_MAIL = "1234"
+    SECRET_KEY_MAIL             = "1234"  # générée avec `openssl rand -hex 32`
+
+    RATELIMIT_STORAGE_URI       = "redis://localhost:6379/0"    # "memory://"
+    RATELIMIT_STORAGE_OPTIONS   = {"socket_connect_timeout": 30}
+    RATELIMIT_STRATEGY          = "moving-window"               # "fixed-window"

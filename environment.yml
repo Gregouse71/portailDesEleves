@@ -10,6 +10,7 @@ dependencies:
   - Flask-Cors
   - Flask-SocketIO
   - Flask-Apscheduler
+  - Flask-Limiter
   - pytest
   - requests
   - gevent

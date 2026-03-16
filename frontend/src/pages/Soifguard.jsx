@@ -545,8 +545,8 @@ export default function SoifGuard() {
     // Si l'utilisateur n'est que biéro ou que octo, on affiche directement la bonne catégorie
     useEffect(() => {
         if (categorie) return;
-        if (octoPermission || octoAdminPermission && !(bieroPermission || bieroAdminPermission)) setCategorie("octo");
-        else if (bieroPermission || bieroAdminPermission && !(octoPermission || octoAdminPermission)) setCategorie("biero");
+        if ((octoPermission || octoAdminPermission) && !(bieroPermission || bieroAdminPermission)) setCategorie("octo");
+        else if ((bieroPermission || bieroAdminPermission) && !(octoPermission || octoAdminPermission)) setCategorie("biero");
     }, [octoPermission, octoAdminPermission, bieroPermission, bieroAdminPermission, categorie])
 
     const changeMode = (e) => {
