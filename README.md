@@ -1,140 +1,77 @@
 # Documentation du nouveau portail des Élèves
 
-## I. Fonctionnement du site
+
+## I. Contexte général
+
+Ce portail est une modernisation du portail des élèves commencé en 2007 (?), amélioré en 2013 (?), puis par le VP Geek en 2017. Son principal problème est de n'être accessible, à ma connaissance, que depuis la machine sur laquelle il est hébergé. Il n'y a donc pas de développement à plusieurs possibles, si il y avait bien un suivi git au départ, ça fait longtemps qu'il a été abandonnée (plus de 3500 fichiers modifiés ou non suivis). Il a vocation a être modifié, amélioré au fil du temps, et le repertoire git est un outil essentiel pour assurer cela, avec l'aide du déploiement automatisé permis par gitlab.
+
+Le but est d'écrire du code propre. Pour ce faire, inspirez vous de ce qui a été fait pour les événements et les élections, qui constituent un bon exemple avec api documenté et structurée de façon cohérente. Essayez aussi de maintenir un historique git aussi propre que possible, et de ne pas casser une fonctionnalité lorsque vous en déployez une autre.
+
+Par les choix qui ont été fait lors du début du développement, certaines technologies sont employées dans être indispensables (on aurait pu utiliser fastapi au lieu de flask par exemple), mais passer de l'une à l'autre n'est pas une mince affaire, surtout lorsqu'il s'agit de paramétrer correctement l'application backend, mais aussi le frontend, et le reverse proxy utilisé sur la machine virtuelle.
+
+
+## II. Fonctionnement du site
 
 Le site est composé de deux éléments : le frontend, ce qui tourne sur le navigateur des gens, et le backend, ce qui gère les données.
 
 ### A - Le backend
 
-**La première fois**
+#### La première fois
 
-Pour windows, passez par wsl.
-Il faut d'abord installer tous les modules nécessaires avec ```conda env create -f environment.yml```, et renommer le fichier `config.example.py` en `config.py` pour que la configuration marche. Pour créer la base de données, le portail doit-être initialisé pour la première fois avec `$ python ./init_db.py`. Cela crée les tables à partir des modèles des modèles. Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier ou d'ajouter les colonnes nécessaires. Ensuite, pour avoir des données à afficher, il faut exécuter `creer_environnement_dev.py`. De plus, il faut installer *redis* pour permettre au chat de fonctionner.
+Pour windows, passez par wsl. Il faut installer *valkey* pour permettre au chat, aux jeux et aux sondages de fonctionner.
 
-**À chaque fois**
+1. **Installer les modules** : `conda env create -f environment.yml`
+2. **Configurer l'application** : Créer un fichier `config.py` en copiant `config.example.py`, et en apportant les modifications voulues (il est bien configuré par défaut).
+3. **Créer la base de données** : `python init_db.py`. Cela crée les tables à partir des modèles.
+4. **Peupler l'environnement** : `python creer_environnement_dev.py`. Cela permet d'avoir des données à afficher.
 
-Ensuite, le portail est démarré avec ```gunicorn --worker-class gevent -w 1 run:app -b localhost:5000```. Si ça ne fonctionne pas, on peut essayer d'utiliser une version légèrement plus ancienne de Gunicorn avec : ```pip install "gunicorn<25"``` avant de réessayer le démarrage. Pour le développement, on peut rajouter ```--reload --log-level debug``` pour voir exactement ce qui se passe et rechager le backend quand on sauvegarde des modification. Si l'utilisation du chat n'est pas essentielle, un simple ```python run.py``` suffit.
+Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier ou d'ajouter les colonnes nécessaires.
+
+#### À chaque fois
+
+1. Le portail est démarré avec 
+  - `gunicorn -k gevent -w 2 run:app -b localhost:5000` pour un fonctionnement au plus proche du déploiement. Pour le développement, on peut rajouter
+    - `--reload` pour prendre en compte les modifications en temps réel
+    - `--log-level debug` pour voir exactement ce qui se passe.
+  -  Si `gunicorn` ne fonctionne pas `python run.py` suffit.
+
 run.py fait appel à `__init__.py` qui crée l'application et démarre la base de donnée (`db = SQLAlchemy()`).  `config.py` contient la configuration utilisée lors de l'initialisation, elle contient le lien à la base, les clefs secrètes, etc.
+
+2. Lorsque la base de données est modifiée :
+  - `python init_db.py` permet de créer les nouvelles tables
+  - pour ajouter des colonnes, il faut modifier à la main la base de données en veillant à persérver la cohérence entre la déclaration et la colonne créer dans la table (prendre les autres colonnes en exemple)
 
 ### B - Le frontend
 
-D'abord, il faut créer le fichier `frontend/src/api/base_url.js` qui contient l'adresse du backend `export const _BASE_URL = 'http://localhost:5000'`. De plus, il faut installer *npm*, le gestionnaire de packets (l'équivalent de *pip* ou *conda* pour le javascript). Ensuite, on se place dans *frontend* et on exécute `npm install`, ce qui installe tous les packets nécessaires (dont le besoin est indiqué dans `package.json`). Enfin, on démarre le serveur avec `npm run dev`, et on peut alors se connecter à l'adresse *http://localhost:5000*. La connexion se fait avec les logins créés lors de l'exécution de `creer_environnement_dev.py` et le MdP : 1234.
+1. **Préparer l'environnement** : Créer le fichier `frontend/src/api/base_url.js` qui contient l'adresse du backend : `export const _BASE_URL = 'http://localhost:5000'`
+2. **Installer les packets** : Installer *npm*, le gestionnaire de packets (l'équivalent de *pip* ou *conda* pour le javascript). Se placer dans *frontend* et exécuter `npm install`, ce qui installe tous les packets nécessaires (dont le besoin est indiqué dans `package.json`).
+3. **Démarrer le serveur** : `npm run dev`, et on peut alors se connecter à l'adresse *http://localhost:5000*. La connexion se fait avec les logins créés lors de la création de l'environnement de dev, mdp 1234.
 
 
-## II. Consignes pour contribuer
+## III. Structure
 
-Le but est d'écrire du code propre. Pour ce faire, inspirez vous de ce qui a été fait pour les événements et les élections, qui constituent un bon exemple avec api documenté et structurée de façon cohérente.
+Ce projet est une application web Flask, séparée en deux parties : le backend (côté serveur) et le frontend (côté client).
 
+### A. Backend
 
-## III. Structure (barratin)
+Le backend est construit sur une architecture modulaire pour une maintenance et un développement facilités.
 
-### A - Généralités sur les applications web
+  - **`run.py`** : Point d'entrée de l'application. Lance un serveur de développement Flask.
+  - **`app/__init__.py`** : Initialise l'application Flask, la base de données (SQLAlchemy), et charge la configuration.
+  - **`config.py`** : Fichier de configuration contenant les variables d'environnement, les clés secrètes, et la configuration de la base de données.
+  - **`app/models`** : Contient les modèles de données SQLAlchemy. Chaque fichier `models_*.py` definit la structure d'une table de la base de données.
+  - **`app/controllers`** : Gère la logique de l'application et les routes de l'API. Chaque `controllers_*.py` regroupe les routes pour une fonctionnalité spécifique (par exemple, les utilisateurs, les événements).
+  - **`app/services`** : Contient la logique métier de l'application, séparée des controllers pour une meilleure lisibilité.
+  - **`app/utils`** : Fournit des fonctions utilitaires et des décorateurs, notamment pour la gestion des permissions.
+  - **`app/tasks`** : Déclares les opérations réalisées à intervalles réguliers.
+  - **`tests`** : Tests des fonctionnalités
 
-Le code d'une application web est séparé en deux parties distinctes. Le *frontend*, qui désigne la programmation des pages web à proprement parler, et le *backend*, le code qui régit la logique interne de l'application. Par exemple, si j'affiche la page d'un utilisateur, l'application lance une requête dans la base de données pour récupérer les données à afficher (c'est le backend qui fait ça), puis les données sont mises en forme au sein d'une page html (c'est le frontend qui fait ça).
+### B. Frontend
 
-En fait, programmer le backend d'une application c'est programmer une API avec un ensemble de requêtes qui permettent de faire fonctionner le site. Une requête pour obtenir les données d'un utilisateur, pour créer une association, pour voter à un sondage, etc.
+Le frontend est une application React qui communique avec le backend via une API REST.
 
-Quant au frontend, il s'agit simplement de générer les pages web en fonction des données récupérées par des requêtes à l'API. Par exemple, afficher correctement les barres de répartition des votes sur les sondages.
-
-### B - Organisation du projet Flask selon cette logique
-
-#### 1) Les routes
-
-Flask fonctionne avec des *routes*. Une route Flask est une fonction python précédée du décorateur :
-
-`@nom_du_blueprint.route('/nom_de_la_route')`
-
-Cette syntaxe indique à Flask comment l'on pourra exécuter la route : il faudra entrer l'URL :
-
-`https://url_du_site/api/nom_du_blueprint/nom_de_la_route`
-
-Une route peut être une fonction python quelconque, mais généralement il y aura deux types de routes :
-- Les routes qui chargent du contenu web
-- Les routes qui font des requêtes dans la base de données
-
-Les routes qui chargent du contenu web (qui font donc partie du frontend) seront stockées dans le dossier `views/` du projet, et seront appelées *views*. Quant aux routes qui lancent des requêtes dans la base de données (BDD ci après) seront appelées *controllers* et seront rangées dans le dossier `controllers/`.
-
-Précisons que ces routes, au sein de `views/` et de `controllers/` sont séparées en plusieurs fichiers python, appelées *blueprints* pour une meilleure organisation du code. Ce fichiers sont liés en un module python grace à leur fichier `__init__.py`. 
-
-#### 2) La logique métier
-
-La logique métier de l'application désigne son fonctionnement interne, l'ensemble des opérations et des liens à réaliser entre les différentes tables de la BDD. 
-
-Nous avons dit que les controllers lançaient les requêtes dans la BDD : lorsque ces controllers sont appelés, il font appel à une fonction de la logique métier (rangées dans `services/`). En effet, pour que le code soit lisible et facile à maintenir, il est important de séparer les controllers des services. Un controller ne fera qu'exécuter une fonction, et renvoyer un résultat (souvent au format JSON), avec un code (200 pour une requête réussie, 400 pour une erreur client, 500 pour une erreur serveur, etc). La fonction exécutée qui gère les liens complexes au sein de la BDD appartient à `services/`. 
-
-**Exemple :** Ajout d'un utilisateur dans une association.
-
-Un bouton sur une page web mène à l'url de la route d'ajout d'un utilisateur. Cette route, dans `controllers/`, vérifie les permissions (voir plus loin), puis exécute la fonction `ajouter_membre(id_asso, id_membre, role)` de `services/`. Cette fonction ajoute l'association en question au tag `associations_actuelles` de l'utilisateur dans la table des utilisateurs, et ajoute l'utilisateur au tag `membres` de l'association dans la table des associations. Enfin, la fonction commit les changements dans la BDD. N'ayant pas déclenché d'erreur, la route renvoie un message de succès avec le code 200. Recevant ce message, la page web affiche un message de succès en HTML. 
-
-#### 3) Les permissions 
-
-Les services ne vérifient aucune permission. Cette vérification se fait au stade des routes, au moyen de décorateurs. La plupart des routes seront précédées du décorateur `@login_required`. Un utilisateur non connecté qui essaie d'exécuter cette route recevra une erreur 405. Ce décorateur est à placer avant chaque route qui en a besoin. D'autres décorateurs, plus spécifiques existent : `@vp_sondaj_required`, `@superutilisateur_required`, etc. Ces décorateurs sont implémentés dans `utils/decorators.py`. Ainsi, la vérification des permissions est implémentée une fois de manière générale, et peut être utilisée facilement partout dans le projet. 
-
-### C - La base de données
-
-La BDD contient toutes les données nécessaire au fonctionnement du site. Elle est composées de différentes *tables*, que l'on peut voir comme des dataframes python. Il y a par exemple une table `utilisateurs` qui contient la liste des utilisateurs, avec leurs informations. Une table de la base de données contient des *éléments*. Ainsi, tel utilisateur spécifique est un élément de la table `utilisateurs`. 
-
-Ces éléments sont les éléments d'une classe python spéciale, qui décrit donc la forme de la table concernée (en utilisant la syntaxe de la bibliothèque de Flask `SQLAlchemy`, qui gère la base de données). Ces classes qui décrivent les tables de la BDD sont rangées dans le dossier `models/`. 
-
-Lorsque le serveur est lancé pour la première fois, la base de données doit être créée selon le format imposé par les classes de `models/`. Le fichier `init_db.py` gère cela : il n'est exécuté que lors du lancement du serveur, et crée la base de données. Précisons que pour développer, nous utilisons une base sqlite locale stockée dans le fichier `instance/app.db`. Pour le déploiement, nous utiliserons une meilleure base de données. 
-
-`models/` ne sert pas qu'à initialiser la base : seules les données sont stockées dans `instance/app.db`, leur format et les fonctions qui permettent d'interagir avec elles se trouvent dans les classes de `models/`. Ainsi, lorsque le serveur est initialisé (avec `__init__.py`, voir plus loin), l'instance `db` est créée (à partir de `app`, voir plus bas), puis les classes de `models/` sont importées. 
-
-Attention, en important les classes de `models/`, la base de donnée n'est pas *créée*, son contenu existe déjà, et est stocké dans `instance/`, dans le fichier `app.db`. L'appel à `models/` ne sert qu'à lire le contenu de la base en interprétant chaque table comme un ensemble d'éléments des classes que contient `models/`. 
-
-Précisons également que `models/`, une fois importé par `__init__.py`, importe lui même `db`, ce qui crée le lien entre les classes et la table (à laquelle on accède avec l'instance `db`). 
-
-**En résumé** :
-- La première fois, la base de données est créée en exécutant `init_db.py` selon les classes de `models.py`;
-- quand la BDD existe, les données sont stockées dans `instance/app.db` ;
-- l'instance `db` est utilisée pour interagir avec la BDD. Cette instance est initialisée par `__init__.py` ;
-- ce même fichier charge également `models.py`, ce qui permet de lire les éléments de la base comme des éléments d'une classe python.
-
-
-### D - Arborescence du backend
-
-À la lumière de ce qui précède, l'arborescence du projet est la suivante : 
-
-```
-nouveau_portail/
-│
-├── app/
-│   ├── __init__.py             # Initialisation de l'application Flask et des extensions
-│   ├── models/                 # Tables de la BDD
-│   ├── controllers/            # Définition de l'API
-│   ├── services/               # Logique métier
-│   │  
-│   └── utils/                  # Utilitaires
-│       ├── decorators.py       # Décorateurs pour les permissions ("@est_vp_sondaj", etc.)
-│       └── etc.                # Autres fichiers de fonctions utilitaires
-│
-├── tests/                      # Fichers de test
-├── instance /                  # La base de données locale pour le développement
-├── config.py                   # Configuration de l'application
-├── run.py                      # Fichier pour lancer le serveur 
-├── init_db.py                  # Fichier pour initialiser la BDD à partir des modèles
-└── environment.yaml            # Dépendances Python
-```
-
-Résumons le rôle de chaque élément :
-
-- **`models/`** :
-
-Les classes python qui structurent les données de la base, qui permettent de l'initialiser puis de la lire et de la modifier. Ces classes seront manipulées par les fonction de `services/`.
-
-- **`services/`** :
-
-La logique métier de l'application, qui implémente les règles spécifiques à l'application qui gèrent la manière dont les données sont manipulées et traitées. Ces fonctions seront appelées par les controllers. 
-
-- **`controllers/`** :
-
-Contient les routes de requêtes à l'API, qui font appel aux fonction de `services/` pour lire et modifier des données selon la logique de l'application. Les permissions sont vérifiées avec des décorateurs de `decorators.py`.
-
-- **`environment.yaml`** :
-
-Fichier listant toutes les dépendances Python nécessaires au fonctionnement de l’application. Facilite l’installation des dépendances avec `$ conda env create -f environment.yml`.
-
-- **`tasks/`** :
-
-Contient les taches à réaliser à intervalles réguliers par le backend.
-
+  - **`frontend/src/index.js`**: Point d'entrée de l'application React.
+  - **`frontend/src/App.js`**: Composant principal de l'application, gère le routage des pages.
+  - **`frontend/src/api`**: Contient les fonctions pour interagir avec l'API du backend. `base_url.js` définit l'URL du backend, et les autres fichiers `api_*.js` contiennent les appels à l'API pour chaque fonctionnalité.
+  - **`frontend/src/components`**: Contient les composants React réutilisables.
+  - **`frontend/src/pages`**: Contient les composants React qui représentent les pages de l'application.

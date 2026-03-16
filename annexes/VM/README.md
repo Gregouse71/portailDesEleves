@@ -1,5 +1,7 @@
 # Fichiers de configuration de la VM
 
+La machine virtuelle qui héberge le site doit être configurée.
+
 ## Nginx
 
 Utilisé comme reverse proxy

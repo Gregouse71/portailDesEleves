@@ -4,7 +4,8 @@ from app.models import GlobalVariable
 from config import Config
 
 """
-Ce fichier n'est utilise qu'une fois, pour initialiser les bases de donnees
+Ce fichier est utilisé pour créer la base de données au départ,
+puis pour ajouter des tables lors du développement.
 """
 
 # Creer une instance de l'application Flask

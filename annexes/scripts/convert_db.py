@@ -2,6 +2,11 @@ import sqlite3
 import re
 import os
 
+"""
+Script utilisé pour convertir la base de données exportée par phpMyAdmin au format .sql
+en base de données aux format sqlite, lisible par sqlalchemy.
+"""
+
 def convert_mysql_to_sqlite(sql_file_path, db_file_path):
     """
     Parses a MySQL dump file and imports it into a SQLite database,

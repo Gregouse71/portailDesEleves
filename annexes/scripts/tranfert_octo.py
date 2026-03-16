@@ -3,6 +3,11 @@ from app import create_app, db
 from app.models import Utilisateur
 from config import Config
 
+"""
+Script permettant le transfert de la base de données de l'ancien soifguard
+vers le nouveau schéma.
+"""
+
 def transfert():
     socketio, app = create_app(Config)
 
