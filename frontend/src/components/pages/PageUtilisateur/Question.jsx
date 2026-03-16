@@ -57,15 +57,15 @@ export default function TabQuestions({ id, autoriseAModifier }) {
         {!isGestion ?
             <div className="list-question">
                 {Object.keys(displayData).map(key => {
-                    return (<div key={key}><strong>{key.slice(3, -1)} :</strong> {displayData[key]}</div>)
+                    return (<div key={key}><strong>{key.slice(3)}</strong> {displayData[key]}</div>)
                 })}
             </div>
             :
             <Form>
                 {Array.from(Object.keys(displayData)).sort().map(key => {
                     return (
-                        <Form.Group as={Row} className="mb-3" key={key}>
-                            <Form.Label column sm="4">{key.slice(3, -1)}</Form.Label>
+                        <Form.Group as={Row} className="mb-1" key={key}>
+                            <Form.Label column sm="4">{key.slice(3)}</Form.Label>
                             <Col sm="8">
                                 <Form.Control type="text" name={key} value={displayData[key] || ""} onChange={handleChange} />
                             </Col>
