@@ -60,7 +60,6 @@ export default function Header() {
                         <NavDropdown title="Menu" id="basic-nav-dropdown" className="d-none d-md-block">
                             <NavDropdown.Item onClick={() => navigate("/")}>Accueil</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => navigate("/assos")}>Associations</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => navigate("/assos/planning")}>Planning associatif</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
                             {(octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission)
@@ -80,10 +79,12 @@ export default function Header() {
                             <Nav.Link onClick={() => navigate("/assos")}>Associations</Nav.Link>
                             <Nav.Link onClick={() => navigate("/assos/planning")}>Planning associatif</Nav.Link>
                             <Nav.Link onClick={() => navigate("/trombi")}>Trombinoscope</Nav.Link>
+                            <hr className="my-2 text-muted" />
                             <Nav.Link onClick={() => navigate("/vendomes")}>Vendômes</Nav.Link>
                             <Nav.Link onClick={() => navigate("/palums")}>Palums</Nav.Link>
                             <Nav.Link href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</Nav.Link>
                             <Nav.Link href="https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/" target="_blank" rel="noopener noreferrer">Réservation véhicule des Mines</Nav.Link>
+                            <hr className="my-2 text-muted" />
                             <Nav.Link onClick={() => navigate("/jeux/2048")}>2048</Nav.Link>
                         </div>
 
