@@ -1,4 +1,4 @@
-import { createContext, useContext, useLayoutEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import Header from '../components/blocs/Header';
 import BlocSondage from '../components/blocs/blocSondage';
 import BlocChat from '../components/blocs/blocChat';
@@ -17,17 +17,17 @@ const LayoutContext = createContext();
 function ScrollToTop() {
     const { pathname, search } = useLocation();
 
-    useLayoutEffect(() => {
-        // Disable browser's default scroll restoration to avoid conflicts
-        if ('scrollRestoration' in window.history) {
-            window.history.scrollRestoration = 'manual';
-        }
-        
-        window.scrollTo({
-            top: 0,
-            left: 0,
-            behavior: 'smooth'
-        });
+    useEffect(() => {
+        // Use a timeout to ensure DOM has settled, especially for dynamically loaded content
+        const timeoutId = setTimeout(() => {
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: 'smooth'
+            });
+        }, 0); // A small delay can help
+
+        return () => clearTimeout(timeoutId);
     }, [pathname, search]);
 
     return null;
