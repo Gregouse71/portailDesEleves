@@ -6,7 +6,7 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
-from datetime import date, timedelta, datetime, timezone
+from datetime import timedelta, datetime, timezone
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurSondage(Exception):
@@ -33,7 +33,7 @@ def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
     - il faudra aussi verifier s'il y a bien un sondage aujourd'hui
     """
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
-    if id_sondage_du_jour is not None :
+    if id_sondage_du_jour is not None and utilisateur.vote_sondaj_du_jour is not None:
         utilisateur.vote_sondaj_du_jour = vote
 
         sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour).first()
@@ -246,6 +246,8 @@ def update_all_scores ():
     with db.session.no_autoflush:
         for user in users:
             user.nombre_votes = VoteSondage.query.filter_by(utilisateur_id=user.id).count()
+            if user.id == 859: # Compensation de la perte des votes de 14gerard
+                user.nombre_votes += 3152
             user.score_recent = score_recent_sondages (user.id)
             con, div = score_global_sondages (user.id)  # Score consensuel, divergent
 

@@ -5,10 +5,14 @@ Description="Serveur pour le backend du site."
 After=network.target
 
 [Service]
-Type=simple
+Type=notify
 WorkingDirectory=/home/rezal/site/
 ExecStart=/home/rezal/miniconda3/envs/portail/bin/gunicorn --worker-class gevent -b 127.0.0.1:5000 -w 5 run:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
 Restart=on-failure
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
