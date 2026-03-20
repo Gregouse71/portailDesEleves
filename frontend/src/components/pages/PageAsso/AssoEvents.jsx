@@ -332,7 +332,7 @@ export default function AssoEvents({ asso_id }) {
 
             {/* Les événements existants */}
             {sortEvents(events).map((event, ind) => (
-                <div ref={ind === events.length - 1 ? lastEventRef : null}>
+                <div key={ind} ref={ind === events.length - 1 ? lastEventRef : null}>
                     <Event key={event.id} id={event.id} canModify={membreData.autorise}
                         asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={false} />
                 </div>

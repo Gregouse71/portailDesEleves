@@ -14,6 +14,12 @@ export default function Admin() {
     const [permissionsOpen, setPermissionsOpen] = useState(true);
     const [userCreationOpen, setUserCreationOpen] = useState(true);
 
+    const sections = [
+        { title: "Gestion du baptême", element: BaptemeManager, isOpen: baptemeOpen, trigger: setBaptemeOpen },
+        { title: "Gestion des permissions", element: PermissionsManager, isOpen: permissionsOpen, trigger: setPermissionsOpen },
+        { title: "Ajout d'utilisateurs", element: UserCreation, isOpen: userCreationOpen, trigger: setUserCreationOpen },
+    ]
+
     return (
         <Container className="py-4">
             <div className="d-flex align-items-center mb-4">
@@ -23,26 +29,19 @@ export default function Admin() {
                 <h1 className="mb-0">Panneau Administrateur</h1>
             </div>
 
-            <div className="admin-section my-4">
-                <h2 className="d-flex justify-content-between" onClick={() => setBaptemeOpen(!baptemeOpen)} style={{ cursor: "pointer" }}>
-                    Gestion du baptême {baptemeOpen ? <ChevronUp /> : <ChevronDown />}
-                </h2>
-                <Collapse in={baptemeOpen}><div><BaptemeManager /></div></Collapse>
-            </div>
-
-            <div className="admin-section my-4">
-                <h2 className="d-flex justify-content-between" onClick={() => setPermissionsOpen(!permissionsOpen)} style={{ cursor: "pointer" }}>
-                    Gestion des permissions {permissionsOpen ? <ChevronUp /> : <ChevronDown />}
-                </h2>
-                <Collapse in={permissionsOpen}><div><PermissionsManager /></div></Collapse>
-            </div>
-
-            <div className="admin-section my-4">
-                <h2 className="d-flex justify-content-between" onClick={() => setUserCreationOpen(!userCreationOpen)} style={{ cursor: "pointer" }}>
-                    Ajout d'utilisateurs {userCreationOpen ? <ChevronUp /> : <ChevronDown />}
-                </h2>
-                <Collapse in={userCreationOpen}><div><UserCreation /></div></Collapse>
-            </div>
+            {sections.map((u, i) =>
+                <div key={i} className="admin-section my-4">
+                <Button
+                    variant="h2"
+                    className="d-flex justify-content-between admin-section-header"
+                    onClick={() => u.trigger(!u.isOpen)}
+                    onKeyDown={() => u.trigger(!u.isOpen)}
+                >
+                    <h2>{u.title} {u.isOpen ? <ChevronUp /> : <ChevronDown />}</h2>
+                </Button>
+                    <Collapse in={u.isOpen}><div><u.element /></div></Collapse>
+                </div>
+            )}
         </Container>
     );
 }

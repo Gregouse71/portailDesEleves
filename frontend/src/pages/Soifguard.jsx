@@ -1,9 +1,9 @@
 import "../assets/styles/soifguard.scss";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import {
     getListeConsos,
-    obtenirDetteMaxi,
+    // obtenirDetteMaxi,
     encaisserAsso,
     ajouterConso,
     supprimerConso,
@@ -478,9 +478,13 @@ function Consommation({ categorie, reset, perms }) {
     }, [selectedUser, selectedConso, categorie, query, queryClient]);
 
     useEffect(() => {
-        setSelectedUser(null);
-        setSelectedConso(null);
-    }, [reset])
+        if (selectedUser !== null || selectedConso !== null) {
+            setTimeout(() => {
+                setSelectedUser(null);
+                setSelectedConso(null);
+            }, 0);
+        }
+    }, [reset, selectedUser, selectedConso])
 
     const addMutation = useMutation({
         mutationFn: async ({ nom_conso, prix, prix_cotisant, asso }) => {
@@ -589,7 +593,7 @@ function Consommation({ categorie, reset, perms }) {
                 ) : (
                     <div className="soifguard-grid-container">
                         {content}
-                        {gestionConsos && perms && <div className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)}>
+                        {gestionConsos && perms && <div role="button" tabIndex={0} className="soifguard-grid-item soifguard-add-item" onClick={() => setIsModalOpen(true)} onKeyDown={() => setIsModalOpen(true)}>
                             + Ajouter
                         </div>}
                     </div>
@@ -630,41 +634,43 @@ export default function SoifGuard() {
     const { userData } = useProtected();
     const navigate = useNavigate();
     const [categorie, setCategorie] = useState();
+    const initializedRef = useRef(false);
     const [mode, setMode] = useState("conso");
     const [reset, setReset] = useState(false);
 
     // pour les permissions de lancer octo ou biero
-    const { data: octoPermission = false, isLoading: isLoadingOcto } = useQuery({
+    const { data: octoPermission = false } = useQuery({
         queryKey: ['permOcto'],
         queryFn: () => verifierPermission({}, "octo", userData.id),
     });
-    const { data: bieroPermission = false, isLoading: isLoadingOctoA } = useQuery({
+    const { data: bieroPermission = false } = useQuery({
         queryKey: ['permBiero'],
         queryFn: () => verifierPermission({}, "biero", userData.id),
     });
-    const { data: octoAdminPermission = false, isLoading: isLoadingBiero } = useQuery({
+    const { data: octoAdminPermission = false } = useQuery({
         queryKey: ['permAdminOcto'],
         queryFn: () => verifierPermission({}, "admin_octo", userData.id),
     });
-    const { data: bieroAdminPermission = false, isLoading: isLoadingBieroA } = useQuery({
+    const { data: bieroAdminPermission = false } = useQuery({
         queryKey: ['permAdminBiero'],
         queryFn: () => verifierPermission({}, "admin_biero", userData.id),
     });
-    // const { data: detteMaxiOcto = false } = useQuery({
-    //     queryKey: ['detteOcto'],
-    //     queryFn: () => obtenirDetteMaxi("octo"),
-    // });
-    // const { data: detteMaxiBiero = false } = useQuery({
-    //     queryKey: ['detteBiero'],
-    //     queryFn: () => obtenirDetteMaxi("biero"),
-    // });
 
-    // Si l'utilisateur n'est que biéro ou que octo, on affiche directement la bonne catégorie
     useEffect(() => {
-        if (categorie) return;
-        if ((octoPermission || octoAdminPermission) && !(bieroPermission || bieroAdminPermission)) setCategorie("octo");
-        else if ((bieroPermission || bieroAdminPermission) && !(octoPermission || octoAdminPermission)) setCategorie("biero");
-    }, [octoPermission, octoAdminPermission, bieroPermission, bieroAdminPermission, categorie])
+        if (initializedRef.current) return;
+
+        if ((octoPermission || octoAdminPermission) && !(bieroPermission || bieroAdminPermission)) {
+            setTimeout(() => {
+                setCategorie("octo");
+                initializedRef.current = true;
+            }, 0);
+        } else if ((bieroPermission || bieroAdminPermission) && !(octoPermission || octoAdminPermission)) {
+            setTimeout(() => {
+                setCategorie("biero");
+                initializedRef.current = true;
+            }, 0);
+        }
+    }, [octoPermission, octoAdminPermission, bieroPermission, bieroAdminPermission]);
 
     const changeMode = (e) => {
         const newMode = e.target.value;

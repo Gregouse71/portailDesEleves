@@ -23,7 +23,7 @@ export async function processList(data) {
  */
 export const createBulk = createApiPost(`${UTILISATEUR_BASE_URL}/create_bulk`)
 
-export async function ajouterUtilisateur(nomUtilisateur, email, prenom, nom, cycle, promotion, photo, sucessStateSetter) {
+export async function ajouterUtilisateur(nomUtilisateur, email, prenom, nom, cycle, promotion, photo) {
 
   const formData = new FormData();
     formData.append("nom_utilisateur", nomUtilisateur);

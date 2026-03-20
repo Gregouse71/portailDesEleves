@@ -52,10 +52,6 @@ function Asso() {
 
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
-    const bannerStyle = {
-        backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
-    };
-
     const moduleToTab = {
         'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} /> },
         'Events': { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} /> },

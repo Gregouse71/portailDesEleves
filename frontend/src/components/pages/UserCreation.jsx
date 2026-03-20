@@ -107,7 +107,7 @@ export default function UserCreation() {
         mutationFn: async () => {
             return await createBulk({ list: verifList });
         },
-        onSuccess: (list) => {
+        onSuccess: () => {
             console.log("success")
         }
     });

@@ -4,11 +4,8 @@ import BlocSondage from '../components/blocs/blocSondage';
 import BlocChat from '../components/blocs/blocChat';
 import BlocAnniversaire from '../components/blocs/blocAnniversaire';
 import '../assets/styles/layout.scss';
-import { obtenirIdUser } from '../api/api_global';
-import { obtenirDataUser } from '../api/api_utilisateurs';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
-import { useQuery } from '@tanstack/react-query';
 import BlocEvents from '../components/blocs/blocEvents';
 import BlocSoldes from '../components/blocs/blocSoldes';
 

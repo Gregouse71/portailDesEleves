@@ -53,7 +53,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     };
 
     const setOptionFile = async (index, file) => {
-        let newFiles = files
+        let newFiles = [...files];
         while (index > newFiles.length) newFiles.push(null);
         newFiles[index] = file;
         setFiles(newFiles);
@@ -114,7 +114,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     }
 
     if (isLoading) return <>Chargement...</>;
-    if (isError) return <>Pas d'élection à afficher.</>
+    if (isError) return <>Pas d&apos;élection à afficher.</>
 
     // L'utilisateur peut-il voter actuellement ?
     const canVote = election ? election.votant && !election.deja_vote && election.ouvert : false;

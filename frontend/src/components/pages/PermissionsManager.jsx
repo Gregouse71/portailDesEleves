@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Table, Form, Button, InputGroup, FormControl, Pagination } from "react-bootstrap";
+import { Table, Form, Button, InputGroup, FormControl } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addPermission, deletePermission, getPermissions } from "../../api/api_global";
 import RenderPagination from "../elements/RenderPagination";
