@@ -2,7 +2,7 @@ from app.services import db
 from app.services.services_global import get_global_var, set_global_var
 from app.models import Utilisateur, ConsoSoifguard, Permission
 from app.models.models_soifguard import OperationSoifguard
-from sqlalchemy import or_
+from sqlalchemy import or_, desc, asc
 
 
 def _encaisser(utilisateur: Utilisateur, auteur: Utilisateur, prix: float, asso: str, nom_conso: str):
@@ -145,3 +145,31 @@ def get_permissions(page: int, per_page: int, query_str: str="", asso: str="bier
         )
     perms = query.paginate(page=page, per_page=per_page, error_out=False)
     return {"permissions": [p.to_dict() for p in perms], "count": perms.total}
+
+
+def liste_utilisateurs(page: int, perPage: int="all", asso: str="octo", name: str="", orderBy: str="", orderAsc: bool=True, return_users: bool=False):
+    query = db.session.query(Utilisateur).filter(Utilisateur.promotion != "00")
+
+    if len(name) > 0:
+        query = query.filter(
+            or_(
+                Utilisateur.nom_utilisateur.ilike(f"%{name}%"),
+                Utilisateur.prenom.ilike(f"%{name}%"),
+                Utilisateur.nom.ilike(f"%{name}%"),
+                Utilisateur.surnom.ilike(f"%{name}%")
+            )
+        )
+
+    fun = asc if orderAsc else desc
+    if orderBy == "solde":
+        query = query.order_by(fun(Utilisateur.solde_octo)) if asso == "octo" else query.order_by(fun(Utilisateur.solde_biero))
+    if orderBy == "promotion":
+        query = query.order_by(fun(Utilisateur.promotion))
+
+
+    if perPage == "all":
+        users = query.all()
+        return {"utilisateurs": [o if return_users else o.id for o in users], "count": len(users)}
+    else:
+        page_res = query.paginate(page=page, per_page=perPage, error_out=False)
+        return {"utilisateurs": [o if return_users else o.id for o in page_res], "count": page_res.total}

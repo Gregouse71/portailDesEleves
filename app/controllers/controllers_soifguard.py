@@ -1,10 +1,12 @@
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import distinct, desc
+import csv
+import io
 
 from app import db
 from app.models import Utilisateur, ConsoSoifguard, Permission, OperationSoifguard
-from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations, get_permissions
+from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations, get_permissions, liste_utilisateurs
 from app.services.services_global import get_global_var
 from app.utils.decorators import a_permission
 from app.services.services_login import has_permission
@@ -232,3 +234,58 @@ def derniers_utilisateurs():
 
 
     return jsonify([db.session.query(Utilisateur).get(u[0]).to_dict() for u in users])
+
+
+@controllers_soifguard.get('/liste')
+@a_permission("octo", "biero", "admin_octo", "admin_biero")
+def get_liste_utilisateurs():
+    data = request.args
+    page = int(data.get('page', 1))
+    perPage = int(data.get('perPage', 10))
+    asso = data.get('asso', "octo")
+    query = data.get("query", "")
+    orderBy = data.get("orderBy")
+    orderAsc = data.get("orderAsc", "f")[0] != "f"
+
+    return jsonify(liste_utilisateurs(page=page, perPage=perPage, asso=asso, name=query, orderBy=orderBy, orderAsc=orderAsc))
+
+
+@controllers_soifguard.get('/liste/export')
+@login_required
+@a_permission("octo", "biero", "admin_octo", "admin_biero")
+def export_liste_utilisateurs_csv():
+    asso = request.args.get('asso', "octo")
+    query = request.args.get("query", "")
+    orderBy = request.args.get("orderBy")
+    orderAsc = request.args.get("orderAsc", "f")[0] != "f"
+
+    # Fetch all users using the modified liste_utilisateurs function
+    result = liste_utilisateurs(page=1, perPage="all", asso=asso, name=query, orderBy=orderBy, orderAsc=orderAsc, return_users=True)
+    users = result["utilisateurs"]
+
+    # Prepare CSV data
+    proxy = io.StringIO()
+
+    fieldnames = ["id", "prenom", "nom", "promotion", "email", "solde_octo", "solde_biero", "est_cotisant_biero"]
+    writer = csv.DictWriter(proxy, fieldnames=fieldnames)
+    writer.writeheader()
+
+    for user in users:
+        row = {}
+        for col in fieldnames:
+            row[col] = getattr(user, col)
+        writer.writerow(row)
+    
+    proxy.seek(0)
+
+    mem = io.BytesIO()
+    mem.write(proxy.getvalue().encode('utf-8'))
+    mem.seek(0)
+    proxy.close()
+
+    return send_file(
+        mem,
+        mimetype='application/csv',
+        as_attachment=True,
+        download_name='octo_biero.csv'
+    )

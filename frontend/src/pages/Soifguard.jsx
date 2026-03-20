@@ -13,12 +13,14 @@ import {
     getPermissionsSoifguard,
     addPermissionsSoifguard,
     deletePermissionsSoifguard,
-    derniersUtilisateurs
+    derniersUtilisateurs,
+    listeUtilisateurs,
+    exportListeUtilisateurs
 } from "../api/api_soifguard";
 import { verifierPermission } from "../api/api_global";
 import RenderPagination from "../components/elements/RenderPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { chargerUtilisateurs, searchUsers } from "../api/api_utilisateurs";
+import { chargerUtilisateurs, obtenirDataUser, searchUsers } from "../api/api_utilisateurs";
 import { Button, Form, Table, Pagination, InputGroup, FormControl, Image } from "react-bootstrap";
 import { useProtected } from "../Protected";
 import Select from "react-select";
@@ -31,7 +33,119 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('fr-FR', options);
 };
 
-const PER_PAGE = 20;
+function UserList({ id, categorie }) {
+    const { data: user, isLoading } = useQuery({
+        queryKey: ['donneesUtilisateurs', id],
+        queryFn: () => obtenirDataUser(id)
+    });
+
+    if (isLoading) return <></>
+    return <tr>
+        <td>{user.prenom}</td>
+        <td>{user.nom}</td>
+        <td>{user.cycle}{user.promotion}</td>
+        <td>
+            {categorie === "octo" && `${user.solde_octo}€`}
+            {categorie === "biero" && `${user.solde_biero}€`}
+        </td>
+    </tr>
+}
+
+function Liste({ categorie }) {
+    const [perPage, setPerPage] = useState(20);
+    const [page, setPage] = useState(1);
+    const [orderBy, setOrderBy] = useState("promotion"); // Default order by name
+    const [orderAsc, setOrderAsc] = useState(false); // Now settable
+    const [query, setQuery] = useState("");
+
+    const { data = { utilisateurs: [], count: 0 }, isLoading } = useQuery({
+        queryKey: ['soifguardListe', categorie, page, perPage, query, orderAsc, orderBy],
+        queryFn: () => listeUtilisateurs({ page: page, perPage, asso: categorie, query: query, orderBy, orderAsc }),
+        placeholderData: (previousData) => previousData,
+    });
+    const { utilisateurs, count } = data;
+    const totalPages = Math.ceil(count / perPage);
+
+    const handleSort = (column) => {
+        if (orderBy === column) {
+            setOrderAsc(!orderAsc);
+        } else {
+            setOrderBy(column);
+            setOrderAsc(true);
+        }
+        setPage(1);
+    };
+
+    const getSortIndicator = (column) => {
+        if (orderBy === column) {
+            return orderAsc ? ' ▲' : ' ▼';
+        }
+        return '';
+    };
+
+    return <div className="main-content flex-column">
+        <h2>Liste des utilisateurs</h2>
+        <div style={{ maxWidth: '900px', minWidth: '700px', margin: '0 auto' }}>
+            <div className="d-flex flex-md-row flex-column align-items-center mb-3">
+                <Form onSubmit={e => { e.preventDefault(); }} className="w-100 me-2">
+                    <Form.Group>
+                        <Form.Control
+                            type="text"
+                            name="query"
+                            placeholder="Rechercher"
+                            value={query}
+                            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                        />
+                    </Form.Group>
+                </Form>
+
+                <Form.Select
+                    className="w-auto"
+                    value={perPage}
+                    onChange={(e) => {
+                        setPerPage(Number(e.target.value)); setPage(1);
+                    }}
+                    aria-label="Éléments par page"
+                >
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </Form.Select>
+                <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="d-flex mb-0 ms-2" />
+                <Button variant="success" onClick={() => exportListeUtilisateurs({ asso: categorie, query, orderBy, orderAsc })} className="ms-2">
+                    Exporter CSV
+                </Button>
+            </div>
+            <Table striped bordered hover>
+                <thead>
+                    <tr>
+                        <th style={{ width: '30%' }} onClick={() => handleSort('prenom')}>Prénom{getSortIndicator('prenom')}</th>
+                        <th style={{ width: '30%' }} onClick={() => handleSort('nom')}>Nom{getSortIndicator('nom')}</th>
+                        <th style={{ width: '15%' }} onClick={() => handleSort('promotion')}>Promotion{getSortIndicator('promotion')}</th>
+                        <th style={{ width: '15%' }} onClick={() => handleSort('solde')}>Solde{getSortIndicator('solde')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {isLoading && utilisateurs.length === 0 ?
+                        <tr>
+                            <td colSpan="4">Chargement...</td>
+                        </tr>
+                        :
+                        utilisateurs.map(u => <UserList key={u} id={u} categorie={categorie} />)
+                    }
+                    {!isLoading && utilisateurs.length === 0 && (
+                        <tr>
+                            <td colSpan="4">Aucun utilisateur trouvé.</td>
+                        </tr>
+                    )}
+                </tbody>
+            </Table>
+        </div>
+    </div>
+}
+
+
 
 function PermissionUser({ perm, deleteMe }) {
     return <>
@@ -48,11 +162,12 @@ function PermissionUser({ perm, deleteMe }) {
 }
 
 function Permissions({ categorie }) {
+    const PER_PAGE = 30;
     const queryClient = useQueryClient();
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(1);
     const [selectedUser, setSelectedUser] = useState();
-    const [permission, setPermission] = useState(categorie);
+    const [permission, setPermission] = useState("");
 
     const { data: allUsers = [] } = useQuery({
         queryKey: ["allUsers"],
@@ -99,7 +214,7 @@ function Permissions({ categorie }) {
                     <tr>
                         <th>Utilisateur</th>
                         <th>Permissions</th>
-                        <td>
+                        <th>
                             <InputGroup>
                                 <FormControl
                                     placeholder="Filtre"
@@ -107,7 +222,7 @@ function Permissions({ categorie }) {
                                     onChange={(e) => { setQuery(e.target.value); setPage(1); }}
                                 />
                             </InputGroup>
-                        </td>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,11 +239,12 @@ function Permissions({ categorie }) {
                                 onChange={(e) => setPermission(e.target.value)}
                                 aria-label="Permission"
                             >
+                                <option value="">Sélectionner</option>
                                 <option value={`${categorie}`}>Soifguard</option>
                                 <option value={`admin_${categorie}`}>Admin</option>
                             </Form.Select>
                         </Form></td>
-                        <td><Button variant="info" onClick={() => addMutation.mutate(permission)} disabled={!selectedUser}>
+                        <td><Button variant="info" onClick={() => addMutation.mutate(permission)} disabled={!selectedUser && permission !== ""}>
                             Ajouter
                         </Button></td>
                     </tr>
@@ -142,6 +258,7 @@ function Permissions({ categorie }) {
 }
 
 function Operations({ categorie }) {
+    const PER_PAGE = 30;
     const [page, setPage] = useState(1)
     const [query, setQuery] = useState("")
     const { data = { operations: [], count: 0 }, isLoading } = useQuery({
@@ -551,13 +668,15 @@ export default function SoifGuard() {
 
     const changeMode = (e) => {
         const newMode = e.target.value;
-        if (!["conso", "operations", "permissions"].includes(newMode)) return
+        if (!["conso", "operations", "permissions", "liste"].includes(newMode)) return
 
         setMode(newMode);
         switch (newMode) {
             case "conso": navigate("/soifguard"); break;
+            case "liste": navigate("/soifguard/liste"); break;
             case "operations": navigate("/soifguard/operations"); break;
             case "permissions": navigate("/soifguard/permissions"); break;
+            default: return;
         }
     }
 
@@ -600,29 +719,30 @@ export default function SoifGuard() {
                         aria-label="Mode"
                     >
                         <option value="conso">Consommation</option>
-                        <option value="operations">Opérations</option>
+                        <option value="liste">Liste</option>
+                        <option value="operations">Historique</option>
                         <option value="permissions">Permissions</option>
                     </Form.Select>}
 
                 <div className="header-buttons">
                     {/* Bouton Octo : affiché seulement si l'utilisateur a la permission */}
                     {(octoPermission || octoAdminPermission) && (
-                        <button
+                        <Button
                             onClick={() => changeCategorie("octo")}
-                            className={categorie === "octo" ? "octo-active" : ""}
+                            variant={categorie === "octo" ? "primary" : "secondary"}
                         >
                             Octo
-                        </button>
+                        </Button>
                     )}
 
                     {/* Bouton Biero : affiché seulement si l'utilisateur a la permission */}
                     {(bieroPermission || bieroAdminPermission) && (
-                        <button
+                        <Button
                             onClick={() => changeCategorie("biero")}
-                            className={categorie === "biero" ? "biero-active" : ""}
+                            variant={categorie === "biero" ? "warning" : "secondary"}
                         >
                             Biero
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
@@ -631,6 +751,7 @@ export default function SoifGuard() {
                     <Consommation categorie={categorie} reset={reset}
                         perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)}
                     />} />
+                <Route path="liste" element={categorie ? <Liste categorie={categorie} /> : <></>} />
                 <Route path="operations" element={categorie ? <Operations categorie={categorie} /> : <></>} />
                 <Route path="permissions" element={categorie ? <Permissions categorie={categorie} /> : <></>} />
             </Routes>

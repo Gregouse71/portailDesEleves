@@ -87,4 +87,14 @@ export const addPermissionsSoifguard = createApiPost(`${SOIFGUARD_BASE_URL}/perm
 /** Cherche les utilisateurs pour les denières opérations
  * @param \{ limit = 10, categorie } : nombre d'utilisateurs à renvoyer
  */
-export const derniersUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/derniers`)
+export const derniersUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/derniers`);
+
+/** Cherche la liste des utliisateurs selon les critères de filtre
+ * @param \{ page, perPage, query }
+ */
+export const listeUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/liste`);
+
+/** Exporte la liste des utilisateurs au format CSV
+ * @param \{ asso, query, orderBy, orderAsc }
+ */
+export const exportListeUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/liste/export`, true);
