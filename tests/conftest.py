@@ -1,6 +1,6 @@
 import pytest
 
-from app import create_app, db
+from app import create_app, db, scheduler
 from app.models import Utilisateur, Sondage, GlobalVariable
 from config import Config
 
@@ -8,9 +8,18 @@ from config import Config
 def app(scope="function"):
     config_test = Config()
     config_test.SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    config_test.TESTING = True
+    
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
+    scheduler.remove_all_jobs()
+    
     _, app = create_app(config_test)
     with app.app_context():
         yield app
+
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
 
 @pytest.fixture()
 def db_initialized(app):

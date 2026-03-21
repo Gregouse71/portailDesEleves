@@ -12,3 +12,8 @@ def task_sondage():
     executes the task in a multi-worker environment.
     """
     sondage_suivant()
+
+@scheduler.task("cron", id="task_sondage", day="*", hour="*", minute="*")
+def test_task():
+    print("Task running")
+

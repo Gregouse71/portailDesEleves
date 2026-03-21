@@ -44,7 +44,8 @@ def create_app(config: Config):
 
     
     # Initialisation des extensions avec l'application
-    limiter.init_app(app)
+    if not app.config.get("TESTING"):
+        limiter.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
     socketio.init_app(app)
@@ -71,5 +72,6 @@ def create_app(config: Config):
         return send_from_directory(UPLOAD_FOLDER, filename)
     
     from .tasks import tasks
-    socketio.start_background_task(scheduler.start)
+    if not scheduler.running:
+        socketio.start_background_task(scheduler.start)
     return socketio, app
