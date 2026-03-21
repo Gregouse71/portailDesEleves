@@ -1,5 +1,6 @@
 from math import exp, sqrt
 import numpy as np
+import redis
 
 # importer les models grace a __init__.py de models
 from app.services import db
@@ -33,7 +34,7 @@ def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
     - il faudra aussi verifier s'il y a bien un sondage aujourd'hui
     """
     id_sondage_du_jour = get_global_var("id_sondage_du_jour")
-    if id_sondage_du_jour is not None and utilisateur.vote_sondaj_du_jour is not None:
+    if id_sondage_du_jour is not None and utilisateur.vote_sondaj_du_jour is None:
         utilisateur.vote_sondaj_du_jour = vote
 
         sondage_du_jour = Sondage.query.filter_by(id=id_sondage_du_jour).first()
@@ -42,7 +43,7 @@ def creer_vote_sondage_du_jour(utilisateur:Utilisateur, vote:int) :
         db.session.add(nouveau_vote)
         db.session.commit()
     else :
-        raise ErreurSondage("Pas de sondage aujourd'hui, le vote est impossible")
+        raise ErreurSondage(f"Pas de sondage aujourd'hui, le vote est impossible : {id_sondage_du_jour} {utilisateur.vote_sondaj_du_jour}")
 
 
 def valider_sondage(id_sondage:int) :
@@ -96,7 +97,34 @@ def _donner_votes_gagnants_perdants(compteur_votes: list[int]) :
     return gagnants, perdants
 
 
-def sondage_suivant() -> None:
+def sondage_suivant():
+    """
+    Gère la concurrence pour le passage au sondage suivant.
+    """
+    redis_client = redis.Redis(host='localhost', port=6379, db=0)
+    # The key for the distributed lock in Redis
+    lock_key = "lock:task_sondage"
+
+    # On gré un sémaphore avec pour nom lock_key, qui reste valide 300 secondes après sa création,
+    # et qui ne bloque pas le thread qui essaie de le créer :
+    # Si on essaie de l'acquérir et qu'on ne peut pas, la fonction s'arrête
+    lock = redis.lock.Lock(redis_client, lock_key, timeout=300, blocking=False)
+
+    print("Lock acquired for task_sondage. Running the task.")
+    try:
+        if not lock.acquire():
+            print("Could not acquire lock for task_sondage, another worker is already running it.")
+            return
+        with db.session.no_autoflush:
+            _sondage_suivant()
+        print("task_sondage has run successfully.")
+    finally:
+        # Always release the lock when the task is done.
+        lock.release()
+        print("Lock for task_sondage released.")
+
+
+def _sondage_suivant() -> None:
     """
     - regarde l'id du sondage du jour
     - si il y en a un regarde si il y a des votes

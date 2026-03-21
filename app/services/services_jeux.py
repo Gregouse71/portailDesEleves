@@ -39,10 +39,10 @@ def faire_un_coup(s: str, id: int, data: dict):
         return None
 
     lock_key = f"lock:game:{s}:{id}"
-    lock_acquired = redis_client.set(lock_key, "locked", ex=5, nx=True)
+    lock = redis.lock.Lock(redis_client, lock_key, timeout=1, blocking=False)
+    lock_acquired = lock.acquire()
 
     if not lock_acquired:
-        redis_client.delete(lock_key)
         return partie.to_dict()
 
     try:
@@ -60,7 +60,7 @@ def faire_un_coup(s: str, id: int, data: dict):
             db.session.commit()
             return partie.to_dict()
     finally:
-        redis_client.delete(lock_key)
+        lock.release()
     
     return None
 
