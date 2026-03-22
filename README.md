@@ -3,11 +3,11 @@
 
 ## I. Contexte général
 
-Ce portail est une modernisation du portail des élèves commencé en 2007 (?), amélioré en 2013 (?), puis par le VP Geek en 2017. Son principal problème est de n'être accessible, à ma connaissance, que depuis la machine sur laquelle il est hébergé. Il n'y a donc pas de développement à plusieurs possibles, si il y avait bien un suivi git au départ, ça fait longtemps qu'il a été abandonnée (plus de 3500 fichiers modifiés ou non suivis). Il a vocation a être modifié, amélioré au fil du temps, et le repertoire git est un outil essentiel pour assurer cela, avec l'aide du déploiement automatisé permis par gitlab.
+Ce portail est une modernisation du portail des élèves commencé en 2007 (?), amélioré en 2013 (?), puis par le VP Geek en 2017. Son principal problème est de n'être accessible, à ma connaissance, que depuis la machine sur laquelle il est hébergé. Il n'y avait donc pas de développement à plusieurs possibles, et s'il y avait bien un suivi git au départ, ça fait longtemps qu'il a été abandonnée (plus de 3500 fichiers modifiés ou non suivis). Il a vocation a être modifié, amélioré au fil du temps, et le repertoire git est un outil essentiel pour assurer cela, avec l'aide du déploiement automatisé permis par gitlab.
 
 Le but est d'écrire du code propre. Pour ce faire, inspirez vous de ce qui a été fait pour les événements et les élections, qui constituent un bon exemple avec api documenté et structurée de façon cohérente. Essayez aussi de maintenir un historique git aussi propre que possible, et de ne pas casser une fonctionnalité lorsque vous en déployez une autre.
 
-Par les choix qui ont été fait lors du début du développement, certaines technologies sont employées dans être indispensables (on aurait pu utiliser fastapi au lieu de flask par exemple), mais passer de l'une à l'autre n'est pas une mince affaire, surtout lorsqu'il s'agit de paramétrer correctement l'application backend, mais aussi le frontend, et le reverse proxy utilisé sur la machine virtuelle.
+Par les choix qui ont été fait lors du début du développement, certaines technologies sont employées sans être indispensables (on aurait pu utiliser fastapi au lieu de flask par exemple), mais passer de l'une à l'autre n'est pas une mince affaire, surtout lorsqu'il s'agit de paramétrer correctement l'application backend, mais aussi le frontend, et le reverse proxy utilisé sur la machine virtuelle.
 
 
 ## II. Fonctionnement du site
@@ -39,7 +39,7 @@ run.py fait appel à `__init__.py` qui crée l'application et démarre la base d
 
 2. Lorsque la base de données est modifiée :
   - `python init_db.py` permet de créer les nouvelles tables
-  - pour ajouter des colonnes, il faut modifier à la main la base de données en veillant à persérver la cohérence entre la déclaration et la colonne créer dans la table (prendre les autres colonnes en exemple)
+  - pour ajouter des colonnes, il faut modifier à la main la base de données en veillant à persérver la cohérence entre la déclaration et la colonne créée dans la table (prendre les autres colonnes en exemple)
 
 ### B - Le frontend
 

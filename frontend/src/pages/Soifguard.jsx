@@ -478,13 +478,9 @@ function Consommation({ categorie, reset, perms }) {
     }, [selectedUser, selectedConso, categorie, query, queryClient]);
 
     useEffect(() => {
-        if (selectedUser !== null || selectedConso !== null) {
-            setTimeout(() => {
-                setSelectedUser(null);
-                setSelectedConso(null);
-            }, 0);
-        }
-    }, [reset, selectedUser, selectedConso])
+        setSelectedUser(null);
+        setSelectedConso(null);
+    }, [reset])
 
     const addMutation = useMutation({
         mutationFn: async ({ nom_conso, prix, prix_cotisant, asso }) => {
