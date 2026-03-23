@@ -11,9 +11,10 @@ def task_sondage():
     It uses a Redis lock to ensure that only one worker process
     executes the task in a multi-worker environment.
     """
-    sondage_suivant()
+    with scheduler.app.app_context():
+        sondage_suivant()
 
-@scheduler.task("cron", id="task_sondage", day="*", hour="*", minute="*")
-def test_task():
-    print("Task running")
+# @scheduler.task("cron", id="task_sondage", day="*", hour="*", minute="*")
+# def test_task():
+#     print("Task running")
 
