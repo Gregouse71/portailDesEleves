@@ -5,19 +5,19 @@ import { obtenirPublicationsRecentes } from '../../api/api_publications';
 
 function Home() {
     const mailingLists = [
-        { name: 'Élèves 1A IC (P25)', email: 'promo-ic25-tous@groupes.mines-paristech.fr' },
-        { name: 'Élèves 2A IC (P24)', email: 'promo-ic24-hors-cesure@groupes.mines-paristech.fr' },
-        { name: 'Élèves Césuriens IC (P23)', email: 'promo-ic24-cesure@groupes.mines-paristech.fr' },
-        { name: 'Élèves 2A IC et Césuriens IC (P23 + P24)', email: 'promo-ic24-tous@groupes.mines-paristech.fr' },
-        { name: 'Élèves 3A IC (P22)', email: 'promo-ic23-tous@groupes.mines-paristech.fr' },
-        { name: 'Élèves 1A ISUP (I25)', email: 'promo-isupfere25@groupes.mines-paristech.fr' },
-        { name: 'Élèves 2A ISUP (I24)', email: 'promo-isupfere24@groupes.mines-paristech.fr' },
-        { name: 'Élèves 3A ISUP (I23)', email: 'promo-isupfere23@groupes.mines-paristech.fr' },
+        { name: 'Élèves 1A IC (P25)', email: 'promo-ic25-tous@minesparis.psl.eu' },
+        { name: 'Élèves 2A IC (P24)', email: 'promo-ic24-hors-cesure@minesparis.psl.eu' },
+        { name: 'Élèves Césuriens IC (P23)', email: 'promo-ic24-cesure@minesparis.psl.eu' },
+        { name: 'Élèves 2A IC et Césuriens IC (P23 + P24)', email: 'promo-ic24-tous@minesparis.psl.eu' },
+        { name: 'Élèves 3A IC (P22)', email: 'promo-ic23-tous@minesparis.psl.eu' },
+        { name: 'Élèves 1A ISUP (I25)', email: 'promo-isupfere25@minesparis.psl.eu' },
+        { name: 'Élèves 2A ISUP (I24)', email: 'promo-isupfere24@minesparis.psl.eu' },
+        { name: 'Élèves 3A ISUP (I23)', email: 'promo-isupfere23@minesparis.psl.eu' },
     ];
 
     const contacts = [
-        { name: 'Anne Mortureux, psychologue aux Mines (mercredi aprèm ou distanciel)', email: 'psy-mortureux@mines-paristech.fr', phone: '+33 (0)6 88 78 21 88' },
-        { name: 'Anne-Hélène Malcor, psychologue aux Mines (mardi en fin d\'aprèm et soirée ou distanciel)', email: 'psy-malcor@mines-paristech.fr' },
+        { name: 'Anne Mortureux, psychologue aux Mines (mercredi aprèm ou distanciel)', email: 'psy-mortureux@minesparis.psl.eu', phone: '+33 (0)6 88 78 21 88' },
+        { name: 'Anne-Hélène Malcor, psychologue aux Mines (mardi en fin d\'aprèm et soirée ou distanciel)', email: 'psy-malcor@minesparis.psl.eu' },
         { name: 'Nightline Paris (appel anonymisés, 21h-2h30 / tchat anonymisé sur le site)', website: 'https://www.nightline.fr/paris', phone: '+33 (0)1 88 32 12 32' },
         { name: 'Pamela Vaulot (successeuse de Béatrice)', email: 'pamela.vaulot@minesparis.psl.eu', phone: '+33 (0)6 27 20 23 38' },
     ];
