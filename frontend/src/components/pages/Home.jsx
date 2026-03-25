@@ -19,7 +19,7 @@ function Home() {
         { name: 'Anne Mortureux, psychologue aux Mines (mercredi aprèm ou distanciel)', email: 'psy-mortureux@minesparis.psl.eu', phone: '+33 (0)6 88 78 21 88' },
         { name: 'Anne-Hélène Malcor, psychologue aux Mines (mardi en fin d\'aprèm et soirée ou distanciel)', email: 'psy-malcor@minesparis.psl.eu' },
         { name: 'Nightline Paris (appel anonymisés, 21h-2h30 / tchat anonymisé sur le site)', website: 'https://www.nightline.fr/paris', phone: '+33 (0)1 88 32 12 32' },
-        { name: 'Pamela Vaulot (successeuse de Béatrice)', email: 'pamela.vaulot@minesparis.psl.eu', phone: '+33 (0)6 27 20 23 38' },
+        { name: 'Pamela Vaulot, chargée de la vie étudiante', email: 'pamela.vaulot@minesparis.psl.eu', phone: '+33 (0)6 27 20 23 38' },
     ];
 
     const vpSoutien = [
