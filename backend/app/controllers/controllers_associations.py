@@ -1,11 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from werkzeug.utils import secure_filename
-from datetime import datetime, timezone
 import os
 
 from app import db
-from app.utils.decorators import est_membre_de_asso, superutilisateur_required, a_permission
+from app.utils.decorators import est_membre_de_asso, superutilisateur_required
 from app.services.services_utilisateurs import get_utilisateur
 from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position, get_asso_media
 from app.services.services_media import upload_media, delete_media
@@ -17,8 +15,6 @@ from app.models.models_media import ElementMedia
 #
 # - Uniformiser la mise a jour avec le .update
 # - Ajouter des verifications de format dans cette fonction
-# - Ajouter de la securite
-# - enlèver association en debut de requetes et changer api.js
 
 # Creer le blueprint pour les utilisateurs
 controllers_associations = Blueprint('controllers_associations', __name__)
@@ -28,7 +24,7 @@ controllers_associations = Blueprint('controllers_associations', __name__)
 
 @controllers_associations.route("/<int:association_id>/editer_modules", methods=['PATCH'])
 @login_required
-@est_membre_de_asso
+@superutilisateur_required
 def route_editer_modules(association_id: int):
     """
     Modifie les modules d'une asso
@@ -45,7 +41,7 @@ def route_editer_modules(association_id: int):
 
 @controllers_associations.route("/<int:association_id>/editer_description", methods=['PATCH'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_editer_description(association_id: int):
     """
     Modifie la description d'une asso
@@ -96,7 +92,7 @@ def route_modifier_nom(association_id: int):
 
 @controllers_associations.route('/<int:association_id>/ajouter_membre/<int:mandat_id>/<int:nouveau_membre_id>', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(mandat=True)
 def route_ajouter_membre(association_id, mandat_id, nouveau_membre_id):
     """
     Ajoute un membre a l'association
@@ -124,7 +120,7 @@ def route_ajouter_membre(association_id, mandat_id, nouveau_membre_id):
 
 @controllers_associations.route('/<int:association_id>/ajouter_mandat/<string:nom>', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_ajouter_mandat(association_id, nom):
     """
     Ajoute un membre a l'association
@@ -142,9 +138,9 @@ def route_ajouter_mandat(association_id, nom):
         return jsonify({"message": "Impossible de créer le mandat"}), 400
 
 
-@controllers_associations.route('/<int:association_id>/modifier_mandat/<int:mandat_id>', methods=['PATCH'])
+@controllers_associations.patch('/<int:association_id>/modifier_mandat/<int:mandat_id>')
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_modifier_mandat(association_id, mandat_id):
     mandat = get_mandat(mandat_id)
     if not mandat or mandat.association_id != association_id:
@@ -162,7 +158,7 @@ def route_modifier_mandat(association_id, mandat_id):
 
 @controllers_associations.route('/<int:association_id>/supprimer_mandat/<int:mandat_id>', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_supprimer_mandat(association_id: int, mandat_id: int):
     """
     Ajoute un membre a l'association
@@ -179,7 +175,7 @@ def route_supprimer_mandat(association_id: int, mandat_id: int):
 
 @controllers_associations.route('/<int:association_id>/retirer_membre/<int:mandat_id>/<int:membre_id>', methods=['DELETE'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(mandat=True)
 def route_retirer_membre(association_id, mandat_id, membre_id):
     """
     Retire un membre de l'association
@@ -207,7 +203,7 @@ def route_retirer_membre(association_id, mandat_id, membre_id):
 
 @controllers_associations.route('/<int:association_id>/modifier_role_membre/<int:mandat_id>/<int:membre_id>', methods=['PATCH'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(mandat=True)
 def route_modifier_role_membre(association_id, mandat_id, membre_id):
     """
     Modifie le role d'un membre de l'association
@@ -231,7 +227,7 @@ def route_modifier_role_membre(association_id, mandat_id, membre_id):
 
 @controllers_associations.route('/<int:association_id>/modifier_position_membre/<int:mandat_id>/<int:membre_id>', methods=['PATCH'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(mandat=True)
 def route_modifier_position_membre(association_id, mandat_id, membre_id):
     """
     Modifie la position d'affichage du membre
@@ -255,7 +251,7 @@ def route_modifier_position_membre(association_id, mandat_id, membre_id):
 
 @controllers_associations.post('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<path:new_id>')
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_modifier_logo_banniere(association_id: int, logo_banniere: str, new_id: str):
     """
     Modifie la bannière de l'association
@@ -285,7 +281,7 @@ def get_content_asso(asso_id: int):
 
 @controllers_associations.delete('/content/<int:association_id>/<int:media_id>')
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def delete_content_asso(association_id: int, media_id: int):
     """
     Supprime un contenu (photo) pour un utilisateur.
@@ -307,7 +303,6 @@ def delete_content_asso(association_id: int, media_id: int):
     return jsonify({"message": "Media supprimé avec succès"}), 200
 
 
-# AJOUTER DE LA SECURITE
 @controllers_associations.route('/<int:association_id>/add_content', methods=['POST'])
 @login_required
 @est_membre_de_asso

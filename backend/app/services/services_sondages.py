@@ -9,6 +9,8 @@ from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
 from datetime import timedelta, datetime, timezone
 
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
+
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurSondage(Exception):
     def __init__(self, message):
@@ -101,7 +103,6 @@ def sondage_suivant():
     """
     Gère la concurrence pour le passage au sondage suivant.
     """
-    redis_client = redis.Redis(host='localhost', port=6379, db=0)
     # The key for the distributed lock in Redis
     lock_key = "lock:task_sondage"
 
@@ -114,6 +115,7 @@ def sondage_suivant():
         if not lock.acquire():
             print("Could not acquire lock for task_sondage, another worker is already running it.")
             return
+        print("Lock acquired for task_sondage. Running the task.")
         with db.session.no_autoflush:
             print("Lock acquired for task_sondage. Running the task.")
             _sondage_suivant()

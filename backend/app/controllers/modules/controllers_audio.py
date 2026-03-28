@@ -41,7 +41,7 @@ def route_get_albums(association_id):
 
 @controllers_audio.route('/<int:association_id>/album', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_add_album(association_id):
     """Adds a new album."""
     data = request.get_json()
@@ -55,7 +55,7 @@ def route_add_album(association_id):
 
 @controllers_audio.route('/<int:association_id>/album/<int:album_id>', methods=['PATCH'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_update_album(association_id, album_id):
     """Updates an album's name and position."""
     data = request.get_json()
@@ -75,7 +75,7 @@ def route_update_album(association_id, album_id):
 
 @controllers_audio.route('/album/<int:association_id>/<int:album_id>', methods=['DELETE'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_delete_album(association_id, album_id):
     """Deletes an album."""
     album = get_album(album_id)
@@ -89,7 +89,7 @@ def route_delete_album(association_id, album_id):
 # Audio (Song) Routes
 @controllers_audio.route('/<int:association_id>/album/<int:album_id>/audio', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_add_audio(association_id, album_id):
     """Adds a new song to a specific album."""
     album = get_album(album_id)
@@ -135,7 +135,7 @@ def route_add_audio(association_id, album_id):
 
 @controllers_audio.route('/<int:association_id>/audio/<int:audio_id>', methods=['DELETE'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_delete_audio(association_id, audio_id):
     """Deletes a song."""
     audio = get_audio(audio_id)
@@ -149,7 +149,7 @@ def route_delete_audio(association_id, audio_id):
 
 @controllers_audio.route('/<int:association_id>/audio/<int:audio_id>', methods=['PATCH'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_update_audio(association_id, audio_id):
     """Updates an audio's name and position."""
     data = request.get_json()

@@ -161,7 +161,7 @@ def route_add_get_publications_recentes():
 
 @controllers_publications.route("<int:association_id>/creer_nouvelle_publication", methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_creer_publication(association_id: int):
     """
     Ajoute une nouvelle publication dans la BDD. 
@@ -197,7 +197,7 @@ def route_creer_publication(association_id: int):
 
 @controllers_publications.route("<int:association_id>/supprimer_publication/<int:publication_id>", methods=["DELETE"])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_supprimer_publication(association_id, publication_id):
     """
     Supprime la publication
@@ -238,7 +238,7 @@ def route_supprimer_commentaire(comment_id):
 
 @controllers_publications.route("<int:association_id>/modifier_publication/<int:publication_id>", methods=["PUT"])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_modifier_publication(association_id, publication_id):
     """
     Modifie la publication
@@ -356,7 +356,7 @@ def route_modifier_commentaire(comment_id):
 
 @controllers_publications.route('/<int:association_id>/<int:publication_id>/add_content', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(actuel=True)
 def route_add_content_to_publication(association_id, publication_id):
     """
     Ajoute du contenu au dossier de la publication
