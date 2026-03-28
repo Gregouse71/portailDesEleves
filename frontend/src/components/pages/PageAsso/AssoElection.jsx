@@ -147,21 +147,19 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                     <Col as="h6" md="auto">Collège électoral : </Col>
                     <Col>Promotions {election.promos.join(", ")}</Col>
                 </Row>}
-                <Row className="mb-2">
+                <Row className="mb-2 g-4 justify-content-center">
                     {election.options.map((option, i) =>
-                        <Col md={6} key={i} className="d-flex justify-content-center">
+                        <Col xs={12} sm={6} lg={4} xl={3} key={i} className="d-flex flex-column align-items-center text-center">
                             {option.image &&
-                                <Image src={`${UPLOAD_BASE_URL}/${option.image}`} alt={option.name}
-                                    style={{ maxWidth: "300px", maxHeight: "300px" }}
-                                />}
-                        </Col>)
-                    }
-                </Row>
-                <Row>
-                    {election.options.map((option, i) =>
-                        <Col key={i} className="d-flex justify-content-center">
-                            <Button key={i} disabled={!canVote} className="m-2 fs-4"
+                                <div className="d-flex align-items-center justify-content-center w-100" style={{ height: "250px" }}>
+                                    <Image src={`${UPLOAD_BASE_URL}/${option.image}`} alt={option.name}
+                                        style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
+                                    />
+                                </div>
+                            }
+                            <Button disabled={!canVote} className="fs-5 mt-auto w-100"
                                 onClick={() => voterMutation.mutate(i)}
+                                style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                             >
                                 {option.name}
                             </Button>

@@ -72,7 +72,6 @@ def ajouter_photo(file, election, choix):
     path = os.path.join('associations', election.association.nom_dossier, filename)
     election.options[choix]["image"] = path
     flag_modified(election, "options")
-    db.session.add(election)
     db.session.commit()
     return path
 

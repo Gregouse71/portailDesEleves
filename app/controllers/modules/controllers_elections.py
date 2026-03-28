@@ -17,7 +17,7 @@ UPLOAD_FOLDER = 'upload/associations'
 @login_required
 @superutilisateur_required
 def upload_election_choice_image(id, choix):
-    election = db.session.query(Election).get(id)
+    election = Election.query.filter_by(id=id).with_for_update().first()
     if not election:
         return jsonify({"success": False, "message": "Election introuvable"}), 404
 
