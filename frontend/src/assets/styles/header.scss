@@ -16,6 +16,9 @@
     .nav-link {
         color: var(--header-text) !important;
     }
+    .mobile-dropdown .nav-link {
+        margin-bottom: -10px;
+    }
 
     h1 {
         font-size: 24px;

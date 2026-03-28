@@ -35,6 +35,7 @@ export default function Header() {
     });
 
     const handleSearchSubmit = (e) => {
+        setExpanded(false);
         e.preventDefault();
         if (searchQuery.length > 0) {
             navigate(`/search?q=${searchQuery}`);
@@ -52,6 +53,9 @@ export default function Header() {
         setTheme(theme === 'light' ? 'dark' : 'light');
     };
 
+    const [showL, setShowL] = useState(false);
+    const [showR, setShowR] = useState(false);
+
     return (
         <Navbar expand="md" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
@@ -60,7 +64,10 @@ export default function Header() {
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
                         {/* Menu Dropdown for desktop */}
-                        <NavDropdown title="Menu" id="basic-nav-dropdown" className="d-none d-md-block">
+                        <NavDropdown
+                            title="Menu" id="basic-nav-dropdown" className="d-none d-md-block"
+                            show={showL} onMouseEnter={() => setShowL(true)} onMouseLeave={() => setShowL(false)}
+                        >
                             <NavDropdown.Item onClick={() => navigate("/")}>Accueil</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => navigate("/assos")}>Associations</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => navigate("/assos/planning")}>Planning associatif</NavDropdown.Item>
@@ -70,6 +77,7 @@ export default function Header() {
                             <NavDropdown.Divider />
                             <NavDropdown.Item onClick={() => navigate("/vendomes")}>Vendômes</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => navigate("/palums")}>Palums</NavDropdown.Item>
+                            <NavDropdown.Item href="https://discord.gg/3MtV8cgTRu" target="_blank" rel="noopener noreferrer">Serveur Discord de dev</NavDropdown.Item>
                             <NavDropdown.Item href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</NavDropdown.Item>
                             <NavDropdown.Item href="https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/" target="_blank" rel="noopener noreferrer">Réservation véhicule des Mines</NavDropdown.Item>
                             <NavDropdown.Divider />
@@ -77,7 +85,7 @@ export default function Header() {
                         </NavDropdown>
 
                         {/* Expanded Menu for mobile */}
-                        <div className="d-md-none d-flex flex-column">
+                        <div className="mobile-dropdown d-md-none d-flex flex-column">
                             <Nav.Link onClick={() => { navigate("/"); setExpanded(false); }}>Accueil</Nav.Link>
                             <Nav.Link onClick={() => { navigate("/assos"); setExpanded(false); }}>Associations</Nav.Link>
                             <Nav.Link onClick={() => { navigate("/assos/planning"); setExpanded(false); }}>Planning associatif</Nav.Link>
@@ -85,16 +93,11 @@ export default function Header() {
                             <hr className="my-2 text-muted" />
                             <Nav.Link onClick={() => { navigate("/vendomes"); setExpanded(false); }}>Vendômes</Nav.Link>
                             <Nav.Link onClick={() => { navigate("/palums"); setExpanded(false); }}>Palums</Nav.Link>
+                            <Nav.Link href="https://discord.gg/3MtV8cgTRu" target="_blank" rel="noopener noreferrer">Serveur Discord de dev</Nav.Link>
                             <Nav.Link href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</Nav.Link>
                             <Nav.Link href="https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/" target="_blank" rel="noopener noreferrer">Réservation véhicule des Mines</Nav.Link>
                             <hr className="my-2 text-muted" />
                             <Nav.Link onClick={() => { navigate("/jeux/2048"); setExpanded(false); }}>2048</Nav.Link>
-                        </div>
-
-                        <Button variant="danger" size="sm" href="https://discord.gg/3MtV8cgTRu" className="w-auto mx-auto mx-md-0">Serveur Discord</Button>
-
-                        <div className="d-flex flex-row flex-wrap flex-md-row gap-2 w-auto mx-auto mx-md-0">
-
                         </div>
 
                         <div className="d-none d-md-block flex-grow-1"></div>
@@ -109,7 +112,10 @@ export default function Header() {
                             />
                         </Form>
 
-                        <NavDropdown title={userData ? userData.nom_utilisateur : "Chargement..."} id="user-nav-dropdown" align="end">
+                        <NavDropdown
+                            title={userData ? userData.nom_utilisateur : "Chargement..."} id="basic-nav-dropdown" align="end" className="d-none d-md-block"
+                            show={showR} onMouseEnter={() => setShowR(true)} onMouseLeave={() => setShowR(false)}
+                        >
                             <NavDropdown.Item onClick={() => { navigate(`utilisateur/${userData.id}`); setExpanded(false); }}>Ma page</NavDropdown.Item>
                             <NavDropdown.Item onClick={() => handleLogout()}>Se déconnecter</NavDropdown.Item>
                             {userData.is_superuser && <NavDropdown.Item variant="danger" size="sm" onClick={() => { navigate("/administration"); setExpanded(false); }}>Administration</NavDropdown.Item>}
@@ -119,6 +125,17 @@ export default function Header() {
                                 <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
                             </div>
                         </NavDropdown>
+                        {/* Expanded Menu for mobile */}
+                        <div className="d-md-none d-flex flex-column">
+                            <Nav.Link onClick={() => { navigate(`utilisateur/${userData.id}`); setExpanded(false); }}>Ma page</Nav.Link>
+                            <Nav.Link onClick={() => handleLogout()}>Se déconnecter</Nav.Link>
+                            {userData.is_superuser && <Nav.Link variant="danger" size="sm" onClick={() => { navigate("/administration"); setExpanded(false); }}>Administration</Nav.Link>}
+                            <hr className="my-2 text-muted" />
+                            <div className="d-flex justify-content-between align-items-center px-3">
+                                Thème
+                                <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
+                            </div>
+                        </div>
                     </Nav>
                 </Navbar.Collapse>
             </Container>

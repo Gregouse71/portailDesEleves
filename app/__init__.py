@@ -40,7 +40,7 @@ def create_app(config: Config):
     app.config.from_object(config)
 
     # Active CORS pour toutes les routes de l'application
-    CORS(app, origins="*", supports_credentials=True)
+    CORS(app, origins="*", supports_credentials=True, expose_headers=["Content-Disposition"])
 
     
     # Initialisation des extensions avec l'application

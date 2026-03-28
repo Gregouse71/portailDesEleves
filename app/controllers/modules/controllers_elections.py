@@ -158,7 +158,7 @@ def resultats_election(id: int):
 
     return send_file(
         mem,
-        mimetype='text/csv',
+        mimetype='application/csv',
         as_attachment=True,
         download_name='users_export.csv'
     )
