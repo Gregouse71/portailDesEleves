@@ -8,6 +8,7 @@ Utilisé comme reverse proxy
 Fichier de configuration : */etc/nginx/sites-available/site*. Il faut ensuite créer un lien symbolique pour activer le site : 
 
 ```bash
+sudo systemctl enable --now nginx
 cd /etc/nginx/sites-enabled
 sudo ln -s ../sites-available/site
 sudo nginx -t
@@ -20,6 +21,17 @@ Pour démarrer automatiquement le site au démarrage de la VM. Il faut créer le
 
 Au besoin, on peut augmenter le nombre de processus en parallèle : il faut modifier le fichier, reload le daemon et redémarrer le service.
 
-## MariaDB
+## SSH
 
-La base de données est hebergée sur un hôte MariaDB. Pour s'y connecter : dans dbeaver, créer une nouvelle connexion. Sélectionner MariaDB, puis renseigner l'utilisateur *rezal* et le mot de passe. Dans l'onglet en haut à droite, sélectionner SSH avec en hôte *10.20.1.20*, et en port *2223*. Username *rezal*, authentication method *Clé publique* et en clé SSH sélectionner le fichier qui contient votre clé privé, qui doit déjà être sur le serveur. Dans paramètres avancés, Implementation *SSHj*. Vous pouvez alors tester la connexion, et si elle marche cliquer sur valider.
+Il faut d'abord autoriser les connexions SSH avec la clé du runner gitlab, trouvable sur la VM gitlab, et restreindre la commande exécutable en SSH par cet utilisateur dans _/home/rezal/.ssh/authorized\_keys_ :
+```
+command="/home/rezal/update_site.sh",no-port-forwarding,no-agent-forwarding,no-X11-forwarding ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCXIbLggLZR8cxA9+870svRB3GXsewRDDpQ5rmpEfOC gitlab-runner@GitLab
+```
+
+## Mariadb
+
+MariaDB est le système de bdd utilisé. Il faut l'installer, l'activer, puis tout peut être fait depuis dbeaver.
+```bash
+sudo apt install mariadb-server
+sudo systemctl enable --now mariadb
+```

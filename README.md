@@ -9,8 +9,27 @@ Le but est d'écrire du code propre. Pour ce faire, inspirez vous de ce qui a é
 
 Par les choix qui ont été fait lors du début du développement, certaines technologies sont employées sans être indispensables (on aurait pu utiliser fastapi au lieu de flask par exemple), mais passer de l'une à l'autre n'est pas une mince affaire, surtout lorsqu'il s'agit de paramétrer correctement l'application backend, mais aussi le frontend, et le reverse proxy utilisé sur la machine virtuelle.
 
+## II. Administration
 
-## II. Fonctionnement du site
+Pour réduire les dépenses et mettre à profit le matériel du Rézal, le nouveau portail est hébergé sur une machine virtuelle du Rézal. C'est la même chose qu'avant, sauf que ça coûte rien et le service client est assuré par quelqu'un qui se trouve dans le même bâtiment.
+
+### A - Mise à jour
+
+Quand des commits sont ajoutés à la branche _prod_, cela déclenche automatiquement, grâce aux instructions se trouvant dans le fichier _.gitlab-ci.yml_, une mise à jour du site suivant les instructions se trouvant dans le fichier _update\_site.sh_. Cette mise à jour se fait en deux temps, d'abord une copie du nouveau code source du site, puis une mise à jour des différents composants.
+
+### B - Base de données
+
+La base de données est accessible en se connectant avec n'importe quel client de base de données. J'ai fait le choix de ne pas utiliser phpMyAdmin afin de ne pas exposer ce service à internet. En contrepartie, la bdd n'est acessible que depuis le Rézal.
+
+Pour s'y connecter avec dbeaver : 
+- Créer une nouvelle connexion.
+  - Sélectionner MariaDB
+  - Renseigner l'utilisateur *rezal* et le mot de passe.
+  - Dans l'onglet en haut à droite, sélectionner SSH avec en hôte *10.100.1.20*, et en port *2223*. Username *rezal*, authentication method *Clé publique* et en clé SSH sélectionner le fichier qui contient votre clé privé, qui doit déjà être sur le serveur. Dans paramètres avancés, Implementation *SSHj*. Vous pouvez alors tester la connexion, et si elle marche cliquer sur valider.
+
+Une fois connexté, vous pouvez lire la base de données, faire des modifications, modifier le schéma. Bref, tout est possible.
+
+## III. Fonctionnement du site
 
 Le site est composé de deux éléments : le frontend, ce qui tourne sur le navigateur des gens, et le backend, ce qui gère les données.
 
