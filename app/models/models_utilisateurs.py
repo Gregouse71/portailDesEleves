@@ -8,6 +8,7 @@ from app.utils.divers_utils import ph
 from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
 from ..utils.verification_format import valider_langues
+from app.models.models_sondages import VoteSondage
 
 
 import locale
@@ -256,7 +257,7 @@ class Utilisateur(db.Model, UserMixin) :
                     raise ValueError(f"Non modifie. Caracteres interdits dans '{value}'.")
 
 
-    def to_dict(self):
+    def to_dict(self, victoires=False, defaites=False):
         return {
             "id": self.id,
             "nom_utilisateur": self.nom_utilisateur,
@@ -288,5 +289,7 @@ class Utilisateur(db.Model, UserMixin) :
             "solde_biero": self.solde_biero,
             "meilleur_score_2048": self.meilleur_score_2048,
             "est_cotisant_biero": self.est_cotisant_biero,
-            "est_cotisant_octo": self.est_cotisant_octo
+            "est_cotisant_octo": self.est_cotisant_octo,
+            "victoires": VoteSondage.query.filter_by(utilisateur_id=self.id, gagnant=True).count() if victoires else None,
+            "defaites": VoteSondage.query.filter_by(utilisateur_id=self.id, perdant=True).count() if defaites else None,
         }

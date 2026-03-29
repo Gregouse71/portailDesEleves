@@ -23,11 +23,15 @@
   border-bottom: 1px solid var(--card-border-color);
 }
 
+.leaderboard-body {
+  display: table;
+  table-layout: auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .leaderboard-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem; /* Reduced padding for thinner lines */
+  display: table-row;
   border-bottom: 1px solid var(--card-border-color);
   transition: background-color 0.2s;
   background-color: var(--card-bg);
@@ -52,52 +56,34 @@
   height: 24px;
   border-radius: 50%;
   font-weight: bold;
-  margin-right: 10px;
-  flex-shrink: 0;
   font-size: 0.8rem;
+  margin: 0 auto;
   
   &.rank-1 { background-color: #FFD700; color: #fff; }
   &.rank-2 { background-color: #C0C0C0; color: #fff; }
   &.rank-3 { background-color: #CD7F32; color: #fff; }
-  &.rank-other { background-color: var(--secondary-color); color: #fff; }
+  &.rank-other { background-color: var(--secondary-color); color: #0f0f0f; }
 }
 
 
+
+.leaderboard-user-info, .leaderboard-rank-cell, .leaderboard-score {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 0.25rem 0.25rem;
+  text-align: center;
+}
+
+.leaderboard-rank-cell, .leaderboard-score {
+  width: 1%;
+  white-space: nowrap;
+}
 
 .leaderboard-user-info {
-  display: flex;
-  align-items: center;
-  flex-grow: 1;
-  overflow: hidden;
-}
-
-.leaderboard-avatar {
-  width: 30px; /* Smaller avatar */
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 8px;
-  border: 1px solid var(--card-border-color);
-}
-
-.leaderboard-name {
-  font-weight: normal; /* Less bold */
-  text-decoration: none;
-  color: var(--text-color);
-  white-space: nowrap;
+  text-align: left;
+  width: auto;
+  max-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
-
-  &:hover {
-    color: var(--primary-color);
-    text-decoration: none;
-  }
-}
-
-.leaderboard-score {
-  font-weight: bold;
-  color: var(--text-color); /* Neutral color for score */
-  margin-left: 10px;
-  font-size: 1rem;
+  white-space: nowrap;
 }

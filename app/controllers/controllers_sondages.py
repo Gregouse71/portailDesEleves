@@ -137,5 +137,5 @@ def get_scores_sondages():
         "mon_score_global": [current_user.score_global_con, current_user.score_global_div],
         "max_votes": [u.to_dict() for u in max_votes],
         "recent": [[u.to_dict() for u in top_recent], [u.to_dict() for u in top_recent_neg]],
-        "global": [[u.to_dict() for u in top_global_con], [u.to_dict() for u in top_global_div]]
+        "global": [[u.to_dict(victoires=True) for u in top_global_con], [u.to_dict(defaites=True) for u in top_global_div]]
     }), 200

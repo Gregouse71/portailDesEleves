@@ -2,8 +2,6 @@ from app import db
 from sqlalchemy.ext.mutable import MutableList
 from datetime import date, datetime, timezone
 
-from app.models.models_utilisateurs import Utilisateur
-
 
 # LA LOGIQUE DES SONDAGES
 # 
@@ -79,7 +77,7 @@ class VoteSondage(db.Model):
     gagnant = db.Column(db.Boolean, nullable=True)
     perdant = db.Column(db.Boolean, nullable=True)
 
-    def __init__(self, sondage: Sondage, utilisateur: Utilisateur, vote: vote):
+    def __init__(self, sondage: Sondage, utilisateur, vote: vote):
         if sondage.reponses[vote - 1] is None:
             raise Exception("Vote non possible au sondage")
         self.sondage = sondage
