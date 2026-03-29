@@ -15,7 +15,7 @@ def creer_election (asso_id, data):
         return None
 
     election = Election(association=asso[0], nom=data.get("nom"), options=data.get("options"))
-    election.patch(data)
+    patch_election(election, data)
     db.session.add(election)
     db.session.commit()
     return election
