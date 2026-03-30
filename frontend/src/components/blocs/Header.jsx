@@ -8,6 +8,57 @@ import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
 
+const Dropdown = ({ title, list, end }) => {
+    const navigate = useNavigate();
+    const [show, setShow] = useState(false);
+    const timeout = useRef(null);
+    const handleMouseEnter = () => {
+        if (timeout.current) clearTimeout(timeout.current);
+        setShow(true);
+    };
+
+    const handleMouseLeave = () => {
+        timeout.current = setTimeout(() => {
+            setShow(false);
+        }, 150);
+    };
+
+    return <>
+        {/* Visible uniquement sur PC */}
+        <NavDropdown
+            align={end ? "end" : "start"} title={title} id="basic-nav-dropdown" className="d-none d-md-block"
+            show={show} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
+        >
+            {list.map((elt, i) => {
+                const [type, target, title] = elt;
+                switch (type) {
+                    case "divider": return <NavDropdown.Divider key={i} />;
+                    case "navigate": return <NavDropdown.Item key={i} onClick={() => navigate(target)}>{title}</NavDropdown.Item>;
+                    case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
+                    case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
+                    case "custom": return target;
+                    default: return <></>;
+                }
+            })}
+        </NavDropdown>
+
+        {/* Expanded Menu for mobile */}
+        <div className="mobile-dropdown d-md-none d-flex flex-column">
+            {list.map((elt, i) => {
+                const [type, target, title] = elt;
+                switch (type) {
+                    case "divider": return <hr key={i} className="my-2 text-muted" />;
+                    case "navigate": return <Nav.Link key={i} onClick={() => navigate(target)}>{title}</Nav.Link>;
+                    case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
+                    case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
+                    case "custom": return target;
+                    default: return <></>;
+                }
+            })}
+        </div>
+    </>
+}
+
 export default function Header() {
     const [expanded, setExpanded] = useState(false); // State to control Navbar collapse
 
@@ -52,56 +103,6 @@ export default function Header() {
     const toggleTheme = () => {
         setTheme(theme === 'light' ? 'dark' : 'light');
     };
-
-    const Dropdown = ({ title, list, end }) => {
-        const [show, setShow] = useState(false);
-        const timeout = useRef(null);
-        const handleMouseEnter = () => {
-            if (timeout.current) clearTimeout(timeout.current);
-            setShow(true);
-        };
-
-        const handleMouseLeave = () => {
-            timeout.current = setTimeout(() => {
-                setShow(false);
-            }, 150);
-        };
-
-        return <>
-            {/* Visible uniquement sur PC */}
-            <NavDropdown
-                align={end ? "end" : "start"} title={title} id="basic-nav-dropdown" className="d-none d-md-block"
-                show={show} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
-            >
-                {list.map((elt, i) => {
-                    const [type, target, title] = elt;
-                    switch (type) {
-                        case "divider": return <NavDropdown.Divider key={i} />;
-                        case "navigate": return <NavDropdown.Item key={i} onClick={() => navigate(target)}>{title}</NavDropdown.Item>;
-                        case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
-                        case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
-                        case "custom": return target;
-                        default: return <></>;
-                    }
-                })}
-            </NavDropdown>
-
-            {/* Expanded Menu for mobile */}
-            <div className="mobile-dropdown d-md-none d-flex flex-column">
-                {list.map((elt, i) => {
-                    const [type, target, title] = elt;
-                    switch (type) {
-                        case "divider": return <hr key={i} className="my-2 text-muted" />;
-                        case "navigate": return <Nav.Link key={i} onClick={() => navigate(target)}>{title}</Nav.Link>;
-                        case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
-                        case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
-                        case "custom": return target;
-                        default: return <></>;
-                    }
-                })}
-            </div>
-        </>
-    }
 
     return (
         <Navbar expand="md" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
