@@ -36,8 +36,6 @@ const Tableau = ({ value }) => {
         queryFn: () => getEvenementsMois({}, value)
     });
 
-    console.log(events)
-
     return <>
         <h3>Événements sporadiques</h3>
         <Table responsive hover>

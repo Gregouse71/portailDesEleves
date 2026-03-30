@@ -57,7 +57,6 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
         while (index > newFiles.length) newFiles.push(null);
         newFiles[index] = file;
         setFiles(newFiles);
-        console.log(newFiles)
     };
 
     const handleStartModifying = () => {
@@ -74,7 +73,6 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
             else {
                 newElection = await modifierElection(modifyingElection, id);
             }
-            console.log(files)
             files.forEach(async (file, index) => {
                 if (!file) return
                 const formData = new FormData();

@@ -30,9 +30,9 @@ function Home() {
         { name: 'Marguerite Tabary', email: 'marguerite.tabary@etu.minesparis.psl.eu', phone: '+33 (0)6 34 42 59 11' },
     ];
 
-    const { data: listePosts = [] } = useQuery({
-        queryKey: ['publicationRecentes', 3],
-        queryFn: () => obtenirPublicationsRecentes(3),
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['publicationRecentes', 'all', 3],
+        queryFn: () => obtenirPublicationsRecentes({ page: 1, per: 3 }),
     });
 
     return (
@@ -40,8 +40,8 @@ function Home() {
             <Card className="mb-3">
                 <Card.Body className='d-flex flex-column gap-3'>
                     <Card.Title as="h2" className="text-end">Publications récentes</Card.Title>
-                    {listePosts.map(post_id => (
-                        <Post key={post_id} postId={post_id} isGestion={false}/>
+                    {(!isLoading && !isError) && data.publications.map(post_id => (
+                        <Post key={post_id} postId={post_id} isGestion={false} />
                     ))}
                 </Card.Body>
             </Card>

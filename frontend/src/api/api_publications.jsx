@@ -1,4 +1,6 @@
-import { API_BASE_URL, handleResponse } from "./base";
+import { API_BASE_URL, createApiGet, handleResponse } from "./base";
+
+const PUBLICATIONS_BASE_URL = `${API_BASE_URL}/publications`;
 
 export async function getPublicationsByTag(tag, page, per, query) {
   try {
@@ -41,21 +43,12 @@ export async function obtenirPublicationsAsso(asso_id, offset, limit) {
   }
 }
 
-export async function obtenirPublicationsRecentes(limit) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/publications/recent${limit ? `?limit=${limit}` : ''}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    })
-    return handleResponse(res);
-  } catch (erreur) {
-    console.error("Erreur réseau :", erreur)
-    throw erreur;
-  }
-}
+
+/** Récupère les publications les plus récentes
+ * @param params : { per, page }
+ */
+export const obtenirPublicationsRecentes = createApiGet(`${PUBLICATIONS_BASE_URL}/recent`)
+
 
 export async function obtenirPublication(post_id) {
   try {

@@ -6,6 +6,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Spinner } from "react-bootstrap";
 import { ProtectedRoute } from "./Protected";
 import { Layout, LayoutProvider } from "./layouts/Layout";
+import PublicationsRecentes from "./components/pages/PublicationsRecentes";
 
 // Lazy imports
 const Soifguard = lazy(() => import("./pages/Soifguard"));
@@ -79,6 +80,7 @@ export default function App() {
               <Route path="search" element={<Search />} />
               <Route path="vendomes" element={<Vendomes />} />
               <Route path="palums" element={<Palums />} />
+              <Route path="publications" element={<PublicationsRecentes />} />
             </Route>
             <Route path="soifguard/*" element={<Soifguard />}>
             </Route>

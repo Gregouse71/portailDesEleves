@@ -259,7 +259,6 @@ export default function AssoEvents({ asso_id }) {
     const [isNewEvent, setIsNewEvent] = useState(false);
 
     function sortEvents(events) {
-        console.log(events)
         return events.toSorted((a, b) => {
             // Les événements périodiques d'abord
             if (a.evenement_periodique && !b.evenement_periodique) {
@@ -293,15 +292,13 @@ export default function AssoEvents({ asso_id }) {
     } = useInfiniteQuery({
         queryKey: ['eventsAsso', asso_id],
         queryFn: ({ pageParam = 1 }) => obtenirEvenementsAsso({ page: pageParam, per: PER_PAGE }, asso_id),
-        getNextPageParam: (lastPage, allPages) => { console.log(allPages.length, lastPage.length); return lastPage.length >= PER_PAGE ? allPages.length + 1 : undefined },
+        getNextPageParam: (lastPage, allPages) => lastPage.length >= PER_PAGE ? allPages.length + 1 : undefined,
         enabled: !!asso_id,
-        staleTime: 1000 * 60 * 5, // 5 minutes
     });
     const events = data?.pages.flat() || [];
 
     const observer = useRef();
     const lastEventRef = useCallback(node => {
-        console.log(hasNextPage)
         if (isFetchingNextPage) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {

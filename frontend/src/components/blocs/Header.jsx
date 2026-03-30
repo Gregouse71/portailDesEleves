@@ -106,7 +106,7 @@ export default function Header() {
     return (
         <Navbar expand="md" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
-                <Navbar.Brand href="#" onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
+                <Navbar.Brand style={{cursor: "pointer"}} onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">

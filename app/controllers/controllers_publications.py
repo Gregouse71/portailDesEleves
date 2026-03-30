@@ -116,12 +116,14 @@ def route_add_get_publications_recentes():
     Renvoie les dernieres publications auxquelles l'utilisateur a accès.
     """
     try:
-        limit = request.args.get('limit', 10, type=int)
-        query = Publication.query
+        page = request.args.get('page', 1, type=int)
+        per = request.args.get('per', 3, type=int)
+        query = request.args.get('query', "")
+        publications = Publication.query
 
         if not current_user.est_superutilisateur:
             user_associations_ids = [membre.mandat.association.id for membre in current_user.associations]
-            
+
             # L'utilisateur a accès si la publication n'est pas interne, ou si elle l'est mais qu'il est membre de l'asso
             is_accessible_interne = or_(
                 Publication.is_publication_interne.isnot(True),
@@ -133,17 +135,25 @@ def route_add_get_publications_recentes():
                 Publication.a_cacher_aux_nouveaux.isnot(True),
                 current_user.est_baptise
             )
-            
+
             # L'utilisateur a accès si la publication n'est pas cachée à son cycle
             is_accessible_cycle = ~Publication.a_cacher_to_cycles.contains(current_user.cycle)
 
             # Filter by publication date
             is_accessible_date = Publication.date_publication <= datetime.now(timezone.utc)
 
-            query = query.filter(and_(is_accessible_interne, is_accessible_nouveaux, is_accessible_cycle, is_accessible_date))
+            publications = publications.filter(and_(is_accessible_interne, is_accessible_nouveaux, is_accessible_cycle, is_accessible_date))
+        
+        if len(query) > 0:
+            publications = publications.join(Association, Association.id == Publication.id_association).filter(
+                (
+                    Publication.titre.like(f"%{query}%") |
+                    Association.nom.like(f"%{query}%")
+                )
+            )
 
-        publications = query.order_by(desc(Publication.date_publication)).limit(limit).all()
-        return jsonify([p.id for p in publications]), 200
+        publications = publications.order_by(desc(Publication.date_publication)).paginate(page=page, per_page=per, error_out=False)
+        return jsonify({"publications": [p.id for p in publications], "count": publications.total, "totalPages": publications.pages}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

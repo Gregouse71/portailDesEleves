@@ -47,7 +47,6 @@ export default function PermissionsManager() {
     const addMutation = useMutation({
         mutationFn: async () => {
             const ret = { user_id: selectedUser.value, permission }
-            console.log(ret)
             await addPermission({ user_id: selectedUser.value, permission })
             return
         },
