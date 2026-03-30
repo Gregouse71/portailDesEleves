@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { seDeconnecter, verifierPermission } from '../../api/api_global';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
 import '../../assets/styles/header.scss';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -53,52 +53,84 @@ export default function Header() {
         setTheme(theme === 'light' ? 'dark' : 'light');
     };
 
-    const [showL, setShowL] = useState(false);
-    const [showR, setShowR] = useState(false);
+    const Dropdown = ({ title, list }) => {
+        const [show, setShow] = useState(false);
+        const timeout = useRef(null);
+        const handleMouseEnter = () => {
+            if (timeout.current) clearTimeout(timeout.current);
+            setShow(true);
+        };
+
+        const handleMouseLeave = () => {
+            timeout.current = setTimeout(() => {
+                setShow(false);
+            }, 150);
+        };
+
+        return <>
+            {/* Visible uniquement sur PC */}
+            <NavDropdown
+                title={title} id="basic-nav-dropdown" className="d-none d-md-block"
+                show={show} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
+            >
+                {list.map(elt => {
+                    const [type, target, title] = elt;
+                    switch (type) {
+                        case "divider": return <NavDropdown.Divider />;
+                        case "navigate": return <NavDropdown.Item onClick={() => navigate(target)}>{title}</NavDropdown.Item>;
+                        case "link": return <NavDropdown.Item href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
+                        case "onClick": return <NavDropdown.Item onClick={target}>{title}</NavDropdown.Item>;
+                        case "custom": return target;
+                        default: return <></>;
+                    }
+                })}
+            </NavDropdown>
+
+            {/* Expanded Menu for mobile */}
+            <div className="mobile-dropdown d-md-none d-flex flex-column">
+                {list.map(elt => {
+                    const [type, target, title] = elt;
+                    switch (type) {
+                        case "divider": return <hr className="my-2 text-muted" />;
+                        case "navigate": return <Nav.Link onClick={() => navigate(target)}>{title}</Nav.Link>;
+                        case "link": return <Nav.Link href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
+                        case "onClick": return <Nav.Link onClick={target}>{title}</Nav.Link>;
+                        case "custom": return target;
+                        default: return <></>;
+                    }
+                })}
+            </div>
+        </>
+    }
 
     return (
         <Navbar expand="md" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
-                <Navbar.Brand href="#" onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves (WIP)</Navbar.Brand>
+                <Navbar.Brand href="#" onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                        {/* Menu Dropdown for desktop */}
-                        <NavDropdown
-                            title="Menu" id="basic-nav-dropdown" className="d-none d-md-block"
-                            show={showL} onMouseEnter={() => setShowL(true)} onMouseLeave={() => setShowL(false)}
-                        >
-                            <NavDropdown.Item onClick={() => navigate("/")}>Accueil</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => navigate("/assos")}>Associations</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => navigate("/assos/planning")}>Planning associatif</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => navigate("/trombi")}>Trombinoscope</NavDropdown.Item>
-                            {(octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission)
-                                && <NavDropdown.Item variant="info" size="sm" onClick={() => navigate("/soifguard")}>Soifguard</NavDropdown.Item>}
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item onClick={() => navigate("/vendomes")}>Vendômes</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => navigate("/palums")}>Palums</NavDropdown.Item>
-                            <NavDropdown.Item href="https://discord.gg/3MtV8cgTRu" target="_blank" rel="noopener noreferrer">Serveur Discord de dev</NavDropdown.Item>
-                            <NavDropdown.Item href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</NavDropdown.Item>
-                            <NavDropdown.Item href="https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/" target="_blank" rel="noopener noreferrer">Réservation véhicule des Mines</NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item onClick={() => navigate("/jeux/2048")}>2048</NavDropdown.Item>
-                        </NavDropdown>
-
-                        {/* Expanded Menu for mobile */}
-                        <div className="mobile-dropdown d-md-none d-flex flex-column">
-                            <Nav.Link onClick={() => { navigate("/"); setExpanded(false); }}>Accueil</Nav.Link>
-                            <Nav.Link onClick={() => { navigate("/assos"); setExpanded(false); }}>Associations</Nav.Link>
-                            <Nav.Link onClick={() => { navigate("/assos/planning"); setExpanded(false); }}>Planning associatif</Nav.Link>
-                            <Nav.Link onClick={() => { navigate("/trombi"); setExpanded(false); }}>Trombinoscope</Nav.Link>
-                            <hr className="my-2 text-muted" />
-                            <Nav.Link onClick={() => { navigate("/vendomes"); setExpanded(false); }}>Vendômes</Nav.Link>
-                            <Nav.Link onClick={() => { navigate("/palums"); setExpanded(false); }}>Palums</Nav.Link>
-                            <Nav.Link href="https://discord.gg/3MtV8cgTRu" target="_blank" rel="noopener noreferrer">Serveur Discord de dev</Nav.Link>
-                            <Nav.Link href="https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Sheet des stages</Nav.Link>
-                            <Nav.Link href="https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/" target="_blank" rel="noopener noreferrer">Réservation véhicule des Mines</Nav.Link>
-                            <hr className="my-2 text-muted" />
-                            <Nav.Link onClick={() => { navigate("/jeux/2048"); setExpanded(false); }}>2048</Nav.Link>
-                        </div>
+                        <Dropdown title="Menu"
+                            list={[
+                                ["navigate", "/", "Accueil"],
+                                ["navigate", "/assos", "Associations"],
+                                ["navigate", "/assos/planning", "Planning associatif"],
+                                ["navigate", "/trombi", "Trombinoscope"],
+                                ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
+                                    [["navigate", "/soifguard", "Soifguard"]] : [],
+                                ["divider"],
+                                ["navigate", "/publications", "Publicatons récentes"],
+                                ["navigate", "/vendomes", "Vendômes"],
+                                ["navigate", "/palums", "Palums"],
+                                ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
+                                ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
+                                ["link", "https://moodle.psl.eu/", "Moodle"],
+                                ["link", "https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing", "Sheet des stages"],
+                                ["link", "https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/", "Réservation véhicule des Mines"],
+                                ["divider"],
+                                ["navigate", "/jeux/2048", "2048"],
+                            ]}
+                        />
 
                         <div className="d-none d-md-block flex-grow-1"></div>
 
@@ -112,30 +144,18 @@ export default function Header() {
                             />
                         </Form>
 
-                        <NavDropdown
-                            title={userData ? userData.nom_utilisateur : "Chargement..."} id="basic-nav-dropdown" align="end" className="d-none d-md-block"
-                            show={showR} onMouseEnter={() => setShowR(true)} onMouseLeave={() => setShowR(false)}
-                        >
-                            <NavDropdown.Item onClick={() => { navigate(`utilisateur/${userData.id}`); setExpanded(false); }}>Ma page</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => handleLogout()}>Se déconnecter</NavDropdown.Item>
-                            {userData.is_superuser && <NavDropdown.Item variant="danger" size="sm" onClick={() => { navigate("/administration"); setExpanded(false); }}>Administration</NavDropdown.Item>}
-                            <NavDropdown.Divider />
-                            <div className="d-flex justify-content-between align-items-center px-3">
-                                Thème
-                                <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
-                            </div>
-                        </NavDropdown>
-                        {/* Expanded Menu for mobile */}
-                        <div className="d-md-none d-flex flex-column">
-                            <Nav.Link onClick={() => { navigate(`utilisateur/${userData.id}`); setExpanded(false); }}>Ma page</Nav.Link>
-                            <Nav.Link onClick={() => handleLogout()}>Se déconnecter</Nav.Link>
-                            {userData.is_superuser && <Nav.Link variant="danger" size="sm" onClick={() => { navigate("/administration"); setExpanded(false); }}>Administration</Nav.Link>}
-                            <hr className="my-2 text-muted" />
-                            <div className="d-flex justify-content-between align-items-center px-3">
-                                Thème
-                                <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
-                            </div>
-                        </div>
+                        <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} align="end"
+                            list={[
+                                ["navigate", `/utilisateur/${userData.id}`, "Ma page"],
+                                ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],
+                                ["onClick", handleLogout, "Déconnexion"],
+                                ["divider"],
+                                ["custom", <div className="d-flex justify-content-between align-items-center px-3">
+                                    Thème
+                                    <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
+                                </div>]
+                            ]}
+                        />
                     </Nav>
                 </Navbar.Collapse>
             </Container>
