@@ -209,6 +209,7 @@ const Album = ({ id, autorise, asso_id }) => {
                         {autorise && (
                             <DropdownEditer list={[
                                 { can: true, name: "Modifier", onClick: () => { setEditingAlbum(album); setIsEditing(true); } },
+                                "divider",
                                 { can: true, name: "Supprimer", onClick: () => setShowConfirmDelete(true) }
                             ]} />
                         )}

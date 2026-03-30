@@ -172,6 +172,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                         <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
                             {canModify && <DropdownEditer list={[
                                 { can: true, onClick: handleStartModifying, name: "Modifier" },
+                                "divider",
                                 { can: true, onClick: removeEvent, name: "Supprimer" },
                             ]}
                             />

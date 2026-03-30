@@ -8,7 +8,7 @@ import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
 
-const Dropdown = ({ title, list, end }) => {
+const Dropdown = ({ title, list, end, setExpanded }) => {
     const navigate = useNavigate();
     const [show, setShow] = useState(false);
     const timeout = useRef(null);
@@ -33,7 +33,7 @@ const Dropdown = ({ title, list, end }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <NavDropdown.Divider key={i} />;
-                    case "navigate": return <NavDropdown.Item key={i} onClick={() => navigate(target)}>{title}</NavDropdown.Item>;
+                    case "navigate": return <NavDropdown.Item key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</NavDropdown.Item>;
                     case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
                     case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
                     case "custom": return target;
@@ -48,7 +48,7 @@ const Dropdown = ({ title, list, end }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <hr key={i} className="my-2 text-muted" />;
-                    case "navigate": return <Nav.Link key={i} onClick={() => navigate(target)}>{title}</Nav.Link>;
+                    case "navigate": return <Nav.Link key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</Nav.Link>;
                     case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
                     case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
                     case "custom": return target;
@@ -111,7 +111,7 @@ export default function Header() {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                        <Dropdown title="Menu"
+                        <Dropdown title="Menu" setExpanded={setExpanded}
                             list={[
                                 ["navigate", "/", "Accueil"],
                                 ["navigate", "/assos", "Associations"],
@@ -145,7 +145,7 @@ export default function Header() {
                             />
                         </Form>
 
-                        <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true}
+                        <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true} setExpanded={setExpanded}
                             list={[
                                 ["navigate", `/utilisateur/${userData.id}`, "Ma page"],
                                 ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],

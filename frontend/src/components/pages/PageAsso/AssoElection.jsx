@@ -136,6 +136,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                         {canModify && <DropdownEditer list={[
                             { can: true, onClick: handleStartModifying, name: "Modifier" },
                             { can: true, onClick: () => resultatsElection({}, election.id), name: "Résultats" },
+                            "divider",
                             { can: true, onClick: () => { supprimerElection(election.id); queryClient.invalidateQueries(['elections_asso', asso_id]) }, name: "Supprimer" },
                         ]}
                         />

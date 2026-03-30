@@ -178,16 +178,16 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
             setModifyFileInputKey(Date.now()); // Reset key
             setShouldRemoveExistingAttachment(false); // Reset deletion flag
             const { titre, contenu, is_commentable, is_publication_interne, a_cacher_aux_nouveaux, a_cacher_to_cycles, fichier_joint, miniature, tags, date_publication } = post;
-            
-            setModifyPost({ 
-                titre, 
-                contenu, 
-                is_commentable, 
+
+            setModifyPost({
+                titre,
+                contenu,
+                is_commentable,
                 is_publication_interne,
                 a_cacher_aux_nouveaux,
                 a_cacher_to_cycles: a_cacher_to_cycles || [],
-                fichier_joint, 
-                miniature, 
+                fichier_joint,
+                miniature,
                 tags: tags || [],
                 publier_maintenant: false,
                 date_publication: date_publication ? new Date(new Date(date_publication).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""
@@ -235,11 +235,11 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                     <Form.Group as={Row} className="mt-2">
                                         <Form.Label column sm="3">Date de publication</Form.Label>
                                         <Col sm="9">
-                                            <Form.Control 
-                                                type="datetime-local" 
-                                                name="date_publication" 
-                                                value={modifyPost.date_publication} 
-                                                onChange={handleSetModifyPost} 
+                                            <Form.Control
+                                                type="datetime-local"
+                                                name="date_publication"
+                                                value={modifyPost.date_publication}
+                                                onChange={handleSetModifyPost}
                                             />
                                         </Col>
                                     </Form.Group>
@@ -353,6 +353,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                                 )}
                                 {autorisé && <DropdownEditer list={[
                                     { can: true, onClick: startModifying, name: "Modifier" },
+                                    "divider",
                                     { can: true, onClick: removePost, name: "Supprimer" },
                                 ]}
                                 />}

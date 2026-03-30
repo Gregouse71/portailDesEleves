@@ -82,6 +82,7 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                             {canDelete &&
                                 <DropdownEditer list={[
                                     { can: comment.id_auteur === userData.id, onClick: handleEdit, name: "Modifier" },
+                                    "divider",
                                     { can: canDelete, onClick: () => handleDelete(comment.id), name: "Supprimer" },
                                 ]}
                                 />

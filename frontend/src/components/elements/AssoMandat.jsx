@@ -5,10 +5,13 @@ import { ajouterMembre, modifierMandat, modifierPositionMembre, modifierRoleMemb
 import { useState } from "react";
 import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
+import ConfirmationModal from "./ConfirmationModal"
 import { chargerUtilisateurs, obtenirListeDesPromos } from "../../api/api_utilisateurs";
 
 export default function AssoMandat({ mandat, asso, canModify }) {
     const queryClient = useQueryClient();
+
+    const [deletingMandat, setDeletingMandat] = useState(false);
 
     const [isEditing, setIsEditing] = useState(false);
     const [editingMandat, setEditingMandat] = useState(mandat);
@@ -194,8 +197,9 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                         :
                         canModify && <DropdownEditer list={[
                             { can: true, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
-                            { can: true, onClick: () => handleDelMandat(mandat.id), name: "Supprimer" },
                             { can: true, onClick: startAjoutMembre, name: "Ajouter un membre" },
+                            "divider",
+                            { can: true, onClick: () => setDeletingMandat(true), name: "Supprimer" },
                         ]}
                         />
                     }
@@ -259,6 +263,13 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                     ))}
                 </div>
             </Card.Body>
+            <ConfirmationModal
+                show={deletingMandat}
+                onHide={() => setDeletingMandat(false)}
+                onConfirm={() => handleDelMandat(mandat.id)}
+                title="Suppression"
+                body={`Êtes-vous sûr de vouloir supprimer le mandat ${mandat.nom} ?`}
+            />
         </Card>);
 }
 

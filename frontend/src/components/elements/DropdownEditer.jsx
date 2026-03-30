@@ -1,4 +1,4 @@
-import { Dropdown } from "react-bootstrap";
+import { Dropdown, NavDropdown } from "react-bootstrap";
 import '../../assets/styles/dropdownedit.scss'
 
 
@@ -10,7 +10,8 @@ export default function DropdownEditer({ list }) {
 
         <Dropdown.Menu>
             {list.map((elt, ind) => {
-                return elt.can && <Dropdown.Item key={ind} onClick={elt.onClick}>{elt.name}</Dropdown.Item>
+                return elt === "divider" ? <Dropdown.Divider key={ind} />
+                    : elt.can && <Dropdown.Item key={ind} onClick={elt.onClick}>{elt.name}</Dropdown.Item>
             })}
         </Dropdown.Menu>
     </Dropdown>
