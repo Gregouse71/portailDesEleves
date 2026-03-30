@@ -53,7 +53,7 @@ export default function Header() {
         setTheme(theme === 'light' ? 'dark' : 'light');
     };
 
-    const Dropdown = ({ title, list }) => {
+    const Dropdown = ({ title, list, end }) => {
         const [show, setShow] = useState(false);
         const timeout = useRef(null);
         const handleMouseEnter = () => {
@@ -70,16 +70,16 @@ export default function Header() {
         return <>
             {/* Visible uniquement sur PC */}
             <NavDropdown
-                title={title} id="basic-nav-dropdown" className="d-none d-md-block"
+                align={end ? "end" : "start"} title={title} id="basic-nav-dropdown" className="d-none d-md-block"
                 show={show} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
             >
-                {list.map(elt => {
+                {list.map((elt, i) => {
                     const [type, target, title] = elt;
                     switch (type) {
-                        case "divider": return <NavDropdown.Divider />;
-                        case "navigate": return <NavDropdown.Item onClick={() => navigate(target)}>{title}</NavDropdown.Item>;
-                        case "link": return <NavDropdown.Item href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
-                        case "onClick": return <NavDropdown.Item onClick={target}>{title}</NavDropdown.Item>;
+                        case "divider": return <NavDropdown.Divider key={i} />;
+                        case "navigate": return <NavDropdown.Item key={i} onClick={() => navigate(target)}>{title}</NavDropdown.Item>;
+                        case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
+                        case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
                         case "custom": return target;
                         default: return <></>;
                     }
@@ -88,13 +88,13 @@ export default function Header() {
 
             {/* Expanded Menu for mobile */}
             <div className="mobile-dropdown d-md-none d-flex flex-column">
-                {list.map(elt => {
+                {list.map((elt, i) => {
                     const [type, target, title] = elt;
                     switch (type) {
-                        case "divider": return <hr className="my-2 text-muted" />;
-                        case "navigate": return <Nav.Link onClick={() => navigate(target)}>{title}</Nav.Link>;
-                        case "link": return <Nav.Link href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
-                        case "onClick": return <Nav.Link onClick={target}>{title}</Nav.Link>;
+                        case "divider": return <hr key={i} className="my-2 text-muted" />;
+                        case "navigate": return <Nav.Link key={i} onClick={() => navigate(target)}>{title}</Nav.Link>;
+                        case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
+                        case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
                         case "custom": return target;
                         default: return <></>;
                     }
@@ -106,7 +106,7 @@ export default function Header() {
     return (
         <Navbar expand="md" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
-                <Navbar.Brand style={{cursor: "pointer"}} onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
+                <Navbar.Brand style={{ cursor: "pointer" }} onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
@@ -144,7 +144,7 @@ export default function Header() {
                             />
                         </Form>
 
-                        <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} align="end"
+                        <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true}
                             list={[
                                 ["navigate", `/utilisateur/${userData.id}`, "Ma page"],
                                 ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],

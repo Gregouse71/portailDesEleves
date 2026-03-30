@@ -7,12 +7,14 @@ import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElecti
 import DropdownEditer from "../../elements/DropdownEditer";
 import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
 import { UPLOAD_BASE_URL } from "../../../api/base";
+import ConfirmationModal from "../../elements/ConfirmationModal";
 
 const format_date = (s) => s ? new Date(s).toLocaleString("fr-FR") : "Non précisé"
 
 function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     const { userData } = useProtected();
     const queryClient = useQueryClient();
+    const [chosenVote, setChosenVote] = useState(-1);
 
     const { data: election, isLoading, isError } = useQuery({
         queryKey: ['election', id],
@@ -97,7 +99,8 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
             await voterElection({ choix: i }, id);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['election', id])
+            queryClient.invalidateQueries(['election', id]);
+            setChosenVote(-1);
         }
     })
 
@@ -116,6 +119,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 
     // L'utilisateur peut-il voter actuellement ?
     const canVote = election ? election.votant && !election.deja_vote && election.ouvert : false;
+    console.log(chosenVote)
 
     return <Card><Card.Body>
         {!isModifying ?
@@ -156,7 +160,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                                 </div>
                             }
                             <Button disabled={!canVote} className="fs-5 mt-auto w-100"
-                                onClick={() => voterMutation.mutate(i)}
+                                onClick={() => setChosenVote(i)}
                                 style={{ whiteSpace: "normal", wordWrap: "break-word" }}
                             >
                                 {option.name}
@@ -166,6 +170,13 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 </Row>
                 Début des votes : {format_date(election.date_ouverture)}<br />
                 Fin des votes : {format_date(election.date_fermeture)}
+                <ConfirmationModal
+                    show={chosenVote >= 0}
+                    onHide={() => setChosenVote(-1)}
+                    onConfirm={() => voterMutation.mutate(chosenVote)}
+                    title="Voter"
+                    body={`Êtes-vous sûr de vouloir voter pour ${election.options[chosenVote]?.name} ?`}
+                />
             </>
             :
             <>
