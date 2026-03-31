@@ -117,6 +117,9 @@ class Utilisateur(db.Model, UserMixin) :
     # Sondages
     vote_sondaj_du_jour = db.Column(db.Integer, nullable=True)
     nombre_votes = db.Column(db.Integer, default=0)
+    victoires = db.Column(db.Integer, default=0)
+    defaites = db.Column(db.Integer, default=0)
+
     score_recent = db.Column(db.Float, nullable=False, default=0)
     score_global_con = db.Column(db.Float, nullable=False, default=0)
     score_global_div = db.Column(db.Float, nullable=False, default=0)
@@ -290,6 +293,6 @@ class Utilisateur(db.Model, UserMixin) :
             "meilleur_score_2048": self.meilleur_score_2048,
             "est_cotisant_biero": self.est_cotisant_biero,
             "est_cotisant_octo": self.est_cotisant_octo,
-            "victoires": VoteSondage.query.filter_by(utilisateur_id=self.id, gagnant=True).count() if victoires else None,
-            "defaites": VoteSondage.query.filter_by(utilisateur_id=self.id, perdant=True).count() if defaites else None,
+            "victoires": self.victoires,
+            "defaites": self.defaites
         }

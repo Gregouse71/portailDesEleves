@@ -156,6 +156,8 @@ def _sondage_suivant() -> None:
 
             user = vote.utilisateur
             user.vote_sondaj_du_jour = None
+            user.victoires = VoteSondage.query.filter_by(utilisateur_id=user.id, gagnant=True).count()
+            user.defaites = VoteSondage.query.filter_by(utilisateur_id=user.id, perdant=True).count()
             db.session.add(user)
 
         sondage_du_jour = Sondage.query.filter_by(id=id_ancien_sondage_du_jour).first()

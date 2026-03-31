@@ -47,10 +47,17 @@ export default function ClassementSondage() {
                         Global Divergent : <span className="classement-text-danger">{globalScoreDiv}</span>
                     </Col>
                 </Row>
-
-                <Card.Text className="small text-muted border-top pt-2 mt-2">
-                    Nombre de votes : <strong className="classement-text-dark">{userData.nombre_votes}</strong>
-                </Card.Text>
+                <Row className="border-top fw-bold pt-2 mt-2">
+                    <Col xs={12} md={4} className="mb-2 mb-md-0 fw-normal">
+                        Nombre de votes : {userData.nombre_votes}
+                    </Col>
+                    <Col xs={12} md={4} className="mb-2 mb-md-0 fw-normal">
+                        Nombre de victoires : {userData.victoires}
+                    </Col>
+                    <Col xs={12} md={4} className="mb-2 mb-md-0 fw-normal">
+                        Nombre de défaites : {userData.defaites}
+                    </Col>
+                </Row>
             </Card>
 
             <h3 className="mt-1 mb-1">Classement Récent</h3>
