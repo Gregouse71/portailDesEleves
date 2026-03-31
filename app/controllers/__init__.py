@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 # Importer tous les blueprints des differents controllers
 from app.controllers.controllers_utilisateurs import controllers_utilisateurs
@@ -16,6 +16,9 @@ from app.controllers.modules.controllers_audio import controllers_audio
 
 # Creer un blueprint global qui regroupe tous les autres
 api = Blueprint('api', __name__)
+@api.get('/alive')
+def is_alive_route():
+    return jsonify(True)
 
 # Enregistrer chaque blueprint sous le blueprint global
 api.register_blueprint(controllers_utilisateurs, url_prefix='/users')
