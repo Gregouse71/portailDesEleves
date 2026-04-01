@@ -23,14 +23,23 @@ elif [[ "$SSH_ORIGINAL_COMMAND" == "update-site" ]]; then
     echo Fin frontend
 
     echo Backend
-    echo Arret du backend
-    systemctl --user stop site-backend
-    echo Mise a jour de l\'envirronement
     cd ..
-    /home/rezal/miniconda3/bin/conda env update --file environment.yml --prune --quiet
+
+    ENV_CACHE="/home/rezal/.env_cache.md5"
+    CURRENT_HASH=$(md5sum environment.yml | cut -d' ' -f1)
+
+    if [ ! -f "$ENV_CACHE" ] || [ "$(cat $ENV_CACHE)" != "$CURRENT_HASH" ]; then
+        echo Environnement modifié : mise à jour...
+        systemctl stop --user site-backend
+        /home/rezal/miniconda3/bin/conda env update --file environment.yml --prune --quiet
+        systemctl --user start site-backend
+        echo "$CURRENT_HASH" > "$ENV_CACHE"
+    else
+        echo Environnement non modifié : simple redémarrage
+        systemctl reload --user site-backend
+    fi
+
     /home/rezal/miniconda3/envs/portail/bin/python init_db.py
-    echo Redemarrage du front
-    systemctl --user start site-backend
 
     echo Fini
     systemctl --user status site-backend

@@ -1,4 +1,4 @@
-from gevent import monkey; monkey.patch_all()
+import eventlet; eventlet.monkey_patch()
 
 """
 Ce fichier crée et initialise l'application et les extensions. Il charge la configuration
@@ -24,7 +24,7 @@ from config import Config
 # Initialisation des extensions (sans encore les attacher à l'application)
 limiter = Limiter(get_remote_address)
 socketio = SocketIO(
-    async_mode='gevent',
+    async_mode='eventlet',
     cors_allowed_origins="*",
     message_queue="redis://localhost:6379/0"
 )

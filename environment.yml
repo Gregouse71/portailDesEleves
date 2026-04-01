@@ -24,3 +24,4 @@ dependencies:
   - argon2-cffi
   - numpy
   - python-dateutil
+  - gevent-websocket # Si impossible à installer avec conda, utiliser pip
