@@ -6,6 +6,10 @@
 
 instance/*
 portail/*
+
+public/images
+public/abatage
+
 frontend/src/api/base_url.js
 config.py
 upload
