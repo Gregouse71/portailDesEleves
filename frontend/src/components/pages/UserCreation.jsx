@@ -183,7 +183,7 @@ export default function UserCreation() {
                 </Card.Header>
                 <Card.Body>
                     <Card.Text className="text-muted">
-                        Importez une liste d&apos;utilisateurs via un fichier CSV pour les traiter en lot.
+                        Importez une liste d&apos;utilisateurs via un fichier CSV pour les traiter en lot. Une fois importé, les utilisateurs à créer sont affichées avant d'être modifiés puis validés.
                     </Card.Text>
                     <Form onSubmit={(e) => { e.preventDefault(); processMutation.mutate(); }}>
                         <Form.Group className="mb-3">
@@ -212,7 +212,7 @@ export default function UserCreation() {
             <Card className="h-100 shadow-sm">
                 <Card.Header className="bg-success text-white">
                     <h5 className="mb-0 d-flex align-items-center">
-                        <PersonPlus className="me-2" /> Ajout manuel d&apos;utilisateur
+                        <PersonPlus className="me-2" /> Ajout manuel d&apos;utilisateur (ne marche pas)
                     </h5>
                 </Card.Header>
                 <Card.Body>

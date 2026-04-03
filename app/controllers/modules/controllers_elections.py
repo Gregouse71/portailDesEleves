@@ -135,7 +135,7 @@ def resultats_election(id: int):
     votes = db.session.query(ElectionVote).options(joinedload(ElectionVote.utilisateur)).filter_by(election_id=id).all()
 
     if votes:
-        fieldnames = ["choix", "utilisateur_id", "election_id", "utilisateur.nom_utilisateur", "utilisateur.chambre", "utilisateur.promotion", "utilisateur.cycle"]
+        fieldnames = ["choix", "utilisateur_id", "election_id", "date", "utilisateur.nom_utilisateur", "utilisateur.chambre", "utilisateur.promotion", "utilisateur.cycle"]
         writer = csv.DictWriter(proxy, fieldnames=fieldnames)
 
         writer.writeheader()

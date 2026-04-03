@@ -110,12 +110,12 @@ def sondage_suivant():
     # Si on essaie de l'acquérir et qu'on ne peut pas, la fonction s'arrête
     lock = redis.lock.Lock(redis_client, lock_key, timeout=300, blocking=False)
 
-    print("Lock acquired for task_sondage. Running the task.")
     try:
         if not lock.acquire():
             print("Could not acquire lock for task_sondage, another worker is already running it.")
             return
         with db.session.no_autoflush:
+            print("Lock acquired for task_sondage. Running the task.")
             _sondage_suivant()
         print("task_sondage has run successfully.")
     finally:
