@@ -19,9 +19,9 @@ from app.models.models_associations import AssociationMembre, AssociationMandat
 controllers_utilisateurs = Blueprint('controllers_utilisateurs', __name__)
 
 
-@controllers_utilisateurs.route('/obtenir_liste_utilisateurs/<int:promo>/<string:cycles>', methods=['GET'])
+@controllers_utilisateurs.route('/obtenir_liste_utilisateurs/<sting:promo>/<string:cycles>', methods=['GET'])
 @login_required
-def obtenir_liste_utilisateurs(promo: int, cycles: str):
+def obtenir_liste_utilisateurs(promo: str, cycles: str):
     """
     Renvoie la liste des utilisateurs par cycle et par promotion
     - cycles est une liste en string de la forme "ic,ast"
@@ -35,7 +35,7 @@ def obtenir_liste_utilisateurs(promo: int, cycles: str):
             return jsonify({"message": f"Erreur : cycle invalide '{cycle}'. Valeurs autorisées: {valid_cycles}"}), 400
     # Récupération des utilisateurs avec seulement les champs nécessaires
     utilisateurs = Utilisateur.query.filter(
-        Utilisateur.promotion == str(promo),
+        Utilisateur.promotion == promo,
         Utilisateur.cycle.in_(str_cycles)
     ).order_by(Utilisateur.nom).all()
     # Conversion en JSON
