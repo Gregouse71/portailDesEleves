@@ -21,17 +21,11 @@ export const deletePermission = createApiDelete(`${LOGIN_BASE_URL}/permissions`)
  */
 export const addPermission = createApiPost(`${LOGIN_BASE_URL}/permissions`);
 
-export async function estAuthentifie() {
-  const res = await fetch(`${API_BASE_URL}/login/est_auth`, { credentials: "include" });
-  const data = await res.json();
-  return data.etat_connexion; // Flask renvoie { "etat_connexion": true/false }
-}
+/** Fetch l'id de l'utilisateur actuel
+ * 
+ */
+export const obtenirIdUser = createApiGet(`${LOGIN_BASE_URL}/current_user_id`)
 
-export async function obtenirIdUser() {
-  const res = await fetch(`${API_BASE_URL}/login/current_user_id`, { credentials: "include" });
-  const data = await res.json();
-  return data.id_utilisateur; // Flask renvoie { "id_utilisateur": int ou None si on connecte, ...}
-}
 
 export async function seDeconnecter() {
   await fetch(`${API_BASE_URL}/login/deconnexion`, {

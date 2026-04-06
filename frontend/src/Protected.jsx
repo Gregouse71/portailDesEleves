@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { useLocation, Navigate, Outlet } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { obtenirIdUser } from './api/api_global';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { obtenirDataUser } from './api/api_utilisateurs';
 
 const ProtectedContext = createContext();
@@ -9,16 +9,16 @@ const ProtectedContext = createContext();
 export function ProtectedRoute() {
     const location = useLocation();
 
-    const { data: id, isLoading, isError, error } = useQuery({
+    const { data: idData, isLoading, isError, error } = useQuery({
         queryKey: ['id'],
-        queryFn: obtenirIdUser,
+        queryFn: () => obtenirIdUser({}),
         retry: (failureCount, error) => {
-            console.log(error)
             if (error?.response?.status === 401) return false;
             return failureCount < 3;
         }
     });
-    const isUnauthorized = isError && error?.response?.status === 401;
+    
+    const id = idData?.id_utilisateur;
 
     const { data: userData = {
         promotion: 2,
@@ -30,13 +30,19 @@ export function ProtectedRoute() {
         marrain: null,
         fillots: [],
         vote_sondaj_du_jour: null
-    }, isLoading: isLoadingUser } = useQuery({
+    }, isLoading: isLoadingUser, isError: isErrorUser, error: errorUser } = useQuery({
         queryKey: ['donneesUtilisateurs', id],
         queryFn: () => obtenirDataUser(id),
-        enabled: !!id
+        enabled: !!id,
+        retry: (failureCount, error) => {
+            if (error?.response?.status === 401) return false;
+            return failureCount < 3;
+        }
     });
 
     if (isLoading) return <div>Chargement ...</div>;
+
+    const isUnauthorized = (isError && error?.response?.status === 401) || (isErrorUser && errorUser?.response?.status === 401);
 
     if (!id || isUnauthorized || isError) {
         return <Navigate to="/login" state={{ from: location }} replace />;

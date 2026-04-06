@@ -9,9 +9,19 @@ export const SOCKET_BASE_URL = `${BASE_URL}`
 
 export async function handleResponse(response) {
     if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Erreur API :", errorMessage.message || "Erreur inconnue");
-        throw new Error(errorMessage.message || "Erreur inconnue");
+        let errorMessage = "Erreur inconnue";
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+        } else {
+            const textError = await response.text();
+            console.error("Server returned non-JSON error:", textError.substring(0, 100));
+            errorMessage = `Error ${response.status}: ${response.statusText}`;
+        }
+        const error = new Error(errorMessage);
+        error.response = response;
+        throw error;
     }
     return response.json();
 }

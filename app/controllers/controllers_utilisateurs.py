@@ -19,7 +19,7 @@ from app.models.models_associations import AssociationMembre, AssociationMandat
 controllers_utilisateurs = Blueprint('controllers_utilisateurs', __name__)
 
 
-@controllers_utilisateurs.route('/obtenir_liste_utilisateurs/<sting:promo>/<string:cycles>', methods=['GET'])
+@controllers_utilisateurs.route('/obtenir_liste_utilisateurs/<string:promo>/<string:cycles>', methods=['GET'])
 @login_required
 def obtenir_liste_utilisateurs(promo: str, cycles: str):
     """
