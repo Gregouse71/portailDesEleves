@@ -1,13 +1,14 @@
 from flask import Blueprint, jsonify, request, abort, send_file
+import zipfile
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 import io
 import csv
 
 from app import db
-from app.models.modules.models_elections import Election, ElectionVote
+from app.models.modules.models_elections import Election, ElectionVote, ElectionVoteChiffre
 from app.utils.decorators import superutilisateur_required
-from app.services.modules.services_elections import creer_election, ajouter_photo, supprimer_election, patch_election
+from app.services.modules.services_elections import creer_election, ajouter_photo, supprimer_election, patch_election, voter
 
 controllers_elections = Blueprint('controllers_elections', __name__)
 
@@ -113,16 +114,8 @@ def voter_election(id: int):
     election = Election.query.filter_by(id=id).first()
     if election is None:
         return jsonify({"message": "Election invalide"}), 400
-    if current_user.promotion not in election.promos:
-        return jsonify({"message": "Non electeur"}), 403
-    deja = ElectionVote.query.filter_by(election_id=id, utilisateur_id=current_user.id).count()
-    if deja > 0:
-        return jsonify({"message": "Deja voté"}), 403
 
-    vote = ElectionVote(int(choix), election, current_user)
-    db.session.add(vote)
-    db.session.commit()
-
+    voter(choix, election, current_user)
     return jsonify({"status": "success"}), 200
 
 
@@ -130,35 +123,72 @@ def voter_election(id: int):
 @login_required
 @superutilisateur_required
 def resultats_election(id: int):
-    proxy = io.StringIO()
+    election = db.session.query(Election).get(id)
 
-    votes = db.session.query(ElectionVote).options(joinedload(ElectionVote.utilisateur)).filter_by(election_id=id).all()
+    # Create an in-memory zip file
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # --- 1. Votes CSV ---
+        votes_proxy = io.StringIO()
+        votes = db.session.query(ElectionVote).options(joinedload(ElectionVote.utilisateur)).filter_by(election_id=id).all()
+        if votes:
+            fieldnames = ["choix", "utilisateur_id", "election_id", "utilisateur.nom_utilisateur", "utilisateur.chambre", "utilisateur.promotion", "utilisateur.cycle"]
+            writer = csv.DictWriter(votes_proxy, fieldnames=fieldnames)
+            writer.writeheader()
+            for vote in votes:
+                row = {}
+                for col in fieldnames:
+                    if "." in col:
+                        obj, attr = col.split(".")
+                        row[col] = getattr(getattr(vote, obj), attr) if hasattr(vote, obj) and getattr(vote, obj) is not None else ""
+                    else:
+                        row[col] = getattr(vote, col)
+                writer.writerow(row)
+        
+        zf.writestr(f'liste_votants_{election.nom}.csv', votes_proxy.getvalue())
+        votes_proxy.close()
 
-    if votes:
-        fieldnames = ["choix", "utilisateur_id", "election_id", "date", "utilisateur.nom_utilisateur", "utilisateur.chambre", "utilisateur.promotion", "utilisateur.cycle"]
-        writer = csv.DictWriter(proxy, fieldnames=fieldnames)
+        # --- 2. Encrypted Votes CSV ---
+        if election.chiffree:
+            chiffres_proxy = io.StringIO()
+            votes_chiffres = db.session.query(ElectionVoteChiffre).filter_by(election_id=id).all()
+            if votes_chiffres:
+                fieldnames_chiffres = ["date", "choix", "ciphertext", "promotion", "cycle", "etage"]
+                writer_chiffres = csv.DictWriter(chiffres_proxy, fieldnames=fieldnames_chiffres)
+                writer_chiffres.writeheader()
+                for vote_chiffre in votes_chiffres:
+                    writer_chiffres.writerow({
+                        "date": vote_chiffre.date,
+                        "choix": vote_chiffre.choix,
+                        "ciphertext": vote_chiffre.ciphertext,
+                        "promotion": vote_chiffre.promotion,
+                        "cycle": vote_chiffre.cycle,
+                        "etage": vote_chiffre.etage
+                    })
+            
+            zf.writestr(f'resultats_chiffres_{election.nom}.csv', chiffres_proxy.getvalue())
+            chiffres_proxy.close()
 
-        writer.writeheader()
-        for vote in votes:
-            row = {}
-            for col in fieldnames:
-                if "." in col:
-                    obj, attr = col.split(".")
-                    row[col] = getattr(getattr(vote, obj), attr) if hasattr(vote, obj) and getattr(vote, obj) is not None else ""
-                else:
-                    row[col] = getattr(vote, col)
-            writer.writerow(row)
+            chiffres_proxy = io.StringIO()
+            votes_chiffres = db.session.query(ElectionVoteChiffre).filter_by(election_id=id).all()
+            if votes_chiffres:
+                fieldnames_chiffres = ["choix", "ciphertext"]
+                writer_chiffres = csv.DictWriter(chiffres_proxy, fieldnames=fieldnames_chiffres)
+                writer_chiffres.writeheader()
+                for vote_chiffre in votes_chiffres:
+                    writer_chiffres.writerow({
+                        "choix": vote_chiffre.choix,
+                        "ciphertext": vote_chiffre.ciphertext
+                    })
+            
+            zf.writestr(f'resultats_a_diffuser_{election.nom}.csv', chiffres_proxy.getvalue())
+            chiffres_proxy.close()
 
-    proxy.seek(0)
-
-    mem = io.BytesIO()
-    mem.write(proxy.getvalue().encode('utf-8'))
-    mem.seek(0)
-    proxy.close()
+    memory_file.seek(0)
 
     return send_file(
-        mem,
-        mimetype='application/csv',
+        memory_file,
+        mimetype='application/zip',
         as_attachment=True,
-        download_name='users_export.csv'
+        download_name=f'resultats_{election.nom}.zip'
     )

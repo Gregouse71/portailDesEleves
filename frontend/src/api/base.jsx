@@ -104,13 +104,13 @@ export function createApiGet(route, getFile = false) {
             if (getFile) {
                 const blob = await response.blob();
                 const contentDisposition = response.headers.get('Content-Disposition');
+                console.log(contentDisposition)
+                console.log(response.headers)
                 let filename = 'download.csv'; // default filename
                 if (contentDisposition) {
-                    // Try to extract filename from Content-Disposition header
-                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    const matches = filenameRegex.exec(contentDisposition);
-                    if (matches != null && matches[1]) {
-                        filename = matches[1].replace(/['"]/g, '');
+                    const filenameMatch = contentDisposition.match(/(?:filename\*?|filename)=(?:\"([^\"]+)\"|([^;]+))/i);
+                    if (filenameMatch) {
+                        filename = (filenameMatch[1] || filenameMatch[2]).trim();
                     }
                 }
 

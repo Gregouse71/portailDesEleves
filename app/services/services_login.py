@@ -1,5 +1,3 @@
-import smtplib
-from email.mime.text import MIMEText
 from datetime import datetime, timedelta, timezone
 from config import Config
 import jwt
@@ -10,6 +8,7 @@ from app.services import db
 from app.utils.divers_utils import ph
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_divers import Permission
+from app.utils.divers_utils import send_mail
 
 key = Config.SECRET_KEY_MAIL
 algorithm = Config.ALGORITHM
@@ -60,14 +59,8 @@ def send_reset_mail(username: str):
     to_encode = {"sub": username, "exp": expire}
     encoded_jwt = jwt.encode(to_encode, key, algorithm=algorithm)
 
-    msg = MIMEText (mailBody.format (encoded_jwt, user.nom_utilisateur), 'html')
-    msg['Subject'] = "Réinitialisation de mot de passe"
-    msg['From'] = "no-reply@eleves.mines-paris.eu"
-    msg['To'] = user.email
-
-    s = smtplib.SMTP('localhost')
-    s.sendmail("no-reply@eleves.mines-paris.eu", user.email, msg.as_string())
-    s.quit()
+    text = mailBody.format (encoded_jwt, user.nom_utilisateur)
+    send_mail("no-reply@eleves.mines-paris.eu", user.email, "Réinitialisation de mot de passe", text)
     return True
 
 def check_pw(user: Utilisateur, password:str):

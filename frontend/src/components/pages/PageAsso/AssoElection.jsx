@@ -34,7 +34,8 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
         options: [{ name: "", image: "" }, { name: "", image: "" }],
         promos: [],
         date_ouverture: null,
-        date_fermeture: null
+        date_fermeture: null,
+        chiffree: false,
     });
 
     const handleOptionChange = (index, value) => {
@@ -197,6 +198,11 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                         <Form.Check type="checkbox" label="Visible des utilisateurs" name='visible'
                             checked={modifyingElection.visible}
                             onChange={(e) => setModifyingElection({ ...modifyingElection, visible: e.target.checked })} />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Check type="checkbox" label="Votes chiffrés" name='chiffree'
+                            checked={modifyingElection.chiffree}
+                            onChange={(e) => setModifyingElection({ ...modifyingElection, chiffree: e.target.checked })} />
                     </Form.Group>
                     <Form.Group as={Row} className="mb-3">
                         <Form.Label column sm="2">Collège électoral</Form.Label>
