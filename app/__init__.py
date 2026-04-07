@@ -16,6 +16,9 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_apscheduler import APScheduler
 from werkzeug.middleware.proxy_fix import ProxyFix
+from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
+from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
+
 import os
 
 from config import Config
@@ -32,6 +35,9 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 # session = Session()
 scheduler = APScheduler()
+authorization = AuthorizationServer()
+require_oauth = ResourceProtector()
+
 
 def create_app(config: Config):
     # Creation de l'instance de l'application Flask
@@ -70,7 +76,14 @@ def create_app(config: Config):
     @app.route('/upload/<path:filename>')
     def serve_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)
-    
+
+    from app.models import OAuth2Client, OAuth2Token
+
+    # OAth2 setup
+    query_client = create_query_client_func(db.session, OAuth2Client)
+    save_token = create_save_token_func(db.session, OAuth2Token)
+    authorization.init_app(app, query_client=query_client, save_token=save_token)
+
     from .tasks import tasks
     if not scheduler.running:
         socketio.start_background_task(scheduler.start)
