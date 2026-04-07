@@ -10,7 +10,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey('utilisateurs_utilisateur.id')
     )
-    user = db.relationship('utilisateurs_utilisateur')
+    user = db.relationship('Utilisateur')
 
 
 class OAuth2Token(db.Model, OAuth2TokenMixin):
@@ -20,4 +20,4 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey('utilisateurs_utilisateur.id')
     )
-    user = db.relationship('utilisateurs_utilisateur')
+    user = db.relationship('Utilisateur')
