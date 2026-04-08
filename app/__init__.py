@@ -77,12 +77,13 @@ def create_app(config: Config):
     def serve_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)
 
-    from app.models import OAuth2Client, OAuth2Token
+    from app.models import OAuth2Client, OAuth2Token, OAuth2AuthorizationCode, AuthorizationCodeGrant, OpenIDCode
 
     # OAth2 setup
     query_client = create_query_client_func(db.session, OAuth2Client)
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(app, query_client=query_client, save_token=save_token)
+    authorization.register_grant(AuthorizationCodeGrant, [OpenIDCode()])
 
     from .tasks import tasks
     if not scheduler.running:

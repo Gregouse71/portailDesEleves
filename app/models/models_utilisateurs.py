@@ -185,6 +185,12 @@ class Utilisateur(db.Model, UserMixin) :
         """
         return f"<Utilisateur {self.nom_utilisateur}>"
     
+    def get_user_id(self):
+        """
+        Renvoie l'id de l'utilisatuer. Utilisé par Authlib.
+        """
+        return self.id
+    
     def update(self, data) :
         """
         data : dictionnaire avec les clés suivantes :

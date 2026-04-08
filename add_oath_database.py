@@ -25,7 +25,9 @@ with app.app_context():
         "client_uri": "https://wiki.rezal-mdm.com/",
         "grant_types": ["authorization_code"],
         "redirect_uris": [
-            "https://wiki.rezal-mdm.com/wiki/Special:PluggableAuthLogin"
+            "https://wiki.rezal-mdm.com/wiki/Special:PluggableAuthLogin",
+            "https://wiki.rezal-mdm.com/wiki/Spécial:PluggableAuthLogin",
+            "https://wiki.rezal-mdm.com/wiki/Sp%C3%A9cial:PluggableAuthLogin"
         ],
         "response_types": ["code"],
         "scope": "openid profile email",

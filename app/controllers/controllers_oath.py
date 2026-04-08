@@ -44,9 +44,9 @@ def issue_token():
 @require_oauth('profile email openid')
 def api_me():
     user = request.oauth_token.user
-    
+
     return jsonify({
-        "sub": user.id,
+        "sub": str(user.id),
         "name": user.nom_utilisateur, 
         "preferred_username": user.prenom,
         "email": user.email,
