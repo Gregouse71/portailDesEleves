@@ -20,6 +20,7 @@ from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProte
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
 
 import os
+os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 from config import Config
 
@@ -57,7 +58,8 @@ def create_app(config: Config):
     socketio.init_app(app)
     scheduler.init_app(app)
     # session.init_app(app)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
+    # Trust more proxy headers for better URL detection (proto, host, etc.)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
     from .models import Utilisateur  # Importer la classe Utilisateur
 

@@ -33,19 +33,28 @@ class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
         db.Integer, db.ForeignKey('utilisateurs_utilisateur.id')
     )
     user = db.relationship('Utilisateur')
+    nonce = db.Column(db.String(200))
+
+    def get_nonce(self):
+        return self.nonce
 
 
 class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
     def save_authorization_code(self, code, request):
+        print(f"DEBUG: Saving authorization code for client {request.client.client_id}")
+        # Authlib 1.x uses request.payload.data or request.data depending on the state
+        nonce = request.payload.data.get('nonce') or request.payload.data.get('nonce')
         auth_code = OAuth2AuthorizationCode(
             code=code,
             client_id=request.client.client_id,
             redirect_uri=request.payload.redirect_uri,
             scope=request.payload.scope,
             user_id=request.user.id,
+            nonce=nonce,
         )
         db.session.add(auth_code)
         db.session.commit()
+        print(f"DEBUG: Authorization code saved with nonce: {nonce}")
         return auth_code
 
     def query_authorization_code(self, code, client):
@@ -64,20 +73,40 @@ class OpenIDCode(_OpenIDCode):
         return False
 
     def get_jwt_config(self, grant):
+        with open('oauthkey.pem', 'rb') as f:
+            key = f.read()
         return {
-            'key': grant.client.client_secret,
-            'alg': 'HS256',
+            'key': key,
+            'alg': 'RS256',
             'iss': 'https://eleves.rezal-mdm.com/api/oauth',
-            'exp': 3600
+            'kid': 'main-key'
         }
 
     def generate_user_info(self, user, scope):
-        user_info = UserInfo(sub=str(user.id), name=f"{user.prenom} {user.nom}")
+        user_info = UserInfo(
+            sub=str(user.id), 
+            name=f"{user.prenom} {user.nom}",
+            preferred_username=user.nom_utilisateur
+        )
         if 'email' in scope:
             user_info['email'] = user.email
             user_info['email_verified'] = True
         if 'profile' in scope:
-            user_info['preferred_username'] = user.nom_utilisateur
             user_info['given_name'] = user.prenom
             user_info['family_name'] = user.nom
         return user_info
+
+    def generate_id_token(self, token, user, scope, request):
+        nonce = None
+        if hasattr(request, 'grant') and hasattr(request.grant, 'authorization_code'):
+            nonce = request.grant.authorization_code.get_nonce()
+        
+        # OIDC clients like MediaWiki often expect these claims in the id_token itself
+        # to decide whether to allow login or create an account.
+        user_info = self.generate_user_info(user, scope)
+        
+        return super().generate_id_token(
+            token, user, scope, request, 
+            nonce=nonce,
+            **user_info
+        )
