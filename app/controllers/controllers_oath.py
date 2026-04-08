@@ -16,39 +16,60 @@ def openid_configuration():
         "id_token_signing_alg_values_supported": ["HS256"],
         "scopes_supported": ["openid", "profile", "email"],
         "token_endpoint_auth_methods_supported": ["client_secret_basic", "client_secret_post"],
-        "claims_supported": ["sub", "name", "email", "preferred_username"]
+        "claims_supported": ["sub", "name", "email", "preferred_username", "given_name", "family_name"],
+        "grant_types_supported": ["authorization_code"]
     })
 
 # 2. Remove /oauth from these routes!
 @controllers_oath.route('/authorize', methods=['GET', 'POST'])
 def authorize():
     if not current_user.is_authenticated:
-        return redirect(url_for('login', next=request.url)) 
+        # Redirect to the frontend login page.
+        # Ensure that request.url is the full original URL so it can be used for redirecting back.
+        return redirect("/login?next=" + request.url) 
     
     try:
+        # get_consent_grant handles the validation of the authorization request.
         grant = authorization.get_consent_grant(end_user=current_user)
     except Exception as error:
         return str(error), 400 
 
     if request.method == 'GET':
         try:
+            # Auto-approve for GET requests to simplify the flow for internal usage.
             return authorization.create_authorization_response(grant=grant, grant_user=current_user)
         except Exception as e:
             return str(e), 400
+    
+    # Handle POST if we ever add a consent form.
+    return authorization.create_authorization_response(grant=grant, grant_user=current_user)
 
 @controllers_oath.route('/token', methods=['POST'])
 def issue_token():
     return authorization.create_token_response()
 
 @controllers_oath.route('/userinfo')
-@require_oauth('profile email openid')
+@require_oauth('openid')
 def api_me():
     user = request.oauth_token.user
-
-    return jsonify({
+    scopes = request.oauth_token.scope or ""
+    
+    user_info = {
         "sub": str(user.id),
-        "name": user.nom_utilisateur, 
-        "preferred_username": user.prenom,
-        "email": user.email,
-        "email_verified": True
-    })
+    }
+    
+    if 'profile' in scopes:
+        user_info.update({
+            "name": f"{user.prenom} {user.nom}", 
+            "preferred_username": user.nom_utilisateur,
+            "given_name": user.prenom,
+            "family_name": user.nom,
+        })
+    
+    if 'email' in scopes:
+        user_info.update({
+            "email": user.email,
+            "email_verified": True
+        })
+        
+    return jsonify(user_info)

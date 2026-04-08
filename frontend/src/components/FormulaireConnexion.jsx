@@ -17,7 +17,9 @@ export default function FormulaireConnexion() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const from = location.state?.from?.pathname || "/";
+    const searchParams = new URLSearchParams(location.search);
+    const nextParam = searchParams.get("next");
+    const from = nextParam || location.state?.from?.pathname || "/";
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -25,7 +27,13 @@ export default function FormulaireConnexion() {
         if (success) {
             queryClient.removeQueries({ queryKey: ['id'] })
             queryClient.removeQueries({ queryKey: ['donneesUtilisateur'] })
-            navigate(from, { replace: true });
+            
+            // If it's an absolute URL or starts with /api, use window.location.href
+            if (from.startsWith("http") || from.startsWith("/api")) {
+                window.location.href = from;
+            } else {
+                navigate(from, { replace: true });
+            }
         } else {
             setErreur("Identifiants incorrects");
         }

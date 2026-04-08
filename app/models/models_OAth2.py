@@ -72,12 +72,12 @@ class OpenIDCode(_OpenIDCode):
         }
 
     def generate_user_info(self, user, scope):
-        user_info = UserInfo(sub=str(user.id), name=user.nom_utilisateur)
+        user_info = UserInfo(sub=str(user.id), name=f"{user.prenom} {user.nom}")
         if 'email' in scope:
             user_info['email'] = user.email
             user_info['email_verified'] = True
         if 'profile' in scope:
-            user_info['preferred_username'] = user.prenom
+            user_info['preferred_username'] = user.nom_utilisateur
             user_info['given_name'] = user.prenom
             user_info['family_name'] = user.nom
         return user_info
