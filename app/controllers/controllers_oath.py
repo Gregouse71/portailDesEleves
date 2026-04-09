@@ -1,3 +1,4 @@
+from authlib.integrations.flask_oauth2 import current_token
 from flask import Blueprint, request, jsonify, redirect, url_for
 from flask_login import current_user
 from app import authorization, require_oauth 
@@ -75,8 +76,8 @@ def issue_token():
 @controllers_oath.route('/userinfo')
 @require_oauth('openid')
 def api_me():
-    user = request.oauth_token.user
-    scopes = request.oauth_token.scope or ""
+    user = current_token.user
+    scopes = current_token.scope or ""
     
     user_info = {
         "sub": str(user.id),

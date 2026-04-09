@@ -34,6 +34,8 @@ class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     )
     user = db.relationship('Utilisateur')
     nonce = db.Column(db.String(200))
+    code_challenge = db.Column(db.String(200))
+    code_challenge_method = db.Column(db.String(20))
 
     def get_nonce(self):
         return self.nonce
@@ -41,9 +43,7 @@ class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
 
 class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
     def save_authorization_code(self, code, request):
-        print(f"DEBUG: Saving authorization code for client {request.client.client_id}")
-        # Authlib 1.x uses request.payload.data or request.data depending on the state
-        nonce = request.payload.data.get('nonce') or request.payload.data.get('nonce')
+        nonce = request.payload.data.get('nonce')
         auth_code = OAuth2AuthorizationCode(
             code=code,
             client_id=request.client.client_id,
@@ -51,10 +51,11 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
             scope=request.payload.scope,
             user_id=request.user.id,
             nonce=nonce,
+            code_challenge=request.payload.data.get('code_challenge'),
+            code_challenge_method=request.payload.data.get('code_challenge_method'),
         )
         db.session.add(auth_code)
         db.session.commit()
-        print(f"DEBUG: Authorization code saved with nonce: {nonce}")
         return auth_code
 
     def query_authorization_code(self, code, client):

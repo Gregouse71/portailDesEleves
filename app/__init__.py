@@ -79,13 +79,20 @@ def create_app(config: Config):
     def serve_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)
 
-    from app.models import OAuth2Client, OAuth2Token, OAuth2AuthorizationCode, AuthorizationCodeGrant, OpenIDCode
+    from app.models import OAuth2Client, OAuth2Token, AuthorizationCodeGrant, OpenIDCode
+    from authlib.oauth2.rfc7636 import CodeChallenge
+    from authlib.oauth2.rfc6750 import BearerTokenValidator
+
+    class MyBearerTokenValidator(BearerTokenValidator):
+        def authenticate_token(self, token_string):
+            return OAuth2Token.query.filter_by(access_token=token_string).first()
+    require_oauth.register_token_validator(MyBearerTokenValidator())
 
     # OAth2 setup
     query_client = create_query_client_func(db.session, OAuth2Client)
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(app, query_client=query_client, save_token=save_token)
-    authorization.register_grant(AuthorizationCodeGrant, [OpenIDCode()])
+    authorization.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=False), CodeChallenge(required=False)])
 
     from .tasks import tasks
     if not scheduler.running:

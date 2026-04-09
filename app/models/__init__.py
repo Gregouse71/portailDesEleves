@@ -10,4 +10,4 @@ from app.models.modules.models_audio import AssoAudio, AssoAlbum
 from app.models.models_jeux import JeuxPartie
 from app.models.models_publications import Publication, Commentaire
 from app.models.models_soifguard import OperationSoifguard, ConsoSoifguard
-from app.models.models_OAth2 import OAuth2Client, OAuth2Token, OAuth2AuthorizationCode, AuthorizationCodeGrant, OpenIDCode
+from app.models.models_oauth2 import OAuth2Client, OAuth2Token, OAuth2AuthorizationCode, AuthorizationCodeGrant, OpenIDCode
