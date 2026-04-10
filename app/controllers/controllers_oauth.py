@@ -4,9 +4,9 @@ from flask_login import current_user
 from app import authorization, require_oauth 
 import urllib.parse
 
-controllers_oath = Blueprint('controllers_oath', __name__)
+controllers_oauth = Blueprint('controllers_oauth', __name__)
 
-@controllers_oath.route('/.well-known/openid-configuration')
+@controllers_oauth.route('/.well-known/openid-configuration')
 def openid_configuration():
     return jsonify({
         "issuer": "https://eleves.rezal-mdm.com/api/oauth",
@@ -23,7 +23,7 @@ def openid_configuration():
         "grant_types_supported": ["authorization_code"]
     })
 
-@controllers_oath.route('/jwks.json')
+@controllers_oauth.route('/jwks.json')
 def jwks():
     from authlib.jose import JsonWebKey
     with open('oauthkey.pem', 'rb') as f:
@@ -39,7 +39,7 @@ def jwks():
     
     return jsonify({"keys": [key_dict]})
 
-@controllers_oath.route('/authorize', methods=['GET', 'POST'])
+@controllers_oauth.route('/authorize', methods=['GET', 'POST'])
 def authorize():
     if not current_user.est_baptise:
         return "Utilisateur non trouvé", 404
@@ -65,7 +65,7 @@ def authorize():
 
 
 
-@controllers_oath.route('/token', methods=['POST'])
+@controllers_oauth.route('/token', methods=['POST'])
 def issue_token():
     try:
         response = authorization.create_token_response()
@@ -73,7 +73,7 @@ def issue_token():
     except Exception as e:
         return str(e), 400
 
-@controllers_oath.route('/userinfo')
+@controllers_oauth.route('/userinfo')
 @require_oauth('openid')
 def api_me():
     user = current_token.user

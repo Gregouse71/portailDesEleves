@@ -1,6 +1,6 @@
 from app import create_app
 from app import db
-from app.models.models_OAth2 import OAuth2Client
+from app.models.models_oauth import OAuth2Client
 import secrets
 from config import Config
 
