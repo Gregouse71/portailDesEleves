@@ -40,6 +40,8 @@ def jwks():
 
 @controllers_oath.route('/authorize', methods=['GET', 'POST'])
 def authorize():
+    if not current_user.est_baptise:
+        return "Utilisateur non trouvé", 404
     if not current_user.is_authenticated:
         # Properly encode the full path (including its own query string)
         encoded_next = urllib.parse.quote(request.full_path)
