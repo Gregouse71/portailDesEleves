@@ -3,10 +3,13 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 
 from datetime import date, timedelta, datetime, timezone
+from flask import jsonify
+from werkzeug.utils import secure_filename
 from itertools import groupby
 from sqlalchemy import func
 import secrets
 import string
+import os
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurDeLienUtilisateurs(Exception):
@@ -170,3 +173,22 @@ def prochains_anniv():
             key=aux)
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
     return ret
+
+  
+def upload_user_photo(file, user_id):
+    if file.filename == '':
+        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
+
+    if file:
+        user = db.session.get(Utilisateur, user_id)
+        filename = secure_filename(file.filename)
+        name, ext = os.path.splitext(filename)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+        unique_filename = f"{user.nom_utilisateur}_{user.id}_{name}_{timestamp}{ext}"
+        
+        UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        
+        file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
+        return jsonify({"message": "Fichier téléversé avec succès", "file_name": unique_filename}), 200

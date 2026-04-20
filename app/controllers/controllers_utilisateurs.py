@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from sqlalchemy import desc
-from datetime import datetime, timezone
 import os
 from werkzeug.utils import secure_filename
 import csv
@@ -10,7 +9,7 @@ import io
 from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
 from app.utils.decorators import superutilisateur_required
-from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo
+from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, upload_user_photo
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import AssociationMembre, AssociationMandat
 
@@ -435,6 +434,7 @@ def route_changer_marrain():
 @controllers_utilisateurs.route('/add_utilisateur', methods=['POST'])
 @superutilisateur_required
 def route_add_utilisateur():
+    return jsonify({"message": "Not implemented"}), 501
     data = request.form
     photo = request.files['photo']
     # TODO : upload photo en même temps, ou faire interface pour upload bcp de photos
@@ -493,24 +493,6 @@ def search_users():
         return jsonify(user_list)
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la recherche : {str(e)}"}), 500
-    
-
-def upload_user_photo(file, user_id):
-    if file.filename == '':
-        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
-
-    if file:
-        filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(filename)
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-        unique_filename = f"{name}_{user_id}_{timestamp}{ext}"
-        
-        UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-        
-        file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
-        return jsonify({"message": "Fichier téléversé avec succès", "file_name": unique_filename}), 200
 
 
 @controllers_utilisateurs.post("/process_list")
