@@ -41,13 +41,15 @@ def jwks():
 
 @controllers_oauth.route('/authorize', methods=['GET', 'POST'])
 def authorize():
-    if not current_user.est_baptise:
-        return "Utilisateur non trouvé", 404
     if not current_user.is_authenticated:
         # Properly encode the full path (including its own query string)
         encoded_next = urllib.parse.quote(request.full_path)
         # Redirect to the frontend login page using a relative path to avoid host issues.
-        return redirect(f"/login?next={encoded_next}") 
+        return redirect(f"/login?next={encoded_next}")
+
+    baptise = getattr(current_user, "est_baptise", False)
+    if not baptise:
+        return "Utilisateur non trouvé", 404
     
     try:
         # Authlib 1.x: Validate the request and get the grant object.
