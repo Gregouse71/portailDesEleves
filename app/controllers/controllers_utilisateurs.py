@@ -147,7 +147,8 @@ def assos_utilisateur(user_id: int):
         asso_data = {
             "role": role.role,
             "mandat": role.mandat.nom,
-            "asso_id": role.mandat.association_id
+            "asso_id": role.mandat.association_id,
+            "mandat_id": role.mandat_id
         }
         if role.mandat.actuel:
             actuel_assos.append(asso_data)
@@ -532,3 +533,23 @@ def add_many_users():
     db.session.commit()
     return jsonify(True), 200
 
+
+@controllers_utilisateurs.route('/<int:user_id>/ordre_assos', methods=['POST'])
+@login_required
+def modifier_ordre_assos(user_id: int):
+    if not (user_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+    data = request.get_json()
+    try:
+        for item in data:
+            membre = AssociationMembre.query.filter_by(
+                utilisateur_id=user_id,
+                mandat_id=item['id']
+            ).first()
+            if membre:
+                membre.ordre = item['ordre']
+        db.session.commit()
+        return jsonify({"message": "Ordre mis à jour avec succès"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Erreur : {str(e)}"}), 500

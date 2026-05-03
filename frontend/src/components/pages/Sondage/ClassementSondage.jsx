@@ -18,7 +18,7 @@ export default function ClassementSondage() {
 
     const { data: scores = { recent: [[], []], global: [[], []] }, isLoading } = useQuery({
         queryKey: ['scoresSondages'],
-        queryFn: obtenirScoresSondages,
+        queryFn: obtenirScoresSondages,gi
     });
 
     // Destructure data

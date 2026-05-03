@@ -125,7 +125,7 @@ function PageUtilisateur() {
 
             <Routes>
                 <Route index={true} element={<TabInfo id={id} autoriseAModifier={autoriseAModifier} />} />
-                <Route path="assos" element={<TabAsso id={id} />} />
+                <Route path="assos" element={<TabAsso id={id} autoriseAModifier={autoriseAModifier} />} />
                 <Route path="questions" element={<TabQuestions id={id} autoriseAModifier={autoriseAModifier} />} />
             </Routes>
         </Container>

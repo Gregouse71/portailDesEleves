@@ -167,6 +167,7 @@ class AssociationMembre(db.Model):
 
     role = db.Column(db.String(1000), nullable=True)
     position = db.Column(db.Integer, nullable=True)
+    ordre = db.Column(db.Integer, nullable=True, default=0)
 
     utilisateur = db.relationship('Utilisateur', back_populates='associations')
     mandat = db.relationship('AssociationMandat', back_populates='membres')
