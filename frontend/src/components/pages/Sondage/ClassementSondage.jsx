@@ -80,7 +80,7 @@ export default function ClassementSondage() {
             <Collapse in={openRecent}>
                 <div id="recent-explanation">
                     <p className="text-muted mt-2">
-                        En classant les consensuels et les libres penseurs uniquement sur leurs participations globales, on désavantage les 1A par rapport aux 3A et le classement évolue peu au cours du temps. Pour premettre aux 1A d'apparaître dans le classement sans avoir à voter pendant des années, on donne plus de poids aux votes les plus récents, selon une exponentielle avec un temps caractéristique de 14 jours :
+                        En classant les consensuels et les libres penseurs uniquement sur leurs participations globales, on désavantage les 1A par rapport aux 3A et le classement évolue peu au cours du temps. Pour premettre aux 1A d&apos;apparaître dans le classement sans avoir à voter pendant des années, on donne plus de poids aux votes les plus récents, selon une exponentielle avec un temps caractéristique de 14 jours :
                     </p>
                     <BlockMath math={RECENT_FORMULA} />
                 </div>
@@ -110,11 +110,11 @@ export default function ClassementSondage() {
             <Collapse in={openGlobal}>
                 <div id="global-explanation">
                     <p className="text-muted mt-2">
-                        La première méthode de classement qui vient à l'esprit serait de classer par nombres de victoires et nombres de défaites. Mais cela ne serait pas logique : une personne avec 50 victoires sur 100 participations serait mieux classée qu'une persone avec 49 victoires sur 50 participations.<br /><br />
+                        La première méthode de classement qui vient à l&apos;esprit serait de classer par nombres de victoires et nombres de défaites. Mais cela ne serait pas logique : une personne avec 50 victoires sur 100 participations serait mieux classée qu&apos;une persone avec 49 victoires sur 50 participations.<br /><br />
 
                         On peut donc penser à classer selon les pourcentages de victoires et de défaites. Mais cela ne convient pas non plus : une personne avec 1 victoire sur 1 seule participation (score de 100%) est classée devant une personne avec 90% de victoires sur 100 participations. Même en mettant un seuil de partications minimales, ce système favorise ceux qui votent peu par rapport à ceux qui votent beaucoup.<br /><br />
 
-                        Il faut donc garder cette idée de pourcentage, mais en la corrigeant pour tenir compte de l'incertitude due au petit nombre de votes. On se demande donc "A quelle valeur est-on sûr à 95% que le vrai pourcentage de victoires est supérieur ?". Ceux qui allaient aux amphi de stat en 2013 sauront que la réponse a été donnée par Edwin B. Wilson en 1927 : la borne inférieure de l'intervalle de confiance de Wilson pour une loi de Bernoulli, dont la formule est :<br /><br />
+                        Il faut donc garder cette idée de pourcentage, mais en la corrigeant pour tenir compte de l&apos;incertitude due au petit nombre de votes. On se demande donc &quot;A quelle valeur est-on sûr à 95% que le vrai pourcentage de victoires est supérieur ?&quot;. Ceux qui allaient aux amphi de stat en 2013 sauront que la réponse a été donnée par Edwin B. Wilson en 1927 : la borne inférieure de l&apos;intervalle de confiance de Wilson pour une loi de Bernoulli, dont la formule est :<br /><br />
                     </p>
                     <BlockMath math={GLOBAL_FORMULA} />
                 </div>

@@ -108,7 +108,7 @@ export function createApiGet(route, getFile = false) {
                 console.log(response.headers)
                 let filename = 'download.csv'; // default filename
                 if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/(?:filename\*?|filename)=(?:\"([^\"]+)\"|([^;]+))/i);
+                    const filenameMatch = contentDisposition.match(/(?:filename\*?|filename)=(?:"([^"]+)"|([^;]+))/i);
                     if (filenameMatch) {
                         filename = (filenameMatch[1] || filenameMatch[2]).trim();
                     }

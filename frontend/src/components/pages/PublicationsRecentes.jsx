@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Form, Spinner } from 'react-bootstrap';
+import { Alert, Container, Form, Spinner } from 'react-bootstrap';
 import { obtenirPublicationsRecentes } from '../../api/api_publications';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import Post from '../elements/Post';
@@ -16,7 +16,7 @@ export default function PublicationsRecentes() {
         queryFn: () => obtenirPublicationsRecentes({ page, per: perPage, query }),
         placeholderData: (previousData) => previousData,
     });
-    const { publications, count, totalPages } = data;
+    const { publications, totalPages } = data;
 
 
     if (isLoading) {
@@ -80,7 +80,7 @@ export default function PublicationsRecentes() {
                 <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="d-flex mb-0" />
             </div>
             {publications.map(post_id => (
-                <div className="mb-3"><Post key={post_id} postId={post_id} isGestion={false} /></div>
+                <div className="mb-3" key={post_id} ><Post postId={post_id} isGestion={false} /></div>
             ))}
             <RenderPagination totalPages={totalPages} setPage={setPage} page={page} />
         </Container>

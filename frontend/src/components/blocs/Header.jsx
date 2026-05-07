@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { seDeconnecter, verifierPermission } from '../../api/api_global';
 import { useState, useRef } from 'react';
-import { Container, Navbar, Nav, NavDropdown, Button, Form, FormControl } from 'react-bootstrap';
+import { Container, Navbar, Nav, NavDropdown, Form, FormControl } from 'react-bootstrap';
 import '../../assets/styles/header.scss';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThemeSwitcher from '../elements/ThemeSwitcher';
@@ -151,7 +151,7 @@ export default function Header() {
                                 ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],
                                 ["onClick", handleLogout, "Déconnexion"],
                                 ["divider"],
-                                ["custom", <div className="d-flex justify-content-between align-items-center px-3">
+                                ["custom", <div key="key" className="d-flex justify-content-between align-items-center px-3">
                                     Thème
                                     <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
                                 </div>]

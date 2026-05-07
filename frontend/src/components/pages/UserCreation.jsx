@@ -183,7 +183,7 @@ export default function UserCreation() {
                 </Card.Header>
                 <Card.Body>
                     <Card.Text className="text-muted">
-                        Importez une liste d&apos;utilisateurs via un fichier CSV pour les traiter en lot. Une fois importé, les utilisateurs à créer sont affichées avant d'être modifiés puis validés.
+                        Importez une liste d&apos;utilisateurs via un fichier CSV pour les traiter en lot. Une fois importé, les utilisateurs à créer sont affichées avant d&apos;être modifiés puis validés.
                     </Card.Text>
                     <Form onSubmit={(e) => { e.preventDefault(); processMutation.mutate(); }}>
                         <Form.Group className="mb-3">

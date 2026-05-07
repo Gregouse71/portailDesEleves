@@ -53,8 +53,8 @@ export default function Leaderboard({ data, title = "Classement", format = [{ sc
                         <td className="leaderboard-user-info">
                             Élève
                         </td>
-                        {format.map(elt => {
-                            return <td className="leaderboard-score">{elt.nom}</td>
+                        {format.map((elt, i) => {
+                            return <td className="leaderboard-score" key={i}>{elt.nom}</td>
                         })
                         }
                     </tr>}
@@ -76,9 +76,9 @@ export default function Leaderboard({ data, title = "Classement", format = [{ sc
                                         </span>
                                     </Link>
                                 </td>
-                                {format.map(elt => {
+                                {format.map((elt, i) => {
                                     const scoreValue = u[elt.scoreKey] !== undefined ? u[elt.scoreKey] : u.score;
-                                    return <td className="leaderboard-score">
+                                    return <td className="leaderboard-score" key={i}>
                                         {elt.formatScore(scoreValue)}
                                     </td>
                                 })

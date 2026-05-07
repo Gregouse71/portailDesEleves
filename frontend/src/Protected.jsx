@@ -1,7 +1,7 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { obtenirIdUser } from './api/api_global';
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext } from 'react';
 import { obtenirDataUser } from './api/api_utilisateurs';
 
 const ProtectedContext = createContext();
