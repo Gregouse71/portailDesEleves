@@ -9,7 +9,7 @@ import io
 from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
 from app.utils.decorators import superutilisateur_required
-from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, upload_user_photo
+from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, upload_user_photo
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import AssociationMembre, AssociationMandat
 
@@ -239,6 +239,23 @@ def modifier_photo_utilisateur(user_id: int, new_name: str):
     set_user_photo(user_id, new_name)
 
     return jsonify({"message": "Photo de profil mise à jour avec succès"}), 200
+
+
+@controllers_utilisateurs.post('/<int:user_id>/modifier_banniere')
+@login_required
+def modifier_banniere_utilisateur(user_id: int):
+    """
+    Modifie la bannière d'un utilisateur.
+    """
+    if not (user_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+    
+    data = request.get_json()
+    new_name = data.get('banniere')
+
+    set_user_banniere(user_id, new_name)
+
+    return jsonify({"message": "Bannière mise à jour avec succès"}), 200
 
 
 @controllers_utilisateurs.route('/supprimer_co/<int:co_id>', methods=['DELETE'])

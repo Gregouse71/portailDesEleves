@@ -215,6 +215,11 @@ export async function changerPhotoUtilisateur(id_utilisateur, new_name) {
   return handleResponse(res);
 }
 
+
+export const changerBanniereUtilisateur = (id, fileName) =>
+    createApiPost(`${API_BASE_URL}/users/${id}/modifier_banniere`)({ banniere: fileName });
+
+
 export async function modifierOrdreAssos(id_utilisateur, ordre) {
   const res = await fetch(`${API_BASE_URL}/users/${id_utilisateur}/ordre_assos`, {
     method: "POST",

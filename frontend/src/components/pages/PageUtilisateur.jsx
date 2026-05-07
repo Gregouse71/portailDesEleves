@@ -1,4 +1,4 @@
-import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur } from '../../api/api_utilisateurs';
+import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur} from '../../api/api_utilisateurs';
 import { useProtected } from '../../Protected';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
@@ -16,23 +16,32 @@ function PageUtilisateur() {
     const navigate = useNavigate();
 
     const changerPhoto = () => {
+        document.getElementById('file-upload').setAttribute("data-type", "photo");
+        document.getElementById('file-upload').click();
+    };
+
+    const changerBanniere = () => {
+        document.getElementById('file-upload').setAttribute("data-type", "banniere");
         document.getElementById('file-upload').click();
     };
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
+        const type = event.target.getAttribute("data-type");
 
         if (file) {
             try {
                 const result = await ajouterContenuUtilisateur(id, file);
                 if (result.success) {
-                    await changerPhotoUtilisateur(id, result.fileName);
+                    if (type === "banniere") {
+                        await changerBanniereUtilisateur(id, result.fileName); 
+                    } else {
+                        await changerPhotoUtilisateur(id, result.fileName);
+                    }
                     navigate(0);
-                } else {
-                    alert(`Erreur lors du téléversement : ${result.message}`);
                 }
             } catch (error) {
-                alert(`Erreur lors du téléversement : ${error.message}`);
+                alert(`Erreur : ${error.message}`);
             }
         }
     };
@@ -64,7 +73,7 @@ function PageUtilisateur() {
             <Card className='mb-3'>
                 <Card.Header
                     style={{
-                        backgroundImage: `url(${UPLOAD_BASE_URL}/utilisateurs/minesvert.jpg)`,
+                        backgroundImage: `url(${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.banniere ?? 'minesvert.jpg'})`,
                         height: '170px',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
@@ -77,6 +86,7 @@ function PageUtilisateur() {
                             <Col md="auto" className="text-center">
                                 <DropdownEditer list={[
                                     { can: true, onClick: changerPhoto, name: "Changer la photo" },
+                                    { can: true, onClick: changerBanniere, name: "Changer la bannière" },
                                 ]} />
                             </Col>
                         }

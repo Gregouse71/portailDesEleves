@@ -62,6 +62,7 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Modifiable par l'utilisateur
     photo = db.Column(db.String(1000), nullable=True) # le nom du fichier
+    banniere = db.Column(db.String(1000), nullable=True)
     email = db.Column(db.String(1000), nullable=False)
     date_de_naissance = db.Column(db.Date(), nullable=True)
     surnom = db.Column(db.String(1000), nullable=True)
@@ -278,6 +279,7 @@ class Utilisateur(db.Model, UserMixin) :
             "chambre": self.chambre,
             "cycle": self.cycle,
             "photo": self.photo,
+            "banniere": self.banniere,
             "email": self.email,
             "telephone": self.telephone,
             "date_de_naissance": self.date_de_naissance.isoformat() if self.date_de_naissance is not None else None,

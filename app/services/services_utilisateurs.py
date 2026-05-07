@@ -59,6 +59,13 @@ def set_user_photo(user_id: int, photo_filename: str):
         user.photo = photo_filename
         db.session.commit()
 
+def set_user_banniere(user_id: int, banniere_filename: str):
+    """Met à jour la bannière d'un utilisateur."""
+    user = get_utilisateur(user_id)
+    if user:
+        user.banniere = banniere_filename
+        db.session.commit()
+
 def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     """
     Supprime le lien de colocation entre les deux utilisateurs. 
