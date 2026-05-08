@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
-from sqlalchemy import desc, asc, nullslast
+from sqlalchemy import desc, asc, case
 import os
 from werkzeug.utils import secure_filename
 import csv
@@ -135,7 +135,7 @@ def assos_utilisateur(user_id: int):
     roles = AssociationMembre.query.filter_by(utilisateur_id=user_id)\
     .join(AssociationMembre.mandat)\
     .join(AssociationMandat.association)\
-    .order_by(nullslast(asc(AssociationMembre.ordre)))\
+    .order_by(case((AssociationMembre.ordre == None, 1), else_=0), asc(AssociationMembre.ordre))\
     .all()
     
     current_user_is_baptise = current_user.est_baptise or current_user.est_superutilisateur
