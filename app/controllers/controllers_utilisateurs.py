@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
-from sqlalchemy import desc
+from sqlalchemy import desc, asc, nullslast
 import os
 from werkzeug.utils import secure_filename
 import csv
@@ -132,8 +132,12 @@ def assos_utilisateur(user_id: int):
     if not utilisateur:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
-    roles = AssociationMembre.query.filter_by(utilisateur_id=user_id).join(AssociationMembre.mandat).join(AssociationMandat.association).all()
-
+    roles = AssociationMembre.query.filter_by(utilisateur_id=user_id)\
+    .join(AssociationMembre.mandat)\
+    .join(AssociationMandat.association)\
+    .order_by(nullslast(asc(AssociationMembre.ordre)))\
+    .all()
+    
     current_user_is_baptise = current_user.est_baptise or current_user.est_superutilisateur
 
     actuel_assos = []

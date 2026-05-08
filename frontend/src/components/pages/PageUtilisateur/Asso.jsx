@@ -38,7 +38,7 @@ export default function TabAsso({ id, autoriseAModifier }) {
         nouvelOrdre.splice(index, 0, deplace);
         dragIndex.current = null;
         setActuel(nouvelOrdre);
-        await modifierOrdreAssos(id, nouvelOrdre.map((a, i) => ({ id: a.mandat_id, ordre: i })));
+        await modifierOrdreAssos(id, nouvelOrdre.map((a, i) => ({ id: a.mandat_id, ordre: i})));
     };
 
     const handleDropAncien = async (index) => {
@@ -48,7 +48,7 @@ export default function TabAsso({ id, autoriseAModifier }) {
         nouvelOrdre.splice(index, 0, deplace);
         dragIndexAncien.current = null;
         setAncien(nouvelOrdre);
-        await modifierOrdreAssos(id, nouvelOrdre.map((a, i) => ({ id: a.mandat_id, ordre: i })));
+        await modifierOrdreAssos(id, nouvelOrdre.map((a, i) => ({ id: a.mandat_id, ordre: i + 1000})));
     };
 
     return (<>
