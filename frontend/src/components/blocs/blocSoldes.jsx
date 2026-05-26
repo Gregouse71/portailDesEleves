@@ -21,14 +21,14 @@ export default function BlocSoldes() {
                 <Row className='mb-2'>
                     <Col className="d-flex align-items-center">
                         <Image
-                            src={userData.solde_octo >= 0 ? "/assets/gif/octo-belus-content.gif" : "/assets/gif/octo-belus-pas-content.gif"}
+                            src={userData.solde_octo >= 0 ? "/assets/gif/octo-belus-content1.gif" : "/assets/gif/octo-belus-pas-content1.gif"}
                             alt="GIF"
                             style={{ width: '75px', height: '75px', objectFit: 'cover' }}
                         />
                     </Col>
                     <Col className="d-flex align-items-center">
                         <Image
-                            src={userData.solde_biero >= 0 ? "/assets/gif/biero-p17-positif.gif" : "/assets/gif/biero-p17-negatif.gif"}
+                            src={userData.solde_biero >= 0 ? "/assets/gif/biero-p17-positif1.gif" : "/assets/gif/biero-p17-negatif1.gif"}
                             alt="GIF"
                             style={{ width: '75px', height: '75px', objectFit: 'cover' }}
                         />
