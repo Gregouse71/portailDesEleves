@@ -3,8 +3,8 @@ import "../assets/styles/formulaire_connexion.scss"
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { seConnecter } from "../api/api_global";
-import { Container, Form, Button, Alert, Card } from "react-bootstrap";
-import { useQueryClient } from "@tanstack/react-query";
+import { Container, Form, Button, Alert, Card, Spinner } from "react-bootstrap";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const VP_GEEK_EMAIL = "webmaster-bde@mines-paristech.fr";
 const PORTAL_TITLE = "Portail des élèves";
@@ -27,7 +27,7 @@ export default function FormulaireConnexion() {
         if (success) {
             queryClient.removeQueries({ queryKey: ['id'] })
             queryClient.removeQueries({ queryKey: ['donneesUtilisateur'] })
-            
+
             // If it's an absolute URL or starts with /api, use window.location.href
             if (from.startsWith("http") || from.startsWith("/api")) {
                 window.location.href = from;
@@ -43,45 +43,47 @@ export default function FormulaireConnexion() {
         <Container className="connexion-main-container d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
             <Card className="shadow-lg p-4 mb-4" style={{ maxWidth: '450px', width: '100%' }}>
                 <Card.Body>
-                    <h1 className="text-center mb-4 fs-3">
-                        Identification au <br />
-                        <strong className="text-primary">{PORTAL_TITLE}</strong>
-                    </h1>
-                    {erreur && <Alert variant="danger">{erreur}</Alert>}
-                    <Form onSubmit={handleSubmit} className="d-flex flex-column">
-                        <Form.Group className="mb-3" controlId="formBasicUsername">
-                            <Form.Label>Nom d&apos;utilisateur</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Entrer le nom d'utilisateur"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
+                    <>
+                        <h1 className="text-center mb-4 fs-3">
+                            Identification au <br />
+                            <strong className="text-primary">{PORTAL_TITLE}</strong>
+                        </h1>
+                        {erreur && <Alert variant="danger">{erreur}</Alert>}
+                        <Form onSubmit={handleSubmit} className="d-flex flex-column">
+                            <Form.Group className="mb-3" controlId="formBasicUsername">
+                                <Form.Label>Nom d&apos;utilisateur</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Entrer le nom d'utilisateur"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
 
-                        <Form.Group className="mb-4" controlId="formBasicPassword">
-                            <Form.Label>Mot de passe</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Mot de passe"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
+                            <Form.Group className="mb-4" controlId="formBasicPassword">
+                                <Form.Label>Mot de passe</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Mot de passe"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
 
-                        <div className="d-grid gap-2 mb-3">
-                            <Button variant="primary" type="submit" size="lg">
-                                Se connecter
-                            </Button>
-                        </div>
+                            <div className="d-grid gap-2 mb-3">
+                                <Button variant="primary" type="submit" size="lg">
+                                    Se connecter
+                                </Button>
+                            </div>
 
-                        <Link to={'/oublie'} className="text-center text-muted mt-2">
-                            J&apos;ai oublié mon mot de passe
-                        </Link>
+                            <Link to={'/oublie'} className="text-center text-muted mt-2">
+                                J&apos;ai oublié mon mot de passe
+                            </Link>
 
-                    </Form>
+                        </Form>
+                    </>
                 </Card.Body>
             </Card>
 

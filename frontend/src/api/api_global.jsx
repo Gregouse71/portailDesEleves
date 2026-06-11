@@ -24,7 +24,12 @@ export const addPermission = createApiPost(`${LOGIN_BASE_URL}/permissions`);
 /** Fetch l'id de l'utilisateur actuel
  * 
  */
-export const obtenirIdUser = createApiGet(`${LOGIN_BASE_URL}/current_user_id`)
+export const obtenirIdUser = createApiGet(`${LOGIN_BASE_URL}/current_user_id`);
+
+/** Fetch l'état de l'api
+ * 
+ */
+export const obtenirAlive = () => createApiGet(`${API_BASE_URL}/alive`)();
 
 
 export async function seDeconnecter() {
