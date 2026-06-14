@@ -4,7 +4,7 @@
 .env
 .DS_Store
 
-instance/*
+*/instance/*
 portail/*
 
 public/abatage
