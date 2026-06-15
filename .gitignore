@@ -5,6 +5,7 @@
 .DS_Store
 
 */instance/*
+*.sql
 portail/*
 
 public/abatage

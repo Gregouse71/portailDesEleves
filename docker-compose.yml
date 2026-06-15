@@ -1,0 +1,69 @@
+name: portailDesEleves
+
+services:
+
+  frontend-build:
+    build:
+      context: ./frontend
+      target: builder
+    volumes:
+      - frontend_build:/app/build
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:Z
+      - ./public:/var/www/html:ro,z
+      - frontend_build:/usr/share/nginx/html:ro
+    depends_on:
+      backend:
+        condition: service_started
+      php:
+        condition: service_started
+      frontend-build:
+        condition: service_completed_successfully
+
+  php:
+    image: php:8.4-fpm
+    volumes:
+      - ./public:/var/www/html:ro,z          # same folder as nginx
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:11
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - /home/gregoire/tempsql:/var/lib/mysql:Z
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:9.0.4-alpine
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  frontend_build:
