@@ -1,11 +1,13 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-# Serve stage — let Nginx handle it (see below)
-FROM scratch AS export
-COPY --from=builder /app/build ./build
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=frontend /app/build /usr/share/nginx/html
+
+CMD ["nginx", "-g", "daemon off;"]
