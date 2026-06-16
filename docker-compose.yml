@@ -18,11 +18,13 @@ services:
   php:
     image: php:8.4-fpm
     volumes:
-      - ./public:/var/www/html:ro,z          # same folder as nginx
+      - ./public:/var/www/html:ro,z
     restart: unless-stopped
 
   backend:
     build: ./backend
+    volumes:
+      - ./upload:/app/upload:z
     depends_on:
       mariadb:
         condition: service_healthy

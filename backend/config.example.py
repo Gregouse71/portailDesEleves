@@ -13,7 +13,7 @@ import json
 
 class Config:
     SECRET_KEY                  = 'une_cle_secrete_pour_developpement'  # générée avec `openssl rand -hex 32`
-    SQLALCHEMY_DATABASE_URI     = 'sqlite:///app.db'
+    SQLALCHEMY_DATABASE_URI     = 'mysql+pymysql://root:1234@mariadb/portail'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Permet de stocker les caractères UTF dans les objets JSON
     SQLALCHEMY_ENGINE_OPTIONS   = {"json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False)}

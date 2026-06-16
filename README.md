@@ -62,9 +62,8 @@ run.py fait appel à `__init__.py` qui crée l'application et démarre la base d
 
 ### B - Le frontend
 
-1. **Préparer l'environnement** : Créer le fichier `frontend/src/api/base_url.js` qui contient l'adresse du backend : `export const _BASE_URL = 'http://localhost:5000'`
-2. **Installer les packets** : Installer *npm*, le gestionnaire de packets (l'équivalent de *pip* ou *conda* pour le javascript). Se placer dans *frontend* et exécuter `npm install`, ce qui installe tous les packets nécessaires (dont le besoin est indiqué dans `package.json`).
-3. **Démarrer le serveur** : `npm run dev`, et on peut alors se connecter à l'adresse *http://localhost:5000*. La connexion se fait avec les logins créés lors de la création de l'environnement de dev, mdp 1234.
+1. **Installer les packets** : Installer *npm*, le gestionnaire de packets (l'équivalent de *pip* ou *conda* pour le javascript). Se placer dans *frontend* et exécuter `npm install`, ce qui installe tous les packets nécessaires (dont le besoin est indiqué dans `package.json`).
+2. **Démarrer le serveur** : `npm run dev`, et on peut alors se connecter à l'adresse *http://localhost:5000*. La connexion se fait avec les logins créés lors de la création de l'environnement de dev, mdp 1234.
 
 
 ## III. Structure
@@ -94,3 +93,32 @@ Le frontend est une application React qui communique avec le backend via une API
   - **`frontend/src/api`**: Contient les fonctions pour interagir avec l'API du backend. `base_url.js` définit l'URL du backend, et les autres fichiers `api_*.js` contiennent les appels à l'API pour chaque fonctionnalité.
   - **`frontend/src/components`**: Contient les composants React réutilisables.
   - **`frontend/src/pages`**: Contient les composants React qui représentent les pages de l'application.
+
+
+## IV. Installation avec Podman
+
+Cette méthode permet de lancer l'ensemble des services (frontend, backend, base de données, valkey, php-fpm) de manière isolée dans un conteneur. C'est multiplateforme, plus facile à utilisé (quand ça marche), et reproductible (pas de "Ça marche sur mon orinateur).
+
+### A. Préparation
+
+1. Le backend et le frontend doivent être déjà configurés avec les bons fichiers de configuration.
+2. Créer le fichier de configuration pour la base de données : créez un fichier `.env` à la racine du projet avec les identifiants de base de données (coorespondants à `config.py`) :
+```env
+DB_NAME=portail
+DB_USER=user
+DB_PASSWORD=1234
+DB_ROOT_PASSWORD=1234
+```
+
+### B - Lancement et Initialisation
+
+1. **Démarrer les services** :
+```bash
+podman compose up -d --build
+```
+
+2.  **Charger la base de données** : Pour initialiser la base avec le backup SQL (`backup.sql`) :
+```bash
+podman compose exec mariadb -u root -p1234 portail < backup.sql
+```
+
