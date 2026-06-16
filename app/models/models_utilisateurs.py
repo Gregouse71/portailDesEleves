@@ -61,9 +61,9 @@ class Utilisateur(db.Model, UserMixin) :
     mot_de_passe = db.Column(db.String(255), nullable=False)
 
     # Modifiable par l'utilisateur
-    photo = db.Column(db.String(1000), nullable=True) # le nom du fichier
+    photo = db.Column(db.String(1000), nullable=True) # le nom du fichier (plus utilisé, peut etre supprimé)
     photo_id = db.Column(db.Integer, nullable=True) # l'id du media
-    banniere = db.Column(db.String(1000), nullable=True)
+    banniere = db.Column(db.String(1000), nullable=True) # le nom du fichier (plus utilisé, peut etre supprimé)
     banniere_id = db.Column(db.Integer, nullable=True) # l'id du media
     email = db.Column(db.String(1000), nullable=False)
     date_de_naissance = db.Column(db.Date(), nullable=True)

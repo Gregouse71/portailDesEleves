@@ -1,6 +1,4 @@
 from app import db
-from sqlalchemy.ext.mutable import MutableList
-from datetime import date, datetime, timezone
 
 
 class ElementMedia(db.Model):
@@ -19,8 +17,9 @@ class ElementMedia(db.Model):
     file_path = db.Column(db.String(1000), nullable=False)
     position = db.Column(db.Integer, nullable=False, default=0)
     cache = db.Column(db.Boolean, nullable=False, default=False)
+    protege = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, utilisateur_id: int, association_id: int, file_path: str, cache: bool=False) :
+    def __init__(self, utilisateur_id: int, association_id: int, file_path: str, cache: bool=False, protege=False) :
         """
         Cree un nouveau sondage
         """
@@ -31,6 +30,7 @@ class ElementMedia(db.Model):
         self.file_path = file_path
         self.position = 0
         self.cache = cache
+        self.protege = protege
 
     def to_dict(self):
         return {

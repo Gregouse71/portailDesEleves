@@ -252,11 +252,12 @@ def delete_content_user(media_id):
     if len(Utilisateur.query.filter_by(photo_id=media.id).all()) > 0:
         return jsonify({"message": "Impossible de supprimer une photo de profil"}), 400
 
+    if not delete_media(media):
+        return jsonify({"message": "Media protégé"}), 400
     for u in Utilisateur.query.filter_by(banniere_id=media.id).all():
         u.banniere_id = None
     db.session.commit()
 
-    delete_media(media)
     return jsonify({"message": "Media supprimé avec succès"}), 200
 
 

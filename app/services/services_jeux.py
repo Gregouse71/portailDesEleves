@@ -60,8 +60,11 @@ def faire_un_coup(s: str, id: int, data: dict):
             db.session.commit()
             return partie.to_dict()
     finally:
-        lock.release()
-    
+        try:
+            lock.release()
+        except redis.exceptions.LockNotOwnedError:
+            pass
+
     return None
 
 def _transpose(board):

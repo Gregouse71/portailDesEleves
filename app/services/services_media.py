@@ -2,6 +2,7 @@ from flask import jsonify
 from werkzeug.utils import secure_filename
 import uuid
 import os
+from flask_login import current_user
 
 from app.services import db
 from app.models.models_utilisateurs import Utilisateur
@@ -45,6 +46,9 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
 
 
 def delete_media(media: ElementMedia):
+    print(media.protege)
+    if media.protege and not current_user.est_superutilisateur:
+        return False
     path = os.path.join('upload', media.file_path)
     try:
         os.remove(path)
@@ -52,3 +56,4 @@ def delete_media(media: ElementMedia):
         pass
     db.session.delete(media)
     db.session.commit()
+    return True
