@@ -390,7 +390,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
         <div className="d-flex align-items-center">
             <Image
                 className="rounded-3"
-                src={`${UPLOAD_BASE_URL}/utilisateurs/${user.photo}`}
+                src={`${UPLOAD_BASE_URL}/${user.photo}`}
                 alt={user.nom_utilisateur}
                 rounded
                 style={{

@@ -8,6 +8,7 @@ import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import DropdownEditer from '../elements/DropdownEditer';
+import TabMedia from './PageUtilisateur/Media';
 
 function PageUtilisateur() {
     const { userData } = useProtected();
@@ -59,6 +60,7 @@ function PageUtilisateur() {
     const getActiveKey = () => {
         if (location.pathname.includes('assos')) return 'assos';
         if (location.pathname.includes('questions')) return 'questions';
+        if (location.pathname.includes('media')) return 'media';
         return 'info';
     };
 
@@ -73,7 +75,7 @@ function PageUtilisateur() {
             <Card className='mb-3'>
                 <Card.Header
                     style={{
-                        backgroundImage: `url(${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.banniere ?? 'minesvert.jpg'})`,
+                        backgroundImage: `url(${UPLOAD_BASE_URL}/${donneesUtilisateur.banniere})`,
                         height: '170px',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
@@ -82,18 +84,10 @@ function PageUtilisateur() {
                 </Card.Header>
                 <Card.Body>
                     <Row className="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
-                        {autoriseAModifier &&
-                            <Col md="auto" className="text-center">
-                                <DropdownEditer list={[
-                                    { can: true, onClick: changerPhoto, name: "Changer la photo" },
-                                    { can: true, onClick: changerBanniere, name: "Changer la bannière" },
-                                ]} />
-                            </Col>
-                        }
                         <Col xs="auto" md="auto" className="order-md-last">
                             <Image
                                 className="rounded-3"
-                                src={`${UPLOAD_BASE_URL}/utilisateurs/${donneesUtilisateur.photo}`}
+                                src={`${UPLOAD_BASE_URL}/${donneesUtilisateur.photo}`}
                                 alt={donneesUtilisateur.nom_utilisateur}
                                 rounded
                                 style={{
@@ -131,12 +125,18 @@ function PageUtilisateur() {
                         Questions/Réponses
                     </Nav.Link>
                 </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link key={4} as={Link} to={`/utilisateur/${id}/media`} eventKey="media">
+                        Media
+                    </Nav.Link>
+                </Nav.Item>
             </Nav>
 
             <Routes>
                 <Route index={true} element={<TabInfo id={id} autoriseAModifier={autoriseAModifier} />} />
                 <Route path="assos" element={<TabAsso id={id} autoriseAModifier={autoriseAModifier} />} />
                 <Route path="questions" element={<TabQuestions id={id} autoriseAModifier={autoriseAModifier} />} />
+                <Route path="media" element={<TabMedia id={id} autoriseAModifier={autoriseAModifier} />} />
             </Routes>
         </Container>
     );

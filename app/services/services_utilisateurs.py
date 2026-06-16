@@ -1,10 +1,9 @@
 # importer les models grace a __init__.py de models
 from app.services import db
 from app.models.models_utilisateurs import Utilisateur
+from app.models.models_media import ElementMedia
 
 from datetime import date, timedelta, datetime, timezone
-from flask import jsonify
-from werkzeug.utils import secure_filename
 from itertools import groupby
 from sqlalchemy import func
 import secrets
@@ -51,20 +50,6 @@ def get_utilisateur(utilisateur_id) -> Utilisateur:
         return db.session.get(Utilisateur, utilisateur_id)
     else:
         return None
-
-def set_user_photo(user_id: int, photo_filename: str):
-    """Met à jour la photo de profil d'un utilisateur."""
-    user = get_utilisateur(user_id)
-    if user:
-        user.photo = photo_filename
-        db.session.commit()
-
-def set_user_banniere(user_id: int, banniere_filename: str):
-    """Met à jour la bannière d'un utilisateur."""
-    user = get_utilisateur(user_id)
-    if user:
-        user.banniere = banniere_filename
-        db.session.commit()
 
 def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     """
@@ -181,21 +166,23 @@ def prochains_anniv():
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
     return ret
 
-  
-def upload_user_photo(file, user_id):
-    if file.filename == '':
-        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
 
-    if file:
-        user = db.session.get(Utilisateur, user_id)
-        filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(filename)
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-        unique_filename = f"{user.nom_utilisateur}_{user.id}_{name}_{timestamp}{ext}"
-        
-        UPLOAD_FOLDER = os.path.join('upload', 'utilisateurs')
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-        
-        file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
-        return jsonify({"message": "Fichier téléversé avec succès", "file_name": unique_filename}), 200
+def get_user_media(user_id):
+    files = ElementMedia.query.filter_by(utilisateur_id=user_id, cache=False)
+    return [f.to_dict() for f in files]
+
+
+def set_user_photo(user_id: int, media_id: int):
+    """Met à jour la photo de profil d'un utilisateur."""
+    user = get_utilisateur(user_id)
+    if user:
+        user.photo_id = media_id
+        db.session.commit()
+
+
+def set_user_banniere(user_id: int, banniere_id: str):
+    """Met à jour la bannière d'un utilisateur."""
+    user = get_utilisateur(user_id)
+    if user:
+        user.banniere_id = banniere_id
+        db.session.commit()

@@ -244,18 +244,13 @@ const Album = ({ id, autorise, asso_id }) => {
     </>
 }
 
-function AssoAudio({ asso_id }) {
+function AssoAudio({ asso_id, membreData }) {
     const queryClient = useQueryClient();
     const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
 
     const { data: albums = [], isLoading } = useQuery({
         queryKey: ['audioAlbums', asso_id],
         queryFn: () => getAlbums(asso_id),
-    });
-
-    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
-        queryKey: ['membreData', asso_id],
-        queryFn: () => estUtilisateurDansAsso(asso_id),
     });
 
     const sortedAlbums = useMemo(() => {

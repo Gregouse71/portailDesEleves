@@ -66,7 +66,7 @@ export default function Comment({ comment, userData, isMembreAsso, handleLike, h
                         <div className="d-flex align-items-center gap-2 flex-grow-1">
                             <Link to={`/utilisateur/${comment.auteur.id}`} style={{ textDecoration: "None" }}>
                                 <Image
-                                    src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/utilisateurs/${comment.auteur.photo}` : ''}
+                                    src={comment.auteur.photo ? `${UPLOAD_BASE_URL}/${comment.auteur.photo}` : ''}
                                     alt={`${comment.auteur.nom_utilisateur}`}
                                     roundedCircle width={50} height={50} style={{ objectFit: 'cover' }}
                                 />

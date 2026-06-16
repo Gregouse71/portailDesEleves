@@ -207,7 +207,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
         }
 
         return (<Link to={`/assos/get/${post.association.id}`}>
-            <Image src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '50px', height: '50px' }} />
+            <Image src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '50px', height: '50px' }} />
         </Link>);
     };
 

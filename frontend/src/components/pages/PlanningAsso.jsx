@@ -24,7 +24,7 @@ const GetAssoInfo = ({ assoId }) => {
 
     return (
         <div className="d-flex align-items-center">
-            <img src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo`} className="me-2 object-fit-cover" style={{ width: '40px', height: '40px' }} />
+            <img src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo`} className="me-2 object-fit-cover" style={{ width: '40px', height: '40px' }} />
             <span>{asso.nom}</span>
         </div>
     );

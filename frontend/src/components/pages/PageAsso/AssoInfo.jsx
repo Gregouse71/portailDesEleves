@@ -5,7 +5,7 @@ import { Button } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DropdownEditer from "../../elements/DropdownEditer";
 
-function AssoInfo({ id }) {
+function AssoInfo({ id, membreData }) {
     const queryClient = useQueryClient();
     const [isEdition, setIsEdition] = useState(false);
     const [description, setDescription] = useState("");
@@ -13,10 +13,6 @@ function AssoInfo({ id }) {
     const { data: asso, isLoading } = useQuery({
         queryKey: ['asso', id],
         queryFn: () => chargerAsso(id),
-    });
-    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
-        queryKey: ['membreData', id],
-        queryFn: () => estUtilisateurDansAsso(id),
     });
 
     const mutation = useMutation({

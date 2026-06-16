@@ -41,7 +41,7 @@ export default function BlocEvents() {
         
         return (<>
             <div>
-                <img src={`${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
+                <img src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
                 <Link to={`/assos/get/${event.id_association}/events`}>{event.nom}</Link>
             </div>
         </>);

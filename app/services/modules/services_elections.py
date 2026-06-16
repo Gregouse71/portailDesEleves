@@ -11,6 +11,8 @@ from app.utils.divers_utils import send_mail
 from app.models.models_associations import Association
 from app.models.models_associations import Utilisateur
 from app.models.modules.models_elections import Election, ElectionVote, ElectionVoteChiffre
+from app.models.models_media import ElementMedia
+from app.services.services_media import upload_media, delete_media
 from app import db
 
 def creer_election (asso_id, data):
@@ -21,7 +23,7 @@ def creer_election (asso_id, data):
         return None
 
     election = Election(association=asso[0], nom=data.get("nom"), options=data.get("options"), chiffree=data.get("chiffree", False))
-    election.patch(data)
+    patch_election(election, data)
     db.session.add(election)
     db.session.commit()
     return election
@@ -34,14 +36,16 @@ def patch_election(election, data):
     """
 
     # Supression de simages inutiles
+    flag_modified(election, "options")
     for opt in election.options:
-        flag_modified(election, "options")
         if opt not in data.get("options", []):
-            im = opt.get("image")
-            if im and len(im) > 0:
-                path = os.path.join('upload', im)
-                if os.path.exists(path):
-                    os.remove(path)
+            old_img = opt.get("image")
+            try:
+                old_id = int(old_img)
+                old_media = db.session.get(ElementMedia, old_id)
+                delete_media(old_media)
+            except ValueError:
+                pass
 
     election.nom = data.get("nom", election.nom)
     election.description = data.get("description", election.description)
@@ -59,28 +63,23 @@ def ajouter_photo(file, election, choix):
     Ajoute une photo pour l'option n° *choix* de l'election,
     en supprimant d'autres deja existantes
     """
-    UPLOAD_FOLDER = os.path.join('upload', 'associations', election.association.nom_dossier)
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
+    old_img = election.options[choix].get("image")
+    try:
+        old_id = int(old_img)
+        old_media = db.session.get(ElementMedia, old_id)
+        delete_media(old_media)
+    except (KeyError, ValueError, AttributeError, TypeError):
+        pass
     
-    ALREADY = election.options[choix].get("image")
-    if ALREADY:
-        OLD = os.path.join('upload', ALREADY)
-        if os.path.exists(OLD):
-            os.remove(OLD)
+    media = upload_media(
+        file,
+        os.path.join('associations', election.association.nom_dossier),
+        asso_id=election.association.id, cache=True
+    )
 
-    filename = secure_filename(file.filename)
-    name, ext = os.path.splitext(filename)
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"{name}_{timestamp}{ext}"
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(file_path)
-
-    path = os.path.join('associations', election.association.nom_dossier, filename)
-    election.options[choix]["image"] = path
+    election.options[choix]["image"] = media.id
     flag_modified(election, "options")
     db.session.commit()
-    return path
 
 
 def supprimer_election(election):
@@ -89,14 +88,13 @@ def supprimer_election(election):
     """
     for vote in election.votes:
         db.session.delete(vote)
-    db.session.delete(election)
+    
     for choix in election.options:
-        im = choix.get("image")
-        if im and len(im) > 0:
-            path = os.path.join('upload', im)
-            if os.path.exists(path):
-                os.remove(path)
+        im = int(choix.get("image"))
+        if im:
+            delete_media(db.session.get(ElementMedia, im))
 
+    db.session.delete(election)
     db.session.commit()
     return election
 

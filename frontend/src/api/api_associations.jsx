@@ -1,4 +1,21 @@
-import { API_BASE_URL, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, handleResponse } from "./base";
+
+const ASSOCIATIONS_BASE_URL = `${API_BASE_URL}/associations`;
+
+/** Obtenir les photos d'une asso
+ * args :
+ *  - user_id : id de l'utilisateur
+ * 
+ * renvoie :
+ *  - la liste des photos de l'asso
+ */
+export const obtenirPhotosAsso = createApiGet(`${ASSOCIATIONS_BASE_URL}/content`)
+
+/** Supprimer un media
+ * 
+ */
+export const supprimerPhotoAsso = createApiDelete(`${ASSOCIATIONS_BASE_URL}/content`)
+
 
 export async function ajouterAsso(nom, description, type_association, ordre_importance, logo_path, banniere_path, a_cacher_aux_nouveaux) {
   try {
@@ -203,7 +220,7 @@ export async function modifierPositionMembre(associationId, mandatId, membreId, 
   }
 }
 
-export async function ajouterContenu(associationId, file) {
+export async function ajouterContenuAsso(associationId, file) {
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -227,9 +244,9 @@ export async function ajouterContenu(associationId, file) {
   }
 }
 
-export async function changerPhoto(asso_id, photo_type, new_name) {
+export async function changerPhotoAsso(asso_id, photo_type, new_id) {
   try {
-    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${new_name}`, {
+    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${new_id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

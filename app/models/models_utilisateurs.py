@@ -4,11 +4,11 @@ from flask_login import UserMixin # pour faire le lien entre la class utilisateu
 from datetime import date
 
 # verification du format des donnees :
+from app.models.models_media import ElementMedia
 from app.utils.divers_utils import ph
 from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
 from ..utils.verification_format import valider_langues
-from app.models.models_sondages import VoteSondage
 
 
 import locale
@@ -62,7 +62,9 @@ class Utilisateur(db.Model, UserMixin) :
 
     # Modifiable par l'utilisateur
     photo = db.Column(db.String(1000), nullable=True) # le nom du fichier
+    photo_id = db.Column(db.Integer, nullable=True) # l'id du media
     banniere = db.Column(db.String(1000), nullable=True)
+    banniere_id = db.Column(db.Integer, nullable=True) # l'id du media
     email = db.Column(db.String(1000), nullable=False)
     date_de_naissance = db.Column(db.Date(), nullable=True)
     surnom = db.Column(db.String(1000), nullable=True)
@@ -125,6 +127,7 @@ class Utilisateur(db.Model, UserMixin) :
     score_global_con = db.Column(db.Float, nullable=False, default=0)
     score_global_div = db.Column(db.Float, nullable=False, default=0)
     votes = db.relationship('VoteSondage', back_populates='utilisateur')
+    media = db.relationship('ElementMedia', back_populates='utilisateur')
     # Messages
     messages = db.relationship('Message', back_populates='utilisateur')
 
@@ -278,8 +281,8 @@ class Utilisateur(db.Model, UserMixin) :
             "promotion": self.promotion,
             "chambre": self.chambre,
             "cycle": self.cycle,
-            "photo": self.photo,
-            "banniere": self.banniere,
+            "photo": self.get_photo_file(),
+            "banniere": self.get_banniere_file(),
             "email": self.email,
             "telephone": self.telephone,
             "date_de_naissance": self.date_de_naissance.isoformat() if self.date_de_naissance is not None else None,
@@ -304,3 +307,13 @@ class Utilisateur(db.Model, UserMixin) :
             "victoires": self.victoires,
             "defaites": self.defaites
         }
+    
+    def get_photo_file(self):
+        if self.photo_id is None:
+            return None
+        return ElementMedia.query.get(self.photo_id).file_path
+
+    def get_banniere_file(self):
+        if self.banniere_id is None:
+            return 'utilisateurs/minesvert.jpg'
+        return ElementMedia.query.get(self.banniere_id).file_path

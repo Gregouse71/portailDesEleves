@@ -7,9 +7,11 @@ import os
 from app import db
 from app.utils.decorators import est_membre_de_asso, superutilisateur_required, a_permission
 from app.services.services_utilisateurs import get_utilisateur
-from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position
+from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position, get_asso_media
+from app.services.services_media import upload_media, delete_media
 
 from app.models.models_associations import Association
+from app.models.models_media import ElementMedia
 
 # TO DO :
 #
@@ -251,24 +253,56 @@ def route_modifier_position_membre(association_id, mandat_id, membre_id):
         return jsonify({"message": f"Erreur lors de la modification de la position du membre : {str(e)}"}), 500
 
 
-@controllers_associations.route('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<path:new_path>', methods=['POST'])
+@controllers_associations.post('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<path:new_id>')
 @login_required
 @est_membre_de_asso
-def route_modifier_logo_banniere(association_id: int, logo_banniere: str, new_path: str):
+def route_modifier_logo_banniere(association_id: int, logo_banniere: str, new_id: str):
     """
     Modifie la bannière de l'association
     """
     association = db.session.get(Association, association_id)
+    media = db.session.get(ElementMedia, new_id)
+    if media is None or association is None:
+        return jsonify({"message": "Association ou media non trouvé"}), 404
     if logo_banniere == 'logo':
-        association.logo_path = new_path
+        association.logo_id = new_id
         db.session.commit()
         return jsonify({"message": "logo modifie avec succes"}), 200
     elif logo_banniere == 'banniere':
-        association.banniere_path = new_path
+        association.banniere_id = new_id
         db.session.commit()
         return jsonify({"message": "banniere modifie avec succes"}), 200
     else:
         return jsonify({"message": "erreur : veulliez entrer logo/new_logo_path ou banner/new_banner_path"}), 404
+
+
+@controllers_associations.get('/content/<int:asso_id>')
+@login_required
+def get_content_asso(asso_id: int):
+    files = get_asso_media(asso_id)
+    return jsonify(files), 200
+
+
+@controllers_associations.delete('/content/<int:association_id>/<int:media_id>')
+@login_required
+@est_membre_de_asso
+def delete_content_asso(association_id: int, media_id: int):
+    """
+    Supprime un contenu (photo) pour un utilisateur.
+    """
+    media = ElementMedia.query.get(media_id)
+    if media is None:
+        return jsonify({"message": "Media non trouvé"}), 404
+
+    if len(Association.query.filter_by(logo_id=media.id).all()) > 0:
+        return jsonify({"message": "Impossible de supprimer le logo"}), 400
+
+    for u in Association.query.filter_by(banniere_id=media.id).all():
+        u.banniere_id = None
+    db.session.commit()
+
+    delete_media(media)
+    return jsonify({"message": "Media supprimé avec succès"}), 200
 
 
 # AJOUTER DE LA SECURITE
@@ -283,7 +317,7 @@ def route_add_content(association_id):
     if not asso:
         return jsonify({"success": False, "message": "Association introuvable"}), 404
     # Définition du dossier d'upload
-    UPLOAD_FOLDER = os.path.join('upload', 'associations', asso.nom_dossier)
+    UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
     # Vérifier si un fichier a été envoyé
     if 'file' not in request.files:
@@ -292,15 +326,8 @@ def route_add_content(association_id):
     # Vérifier si l'extension du fichier est autorisée
     if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
         return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
-    # Vérifier si le dossier d'upload existe, sinon le créer
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    filename = secure_filename(file.filename)
-    name, ext = os.path.splitext(filename)
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    filename = f"{name}_{timestamp}{ext}"
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(file_path)
+
+    filename = upload_media(file, UPLOAD_FOLDER, asso_id=association_id).file_path
     return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": filename}), 200
 
 

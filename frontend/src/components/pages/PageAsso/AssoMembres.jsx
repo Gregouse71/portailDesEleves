@@ -4,7 +4,7 @@ import { Card, Button, Form } from "react-bootstrap";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AssoMandat from "../../elements/AssoMandat";
 
-function AssoMembres({ asso_id }) {
+function AssoMembres({ asso_id, membreData }) {
     const queryClient = useQueryClient();
 
     const [isAjoutMandat, setIsAjoutMandat] = useState(false);
@@ -13,10 +13,6 @@ function AssoMembres({ asso_id }) {
     const { data: asso = {mandat: ""}, isLoading } = useQuery({
         queryKey: ['asso', asso_id],
         queryFn: () => chargerAsso(asso_id),
-    });
-    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
-        queryKey: ['membreData', asso_id],
-        queryFn: () => estUtilisateurDansAsso(asso_id),
     });
 
     const sortedMandats = useMemo(() => {

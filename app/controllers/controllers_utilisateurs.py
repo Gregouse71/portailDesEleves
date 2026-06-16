@@ -9,9 +9,11 @@ import io
 from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
 from app.utils.decorators import superutilisateur_required
-from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, upload_user_photo
+from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, get_user_media
+from app.services.services_media import upload_media, delete_media
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import AssociationMembre, AssociationMandat
+from app.models.models_media import ElementMedia
 
 
 # Creer le blueprint pour les utilisateurs
@@ -212,7 +214,7 @@ def set_user_infos(user_id: int):
     return jsonify(utilisateur.to_dict()), 200
 
 
-@controllers_utilisateurs.route('/<int:user_id>/add_content', methods=['POST'])
+@controllers_utilisateurs.post('/content/<int:user_id>')
 @login_required
 def add_content_to_user(user_id: int):
     """
@@ -225,11 +227,42 @@ def add_content_to_user(user_id: int):
         return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
 
     file = request.files['file']
-    return upload_user_photo(file, user_id)
+    filename = upload_media(file, 'utilisateurs', user_id=user_id).file_path
+    return jsonify({"message": "Fichier téléversé avec succès", "file_name": filename}), 200
 
-@controllers_utilisateurs.route('/<int:user_id>/modifier_photo/<string:new_name>', methods=['POST'])
+@controllers_utilisateurs.get('/content/<int:user_id>')
 @login_required
-def modifier_photo_utilisateur(user_id: int, new_name: str):
+def get_content_user(user_id: int):
+    files = get_user_media(user_id)
+    return jsonify(files), 200
+
+@controllers_utilisateurs.delete('/content/<int:media_id>')
+@login_required
+def delete_content_user(media_id):
+    """
+    Supprime un contenu (photo) pour un utilisateur.
+    """
+    media = ElementMedia.query.get(media_id)
+    if media is None:
+        return jsonify({"message": "Media non trouvé"}), 404
+
+    if not (media.utilisateur_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    if len(Utilisateur.query.filter_by(photo_id=media.id).all()) > 0:
+        return jsonify({"message": "Impossible de supprimer une photo de profil"}), 400
+
+    for u in Utilisateur.query.filter_by(banniere_id=media.id).all():
+        u.banniere_id = None
+    db.session.commit()
+
+    delete_media(media)
+    return jsonify({"message": "Media supprimé avec succès"}), 200
+
+
+@controllers_utilisateurs.route('/<int:user_id>/modifier_photo/<int:new_id>', methods=['POST'])
+@login_required
+def modifier_photo_utilisateur(user_id: int, new_id: int):
     """
     Modifie la photo de profil d'un utilisateur.
     """
@@ -240,7 +273,7 @@ def modifier_photo_utilisateur(user_id: int, new_name: str):
     if not (user_id == current_user.id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
     
-    set_user_photo(user_id, new_name)
+    set_user_photo(user_id, new_id)
 
     return jsonify({"message": "Photo de profil mise à jour avec succès"}), 200
 
@@ -395,24 +428,6 @@ def route_get_anniv():
         return jsonify(ret), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
-
-@controllers_utilisateurs.route('/ajouter_photo', methods=["POST"])
-@superutilisateur_required
-def route_ajouter_photo():
-    uploaded_photo = request.files['file']
-    filename = secure_filename(uploaded_photo.filename)
-    if filename != '':
-        file_extension = os.path.splitext(filename)[1]
-        if file_extension not in verifier_extension_photo(file_extension):
-            return jsonify({"message": "Nom de fichier ou contenu du fichier invalide"}), 400
-    nom_utilisateur = secure_filename(request.json['nom_utilisateur'])
-    if not valider_chaine_texte(nom_utilisateur):
-        return jsonify({"message": "Nom d'utilisateur spécifié invalide"}), 400
-    final_filename = os.path.join(current_app.config['UPLOAD_PATH'], 'utilisateurs', nom_utilisateur, file_extension)
-    if os.path.isfile(final_filename):
-        return jsonify({"message": "Une photo est déjà présente pour cet utilisateur"}), 400
-    uploaded_photo.save(final_filename)
-    return jsonify({"message": "Photo téléversée avec succès"}), 200
     
 
 @controllers_utilisateurs.route('/changer_marrain', methods=["POST"])
@@ -476,9 +491,9 @@ def route_add_utilisateur():
                         nom=nom,
                         promotion=promotion,
                         cycle=cycle)
-        req = upload_user_photo(photo, user_id)
+        req = upload_media(photo, user_id).file_path
         filename = req[0].json['file_name']
-        set_user_photo(user_id, filename) #TODO: better error handling. Currently photo upload and user creation are decoupled in code but coupled in error handling. Bad for logging + side effects
+        set_user_photo(user_id, filename)
         return jsonify({"message": "Utilisateur ajouté avec succès"}), 203
     except ValueError as e:
         return jsonify({"message": f"Au moins un champ est invalide pour l'ajout d'un utilisateur: {str(e)}"}), 400
@@ -550,6 +565,7 @@ def add_many_users():
     for row in lst:
         user = Utilisateur(row["nom_utilisateur"], row["prenom"], row["nom"], row["promotion"], row["email"], row["cycle"], "1111")
         user.photo = row["nom_utilisateur"] + ".jpg"
+        user.mot_de_passe = "1111"  # Empecher toute connexion avant reinitialisation du mot de passe
         db.session.add(user)
     db.session.commit()
     return jsonify(True), 200

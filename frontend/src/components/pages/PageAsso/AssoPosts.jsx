@@ -12,7 +12,7 @@ const tagOptions = [
     { value: 'Palum', label: 'Palum' }
 ];
 
-function AssoPosts({ asso_id }) {
+function AssoPosts({ asso_id, membreData }) {
     const queryClient = useQueryClient();
     const [isNewPost, setIsNewPost] = useState(false);
     const [newPost, setNewPost] = useState({
@@ -126,12 +126,6 @@ function AssoPosts({ asso_id }) {
         }
         setIsLoading(false);
     }
-
-    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
-        queryKey: ['membreData', asso_id],
-        queryFn: () => estUtilisateurDansAsso(asso_id),
-        enabled: !!asso_id,
-    });
 
     const {
         data,

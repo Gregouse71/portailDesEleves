@@ -13,7 +13,7 @@ const Soifguard = lazy(() => import("./pages/Soifguard"));
 const Admin = lazy(() => import("./pages/Admin"));
 const ListeAssos = lazy(() => import("./components/pages/AssoListe"));
 const Home = lazy(() => import("./components/pages/Home"));
-const Asso = lazy(() => import("./components/pages/Asso"));
+const Asso = lazy(() => import("./components/pages/PageAsso"));
 const Trombi = lazy(() => import("./components/pages/Trombi"));
 const TrombiPromo = lazy(() => import("./components/pages/TrombiPromo"));
 const PlanningAsso = lazy(() => import("./components/pages/PlanningAsso"));

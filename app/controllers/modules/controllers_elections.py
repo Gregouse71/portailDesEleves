@@ -32,8 +32,8 @@ def upload_election_choice_image(id, choix):
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
         if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
             return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
-        path = ajouter_photo(file, election, choix)
-    return jsonify({"path": path})
+        ajouter_photo(file, election, choix)
+    return jsonify({"message": "Image ajoutée avec succès"}), 200
 
 
 @controllers_elections.get("/asso/<int:id>")

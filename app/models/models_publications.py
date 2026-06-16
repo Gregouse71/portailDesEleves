@@ -38,7 +38,7 @@ class Commentaire(db.Model):
             "auteur": {
                 "id": self.auteur.id,
                 "nom_utilisateur": self.auteur.nom_utilisateur,
-                "photo": self.auteur.photo
+                "photo": self.auteur.get_photo_file()
             } if self.auteur else None,
             "publication": self.publication.titre,
             "id_publication": self.id_publication,

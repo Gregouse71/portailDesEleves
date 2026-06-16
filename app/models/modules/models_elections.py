@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app import db
 from app.models.models_utilisateurs import Utilisateur
+from app.models.models_media import ElementMedia
 
 import locale
 locale.setlocale (locale.LC_ALL, 'fr_FR.UTF-8')
@@ -59,6 +60,14 @@ class Election(db.Model):
 
     
     def to_dict(self):
+        images = [None for _ in range(len(self.options))]
+        for i, elt in enumerate(self.options):
+            img_id = elt["image"]
+            try:
+                images[i] = db.session.get(ElementMedia, int(img_id)).file_path
+            # Si l'option n'a pas d'image, si ce n'est pas un entier correct ou si l'enregsitrement n'existe pas:
+            except (KeyError, ValueError, AttributeError, TypeError):
+                pass
         return {
             "id": self.id,
             "nom": self.nom,
@@ -67,6 +76,7 @@ class Election(db.Model):
             "options": self.options,
             "promos" : self.promos,
             "chiffree" : self.chiffree,
+            "images": images,
             "date_ouverture": self.date_ouverture.isoformat() if self.date_ouverture is not None else None,
             "date_fermeture": self.date_fermeture.isoformat() if self.date_fermeture is not None else None,
             "ouvert" : (self.date_ouverture <= datetime.now() <= self.date_fermeture) if self.date_ouverture is not None and self.date_fermeture is not None else None

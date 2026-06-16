@@ -1,5 +1,5 @@
 import '../../assets/styles/asso.scss';
-import { chargerAsso, estUtilisateurDansAsso, ajouterContenu, changerPhoto } from '../../api/api_associations';
+import { chargerAsso, estUtilisateurDansAsso, ajouterContenuAsso } from '../../api/api_associations';
 import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
@@ -11,35 +11,12 @@ import { Container, Row, Col, Nav, Image, Badge, Card } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 import DropdownEditer from "../elements/DropdownEditer";
+import AssosMedia from './PageAsso/AssoMedia';
 
 function Asso() {
     const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
-
-    const changerPhotoLogoOuBanniere = (type_photo) => {
-        document.getElementById('file-upload').setAttribute("data-type", type_photo);
-        document.getElementById('file-upload').click();
-    };
-
-    const handleFileChange = async (event) => {
-        const file = event.target.files[0];
-        const type_photo = event.target.getAttribute("data-type");
-
-        if (file) {
-            try {
-                const result = await ajouterContenu(id, file);
-                if (result.success) {
-                    await changerPhoto(id, type_photo, result.fileName);
-                    navigate(0);
-                } else {
-                    alert(`Erreur lors du téléversement : ${result.message}`);
-                }
-            } catch (error) {
-                alert(`Erreur lors du téléversement : ${error.message}`);
-            }
-        }
-    };
 
     const { data: asso = null } = useQuery({
         queryKey: ['asso', id],
@@ -53,12 +30,13 @@ function Asso() {
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
     const moduleToTab = {
-        'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} /> },
-        'Events': { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} /> },
-        'Membres': { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} /> },
-        'Posts': { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} /> },
-        'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} /> },
-        'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} /> },
+        'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} membreData={membreData} /> },
+        'Events': { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} membreData={membreData} /> },
+        'Membres': { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} membreData={membreData} /> },
+        'Posts': { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} membreData={membreData} /> },
+        'Media': { key: "media", titre: "Media", element: <AssosMedia asso_id={asso.id} membreData={membreData} /> },
+        'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
+        'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
     };
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
@@ -69,17 +47,10 @@ function Asso() {
 
     return (
         <Container className='py-4'>
-            <input
-                type="file"
-                id="file-upload"
-                className="d-none"
-                onChange={handleFileChange}
-                data-type=""
-            />
             <Card className='mb-3'>
                 <Card.Header
                     style={{
-                        backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.banniere_path})` : 'none',
+                        backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/${asso.banniere_path})` : 'none',
                         height: '170px',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
@@ -91,7 +62,7 @@ function Asso() {
                         <Col xs="auto" md="auto">
                             <Image
                                 className="rounded-3"
-                                src={asso.img ? `${UPLOAD_BASE_URL}/associations/${asso.nom_dossier}/${asso.img}` : '/assets/icons/group.svg'}
+                                src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
                                 alt={asso.nom}
                                 rounded
                                 style={{
@@ -109,15 +80,6 @@ function Asso() {
                         <Col className="text-left text-md-start">
                             {membreData.is_membre && <Badge className="asso-member-badge ms-3">membre</Badge>}
                         </Col>
-                        {membreData.autorise && (
-                            <Col md="auto" className="text-right text-md-start">
-                                <DropdownEditer list={[
-                                    { can: true, onClick: () => changerPhotoLogoOuBanniere('logo'), name: "Changer le logo" },
-                                    { can: true, onClick: () => changerPhotoLogoOuBanniere('banniere'), name: "Changer la bannière" },
-                                ]}
-                                />
-                            </Col>
-                        )}
                     </Row>
                 </Card.Body>
             </Card>

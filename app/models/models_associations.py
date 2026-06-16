@@ -3,8 +3,7 @@ import os
 import re
 
 from app.models.models_utilisateurs import Utilisateur
-
-# Cette table sert à stocker les relations entre Association et Utilisateur
+from app.models.models_media import ElementMedia
 
 
 class Association(db.Model):
@@ -17,7 +16,9 @@ class Association(db.Model):
     nom_dossier = db.Column(db.String(1000), nullable=False)
     description = db.Column(db.Text, nullable=True)
     logo_path = db.Column(db.String(1000), nullable=True)
+    logo_id = db.Column(db.Integer, nullable=True)
     banniere_path = db.Column(db.String(1000), nullable=True)  # banniere de l'asso
+    banniere_id = db.Column(db.Integer, nullable=True)  # banniere de l'asso
     a_cacher_aux_nouveaux = db.Column(db.Boolean, nullable=False)
 
     # Les publications de l'asso
@@ -30,6 +31,8 @@ class Association(db.Model):
 
     # Affichage d'une tab election sur la page du portail
     modules = db.Column(db.JSON, nullable=False)
+
+    media = db.relationship('ElementMedia', back_populates='association')
 
     def __init__(
         self, nom: str, ordre_importance: int,description: str = None,
@@ -117,13 +120,23 @@ class Association(db.Model):
             "id": self.id,
             "nom_dossier": self.nom_dossier,
             "nom": self.nom,
-            "img": self.logo_path,
+            "img": self.get_photo_file(),
             "ordre_importance": self.ordre_importance,
-            "banniere_path": self.banniere_path,
+            "banniere_path": self.get_banniere_file(),
             "description": self.description,
             "modules": self.modules,
             "mandats": mandats_data
         }
+    
+    def get_photo_file(self):
+        if self.logo_id is None:
+            return None
+        return ElementMedia.query.get(self.logo_id).file_path
+
+    def get_banniere_file(self):
+        if self.banniere_id is None:
+            return None
+        return ElementMedia.query.get(self.banniere_id).file_path
 
     def create_association_folder(self):
         """

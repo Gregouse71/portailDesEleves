@@ -2,6 +2,7 @@
 from app.services import db
 from app.models.models_associations import Association, AssociationMandat, AssociationMembre
 from app.models.models_utilisateurs import Utilisateur
+from app.models.models_media import ElementMedia
 
 
 # GESTION DES ASSOCIATIONS
@@ -149,3 +150,8 @@ def update_member_position(mandat: AssociationMandat, utilisateur: Utilisateur, 
             raise ValueError("L'utilisateur n'existe pas")
     else:
         raise ValueError("Le mandat n'existe pas")
+
+
+def get_asso_media(asso_id):
+    files = ElementMedia.query.filter_by(association_id=asso_id, cache=False)
+    return [f.to_dict() for f in files]

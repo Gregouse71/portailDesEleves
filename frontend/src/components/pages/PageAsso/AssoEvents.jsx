@@ -290,7 +290,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
     </Card>
 }
 
-export default function AssoEvents({ asso_id }) {
+export default function AssoEvents({ asso_id, membreData }) {
     const [isNewEvent, setIsNewEvent] = useState(false);
 
     function sortEvents(events) {
@@ -311,12 +311,6 @@ export default function AssoEvents({ asso_id }) {
             return 0;
         });
     }
-
-    const { data: membreData = { is_membre: false, autorise: false } } = useQuery({
-        queryKey: ['membreData', asso_id],
-        queryFn: () => estUtilisateurDansAsso(asso_id),
-        enabled: !!asso_id,
-    });
 
     const {
         data,

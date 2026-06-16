@@ -80,7 +80,10 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 if (!file) return
                 const formData = new FormData();
                 formData.append('file', file);
-                await uploadElectionChoiceImage(formData, newElection.id, index);
+                const res = await uploadElectionChoiceImage(formData, newElection.id, index);
+                if (!res) {
+                    console.log("err")
+                }
             })
         },
         onSuccess: () => {
@@ -120,7 +123,6 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
 
     // L'utilisateur peut-il voter actuellement ?
     const canVote = election ? election.votant && !election.deja_vote && election.ouvert : false;
-    console.log(chosenVote)
 
     return <Card><Card.Body>
         {!isModifying ?
@@ -138,7 +140,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                             { can: true, onClick: handleStartModifying, name: "Modifier" },
                             { can: true, onClick: () => resultatsElection({}, election.id), name: "Résultats" },
                             "divider",
-                            { can: true, onClick: () => { supprimerElection(election.id); queryClient.invalidateQueries(['elections_asso', asso_id]) }, name: "Supprimer" },
+                            { can: true, onClick: async () => { await supprimerElection(election.id); queryClient.invalidateQueries(['elections_asso', asso_id]) }, name: "Supprimer" },
                         ]}
                         />
                         }
@@ -154,9 +156,9 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                 <Row className="mb-2 g-4 justify-content-center">
                     {election.options.map((option, i) =>
                         <Col xs={12} sm={6} lg={4} xl={3} key={i} className="d-flex flex-column align-items-center text-center">
-                            {option.image &&
+                            {election.images[i] &&
                                 <div className="d-flex align-items-center justify-content-center w-100" style={{ height: "250px" }}>
-                                    <Image src={`${UPLOAD_BASE_URL}/${option.image}`} alt={option.name}
+                                    <Image src={`${UPLOAD_BASE_URL}/${election.images[i]}`} alt={option.name}
                                         style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
                                     />
                                 </div>
@@ -227,9 +229,9 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                                         <Form.Control type="file" accept="image/png, image/jpeg, image/jpg"
                                             onChange={(e) => setOptionFile(ind, e.target.files[0])}
                                         />
-                                        {option.image && (
+                                        {election?.images[ind] && (
                                             <div className="mt-2">
-                                                <img src={`${UPLOAD_BASE_URL}/${option.image}`} alt="Option"
+                                                <img src={`${UPLOAD_BASE_URL}/${election.images[ind]}`} alt="Option"
                                                     style={{ maxWidth: "50px", maxHeight: "50px" }} />
                                             </div>
                                         )}
@@ -266,7 +268,7 @@ export default function AssoElection({ asso_id }) {
     const { userData } = useProtected();
     const [isCreating, setIsCreating] = useState(false);
 
-    const { data: elections = [] } = useQuery({
+    const { data: elections = [], isLoading } = useQuery({
         queryKey: ['elections_asso', asso_id],
         queryFn: () => obtenirElectionsAsso({}, asso_id),
     });
@@ -279,6 +281,9 @@ export default function AssoElection({ asso_id }) {
                     <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
                 </Button>}
             </div>
+            {!isLoading && elections.length === 0 && <>
+                Aucune election à afficher.
+            </>}
             {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}
             {elections.map(id => <Election key={id} id={id} canModify={userData.is_superuser} isNew={false} asso_id={asso_id} />)}
         </>

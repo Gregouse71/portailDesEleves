@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiPost, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, handleResponse } from "./base";
 
 const UTILISATEUR_BASE_URL = `${API_BASE_URL}/users`;
 
@@ -187,7 +187,7 @@ export async function ajouterContenuUtilisateur(id_utilisateur, file) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/users/${id_utilisateur}/add_content`, {
+    const response = await fetch(`${API_BASE_URL}/users/content/${id_utilisateur}`, {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -229,3 +229,17 @@ export async function modifierOrdreAssos(id_utilisateur, ordre) {
   });
   return handleResponse(res);
 }
+
+/** Obtenir les photos d'un utilisateur
+ * args :
+ *  - user_id : id de l'utilisateur
+ * 
+ * renvoie :
+ *  - la liste des photos de l'utilisateur
+ */
+export const obtenirPhotosUtilisateur = createApiGet(`${UTILISATEUR_BASE_URL}/content`)
+
+/** Supprimer un media
+ * 
+ */
+export const supprimerPhotoUtilisateur = createApiDelete(`${UTILISATEUR_BASE_URL}/content`)
