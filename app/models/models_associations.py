@@ -69,7 +69,7 @@ class Association(db.Model):
         Les formats a respecter sont listes si apres. Cette doumentation fait autorite
         quant au format que doit avoir la class association
 
-        /!\ Sauf exceptions la table association n'est pas vouee a etre modifiee a la main.
+        /!\\ Sauf exceptions la table association n'est pas vouee a etre modifiee a la main.
         Cette fonction sera utilisee au sein de fonctions bien precises.
 
         ----------------------
@@ -105,7 +105,7 @@ class Association(db.Model):
                         "id": membre.utilisateur.id,
                         "role": membre.role,
                         "position": membre.position,
-                        "photo": membre.utilisateur.photo
+                        "photo": membre.utilisateur.get_photo_file()
                     }
                 for membre in mandat.membres],
                 "position": mandat.position,

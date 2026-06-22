@@ -37,4 +37,4 @@ api.register_blueprint(controllers_audio, url_prefix='/audio')
 api.register_blueprint(controllers_oauth, url_prefix='/oauth')
 
 # Ainsi, toutes les routes seront accessibles sous `/api/users` et `/api/sondages`, etc.
-from . import chat_socket
+from . import socker_chat

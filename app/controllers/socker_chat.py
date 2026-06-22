@@ -23,7 +23,7 @@ def join():
 
 @socketio.on('message')
 def handle_message(data):
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.id != 3723:
         message = Message (data["text"], current_user, datetime.now (timezone.utc))
         db.session.add(message)
         db.session.commit()
