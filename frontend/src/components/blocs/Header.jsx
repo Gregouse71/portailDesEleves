@@ -130,6 +130,7 @@ export default function Header() {
                                 ["link", "https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/", "Réservation véhicule des Mines"],
                                 ["divider"],
                                 ["navigate", "/jeux/2048", "2048"],
+                                ["navigate", "/jeux/echecs", "Échecs"],
                             ]}
                         />
 

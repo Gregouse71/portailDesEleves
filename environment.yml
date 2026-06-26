@@ -27,3 +27,7 @@ dependencies:
   - gevent-websocket # Si impossible à installer avec conda, utiliser pip
   - Authlib # Pour gérer OAuth2
   - cryptography
+  - chess
+  - pip
+  - pip :
+    - stockfish

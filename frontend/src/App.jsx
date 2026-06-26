@@ -29,6 +29,8 @@ const Palums = lazy(() => import("./components/pages/Palums"));
 const NouveauMDP = lazy(() => import("./components/NouveauMDP"));
 const MDPoublie = lazy(() => import("./components/MDPoublie"));
 const Jeux2048 = lazy(() => import("./components/pages/Jeux/2048"));
+const EchecsLobby  = lazy(() => import("./components/pages/echecs/EchecsLobby"));
+const EchecsPartie = lazy(() => import("./components/pages/echecs/EchecsPartie"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -76,6 +78,8 @@ export default function App() {
               </Route>
               <Route path="jeux/*">
                 <Route path="2048" element={<Jeux2048 />} />
+                <Route path="echecs"  element={<EchecsLobby />} />
+                <Route path="echecs/partie/:partieId" element={<EchecsPartie />} />
               </Route>
               <Route path="search" element={<Search />} />
               <Route path="vendomes" element={<Vendomes />} />
