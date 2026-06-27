@@ -30,7 +30,7 @@ limiter = Limiter(get_remote_address)
 socketio = SocketIO(
     async_mode='gevent',
     cors_allowed_origins="*",
-    message_queue="redis://localhost:6379/0"
+    message_queue=Config.REDIS_URL
 )
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -49,7 +49,7 @@ def create_app(config: Config):
     # Active CORS pour toutes les routes de l'application
     CORS(app, origins="*", supports_credentials=True, expose_headers=["Content-Disposition"])
 
-    
+
     # Initialisation des extensions avec l'application
     if not app.config.get("TESTING"):
         limiter.init_app(app)
@@ -74,7 +74,7 @@ def create_app(config: Config):
     
     #permet d'avoir accès au fichier upload 
     #ne pas supprimer
-    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), Config.UPLOAD_BASE_FOLDER)
     @app.route('/upload/<path:filename>')
     def serve_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)

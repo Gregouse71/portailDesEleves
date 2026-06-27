@@ -1,0 +1,58 @@
+name: portailDesEleves
+
+services:
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./upload:/app/upload:z
+    ports:
+      - "8000:80"
+    depends_on:
+      backend:
+        condition: service_started
+      php:
+        condition: service_started
+    restart: unless-stopped
+
+  php:
+    image: php:8.4-fpm
+    volumes:
+      - ./public:/var/www/html:ro,z
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./upload:/app/upload:z
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:11
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - /home/gregoire/tempsql:/var/lib/mysql:Z
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:9.0.4-alpine
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped

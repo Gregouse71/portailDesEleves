@@ -9,6 +9,8 @@ from app.services.services_associations import get_association
 from app.models.modules.models_audio import AssoAlbum
 from app.utils.decorators import est_membre_de_asso
 
+from config import Config
+
 controllers_audio = Blueprint('controllers_audio', __name__)
 
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'ogg', 'flac'}
@@ -112,7 +114,7 @@ def route_add_audio(association_id, album_id):
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     unique_filename = f"{name}_{timestamp}{ext}"
 
-    media_folder = os.path.join('upload', 'associations', asso.nom_dossier, 'media')
+    media_folder = os.path.join(Config.UPLOAD_BASE_FOLDER, 'associations', asso.nom_dossier, 'media')
     os.makedirs(media_folder, exist_ok=True)
     full_path = os.path.join(media_folder, unique_filename)
     file.save(full_path)

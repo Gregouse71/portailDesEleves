@@ -9,7 +9,9 @@ import mimetypes
 from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from pdf2image import convert_from_path
-from sqlalchemy import desc, or_, and_
+from sqlalchemy import desc
+
+from config import Config
 
 # Gestion de publications
 
@@ -19,10 +21,10 @@ def _save_new_file(file, association_name, is_miniature=False):
         return None, None
 
     if is_miniature:
-        UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, "thumbnails")
+        UPLOAD_FOLDER = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", association_name, "thumbnails")
         ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
     else:
-        UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, "publications")
+        UPLOAD_FOLDER = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", association_name, "publications")
         ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif"}
 
     filename = secure_filename(file.filename)
@@ -52,9 +54,9 @@ def _overwrite_file(file, association_name, existing_filename, is_miniature=Fals
         return
 
     if is_miniature:
-        UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, "thumbnails")
+        UPLOAD_FOLDER = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", association_name, "thumbnails")
     else:
-        UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, "publications")
+        UPLOAD_FOLDER = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", association_name, "publications")
 
     file_path_for_save = os.path.join(UPLOAD_FOLDER, existing_filename)
 
@@ -66,7 +68,7 @@ def _overwrite_file(file, association_name, existing_filename, is_miniature=Fals
 
 
 def _delete_file(filename, association_name, directory_name):
-    UPLOAD_FOLDER = os.path.join("upload", "associations", association_name, directory_name)
+    UPLOAD_FOLDER = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", association_name, directory_name)
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     print(file_path)
     try:
@@ -131,7 +133,7 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
         # Remplace uniquement les fichiers PDF existants
         if mime_type_new == "application/pdf" and publication.fichier_joint and mimetypes.guess_type(publication.fichier_joint)[0] == "application/pdf":
             _overwrite_file(fichier_joint_file, publication.association.nom_dossier, publication.fichier_joint)
-            fichier_joint_path_for_save = os.path.join("upload", "associations", publication.association.nom_dossier, "publications", publication.fichier_joint)
+            fichier_joint_path_for_save = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", publication.association.nom_dossier, "publications", publication.fichier_joint)
         else:
             new_filename, fichier_joint_path_for_save = _save_new_file(fichier_joint_file, publication.association.nom_dossier)
             publication.fichier_joint = new_filename
@@ -142,7 +144,7 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
                 publication.miniature = None
 
             if mime_type_new == "application/pdf":
-                output_dir = os.path.join("upload", "associations", publication.association.nom_dossier, "thumbnails")
+                output_dir = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", publication.association.nom_dossier, "thumbnails")
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
                 publication.miniature = _generate_pdf_thumbnail(fichier_joint_path_for_save, output_dir)
@@ -150,7 +152,7 @@ def add_content_to_publication(publication_id: int, fichier_joint_file, miniatur
             elif mime_type_new and mime_type_new.startswith("image"):
                 publication.miniature = publication.fichier_joint
                 source_path = fichier_joint_path_for_save
-                thumbnail_dir = os.path.join("upload", "associations", publication.association.nom_dossier, "thumbnails")
+                thumbnail_dir = os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", publication.association.nom_dossier, "thumbnails")
                 if not os.path.exists(thumbnail_dir):
                     os.makedirs(thumbnail_dir)
                 destination_path = os.path.join(thumbnail_dir, publication.fichier_joint)

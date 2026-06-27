@@ -55,7 +55,7 @@ export function ProtectedRoute() {
             <strong className="text-primary">Portail des élèves</strong>
         </h1>
         <Alert variant="warning" className="text-center">
-            <strong>Maintenance en cours</strong><br />
+            <strong>Maintenance             en cours</strong><br />
             Le portail est temporairement indisponible.
         </Alert>
     </>

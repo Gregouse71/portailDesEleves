@@ -4,6 +4,8 @@ from app import db
 from app.models.modules.models_audio import AssoAlbum, AssoAudio
 from app.models.models_associations import Association
 
+from config import Config
+
 # Album services
 def add_album(name, association_id):
     """Adds a new album to the database for a given association."""
@@ -62,7 +64,7 @@ def delete_album(album_id):
             print(f"Could not find association with id {album.association_id} for album {album_id}")
             return False
 
-        media_folder = os.path.join('upload', 'associations', association.nom_dossier, 'media')
+        media_folder = os.path.join(Config.UPLOAD_BASE_FOLDER, 'associations', association.nom_dossier, 'media')
 
         # Loop through associated audio files and delete them from filesystem
         for audio in album.audios:
@@ -135,7 +137,7 @@ def delete_audio(audio_id):
             return False
 
         # Delete file from filesystem
-        media_folder = os.path.join('upload', 'associations', association.nom_dossier, 'media')
+        media_folder = os.path.join(Config.UPLOAD_BASE_FOLDER, 'associations', association.nom_dossier, 'media')
         if audio.file_path:
             full_path = os.path.join(media_folder, audio.file_path)
             if os.path.exists(full_path):

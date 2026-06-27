@@ -9,6 +9,8 @@ from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import Association
 from app.models.models_media import ElementMedia
 
+from config import Config
+
 
 def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=False):
     """
@@ -33,14 +35,14 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
         db.session.add(media)
         db.session.commit()
 
-        UPLOAD_FOLDER = os.path.join('upload', dir)
+        UPLOAD_FOLDER = os.path.join(Config.UPLOAD_BASE_FOLDER, dir)
         if not os.path.exists(UPLOAD_FOLDER):
             try:
                 os.makedirs(UPLOAD_FOLDER)
             except FileExistsError:
                 pass
 
-        path = os.path.join('upload', path)
+        path = os.path.join(Config.UPLOAD_BASE_FOLDER, path)
         file.save(path)
         return media
 
@@ -49,7 +51,7 @@ def delete_media(media: ElementMedia):
     print(media.protege)
     if media.protege and not current_user.est_superutilisateur:
         return False
-    path = os.path.join('upload', media.file_path)
+    path = os.path.join(Config.UPLOAD_BASE_FOLDER, media.file_path)
     try:
         os.remove(path)
     except FileNotFoundError:

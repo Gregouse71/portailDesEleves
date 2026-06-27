@@ -5,6 +5,8 @@ import re
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_media import ElementMedia
 
+from config import Config
+
 
 class Association(db.Model):
     __tablename__ = 'associations_association'
@@ -146,7 +148,7 @@ class Association(db.Model):
         nom_dossier = re.sub(r'\W+', '', self.nom).lower()
         self.nom_dossier = nom_dossier
         try:
-            os.mkdir(f"upload/associations/{nom_dossier}")
+            os.mkdir(os.path.join(Config.UPLOAD_BASE_FOLDER, "associations", nom_dossier))
         except (FileNotFoundError, FileExistsError):
             print(f"dossier {nom_dossier} déjà créé !")
 
