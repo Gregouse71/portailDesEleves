@@ -9,7 +9,7 @@ if [[ "$SSH_ORIGINAL_COMMAND" == rsync* ]]; then
 # Si c'est la mise à jour
 elif [[ "$SSH_ORIGINAL_COMMAND" == "update-site" ]]; then
     set -e
-    cp config.py site
+    cp config.py site/backend
     cd /home/rezal/site
 
     echo Frontend
@@ -23,7 +23,7 @@ elif [[ "$SSH_ORIGINAL_COMMAND" == "update-site" ]]; then
     echo Fin frontend
 
     echo Backend
-    cd ..
+    cd ../backend
 
     ENV_CACHE="/home/rezal/.env_cache.md5"
     CURRENT_HASH=$(md5sum environment.yml | cut -d' ' -f1)
