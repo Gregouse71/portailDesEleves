@@ -18,6 +18,10 @@ class Config:
     # Permet de stocker les caractères UTF dans les objets JSON
     SQLALCHEMY_ENGINE_OPTIONS   = {"json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False)}
 
+    REDIS_URL                   = "redis://localhost:6379/0" ## valkey
+
+    UPLOAD_BASE_FOLDER          = "../upload"
+
     SESSION_COOKIE_SAMESITE='Lax'
     SESSION_COOKIE_SECURE=False
 

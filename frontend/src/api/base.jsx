@@ -1,7 +1,7 @@
 // Configuration de base pour l'api
 import { _BASE_URL } from "./base_url";
 
-export const BASE_URL = '';
+export const BASE_URL = _BASE_URL;
 export const API_BASE_URL = `${BASE_URL}/api`;
 export const UPLOAD_BASE_URL = `${BASE_URL}/upload`;
 export const SOIFGUARD_BASE_URL = `${API_BASE_URL}/soifguard`;

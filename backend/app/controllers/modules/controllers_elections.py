@@ -12,8 +12,6 @@ from app.services.modules.services_elections import creer_election, ajouter_phot
 
 controllers_elections = Blueprint('controllers_elections', __name__)
 
-UPLOAD_FOLDER = 'upload/associations'
-
 @controllers_elections.post("/election/image/<int:id>/<int:choix>")
 @login_required
 @superutilisateur_required

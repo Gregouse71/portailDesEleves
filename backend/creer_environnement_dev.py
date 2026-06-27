@@ -90,7 +90,7 @@ with app.app_context():
     print("Création des données audio pour le BDA...")
     bda_asso = Association.query.filter_by(nom="BDA").one()
 
-    media_dir = os.path.join('upload', 'associations', bda_asso.nom_dossier, 'media')
+    media_dir = os.path.join(Config.UPLOAD_BASE_FOLDER, 'associations', bda_asso.nom_dossier, 'media')
     os.makedirs(media_dir, exist_ok=True)
 
     # Create Albums

@@ -13,7 +13,7 @@ def transfert():
     socketio, app = create_app(Config)
 
     with app.app_context():
-        DIR = "upload/utilisateurs"
+        DIR = os.path.join(Config.UPLOAD_BASE_FOLDER, "utilisateurs")
         files = os.listdir(DIR)
         # print(files)
         for i, f in enumerate(files):
