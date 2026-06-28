@@ -76,10 +76,14 @@ def ajouter_photo(file, election, choix):
         os.path.join('associations', election.association.nom_dossier),
         asso_id=election.association.id, cache=True
     )
+    if not media:
+        return None
 
     election.options[choix]["image"] = media.id
     flag_modified(election, "options")
     db.session.commit()
+
+    return media
 
 
 def supprimer_election(election):

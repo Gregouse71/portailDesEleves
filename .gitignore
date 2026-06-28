@@ -13,3 +13,4 @@ public/abatage
 frontend/src/api/base_url.js
 config.py
 upload
+mysql

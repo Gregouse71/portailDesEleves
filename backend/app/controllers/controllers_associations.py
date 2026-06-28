@@ -320,7 +320,7 @@ def route_add_content(association_id):
         return jsonify({"success": False, "message": "Association introuvable"}), 404
     # Définition du dossier d'upload
     UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     # Vérifier si un fichier a été envoyé
     if 'file' not in request.files:
         return jsonify({"success": False, "message": "Aucun fichier reçu"}), 400
@@ -329,8 +329,10 @@ def route_add_content(association_id):
     if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
         return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
 
-    filename = upload_media(file, UPLOAD_FOLDER, asso_id=association_id).file_path
-    return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": filename}), 200
+    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id)
+    if not media:
+        return jsonify({"message": "Impossible de créer le fichier."}), 400
+    return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": media.file_path}), 200
 
 
 @controllers_associations.route('/route_creer_asso', methods=["POST"])

@@ -16,37 +16,6 @@ function PageUtilisateur() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const changerPhoto = () => {
-        document.getElementById('file-upload').setAttribute("data-type", "photo");
-        document.getElementById('file-upload').click();
-    };
-
-    const changerBanniere = () => {
-        document.getElementById('file-upload').setAttribute("data-type", "banniere");
-        document.getElementById('file-upload').click();
-    };
-
-    const handleFileChange = async (event) => {
-        const file = event.target.files[0];
-        const type = event.target.getAttribute("data-type");
-
-        if (file) {
-            try {
-                const result = await ajouterContenuUtilisateur(id, file);
-                if (result.success) {
-                    if (type === "banniere") {
-                        await changerBanniereUtilisateur(id, result.fileName); 
-                    } else {
-                        await changerPhotoUtilisateur(id, result.fileName);
-                    }
-                    navigate(0);
-                }
-            } catch (error) {
-                alert(`Erreur : ${error.message}`);
-            }
-        }
-    };
-
     const { data: donneesUtilisateur, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
@@ -66,12 +35,6 @@ function PageUtilisateur() {
 
     return (
         <Container className="py-4">
-            <input
-                type="file"
-                id="file-upload"
-                className="d-none"
-                onChange={handleFileChange}
-            />
             <Card className='mb-3'>
                 <Card.Header
                     style={{

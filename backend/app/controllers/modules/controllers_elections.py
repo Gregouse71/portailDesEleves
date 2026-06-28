@@ -27,10 +27,9 @@ def upload_election_choice_image(id, choix):
         return jsonify({"message": "No selected file"}), 400
 
     if file:
-        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-        if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
-            return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
-        ajouter_photo(file, election, choix)
+        media = ajouter_photo(file, election, choix)
+        if not media:
+            return jsonify({"message": "Impossible de créer le fichier."}), 400
     return jsonify({"message": "Image ajoutée avec succès"}), 200
 
 

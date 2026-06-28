@@ -26,6 +26,8 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
     if file:
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
+        if ext not in {'png', 'jpg', 'jpeg', 'gif'}:
+            return None
         uid = uuid.uuid4()
 
         unique_filename = f"{name}_{uid}{ext}"
@@ -51,11 +53,12 @@ def delete_media(media: ElementMedia):
     print(media.protege)
     if media.protege and not current_user.est_superutilisateur:
         return False
-    path = os.path.join(Config.UPLOAD_BASE_FOLDER, media.file_path)
-    try:
-        os.remove(path)
-    except FileNotFoundError:
-        pass
+    if not (media.file_path.startswith("http://") or media.file_path.startswith("https://")):
+        path = os.path.join(Config.UPLOAD_BASE_FOLDER, media.file_path)
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
     db.session.delete(media)
     db.session.commit()
     return True

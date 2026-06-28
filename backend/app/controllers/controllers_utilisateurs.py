@@ -9,6 +9,7 @@ import io
 from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
 from app.utils.decorators import superutilisateur_required
+from app.utils.divers_utils import get_embed_url
 from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, get_user_media
 from app.services.services_media import upload_media, delete_media
 from app.models.models_utilisateurs import Utilisateur
@@ -218,17 +219,34 @@ def set_user_infos(user_id: int):
 @login_required
 def add_content_to_user(user_id: int):
     """
-    Ajoute un contenu (photo) pour un utilisateur.
+    Ajoute un contenu (photo ou lien vidéo/iframe) pour un utilisateur.
     """
     if not (user_id == current_user.id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
+
+    if request.is_json:
+        data = request.get_json() or {}
+        input_url = data.get('url')
+        if not input_url:
+            return jsonify({"message": "Aucune URL fournie"}), 400
+        
+        embed_url = get_embed_url(input_url)
+        if not embed_url:
+            return jsonify({"message": "Lien URL invalide"}), 400
+
+        media = ElementMedia(utilisateur_id=user_id, association_id=None, file_path=embed_url)
+        db.session.add(media)
+        db.session.commit()
+        return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path}), 200
 
     if 'file' not in request.files:
         return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
 
     file = request.files['file']
-    filename = upload_media(file, 'utilisateurs', user_id=user_id).file_path
-    return jsonify({"message": "Fichier téléversé avec succès", "file_name": filename}), 200
+    media = upload_media(file, 'utilisateurs', user_id=user_id)
+    if not media:
+        return jsonify({"message": "Impossible de créer le fichier."}), 400
+    return jsonify({"message": "Fichier téléversé avec succès", "file_name": media.file_path}), 200
 
 @controllers_utilisateurs.get('/content/<int:user_id>')
 @login_required
