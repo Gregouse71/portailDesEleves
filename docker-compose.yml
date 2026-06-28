@@ -7,7 +7,7 @@ services:
     volumes:
       - ./upload:/app/upload:z
     ports:
-      - "8000:80"
+      - "5000:80"
     depends_on:
       backend:
         condition: service_started
@@ -40,7 +40,9 @@ services:
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
-      - /home/gregoire/tempsql:/var/lib/mysql:Z
+      - ./mysql:/var/lib/mysql:Z
+    ports:
+      - 3307:3306
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect"]
       interval: 10s

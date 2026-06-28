@@ -119,6 +119,6 @@ podman compose up -d --build
 
 2.  **Charger la base de données** : Pour initialiser la base avec le backup SQL (`backup.sql`) :
 ```bash
-podman compose exec mariadb -u root -p1234 portail < backup.sql
+podman compose exec -T mariadb mariadb -u root -p1234 portail < backup.sql
 ```
 

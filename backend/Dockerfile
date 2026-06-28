@@ -20,8 +20,8 @@ ENV LC_ALL=fr_FR.UTF-8
 COPY run.py config.py ./
 COPY app/ ./app/
 
-EXPOSE 5001
+EXPOSE 8000
 
 CMD ["conda", "run", "--no-capture-output", "-n", "portail", \
     "gunicorn", "--worker-class", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", \
-    "-b", "0.0.0.0:5001", "-w", "5", "run:app"]
+    "-b", "0.0.0.0:8000", "-w", "5", "run:app"]
