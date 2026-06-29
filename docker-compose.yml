@@ -1,13 +1,9 @@
 name: portailDesEleves
 
 services:
-
   frontend:
-    build: ./frontend
     volumes:
       - ./upload:/app/upload:z
-    ports:
-      - "5000:80"
     depends_on:
       backend:
         condition: service_started
@@ -22,7 +18,6 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./backend
     volumes:
       - ./upload:/app/upload:z
     depends_on:
@@ -41,8 +36,6 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./mysql:/var/lib/mysql:Z
-    ports:
-      - 3307:3306
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect"]
       interval: 10s

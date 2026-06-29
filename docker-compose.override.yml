@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "5000:80"
+
+  backend:
+    build: ./backend
+
+  mariadb:
+    ports:
+      - "3307:3306"   # expose for DBeaver access in dev

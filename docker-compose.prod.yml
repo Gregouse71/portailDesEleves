@@ -1,0 +1,10 @@
+services:
+  frontend:
+    image: ${CI_REGISTRY_IMAGE}/frontend:latest
+
+  backend:
+    image: ${CI_REGISTRY_IMAGE}/backend:latest
+
+  mariadb:
+    ports:
+      - "127.0.0.1:3306:3306"

@@ -1,6 +1,8 @@
-deploy_site:
-  stage: deploy
-  image: alpine
+stages:
+  - build
+  - deploy
+
+.ssh_setup:
   before_script:
     - apk add --no-cache rsync openssh-client
   
@@ -12,11 +14,54 @@ deploy_site:
     - chmod 700 ~/.ssh
     - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
+
+
+#-- Prod (pour l'instant)
+deploy-vm:
+  extends: .ssh_setup
+  stage: deploy
+  image: alpine
   script:
     - echo "export const _BASE_URL = 'https://eleves.rezal-mdm.com'" > frontend/src/api/base_url.js
     - /usr/bin/rsync -e 'ssh -p 2223' -atv --delete --exclude 'upload' --exclude '*__pycache__*' --exclude 'frontend/node_modules' --exclude '.git' . rezal@10.100.1.20:/
     - /usr/bin/ssh -p 2223 rezal@10.100.1.20 'update-site'
 
-
   rules:
     - if: $CI_COMMIT_BRANCH == "prod"
+
+#-- Docker test (pour l'instant)
+deploy:
+  extends: .ssh_setup
+  stage: deploy
+  image: alpine
+  script:
+    - ssh -p 2223 rezal@10.100.1.21 "
+        cd portail &&
+        podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
+        podman compose pull &&
+        podman compose up -d
+      "
+  rules:
+    - if: $CI_COMMIT_BRANCH == "testing"
+
+build:
+  stage: build
+  image: quay.io/podman/stable:latest
+  variables:
+    TMPDIR: ${CI_PROJECT_DIR}/.local/tmp
+    STORAGE_DRIVER: "vfs"
+  script:
+    - mkdir -p ${CI_PROJECT_DIR}/.local/tmp
+    - dnf install -y openssl
+    - openssl s_client -connect gitlab.rezal-mdm.com:443 </dev/null 2>/dev/null | openssl x509 -inform pem -text
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+
+    - cp $ENV .env
+    - cp $CONFIG_PY backend/config.py
+    - podman compose build
+    - podman push $REGISTRY/backend:latest
+    - podman push $REGISTRY/frontend:latest
+
+  rules:
+    - if: $CI_COMMIT_BRANCH == "testing"
