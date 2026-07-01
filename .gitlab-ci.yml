@@ -1,4 +1,4 @@
-pages:
+deploy_site:
   stage: deploy
   image: alpine
   before_script:
