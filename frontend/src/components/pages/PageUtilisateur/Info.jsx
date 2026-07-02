@@ -45,8 +45,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const mutation = useMutation({
         mutationFn: async (updatedInfos) => {
             const { marrain, ...otherInfos } = updatedInfos;
-            await modifierInfos(id, { ...otherInfos, instruments });
-            await modifierInfos(id, { ...otherInfos, langues });
+            await modifierInfos(id, { ...otherInfos, instruments, langues });
 
             const newCoIds = selectedC.map(c => c.value);
             await changerCo(id, newCoIds);
@@ -74,7 +73,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     const ajouterInstru = () => {
-        setInstruments([...instruments, { name: "Piano", niveau: "Débutant" }]);
+        setInstruments([...instruments, { name: "", niveau: "" }]);
     };
 
     const supprimerInstru = (index) => {
