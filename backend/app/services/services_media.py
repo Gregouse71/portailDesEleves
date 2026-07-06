@@ -26,7 +26,7 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
     if file:
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
-        if ext not in {'png', 'jpg', 'jpeg', 'gif'}:
+        if ext not in {'.png', '.jpg', '.jpeg', '.gif'}:
             return None
         uid = uuid.uuid4()
 

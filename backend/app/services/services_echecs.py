@@ -575,7 +575,7 @@ def statut_partie_avec_historique(partie) -> str:
             board.push(chess.Move.from_uci(uci))
         except Exception:
             break
-    print(f'Répétition: {board.is_repetition(3)}, 75 coups: {board.is_seventyfive_moves()}')
+    # print(f'Répétition: {board.is_repetition(3)}, 75 coups: {board.is_seventyfive_moves()}')
     if board.is_checkmate():               return 'mat'
     if board.is_check():                   return 'echec'
     if board.is_stalemate():               return 'pat'

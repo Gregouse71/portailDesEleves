@@ -51,7 +51,7 @@ class Association(db.Model):
         self.ordre_importance = ordre_importance
         self.banniere_path = banniere_path
         self.a_cacher_aux_nouveaux = a_cacher_aux_nouveaux
-        self.modules = modules or ['Info', 'Membres', 'Events', 'Posts']
+        self.modules = modules or ['Info', 'Membres', 'Events', 'Posts', 'Media']
 
         # Créer un dossier pour l'association
         self.create_association_folder()
