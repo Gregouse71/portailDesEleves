@@ -12,5 +12,6 @@ public/abatage
 
 frontend/src/api/base_url.js
 config.py
+config.docker.py
 upload
 mysql

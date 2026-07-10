@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-alpine AS frontend
+FROM docker.io/library/node:24-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
