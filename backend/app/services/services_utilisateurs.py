@@ -59,6 +59,7 @@ def supprimer_co(utilisateur1:Utilisateur, utilisateur2:Utilisateur) :
     if utilisateur2 in utilisateur1.cos and utilisateur1 in utilisateur2.cos:
         utilisateur1.cos.remove(utilisateur2)
         utilisateur2.cos.remove(utilisateur1)
+        db.session.commit()
     else :
         raise ErreurDeLienUtilisateurs("Erreur : les deux utilisateurs ne sont pas co.")
 

@@ -252,6 +252,8 @@ def add_like(publication: Publication, utilisateur: Utilisateur):
             if utilisateur.id not in likes:
                 likes.append(utilisateur.id)
             publication.likes = likes
+            flag_modified(publication, "likes")
+            db.session.commit()
         else:
             raise ValueError("L'utilisateur n'existe pas'")
     else:
@@ -267,8 +269,11 @@ def remove_like(publication: Publication, utilisateur: Utilisateur):
         utilisateur = Utilisateur.query.get(utilisateur.id)
         if utilisateur:
             likes = publication.likes
-            likes.remove(utilisateur.id)
+            if utilisateur.id in likes:
+                likes.remove(utilisateur.id)
             publication.likes = likes
+            flag_modified(publication, "likes")
+            db.session.commit()
         else:
             raise ValueError("L'utilisateur n'existe pas'")
     else:
@@ -369,6 +374,8 @@ def add_like_to_comment(utilisateur: Utilisateur, commentaire: Commentaire):
             if utilisateur.id not in likes:
                 likes.append(utilisateur.id)
             commentaire.likes = likes
+            flag_modified(commentaire, "likes")
+            db.session.commit()
         else:
             raise ValueError("L'utilisateur n'existe pas")
     else:
@@ -384,8 +391,11 @@ def remove_like_from_comment(utilisateur: Utilisateur, commentaire: Commentaire)
         utilisateur = Utilisateur.query.get(utilisateur.id)
         if utilisateur:
             likes = commentaire.likes
-            likes.remove(utilisateur.id)
+            if utilisateur.id in likes:
+                likes.remove(utilisateur.id)
             commentaire.likes = likes
+            flag_modified(commentaire, "likes")
+            db.session.commit()
         else:
             raise ValueError("L'utilisateur n'existe pas")
     else:

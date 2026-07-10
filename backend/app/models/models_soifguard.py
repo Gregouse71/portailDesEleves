@@ -76,8 +76,8 @@ class ConsoSoifguard(db.Model):
 
     def patch(self, data):
         self.prix = data.get("prix", self.prix)
-        self.prix_cotisant = data.get("prix_cotisant", self.prix)
-        self.nom = data.get("nom_conso", self.nom_conso)
+        self.prix_cotisant = data.get("prix_cotisant", self.prix_cotisant)
+        self.nom_conso = data.get("nom_conso", self.nom_conso)
         db.session.commit()
 
     def to_dict(self):

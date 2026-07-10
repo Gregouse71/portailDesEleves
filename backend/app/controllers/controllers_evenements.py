@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
 from datetime import datetime, time
+from sqlalchemy.orm.attributes import flag_modified
 
 from app import db
 from app.models.models_evenements import Evenement
@@ -114,7 +115,7 @@ def route_modifier_evenement(association_id: int, id_evenement: int):
 @controllers_evenements.route("<int:association_id>/toggle_visibility/<int:evenement_id>", methods=["POST"])
 @login_required
 @est_membre_de_asso
-def route_toggle_visibility(evenement_id):
+def route_toggle_visibility(association_id, evenement_id):
     evenement = Evenement.query.get(evenement_id)
     if not evenement:
         return jsonify({"message": "Événement non trouvé"}), 404
@@ -147,7 +148,9 @@ def route_annuler_evenement(association_id, evenement_id):
     if not est_date_AAAAMMJJ(date):
         return jsonify({"message": "La date doit être au format AAAAMMJJ"}), 400
     evenement.dates_annulation.append(date)
+    flag_modified(evenement, "dates_annulation")
     db.session.commit()
+    return jsonify({"message": "Événement annulé"}), 200
 
 
 @controllers_evenements.route("obtenir_evenements/<string:date>")

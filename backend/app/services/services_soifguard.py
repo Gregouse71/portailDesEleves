@@ -77,13 +77,12 @@ def fixer_negatif_maximum(asso:str, maximum:int) :
         raise ValueError("La dette maximale doit etre positive ou nulle")
     if asso == 'octo' :
         set_global_var('max_negatif_octo', maximum)
-        return maximum
     elif asso == 'biero' :
         set_global_var('max_negatif_biero', maximum)
-        return maximum
     else :
         raise ValueError("asso doit etre 'octo' ou 'biero'")
     db.session.commit()
+    return maximum
 
 def ajouter_nouvelle_conso(nom_conso:str, asso:str, prix:float, prix_cotisant:float=None) :
     conso = ConsoSoifguard(nom_conso=nom_conso, asso=asso, prix=prix, prix_cotisant=prix_cotisant)

@@ -270,9 +270,11 @@ def delete_content_user(media_id):
     if len(Utilisateur.query.filter_by(photo_id=media.id).all()) > 0:
         return jsonify({"message": "Impossible de supprimer une photo de profil"}), 400
 
+    cached_media_id = media.id
+
     if not delete_media(media):
         return jsonify({"message": "Media protégé"}), 400
-    for u in Utilisateur.query.filter_by(banniere_id=media.id).all():
+    for u in Utilisateur.query.filter_by(banniere_id=cached_media_id).all():
         u.banniere_id = None
     db.session.commit()
 
@@ -409,7 +411,7 @@ def route_selectionner_fillots():
 
     try:
         for f in fillots_list:
-            f.marrain = [marrain]
+            f.marrains = [marrain]
         marrain.fillots = fillots_list
         db.session.commit()
         return jsonify({"message": "Fillots mis à jour avec succès"}), 200

@@ -87,7 +87,6 @@ def delete_conso(id: int):
     conso = ConsoSoifguard.query.get(id)
     if not conso:
         return jsonify({"success": False, "message": "Conso introuvable"}), 404
-    supprimer_conso(conso)
     return jsonify(supprimer_conso(conso))
 
 @controllers_soifguard.put('/conso/<int:id>')

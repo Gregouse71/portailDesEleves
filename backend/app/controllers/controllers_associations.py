@@ -293,10 +293,12 @@ def delete_content_asso(association_id: int, media_id: int):
     if len(Association.query.filter_by(logo_id=media.id).all()) > 0:
         return jsonify({"message": "Impossible de supprimer le logo"}), 400
 
+    cached_media_id = media.id
+
     if not delete_media(media):
         return jsonify({"message": "Media protégé"}), 400
 
-    for u in Association.query.filter_by(banniere_id=media.id).all():
+    for u in Association.query.filter_by(banniere_id=cached_media_id).all():
         u.banniere_id = None
     db.session.commit()
 
