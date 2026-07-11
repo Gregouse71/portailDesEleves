@@ -15,13 +15,18 @@ class AssociationCotisation(db.Model):
     nom = db.Column(db.String(1000), nullable=False)
 
     association_id = db.Column(db.Integer, db.ForeignKey('associations_association.id'), nullable=False)
-    association = db.relationship('Association', backref=db.backref('cotisations', uselist=False))
+    association = db.relationship('Association', backref=db.backref('cotisations', lazy='dynamic'))
 
     date_debut = db.Column(db.Date(), nullable=False)
     date_fin = db.Column(db.Date(), nullable=False)
 
-    def __init__(self):
-        pass
+    membres = db.relationship('AssociationCotisationUtilisateur', back_populates='cotisation', cascade="all, delete-orphan")
+
+    def __init__(self, nom, association, date_debut, date_fin):
+        self.nom = nom
+        self.association = association
+        self.date_debut = date_debut
+        self.date_fin = date_fin
 
     def __repr__(self):
         """
@@ -29,11 +34,29 @@ class AssociationCotisation(db.Model):
         """
         return f"<Cotisation {self.nom}>"
 
-    def update(self):
-        pass
+    def update(self, data):
+        self.nom = data.get("nom", self.nom)
+        from datetime import datetime
+        if "date_debut" in data and data["date_debut"]:
+            if isinstance(data["date_debut"], str):
+                self.date_debut = datetime.strptime(data["date_debut"].split("T")[0], "%Y-%m-%d").date()
+            else:
+                self.date_debut = data["date_debut"]
+        if "date_fin" in data and data["date_fin"]:
+            if isinstance(data["date_fin"], str):
+                self.date_fin = datetime.strptime(data["date_fin"].split("T")[0], "%Y-%m-%d").date()
+            else:
+                self.date_fin = data["date_fin"]
     
     def to_dict(self):
-        return {}
+        return {
+            "id": self.id,
+            "nom": self.nom,
+            "association_id": self.association_id,
+            "date_debut": self.date_debut.isoformat() if self.date_debut else None,
+            "date_fin": self.date_fin.isoformat() if self.date_fin else None,
+            "membres": [m.utilisateur_id for m in self.membres]
+        }
 
 
 class AssociationCotisationUtilisateur(db.Model):
@@ -46,8 +69,17 @@ class AssociationCotisationUtilisateur(db.Model):
     utilisateur = db.relationship('Utilisateur', back_populates='cotisations')
     cotisation = db.relationship('AssociationCotisation', back_populates='membres')
 
-    def __init__(self):
-        pass
+    def __init__(self, utilisateur, cotisation):
+        self.utilisateur = utilisateur
+        self.cotisation = cotisation
 
     def __repr__(self):
         return f"<Cotisation utilisateur_id={self.utilisateur_id} cotisation_id={self.cotisation_id}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "utilisateur_id": self.utilisateur_id,
+            "cotisation_id": self.cotisation_id,
+            "utilisateur": self.utilisateur.to_dict() if self.utilisateur else None
+        }

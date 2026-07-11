@@ -5,6 +5,7 @@ import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
 import AssoPosts from './PageAsso/AssoPosts';
 import AssoAudio from './PageAsso/AssoAudio';
+import AssoCotisations from './PageAsso/AssoCotisations';
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Image, Badge, Card } from 'react-bootstrap';
@@ -37,6 +38,7 @@ function Asso() {
         'Media': { key: "media", titre: "Media", element: <AssosMedia asso_id={asso.id} membreData={membreData} /> },
         'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
         'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
+        'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> },
     };
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
