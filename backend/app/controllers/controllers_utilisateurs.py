@@ -76,9 +76,7 @@ def charger_utilisateurs(promo: int):
             "nom": utilisateur.nom,
             "promotion": utilisateur.promotion,
             "solde_octo": utilisateur.solde_octo,
-            "solde_biero": utilisateur.solde_biero,
-            "est_cotisant_biero": utilisateur.est_cotisant_biero,
-            "est_cotisant_octo": utilisateur.est_cotisant_octo
+            "solde_biero": utilisateur.solde_biero
         }
         for utilisateur in utilisateurs
     ]

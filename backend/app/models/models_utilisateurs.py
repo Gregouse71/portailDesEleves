@@ -1,10 +1,11 @@
 from app import db
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from flask_login import UserMixin # pour faire le lien entre la class utilisateur et flask_login
-from datetime import date
+from datetime import date, datetime, timedelta
 
 # verification du format des donnees :
 from app.models.models_media import ElementMedia
+from app.models.modules.models_cotisations import AssociationCotisationUtilisateur
 from app.utils.divers_utils import ph
 from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
@@ -303,12 +304,11 @@ class Utilisateur(db.Model, UserMixin) :
             "solde_octo": self.solde_octo,
             "solde_biero": self.solde_biero,
             "meilleur_score_2048": self.meilleur_score_2048,
-            "est_cotisant_biero": self.est_cotisant_biero,
-            "est_cotisant_octo": self.est_cotisant_octo,
             "victoires": self.victoires,
-            "defaites": self.defaites
+            "defaites": self.defaites,
+            "cotisations": [c.to_dict() for c in AssociationCotisationUtilisateur.query.filter_by(utilisateur_id=self.id)]
         }
-    
+
     def get_photo_file(self):
         if self.photo_id is None:
             return None
@@ -318,95 +318,3 @@ class Utilisateur(db.Model, UserMixin) :
         if self.banniere_id is None:
             return 'utilisateurs/minesvert.jpg'
         return ElementMedia.query.get(self.banniere_id).file_path
-
-    def est_cotisant_pour_association(self, association_id):
-        from app.models.modules.models_cotisations import AssociationCotisation, AssociationCotisationUtilisateur
-        from datetime import datetime
-
-        today = datetime.now().date()
-        active_cotisations = AssociationCotisation.query.filter(
-            AssociationCotisation.association_id == association_id,
-            AssociationCotisation.date_debut <= today,
-            AssociationCotisation.date_fin >= today
-        ).all()
-
-        if not active_cotisations:
-            return False
-
-        active_cotisation_ids = [c.id for c in active_cotisations]
-        has_paid = AssociationCotisationUtilisateur.query.filter(
-            AssociationCotisationUtilisateur.utilisateur_id == self.id,
-            AssociationCotisationUtilisateur.cotisation_id.in_(active_cotisation_ids)
-        ).first() is not None
-
-        return has_paid
-
-    def toggle_cotisation_pour_association(self, association_id):
-        from app.models.models_associations import Association
-        from app.models.modules.models_cotisations import AssociationCotisation, AssociationCotisationUtilisateur
-        from datetime import datetime, timedelta
-
-        asso = Association.query.get(association_id)
-        if not asso:
-            return False
-
-        today = datetime.now().date()
-        active_cotisation = AssociationCotisation.query.filter(
-            AssociationCotisation.association_id == association_id,
-            AssociationCotisation.date_debut <= today,
-            AssociationCotisation.date_fin >= today
-        ).first()
-
-        if not active_cotisation:
-            active_cotisation = AssociationCotisation(
-                nom=f"Cotisation {asso.nom}",
-                association=asso,
-                date_debut=today,
-                date_fin=today + timedelta(days=365)
-            )
-            db.session.add(active_cotisation)
-            db.session.flush()
-
-        link = AssociationCotisationUtilisateur.query.filter_by(
-            utilisateur_id=self.id,
-            cotisation_id=active_cotisation.id
-        ).first()
-
-        if link:
-            db.session.delete(link)
-            return False
-        else:
-            link = AssociationCotisationUtilisateur(utilisateur=self, cotisation=active_cotisation)
-            db.session.add(link)
-            return True
-
-    @property
-    def est_cotisant_octo(self):
-        from app.models.models_associations import Association
-        asso = Association.query.filter(Association.nom.ilike("octo")).first()
-        return self.est_cotisant_pour_association(asso.id) if asso else False
-
-    @est_cotisant_octo.setter
-    def est_cotisant_octo(self, value):
-        from app.models.models_associations import Association
-        asso = Association.query.filter(Association.nom.ilike("octo")).first()
-        if asso:
-            current = self.est_cotisant_pour_association(asso.id)
-            if value != current:
-                self.toggle_cotisation_pour_association(asso.id)
-
-    @property
-    def est_cotisant_biero(self):
-        from app.models.models_associations import Association
-        # Support both Biéro and Biero
-        asso = Association.query.filter((Association.nom.ilike("biéro")) | (Association.nom.ilike("biero"))).first()
-        return self.est_cotisant_pour_association(asso.id) if asso else False
-
-    @est_cotisant_biero.setter
-    def est_cotisant_biero(self, value):
-        from app.models.models_associations import Association
-        asso = Association.query.filter((Association.nom.ilike("biéro")) | (Association.nom.ilike("biero"))).first()
-        if asso:
-            current = self.est_cotisant_pour_association(asso.id)
-            if value != current:
-                self.toggle_cotisation_pour_association(asso.id)

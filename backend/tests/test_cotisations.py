@@ -23,26 +23,26 @@ class TestCotisations:
         db_initialized.session.commit()
 
         # Check not cotisant initially
-        assert not user.est_cotisant_pour_association(asso.id)
+        assert not est_cotisant_asso(user, asso.id)
 
         # 3. Add user to cotisation
-        link = AssociationCotisationUtilisateur(utilisateur=user, cotisation=cot)
+        link = AssociationCotisationUtilisateur(utilisateur_id=user.id, cotisation=cot)
         db_initialized.session.add(link)
         db_initialized.session.commit()
 
         # Check cotisant now
-        assert user.est_cotisant_pour_association(asso.id)
+        assert est_cotisant_asso(user, asso.id)
 
         # 4. Check toggle
         # Toggling should remove the membership
         removed = user.toggle_cotisation_pour_association(asso.id)
         assert not removed  # removed means returned False for is_member after toggle
-        assert not user.est_cotisant_pour_association(asso.id)
+        assert not est_cotisant_asso(user, asso.id)
 
         # Toggling again should add it back
         added = user.toggle_cotisation_pour_association(asso.id)
         assert added
-        assert user.est_cotisant_pour_association(asso.id)
+        assert est_cotisant_asso(user, asso.id)
 
     def test_cotisations_api(app, db_with_users, client_factory_admin):
         db_only, users = db_with_users
@@ -85,7 +85,7 @@ class TestCotisations:
             assert r.status_code == 201
 
             # Check that test_user is cotisant now
-            assert test_user.est_cotisant_pour_association(asso.id)
+            assert test_est_cotisant_asso(user, asso.id)
             assert test_user.est_cotisant_biero
 
             # 4. Remove member
@@ -93,5 +93,5 @@ class TestCotisations:
             assert r.status_code == 200
 
             # Check not cotisant
-            assert not test_user.est_cotisant_pour_association(asso.id)
+            assert not test_est_cotisant_asso(user, asso.id)
             assert not test_user.est_cotisant_biero

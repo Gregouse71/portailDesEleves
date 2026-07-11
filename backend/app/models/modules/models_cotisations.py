@@ -1,8 +1,8 @@
 from app import db
 import os
 import re
+from datetime import datetime
 
-from app.models.models_utilisateurs import Utilisateur
 from app.models.models_media import ElementMedia
 
 from config import Config
@@ -38,15 +38,9 @@ class AssociationCotisation(db.Model):
         self.nom = data.get("nom", self.nom)
         from datetime import datetime
         if "date_debut" in data and data["date_debut"]:
-            if isinstance(data["date_debut"], str):
-                self.date_debut = datetime.strptime(data["date_debut"].split("T")[0], "%Y-%m-%d").date()
-            else:
-                self.date_debut = data["date_debut"]
+            self.date_debut = data["date_debut"]
         if "date_fin" in data and data["date_fin"]:
-            if isinstance(data["date_fin"], str):
-                self.date_fin = datetime.strptime(data["date_fin"].split("T")[0], "%Y-%m-%d").date()
-            else:
-                self.date_fin = data["date_fin"]
+            self.date_fin = data["date_fin"]
     
     def to_dict(self):
         return {
@@ -69,8 +63,8 @@ class AssociationCotisationUtilisateur(db.Model):
     utilisateur = db.relationship('Utilisateur', back_populates='cotisations')
     cotisation = db.relationship('AssociationCotisation', back_populates='membres')
 
-    def __init__(self, utilisateur, cotisation):
-        self.utilisateur = utilisateur
+    def __init__(self, utilisateur_id, cotisation):
+        self.utilisateur_id = utilisateur_id
         self.cotisation = cotisation
 
     def __repr__(self):
@@ -81,5 +75,10 @@ class AssociationCotisationUtilisateur(db.Model):
             "id": self.id,
             "utilisateur_id": self.utilisateur_id,
             "cotisation_id": self.cotisation_id,
-            "utilisateur": self.utilisateur.to_dict() if self.utilisateur else None
+            "utilisateur": self.utilisateur.to_dict() if self.utilisateur else None,
+            "asso": self.association.nom
         }
+
+    def est_active(self):
+        today = datetime.now().date()
+        return self.cotisation.date_debut <= today <= self.cotisation.date_fin

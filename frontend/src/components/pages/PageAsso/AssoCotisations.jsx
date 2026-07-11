@@ -11,8 +11,9 @@ import {
     supprimerMembreCotisation,
     exporterMembresCotisation
 } from "../../../api/modules/api_cotisations";
-import { searchUsers } from "../../../api/api_utilisateurs";
+import { obtenirDataUser, searchUsers } from "../../../api/api_utilisateurs";
 import ConfirmationModal from "../../elements/ConfirmationModal";
+import DropdownEditer from "../../elements/DropdownEditer";
 
 const format_date = (s) => s ? new Date(s).toLocaleDateString("fr-FR") : "Non précisé";
 
@@ -22,7 +23,7 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
     const [showMembres, setShowMembres] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-    
+
     const [formState, setFormState] = useState(isNew ? {
         nom: "",
         date_debut: "",
@@ -94,16 +95,16 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
 
     if (isModifying) {
         return (
-            <Card className="mb-3 shadow-sm border-0">
+            <Card className="mb-3">
                 <Card.Body>
                     <Card.Title>{isNew ? "Créer une cotisation" : "Modifier la cotisation"}</Card.Title>
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>Nom de la cotisation</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                value={formState.nom} 
-                                onChange={(e) => setFormState({ ...formState, nom: e.target.value })} 
+                            <Form.Control
+                                type="text"
+                                value={formState.nom}
+                                onChange={(e) => setFormState({ ...formState, nom: e.target.value })}
                                 placeholder="ex: Cotisation Annuelle 2026"
                             />
                         </Form.Group>
@@ -111,20 +112,20 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                             <Col>
                                 <Form.Group>
                                     <Form.Label>Date de début</Form.Label>
-                                    <Form.Control 
-                                        type="date" 
-                                        value={formState.date_debut} 
-                                        onChange={(e) => setFormState({ ...formState, date_debut: e.target.value })} 
+                                    <Form.Control
+                                        type="date"
+                                        value={formState.date_debut}
+                                        onChange={(e) => setFormState({ ...formState, date_debut: e.target.value })}
                                     />
                                 </Form.Group>
                             </Col>
                             <Col>
                                 <Form.Group>
                                     <Form.Label>Date de fin</Form.Label>
-                                    <Form.Control 
-                                        type="date" 
-                                        value={formState.date_fin} 
-                                        onChange={(e) => setFormState({ ...formState, date_fin: e.target.value })} 
+                                    <Form.Control
+                                        type="date"
+                                        value={formState.date_fin}
+                                        onChange={(e) => setFormState({ ...formState, date_fin: e.target.value })}
                                     />
                                 </Form.Group>
                             </Col>
@@ -147,7 +148,7 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
     const isActive = cotisationData.date_debut <= today && today <= cotisationData.date_fin;
 
     return (
-        <Card className="mb-3 shadow-sm border-0">
+        <Card className="mb-3">
             <Card.Body>
                 <div className="d-flex justify-content-between align-items-start">
                     <div>
@@ -160,48 +161,45 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                             )}
                         </Card.Title>
                         <div className="text-muted small mb-2">
-                            Période : Du {format_date(cotisationData.date_debut)} au {format_date(cotisationData.date_fin)}
+                            Du {format_date(cotisationData.date_debut)} au {format_date(cotisationData.date_fin)}
                         </div>
                         <div>
-                            Nombre de cotisants : <Badge bg="info">{cotisationData.membres?.length || 0}</Badge>
+                            Nombre de cotisants : {cotisationData.membres?.length || 0}
                         </div>
                     </div>
                     {canModify && (
-                        <div className="d-flex gap-2">
-                            <Button variant="outline-primary" size="sm" onClick={() => setShowMembres(!showMembres)}>
-                                {showMembres ? "Masquer membres" : "Gérer les membres"}
-                            </Button>
-                            <Button variant="outline-secondary" size="sm" onClick={() => exporterMembresCotisation(association_id, id)}>
-                                Exporter CSV
-                            </Button>
-                            <Button variant="outline-warning" size="sm" onClick={() => setIsModifying(true)}>
-                                Modifier
-                            </Button>
-                            <Button variant="outline-danger" size="sm" onClick={() => {
-                                if (window.confirm("Êtes-vous sûr de vouloir supprimer cette cotisation ?")) {
-                                    deleteMutation.mutate();
+                        <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                            <DropdownEditer list={[
+                                { can: true, onClick: () => setShowMembres(!showMembres), name: showMembres ? "Masquer membres" : "Gérer les membres" },
+                                { can: true, onClick: () => exporterMembresCotisation(association_id, id), name: "Exporter CSV" },
+                                { can: true, onClick: () => setIsModifying(true), name: "Modifier" },
+                                "divider",
+                                {
+                                    can: true, onClick: () => {
+                                        if (window.confirm("Êtes-vous sûr de vouloir supprimer cette cotisation ?")) {
+                                            deleteMutation.mutate();
+                                        }
+                                    }, name: "Supprimer"
                                 }
-                            }}>
-                                Supprimer
-                            </Button>
+                            ]} />
                         </div>
                     )}
                 </div>
 
                 {showMembres && canModify && (
-                    <div className="mt-3 border-top pt-3">
-                        <h6>Ajouter un membre payant</h6>
+                    <div className="mt-3">
+                        <h6>Ajouter un cotisant</h6>
                         <Form.Group className="mb-3 position-relative">
                             <InputGroup>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Rechercher un élève par nom, prénom ou nom d'utilisateur..."
+                                    placeholder="Rechercher"
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
                                 />
                                 {searchQuery && (
                                     <Button variant="outline-secondary" onClick={() => { setSearchQuery(""); setSearchResults([]); }}>
-                                        Vider
+                                        X
                                     </Button>
                                 )}
                             </InputGroup>
@@ -211,10 +209,10 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                                         const alreadyPaid = cotisationData.membres.includes(user.id);
                                         return (
                                             <ListGroup.Item key={user.id} className="d-flex justify-content-between align-items-center">
-                                                <span>{user.prenom} {user.nom} ({user.nom_utilisateur}) - promo {user.promotion}</span>
-                                                <Button 
-                                                    variant={alreadyPaid ? "outline-secondary" : "primary"} 
-                                                    size="sm" 
+                                                <span>{user.prenom} {user.nom} {user.cycle}{user.promotion}</span>
+                                                <Button
+                                                    variant={alreadyPaid ? "outline-secondary" : "primary"}
+                                                    size="sm"
                                                     disabled={alreadyPaid}
                                                     onClick={() => addMemberMutation.mutate(user.id)}
                                                 >
@@ -228,17 +226,17 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                         </Form.Group>
 
                         {/* List of current members */}
-                        <h6>Membres ayant cotisé</h6>
+                        <h6>Cotisants</h6>
                         {cotisationData.membres?.length === 0 ? (
-                            <p className="text-muted small">Aucun membre enregistré pour cette cotisation.</p>
+                            <p className="text-muted small">Aucun membre pour cette cotisation</p>
                         ) : (
                             <div style={{ maxHeight: "250px", overflowY: "auto" }}>
                                 <ListGroup variant="flush">
                                     {cotisationData.membres.map((userId) => (
-                                        <MemberRow 
-                                            key={userId} 
-                                            userId={userId} 
-                                            onRemove={() => removeMemberMutation.mutate(userId)} 
+                                        <MemberRow
+                                            key={userId}
+                                            userId={userId}
+                                            onRemove={() => removeMemberMutation.mutate(userId)}
                                         />
                                     ))}
                                 </ListGroup>
@@ -251,29 +249,21 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
     );
 }
 
-// A simple component to fetch user details reactively for a row
 function MemberRow({ userId, onRemove }) {
-    // We can import obtaining details or use a query. 
-    // In portaildeseleves users are queryable. Let's see if we can get user info or display a simple identifier.
-    // To make it look extremely premium, we query the user data:
-    const { data: user = null } = useQuery({
-        queryKey: ['user_details', userId],
-        queryFn: async () => {
-            // We can fetch user profile or get from a caching query.
-            const res = await fetch(`/api/users/obtenir_infos_profil/${userId}`, { credentials: "include" });
-            return res.json();
-        }
+    const { data, isPending: isPendingUser } = useQuery({
+        queryKey: ['donneesUtilisateur', userId],
+        queryFn: () => obtenirDataUser(userId),
     });
 
-    if (!user) return <ListGroup.Item className="d-flex justify-content-between align-items-center py-1 text-muted small">Chargement utilisateur #{userId}...</ListGroup.Item>;
+    if (!data) return <ListGroup.Item className="d-flex justify-content-between align-items-center py-1 text-muted small">...</ListGroup.Item>;
 
     return (
         <ListGroup.Item className="d-flex justify-content-between align-items-center py-1">
             <div>
-                <strong>{user.prenom} {user.nom}</strong> <span className="text-muted small">({user.nom_utilisateur}) - promo {user.promotion}</span>
+                {data.prenom} {data.nom} {data.cycle}{data.promotion}
             </div>
-            <Button variant="link" className="text-danger p-0" onClick={onRemove}>
-                Retirer
+            <Button variant="danger" className="p-0" onClick={onRemove}>
+                X
             </Button>
         </ListGroup.Item>
     );
@@ -295,18 +285,20 @@ export default function AssoCotisations({ asso_id, membreData }) {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Gestion des Cotisations</h2>
                 {canModify && !isCreating && (
-                    <Button variant="outline-primary" onClick={() => setIsCreating(true)}>
-                        Créer une cotisation
-                    </Button>
+                    <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                        <DropdownEditer list={[
+                            { can: true, onClick: () => setIsCreating(true), name: "Créer une cotisation" },
+                        ]} />
+                    </div>
                 )}
             </div>
 
             {isCreating && (
-                <CotisationCard 
-                    isNew={true} 
-                    association_id={asso_id} 
-                    canModify={canModify} 
-                    stopCreating={() => setIsCreating(false)} 
+                <CotisationCard
+                    isNew={true}
+                    association_id={asso_id}
+                    canModify={canModify}
+                    stopCreating={() => setIsCreating(false)}
                 />
             )}
 
@@ -318,12 +310,12 @@ export default function AssoCotisations({ asso_id, membreData }) {
                 </div>
             ) : (
                 cotisations.map((cot) => (
-                    <CotisationCard 
-                        key={cot.id} 
-                        id={cot.id} 
-                        association_id={asso_id} 
-                        canModify={canModify} 
-                        cotisationData={cot} 
+                    <CotisationCard
+                        key={cot.id}
+                        id={cot.id}
+                        association_id={asso_id}
+                        canModify={canModify}
+                        cotisationData={cot}
                     />
                 ))
             )}

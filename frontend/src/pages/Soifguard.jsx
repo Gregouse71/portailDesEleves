@@ -381,7 +381,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
                 list={[
                     {
                         can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
-                        name: user[`est_cotisant_${categorie}`] ? <>Ne cotise pas</> : <>Cotise</>
+                        name:  user.cotisations.filter((c) => c.asso === asso).length > 0 ? <>Ne cotise pas</> : <>Cotise</>
                     },
                     { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
                 ]}

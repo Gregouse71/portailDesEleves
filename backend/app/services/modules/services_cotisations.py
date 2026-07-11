@@ -8,6 +8,15 @@ def get_cotisations_for_association(association_id):
     """Gets all cotisations for a given association."""
     return AssociationCotisation.query.filter_by(association_id=association_id).all()
 
+def cotisations_actives_asso (association_id):
+    """Renvoie les cotisations actives de l'asso"""
+    today = datetime.now().date()
+    return AssociationCotisation.query.filter(
+        AssociationCotisation.association_id == association_id,
+        AssociationCotisation.date_debut <= today,
+        AssociationCotisation.date_fin >= today
+    ).all()
+
 def creer_cotisation(asso_id, data):
     """Creates a new cotisation for an association."""
     try:
@@ -80,7 +89,7 @@ def ajouter_membre_cotisation(cotisation, user_id):
         if link:
             return link
 
-        link = AssociationCotisationUtilisateur(utilisateur=user, cotisation=cotisation)
+        link = AssociationCotisationUtilisateur(utilisateur_id=user.id, cotisation=cotisation)
         db.session.add(link)
         db.session.commit()
         return link
@@ -107,3 +116,64 @@ def supprimer_membre_cotisation(cotisation, user_id):
         db.session.rollback()
         print(f"Error removing member from cotisation: {e}")
         return False
+
+
+def est_cotisant_asso(utilisateur_id, association_id):
+    active_cotisation = cotisations_actives_asso(association_id)
+    if not active_cotisation:
+        return False
+
+    active_cotisation_ids = [c.id for c in active_cotisation]
+    est_cotisant = AssociationCotisationUtilisateur.query.filter(
+        AssociationCotisationUtilisateur.utilisateur_id == utilisateur_id,
+        AssociationCotisationUtilisateur.cotisation_id.in_(active_cotisation_ids)
+    ).first() is not None
+
+    return est_cotisant
+
+def set_cotisation_asso(utilisateur_id, association_id: int, est_cotisant: bool):
+    cotisant_actuel = est_cotisant_asso(utilisateur_id, association_id)
+    # Si l'etat est deja bon
+    if (cotisant_actuel and est_cotisant) or (not cotisant_actuel and not est_cotisant):
+        return
+
+    asso = Association.query.get(association_id)
+    if not asso:
+        return
+
+    active_cotisations = cotisations_actives_asso(association_id)
+    if not active_cotisations:
+        return
+    premiere_cotisation = active_cotisations[0]
+
+    if est_cotisant: # Si on veux ajouter une cotisation
+        cotiz = AssociationCotisationUtilisateur(utilisateur_id=utilisateur_id, cotisation=premiere_cotisation)
+        db.session.add(cotiz)
+    else: # Si on veut ajouter une cotisation
+        cotiz = AssociationCotisationUtilisateur.query.filter_by(
+            utilisateur_id=utilisateur_id,
+            cotisation_id=premiere_cotisation.id
+        ).first()
+        if cotiz:
+            db.session.delete(cotiz)
+    db.session.commit()
+
+def toggle_cotisation_octo(utilisateur_id):
+    asso = Association.query.filter_by(nom="Octo").first()
+    if asso:
+        set_cotisation_asso(utilisateur_id, asso.id, not est_cotisant_octo(utilisateur_id))
+
+def toggle_cotisation_biero(utilisateur_id):
+    asso = Association.query.filter_by(nom="Biéro").first()
+    if asso:
+        set_cotisation_asso(utilisateur_id, asso.id, not est_cotisant_biero(utilisateur_id))
+
+def est_cotisant_octo(utilisateur_id):
+    asso = Association.query.filter_by(nom="Octo").first()
+    if asso:
+        return est_cotisant_asso(utilisateur_id, asso.id)
+
+def est_cotisant_biero(utilisateur_id):
+    asso = Association.query.filter_by(nom="Biéro").first()
+    if asso:
+        return est_cotisant_asso(utilisateur_id, asso.id)

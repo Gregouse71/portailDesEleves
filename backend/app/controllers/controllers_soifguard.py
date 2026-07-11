@@ -8,6 +8,7 @@ from app import db
 from app.models import Utilisateur, ConsoSoifguard, Permission, OperationSoifguard
 from app.services.services_soifguard import encaisser_utilisateur, crediter_utilisateur, fixer_negatif_maximum, ajouter_nouvelle_conso, supprimer_conso, modifier_conso, liste_des_consos, liste_operations, get_permissions, liste_utilisateurs
 from app.services.services_global import get_global_var
+from app.services.modules.services_cotisations import toggle_cotisation_biero, toggle_cotisation_octo, est_cotisant_biero
 from app.utils.decorators import a_permission
 from app.services.services_login import has_permission
 
@@ -117,17 +118,15 @@ def switch_cotisation_octo(id_utilisateur:int) :
     """
     data = request.json
     asso = data.get("asso")
-    utilisateur = Utilisateur.query.get(id_utilisateur)
 
-    if asso not in ["octo", "biero"] or not utilisateur:
+    if asso not in ["octo", "biero"]:
         return jsonify({"message":"utilisateur introuvable ou asso invalide"}), 400
 
     if asso == "octo":
-        utilisateur.est_cotisant_octo = not utilisateur.est_cotisant_octo
+        user = toggle_cotisation_octo(id_utilisateur)
     elif asso == "biero":
-        utilisateur.est_cotisant_biero = not utilisateur.est_cotisant_biero
-    db.session.commit()
-    return jsonify(utilisateur.to_dict()), 200
+        user = toggle_cotisation_biero(id_utilisateur)
+    return jsonify({"message": "Cotisation modifiée avec succès"}), 200
 
 @controllers_soifguard.route('/get_negatif_max/<string:asso>', methods=['GET'])
 @login_required
@@ -272,7 +271,9 @@ def export_liste_utilisateurs_csv():
     for user in users:
         row = {}
         for col in fieldnames:
-            row[col] = getattr(user, col)
+            if col != "est_cotisant_biero":
+                row[col] = getattr(user, col)
+        row["est_cotisant_biero"] = est_cotisant_biero(user)
         writer.writerow(row)
     
     proxy.seek(0)
