@@ -43,7 +43,6 @@ function Asso() {
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
 
-
     const currentPath = location.pathname.split('/').pop();
     const activeKey = currentPath === id ? "" : currentPath;
 
@@ -80,7 +79,8 @@ function Asso() {
                             <h2>{asso.nom}</h2>
                         </Col>
                         <Col className="text-left text-md-start">
-                            {membreData.is_membre && <Badge className="asso-member-badge ms-3">membre</Badge>}
+                            {membreData.is_membre && <Badge bg="success" className="ms-3">membre</Badge>}
+                            {membreData.cotisant && <Badge bg="primary" className="ms-3">cotisant</Badge>}
                         </Col>
                     </Row>
                 </Card.Body>

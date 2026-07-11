@@ -385,6 +385,7 @@ def route_est_membre_de_asso(id_association: int):
     try:
         is_membre = any(role.mandat.association_id == id_association for role in current_user.associations)
         autorise = is_membre or current_user.est_superutilisateur
-        return jsonify({"is_membre": is_membre, "autorise": autorise}), 200
+        cotisant = any(cotiz.cotisation.association_id == id_association for cotiz in current_user.cotisations if cotiz.est_active())
+        return jsonify({"is_membre": is_membre, "autorise": autorise, "cotisant": cotisant}), 200
     except Exception as e:
         return jsonify({"Erreur": str(e)}), 400

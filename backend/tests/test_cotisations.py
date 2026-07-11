@@ -86,7 +86,7 @@ class TestCotisations:
 
             # Check that test_user is cotisant now
             assert test_est_cotisant_asso(user, asso.id)
-            assert test_user.est_cotisant_biero
+            assert est_cotisant_biero(user.id)
 
             # 4. Remove member
             r = client_admin.delete(f'/api/cotisations/{asso.id}/cotisation/{cot_id}/membres/{test_user.id}')
@@ -94,4 +94,4 @@ class TestCotisations:
 
             # Check not cotisant
             assert not test_est_cotisant_asso(user, asso.id)
-            assert not test_user.est_cotisant_biero
+            assert not est_cotisant_biero(user.id)

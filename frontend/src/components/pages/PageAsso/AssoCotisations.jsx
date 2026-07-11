@@ -232,10 +232,10 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                         ) : (
                             <div style={{ maxHeight: "250px", overflowY: "auto" }}>
                                 <ListGroup variant="flush">
-                                    {cotisationData.membres.map((userId) => (
-                                        <MemberRow
-                                            key={userId}
-                                            userId={userId}
+                                    {cotisationData.membres.map(({ id }) => (
+                                        <Cotisant
+                                            key={id}
+                                            userId={id}
                                             onRemove={() => removeMemberMutation.mutate(userId)}
                                         />
                                     ))}
@@ -249,7 +249,7 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
     );
 }
 
-function MemberRow({ userId, onRemove }) {
+function Cotisant({ userId, onRemove }) {
     const { data, isPending: isPendingUser } = useQuery({
         queryKey: ['donneesUtilisateur', userId],
         queryFn: () => obtenirDataUser(userId),

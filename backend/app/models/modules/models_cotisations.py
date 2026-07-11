@@ -49,7 +49,13 @@ class AssociationCotisation(db.Model):
             "association_id": self.association_id,
             "date_debut": self.date_debut.isoformat() if self.date_debut else None,
             "date_fin": self.date_fin.isoformat() if self.date_fin else None,
-            "membres": [m.utilisateur_id for m in self.membres]
+            "membres": [{
+                "id": m.utilisateur.id,
+                "nom_utilisateur": m.utilisateur.nom_utilisateur,
+                "prenom": m.utilisateur.prenom,
+                "nom": m.utilisateur.nom,
+                "promotion": m.utilisateur.promotion
+            } for m in self.membres if m.utilisateur]
         }
 
 
@@ -75,8 +81,8 @@ class AssociationCotisationUtilisateur(db.Model):
             "id": self.id,
             "utilisateur_id": self.utilisateur_id,
             "cotisation_id": self.cotisation_id,
-            "utilisateur": self.utilisateur.to_dict() if self.utilisateur else None,
-            "asso": self.association.nom
+            "utilisateur": self.utilisateur.id,
+            "asso": self.cotisation.association.nom
         }
 
     def est_active(self):

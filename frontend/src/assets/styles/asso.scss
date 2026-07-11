@@ -2,11 +2,6 @@
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
-.asso-member-badge {
-    background-color: var(--success-color);
-    color: var(--success-text-color);
-}
-
 .member-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /*6 cards per row*/
