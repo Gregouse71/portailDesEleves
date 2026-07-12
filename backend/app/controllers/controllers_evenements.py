@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from datetime import datetime, time
 from sqlalchemy.orm.attributes import flag_modified
 
 from app import db
 from app.models.models_evenements import Evenement
+from app.models.models_associations import Association
 from app.utils.decorators import est_membre_de_asso
 from app.services.services_evenements import verifier_format, est_date_AAAAMMJJ, get_evenements_par_date, supprimer_evenement, change_event_visibility, get_events
 
@@ -17,6 +18,10 @@ def get_events_par_asso(id: int):
     """
     Renvoie la liste des evenements de l'association, ordonnés par date
     """
+    asso = Association.query.get(id)
+    if not asso or (asso.a_cacher_aux_nouveaux and not (current_user.est_baptise or current_user.est_superutilisateur)):
+        return jsonify({"error": "Association non trouvée"}), 404
+
     page = request.args.get('page', type=int)
     per = request.args.get('per', type=int)
 
@@ -33,10 +38,17 @@ def get_election_by_id(id: int):
     """
     Renvoie l'election qui a pour id *id*
     """
-    event = Evenement.query.filter_by(id=id).first()
-    if event:
-        return jsonify(event.to_dict())
-    return jsonify({"message": ""}), 400
+
+    event = Evenement.query.get(id)
+    if not event:
+        return jsonify({"message": ""}), 400
+
+    asso = Association.query.get(event.id_association)
+    if asso and asso.a_cacher_aux_nouveaux and not (current_user.est_baptise or current_user.est_superutilisateur):
+        return jsonify({"message": ""}), 400
+
+    return jsonify(event.to_dict())
+    
 
 
 @controllers_evenements.post("event/<int:association_id>")
@@ -168,6 +180,9 @@ def route_obtenir_evenements(date: str):
     """
     try:
         evenements = get_evenements_par_date(date)
+        if not (current_user.est_baptise or current_user.est_superutilisateur):
+            hidden_asso_ids = {asso.id for asso in Association.query.filter_by(a_cacher_aux_nouveaux=True).all()}
+            evenements = [e for e in evenements if e.id_association not in hidden_asso_ids]
         return jsonify([e.to_dict() for e in evenements]), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

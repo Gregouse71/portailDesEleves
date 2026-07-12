@@ -35,6 +35,10 @@ def route_obtenir_publications_asso(association_id: int):
     """
     Renvoie la liste des id des posts d'une asso
     """
+    asso = Association.query.get(association_id)
+    if not asso or asso.a_cacher_aux_nouveaux and not (current_user.est_baptise or current_user.est_superutilisateur):
+        return jsonify({"error": "Association non trouvée"}), 404
+
     try:
         limit = request.args.get('limit', type=int)
         offset = request.args.get('offset', type=int)
@@ -85,6 +89,10 @@ def route_obtenir_publication(post_id: int):
     
     association_id = publication_for_id.id_association
 
+    asso = Association.query.get(association_id)
+    if asso and asso.a_cacher_aux_nouveaux and not (current_user.est_baptise or current_user.est_superutilisateur):
+        return jsonify({"error": "Publication non trouvée"}), 404
+
     query = Publication.query.filter(Publication.id == post_id)
     if not (current_user.est_superutilisateur):
         user_asso_ids = [role.mandat.association_id for role in current_user.associations]
@@ -119,7 +127,7 @@ def route_add_get_publications_recentes():
         page = request.args.get('page', 1, type=int)
         per = request.args.get('per', 3, type=int)
         query = request.args.get('query', "")
-        publications = Publication.query
+        publications = Publication.query.outerjoin(Association, Association.id == Publication.id_association)
 
         if not current_user.est_superutilisateur:
             user_associations_ids = [membre.mandat.association.id for membre in current_user.associations]
@@ -145,7 +153,7 @@ def route_add_get_publications_recentes():
             publications = publications.filter(and_(is_accessible_interne, is_accessible_nouveaux, is_accessible_cycle, is_accessible_date))
         
         if len(query) > 0:
-            publications = publications.join(Association, Association.id == Publication.id_association).filter(
+            publications = publications.filter(
                 (
                     Publication.titre.like(f"%{query}%") |
                     Association.nom.like(f"%{query}%")

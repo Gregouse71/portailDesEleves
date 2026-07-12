@@ -9,7 +9,7 @@ import mimetypes
 from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from pdf2image import convert_from_path
-from sqlalchemy import desc
+from sqlalchemy import desc, and_, or_
 
 from config import Config
 
@@ -407,7 +407,7 @@ def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query
     Renvoie toutes les publications avec un tag spécifique,
     en tenant compte des permissions de l'utilisateur actuel.
     """
-    query = Publication.query.filter(Publication.tags.contains(tag))
+    query = Publication.query.outerjoin(Association, Association.id == Publication.id_association).filter(Publication.tags.contains(tag))
 
     if search_query:
         query = query.filter(Publication.titre.ilike(f"%{search_query}%"))
@@ -426,7 +426,16 @@ def get_publications_by_tag(tag: str, page: int = 1, per: int = 20, search_query
         )
         # Filter out sensitive publications if user is not 'baptise'
         if not (current_user.est_baptise or current_user.est_superutilisateur):
-            query = query.filter(Publication.a_cacher_aux_nouveaux.is_(False))
+            
+            query = query.filter(
+                and_(
+                    Publication.a_cacher_aux_nouveaux.isnot(True),
+                    or_(
+                        Association.id.is_(None),
+                        Association.a_cacher_aux_nouveaux.isnot(True)
+                    )
+                )
+            )
 
         # Filter out cycle-specific publications
         query = query.filter(~Publication.a_cacher_to_cycles.contains(current_user.cycle))
