@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import UserCard from '../elements/UserCard';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
-import '../../assets/styles/_TrombiPromo.scss';
 import { useQuery } from '@tanstack/react-query';
 
 function TrombiPromo() {
