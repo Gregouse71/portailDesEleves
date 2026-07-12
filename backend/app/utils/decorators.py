@@ -7,6 +7,7 @@ from flask_login import current_user
 
 from app.services.services_login import has_permission
 from app.models.models_associations import AssociationMandat
+from app.services.services_associations import is_admin_asso
 
 # a utiliser en plus de @login_required, on ne verifie pas ici l'authentification
 # le superutilisateur a tous les droits
@@ -21,7 +22,7 @@ def superutilisateur_required(f):
     return decorated_function
 
 
-def est_membre_de_asso(f=None, mandat=False, actuel=False):
+def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
     """
     L'id de l'asso doit apparaitre dans l'URL sous le nom *association_id*
 
@@ -37,7 +38,7 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False):
     """
     if f is None:
         def decorator(func):
-            return est_membre_de_asso(func, mandat=mandat, actuel=actuel)
+            return est_membre_de_asso(func, mandat=mandat, actuel=actuel, admin=admin)
         return decorator
 
     @wraps(f)
@@ -53,15 +54,16 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False):
         if not user_roles_in_asso:
             return jsonify({"message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
 
-        if not (mandat or actuel): # Membre quelconque OK si mandat==False et actuel==False
+        if not (mandat or actuel or admin): # Membre quelconque OK si mandat==False et actuel==False
             return f(*args, **kwargs)
-        
+
         mandats_asso = AssociationMandat.query.filter_by(association_id=association_id).all()
         if mandats_asso:
             max_position = max(m.position for m in mandats_asso)
             is_membre_actuel = any(role.mandat.actuel for role in user_roles_in_asso)
             is_membre_max = any(role.mandat.position == max_position for role in user_roles_in_asso)
-            if is_membre_actuel or is_membre_max: # Membre actuel/max OK
+            is_admin = is_admin_asso(current_user, association_id)
+            if is_membre_actuel or is_membre_max or is_admin: # Membre actuel/max/admin OK
                 return f(*args, **kwargs)
 
         if mandat:

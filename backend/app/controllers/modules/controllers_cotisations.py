@@ -26,7 +26,7 @@ def route_get_cotisations(association_id):
 
 @controllers_cotisations.post('/<int:association_id>/cotisation')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(admin=True)
 def route_add_cotisation(association_id):
     """Creates a new cotisation."""
     data = request.get_json()
@@ -40,7 +40,7 @@ def route_add_cotisation(association_id):
 
 @controllers_cotisations.put('/<int:association_id>/cotisation/<int:cotisation_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(admin=True)
 def route_update_cotisation(association_id, cotisation_id):
     """Updates an existing cotisation."""
     data = request.get_json()
@@ -55,7 +55,7 @@ def route_update_cotisation(association_id, cotisation_id):
 
 @controllers_cotisations.delete('/<int:association_id>/cotisation/<int:cotisation_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(admin=True)
 def route_delete_cotisation(association_id, cotisation_id):
     """Deletes a cotisation."""
     cot = db.session.get(AssociationCotisation, cotisation_id)
@@ -68,7 +68,7 @@ def route_delete_cotisation(association_id, cotisation_id):
 
 @controllers_cotisations.post('/<int:association_id>/cotisation/<int:cotisation_id>/membres')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(admin=True)
 def route_add_membre(association_id, cotisation_id):
     """Adds a user to a cotisation."""
     data = request.get_json()
@@ -87,7 +87,7 @@ def route_add_membre(association_id, cotisation_id):
 
 @controllers_cotisations.delete('/<int:association_id>/cotisation/<int:cotisation_id>/membres/<int:user_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(admin=True)
 def route_delete_membre(association_id, cotisation_id, user_id):
     """Removes a user from a cotisation."""
     cot = db.session.get(AssociationCotisation, cotisation_id)
@@ -100,7 +100,7 @@ def route_delete_membre(association_id, cotisation_id, user_id):
 
 @controllers_cotisations.get('/<int:association_id>/cotisation/<int:cotisation_id>/export')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(admin=True)
 def route_export_csv(association_id, cotisation_id):
     """Exports cotisants to a CSV file."""
     cot = db.session.get(AssociationCotisation, cotisation_id)

@@ -1,14 +1,14 @@
-import { Card, Form, Button, Row, Col } from "react-bootstrap";
+import { Card, Form, Button, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Select from "react-select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ajouterMembre, modifierMandat, modifierPositionMembre, modifierRoleMembre, retirerMembre, supprimerMandat } from "../../api/api_associations";
+import { ajouterMembre, modifierMandat, modifierMembreAsso, retirerMembre, supprimerMandat } from "../../api/api_associations";
 import { useState } from "react";
 import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
 import ConfirmationModal from "./ConfirmationModal"
 import { chargerUtilisateurs, obtenirListeDesPromos } from "../../api/api_utilisateurs";
 
-export default function AssoMandat({ mandat, asso, canModify }) {
+export default function AssoMandat({ mandat, asso, membreData }) {
     const queryClient = useQueryClient();
 
     const [deletingMandat, setDeletingMandat] = useState(false);
@@ -19,6 +19,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
     const [idMembreModifier, setIdMembreModifier] = useState(null); // Id du membre à modifier
     const [nouveauRole, setNouveauRole] = useState("");
     const [nouvellePosition, setNouvellePosition] = useState("");
+    const [nouveauAdmin, setNouveauAdmin] = useState(false);
 
     const [listeNouveauxMembres, setListeNouveauxMembres] = useState([]);
 
@@ -57,7 +58,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
         }
     }
 
-    const handleModifierParametres = (userId, userRole, userPosition) => {
+    const handleModifierParametres = (userId, userRole, userPosition, userAdmin) => {
         if (idMembreModifier === userId) {
             setIdMembreModifier(null);
         }
@@ -65,6 +66,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
             setNouveauRole(userRole || "");
             setNouvellePosition(userPosition?.toString() || "");
             setIdMembreModifier(userId);
+            setNouveauAdmin(userAdmin)
         }
     }
 
@@ -72,30 +74,8 @@ export default function AssoMandat({ mandat, asso, canModify }) {
         const memberToModify = mandat.membres.find(u => u.id === membreId);
         if (!memberToModify) return;
 
-        const originalRole = memberToModify.role || "";
-        const originalPosition = memberToModify.position?.toString() || "";
-
-        let roleChanged = nouveauRole !== originalRole;
-        let positionChanged = nouvellePosition !== originalPosition;
-
-        if (roleChanged) {
-            try {
-                await modifierRoleMembre(asso.id, mandat.id, membreId, nouveauRole);
-            } catch (erreur) {
-                console.error(erreur);
-            }
-        }
-        if (positionChanged) {
-            try {
-                await modifierPositionMembre(asso.id, mandat.id, membreId, parseInt(nouvellePosition));
-            } catch (erreur) {
-                console.error(erreur)
-            }
-        }
-
-        if (roleChanged || positionChanged) {
-            queryClient.invalidateQueries(['asso', asso.id]);
-        }
+        await modifierMembreAsso({ role: nouveauRole, position: nouvellePosition, admin: nouveauAdmin }, asso.id, mandat.id, membreId)
+        queryClient.invalidateQueries(['asso', asso.id]);
 
         setIdMembreModifier(null);
     }
@@ -195,7 +175,7 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                             <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
                         </>
                         :
-                        canModify && <DropdownEditer list={[
+                        membreData.autorise && <DropdownEditer list={[
                             { can: true, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
                             { can: true, onClick: startAjoutMembre, name: "Ajouter un membre" },
                             "divider",
@@ -252,13 +232,22 @@ export default function AssoMandat({ mandat, asso, canModify }) {
                             key={user.id}
                             f1={() => handleRetirerMembre(user.id)}
                             t1="Supprimer ce membre"
-                            f2={() => { handleModifierParametres(user.id, user.role, user.position) }}
+                            f2={() => { handleModifierParametres(user.id, user.role, user.position, user.admin) }}
                             t2="Modifier les paramètres"
                             values={[
                                 { label: "Rôle", value: nouveauRole, onChange: (e) => setNouveauRole(e.target.value) },
-                                { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) }
+                                { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) },
+                                ...(membreData.admin ? [{ label: "Admin", value: nouveauAdmin, onChange: (e) => setNouveauAdmin(e.target.checked), type: "checkbox" }] : [])
                             ]}
                             validate={() => handleMembreChange(user.id)}
+                            modifyingSpecialColor={user.admin}
+                            additionnalText={user.admin &&
+                                <OverlayTrigger
+                                    placement="top"
+                                    overlay={<Tooltip id={`tooltip-${user.id}`}>Les admins peuvent gérer les cotisations de l'association</Tooltip>}
+                                >
+                                    <span> · </span>
+                                </OverlayTrigger>}
                         />
                     ))}
                 </div>

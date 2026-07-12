@@ -69,7 +69,7 @@ function AssoMembres({ asso_id, membreData }) {
             </div>
 
             {sortedMandats.map((mandat, i) => (
-                <AssoMandat key={i} mandat={mandat} asso={asso} canModify={membreData.autorise} />
+                <AssoMandat key={i} mandat={mandat} asso={asso} membreData={membreData} />
             ))}
         </div>
     )

@@ -98,26 +98,6 @@ class Association(db.Model):
             self.description = description
     
     def to_dict(self):
-        mandats_data = [
-            {
-                "membres" :[
-                    {
-                        "prenom": membre.utilisateur.prenom,
-                        "nom": membre.utilisateur.nom,
-                        "id": membre.utilisateur.id,
-                        "role": membre.role,
-                        "position": membre.position,
-                        "photo": membre.utilisateur.get_photo_file()
-                    }
-                for membre in mandat.membres],
-                "position": mandat.position,
-                "nom": mandat.nom,
-                "actuel": mandat.actuel,
-                "id": mandat.id
-            }
-            for mandat in self.mandats
-        ]
-
         return {
             "id": self.id,
             "nom_dossier": self.nom_dossier,
@@ -127,7 +107,7 @@ class Association(db.Model):
             "banniere_path": self.get_banniere_file(),
             "description": self.description,
             "modules": self.modules,
-            "mandats": mandats_data
+            "mandats": [m.to_dict() for m in self.mandats]
         }
     
     def get_photo_file(self):
@@ -173,6 +153,15 @@ class AssociationMandat(db.Model):
         self.association = asso
         self.position = position
         self.actuel = actuel
+    
+    def to_dict(self):
+        return {
+            "membres" :[m.to_dict() for m in self.membres],
+            "position": self.position,
+            "nom": self.nom,
+            "actuel": self.actuel,
+            "id": self.id
+        }
 
 
 class AssociationMembre(db.Model):
@@ -183,6 +172,7 @@ class AssociationMembre(db.Model):
     role = db.Column(db.String(1000), nullable=True)
     position = db.Column(db.Integer, nullable=True)
     ordre = db.Column(db.Integer, nullable=True, default=0)
+    admin = db.Column(db.Boolean, nullable=False, default=False)
 
     utilisateur = db.relationship('Utilisateur', back_populates='associations')
     mandat = db.relationship('AssociationMandat', back_populates='membres')
@@ -195,3 +185,14 @@ class AssociationMembre(db.Model):
 
     def __repr__(self):
         return f"<AssociationMembre utilisateur_id={self.utilisateur_id} mandat_id={self.mandat_id}>"
+    
+    def to_dict(self):
+        return {
+            "prenom": self.utilisateur.prenom,
+            "nom": self.utilisateur.nom,
+            "id": self.utilisateur.id,
+            "role": self.role,
+            "position": self.position,
+            "photo": self.utilisateur.get_photo_file(),
+            "admin": self.admin
+        }

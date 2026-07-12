@@ -273,9 +273,9 @@ def export_liste_utilisateurs_csv():
         for col in fieldnames:
             if col != "est_cotisant_biero":
                 row[col] = getattr(user, col)
-        row["est_cotisant_biero"] = est_cotisant_biero(user)
+        row["est_cotisant_biero"] = est_cotisant_biero(user.id)
         writer.writerow(row)
-    
+
     proxy.seek(0)
 
     mem = io.BytesIO()
