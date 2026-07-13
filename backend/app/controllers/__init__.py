@@ -13,6 +13,7 @@ from app.controllers.controllers_chat import controllers_chat
 from app.controllers.modules.controllers_elections import controllers_elections
 from app.controllers.controllers_jeux import controller_jeux
 from app.controllers.modules.controllers_audio import controllers_audio
+from app.controllers.modules.controllers_cotisations import controllers_cotisations
 from app.controllers.controllers_oauth import controllers_oauth
 from app.controllers.controller_echecs import controller_echecs
 
@@ -35,6 +36,7 @@ api.register_blueprint(controllers_chat, url_prefix='/chat')
 api.register_blueprint(controllers_elections, url_prefix='/elections')
 api.register_blueprint(controller_jeux, url_prefix='/jeux')
 api.register_blueprint(controllers_audio, url_prefix='/audio')
+api.register_blueprint(controllers_cotisations, url_prefix='/cotisations')
 api.register_blueprint(controllers_oauth, url_prefix='/oauth')
 api.register_blueprint(controller_echecs, url_prefix='/echecs')
 

@@ -2,13 +2,14 @@ from app.services import db
 from app.services.services_global import get_global_var, set_global_var
 from app.models import Utilisateur, ConsoSoifguard, Permission
 from app.models.models_soifguard import OperationSoifguard
+from app.services.modules.services_cotisations import est_cotisant_octo, est_cotisant_biero
 from sqlalchemy import or_, desc, asc
 
 
 def _encaisser(utilisateur: Utilisateur, auteur: Utilisateur, prix: float, asso: str, nom_conso: str):
     max_negatif = get_global_var("max_negatif_octo") if asso == 'octo' else get_global_var("max_negatif_biero")
     solde_actuel = utilisateur.solde_octo if asso == "octo" else utilisateur.solde_biero
-    est_cotisant = utilisateur.est_cotisant_octo if asso == "octo" else utilisateur.est_cotisant_biero
+    est_cotisant = est_cotisant_octo(utilisateur.id) if asso == "octo" else est_cotisant_biero(utilisateur.id)
 
     nouveau_solde = float(solde_actuel) - float(prix)
     if max_negatif is not None and nouveau_solde <= max_negatif:
@@ -37,8 +38,8 @@ def encaisser_utilisateur(utilisateur: Utilisateur, auteur: Utilisateur, conso: 
     Renvoie le nouvel état de l'utilisateur
     """
     if conso.prix_cotisant is not None and (
-            (conso.asso == 'octo' and utilisateur.est_cotisant_octo) 
-         or (conso.asso == 'biero' and utilisateur.est_cotisant_biero)
+            (conso.asso == 'octo' and est_cotisant_octo(utilisateur.id)) 
+         or (conso.asso == 'biero' and est_cotisant_biero(utilisateur.id))
         ):
             return _encaisser(utilisateur, auteur, conso.prix_cotisant, conso.asso, conso.nom_conso)
     else :
@@ -50,7 +51,7 @@ def crediter_utilisateur(utilisateur: Utilisateur, auteur: Utilisateur, somme: s
     Renvoie un message de log
     """
     solde_actuel = utilisateur.solde_octo if asso == "octo" else utilisateur.solde_biero
-    est_cotisant = utilisateur.est_cotisant_octo if asso == "octo" else utilisateur.est_cotisant_biero
+    est_cotisant = est_cotisant_octo(utilisateur.id) if asso == "octo" else est_cotisant_biero(utilisateur.id)
     nouveau_solde = float(solde_actuel) + float(somme)
 
     operation = OperationSoifguard(

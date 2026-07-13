@@ -5,7 +5,7 @@ import os
 from app import db
 from app.utils.decorators import est_membre_de_asso, superutilisateur_required
 from app.services.services_utilisateurs import get_utilisateur
-from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member_role, update_member_position, get_asso_media
+from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member, get_asso_media, is_admin_asso
 from app.services.services_media import upload_media, delete_media
 
 from app.models.models_associations import Association
@@ -201,12 +201,12 @@ def route_retirer_membre(association_id, mandat_id, membre_id):
         return jsonify({"message": f"Erreur lors du retrait du membre : {str(e)}"}), 500
 
 
-@controllers_associations.route('/<int:association_id>/modifier_role_membre/<int:mandat_id>/<int:membre_id>', methods=['PATCH'])
+@controllers_associations.patch('/modifier_membre/<int:association_id>/<int:mandat_id>/<int:membre_id>')
 @login_required
 @est_membre_de_asso(mandat=True)
 def route_modifier_role_membre(association_id, mandat_id, membre_id):
     """
-    Modifie le role d'un membre de l'association
+    Modifie le membre de l'association
     """
     mandat = get_mandat(mandat_id)
     if not mandat or mandat.association_id != association_id:
@@ -218,35 +218,13 @@ def route_modifier_role_membre(association_id, mandat_id, membre_id):
 
     try:
         role = request.json.get('role')
-        update_member_role(mandat, membre, role)
+        position = int(request.json.get('position'))
+        admin = bool(request.json.get('admin'))
+        update_member(mandat, membre, role, position, admin)
         return jsonify({"message": "Role du membre modifie avec succes"}), 200
 
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la modification du role du membre : {str(e)}"}), 500
-
-
-@controllers_associations.route('/<int:association_id>/modifier_position_membre/<int:mandat_id>/<int:membre_id>', methods=['PATCH'])
-@login_required
-@est_membre_de_asso(mandat=True)
-def route_modifier_position_membre(association_id, mandat_id, membre_id):
-    """
-    Modifie la position d'affichage du membre
-    """
-    mandat = get_mandat(mandat_id)
-    if not mandat or mandat.association_id != association_id:
-        return jsonify({"message": "Mandat non trouve"}), 404
-
-    membre = get_utilisateur(membre_id)
-    if not membre:
-        return jsonify({"message": "Utilisateur non trouve"}), 404
-
-    try:
-        new_position = request.json.get('position')
-        update_member_position(mandat, membre, new_position)
-        return jsonify({"message": "Position du membre modifie avec succes"}), 200
-
-    except Exception as e:
-        return jsonify({"message": f"Erreur lors de la modification de la position du membre : {str(e)}"}), 500
 
 
 @controllers_associations.post('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<path:new_id>')
@@ -382,9 +360,8 @@ def route_get_asso(association_id):
 @controllers_associations.route("route_est_membre_de_asso/<int:id_association>", methods=["GET"])
 @login_required
 def route_est_membre_de_asso(id_association: int):
-    try:
-        is_membre = any(role.mandat.association_id == id_association for role in current_user.associations)
-        autorise = is_membre or current_user.est_superutilisateur
-        return jsonify({"is_membre": is_membre, "autorise": autorise}), 200
-    except Exception as e:
-        return jsonify({"Erreur": str(e)}), 400
+    is_membre = any(role.mandat.association_id == id_association for role in current_user.associations)
+    autorise = is_membre or current_user.est_superutilisateur
+    cotisant = any(cotiz.cotisation.association_id == id_association for cotiz in current_user.cotisations if cotiz.est_active())
+    admin = is_admin_asso(current_user, id_association)
+    return jsonify({"is_membre": is_membre, "autorise": autorise, "cotisant": cotisant, "admin": admin}), 200

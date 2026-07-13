@@ -1,4 +1,6 @@
 # importer les models grace a __init__.py de models
+from flask_login import current_user
+
 from app.services import db
 from app.models.models_associations import Association, AssociationMandat, AssociationMembre
 from app.models.models_utilisateurs import Utilisateur
@@ -108,7 +110,7 @@ def remove_member(mandat: AssociationMandat, utilisateur: Utilisateur):
 
 
 
-def update_member_role(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
+def update_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str, position: int, admin: bool):
     """
     Modifie le role d'un membre de l'association
     Renvoie une erreur si l'utilisateur ou l'association n'existe pas
@@ -122,6 +124,9 @@ def update_member_role(mandat: AssociationMandat, utilisateur: Utilisateur, role
             ).first()
             if membership:
                 membership.role = role
+                membership.position = position
+                if is_admin_asso(current_user, mandat.association_id):
+                    membership.admin = admin
                 db.session.commit()
             else:
                 raise ValueError("L'utilisateur n'est pas dans le mandat")
@@ -131,27 +136,10 @@ def update_member_role(mandat: AssociationMandat, utilisateur: Utilisateur, role
         raise ValueError("Le mandat n'existe pas")
 
 
-def update_member_position(mandat: AssociationMandat, utilisateur: Utilisateur, position: int):
-    """
-    Modifie la position de l'utilisateur das l'association
-    """
-    if mandat:
-        if utilisateur:
-            membership = AssociationMembre.query.filter_by(
-                utilisateur_id=utilisateur.id,
-                mandat_id=mandat.id
-            ).first()
-            if membership:
-                membership.position = position
-                db.session.commit()
-            else:
-                raise ValueError("L'utilisateur n'est pas dans l'association.")
-        else:
-            raise ValueError("L'utilisateur n'existe pas")
-    else:
-        raise ValueError("Le mandat n'existe pas")
-
-
 def get_asso_media(asso_id):
     files = ElementMedia.query.filter_by(association_id=asso_id, cache=False)
     return [f.to_dict() for f in files]
+
+
+def is_admin_asso(utilisateur: Utilisateur, association_id: int):
+    return any(role.admin for role in utilisateur.associations if role.mandat.association_id == association_id)

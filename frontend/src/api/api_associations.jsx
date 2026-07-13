@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, handleResponse } from "./base";
 
 const ASSOCIATIONS_BASE_URL = `${API_BASE_URL}/associations`;
 
@@ -185,40 +185,12 @@ export async function retirerMembre(associationId, mandatId, membreId) {
   }
 }
 
-export async function modifierRoleMembre(associationId, mandatId, membreId, role) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_role_membre/${mandatId}/${membreId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ role })
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
+/** Modifie les paramètre du membre dans le mandat
+ * - role : nouveau nom de role
+ * - position : nouvelle position
+ */
+export const modifierMembreAsso = createApiPatch(`${ASSOCIATIONS_BASE_URL}/modifier_membre`)
 
-export async function modifierPositionMembre(associationId, mandatId, membreId, position) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_position_membre/${mandatId}/${membreId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ position })
-    })
-    return handleResponse(res);
-  } catch (erreur) {
-    console.error("Erreur réseau :", erreur);
-    throw erreur;
-  }
-}
 
 export async function ajouterContenuAsso(associationId, file) {
   try {

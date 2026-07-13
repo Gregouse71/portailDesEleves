@@ -1,10 +1,11 @@
 from app import db
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from flask_login import UserMixin # pour faire le lien entre la class utilisateur et flask_login
-from datetime import date
+from datetime import date, datetime, timedelta
 
 # verification du format des donnees :
 from app.models.models_media import ElementMedia
+from app.models.modules.models_cotisations import AssociationCotisationUtilisateur
 from app.utils.divers_utils import ph
 from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
@@ -138,8 +139,9 @@ class Utilisateur(db.Model, UserMixin) :
     # soifguard
     solde_octo = db.Column(db.Numeric(10, 2), nullable=False, default=0)  # Arrondi à 2 décimales
     solde_biero = db.Column(db.Numeric(10, 2), nullable=True, default=0)  # Arrondi à 2 décimales
-    est_cotisant_biero = db.Column(db.Integer, nullable=False, default=False)
-    est_cotisant_octo = db.Column(db.Integer, nullable=False, default=False)
+
+    # cotisations
+    cotisations = db.relationship('AssociationCotisationUtilisateur', back_populates='utilisateur', cascade="all, delete-orphan")
 
     # Publications
     publications = db.relationship('Publication', back_populates='auteur')
@@ -302,12 +304,11 @@ class Utilisateur(db.Model, UserMixin) :
             "solde_octo": self.solde_octo,
             "solde_biero": self.solde_biero,
             "meilleur_score_2048": self.meilleur_score_2048,
-            "est_cotisant_biero": self.est_cotisant_biero,
-            "est_cotisant_octo": self.est_cotisant_octo,
             "victoires": self.victoires,
-            "defaites": self.defaites
+            "defaites": self.defaites,
+            "cotisations": [c.to_dict() for c in AssociationCotisationUtilisateur.query.filter_by(utilisateur_id=self.id)]
         }
-    
+
     def get_photo_file(self):
         if self.photo_id is None:
             return None

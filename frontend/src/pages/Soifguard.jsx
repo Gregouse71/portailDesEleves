@@ -381,7 +381,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
                 list={[
                     {
                         can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
-                        name: user[`est_cotisant_${categorie}`] ? <>Ne cotise pas</> : <>Cotise</>
+                        name:  user.cotisations.filter((c) => c.asso.localeCompare(categorie)).length > 0 ? <>Ne cotise pas</> : <>Cotise</>
                     },
                     { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
                 ]}
@@ -401,7 +401,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
             <div className="ms-3 me-5">
                 <div className="fw-bold">{user.prenom} {user.nom} P{user.promotion}</div>
                 <div>
-                    {user[`est_cotisant_${categorie}`] ? <span className="soifguard-cotisant-badge">Cotisant</span> : null}
+                    {user.cotisations.filter((c) => c.asso.localeCompare(categorie)).length > 0 ? <span className="soifguard-cotisant-badge">Cotisant</span> : null}
                     <span className="ms-2">
                         {categorie === "octo" && `${user.solde_octo}€`}
                         {categorie === "biero" && `${user.solde_biero}€`}

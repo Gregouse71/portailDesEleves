@@ -1,8 +1,11 @@
-import { Card, Button, Form } from "react-bootstrap";
+import { Card, Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { useNavigate } from "react-router-dom";
 
-export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2, values, validate }) {
+export default function UserCard({
+    user, isGestion, isModifying, additionnalText,
+    modifyingTooltipText, t1, f1, t2, f2, values, validate
+}) {
     const navigate = useNavigate();
 
     return (
@@ -25,14 +28,21 @@ export default function UserCard({ user, isGestion, isModifying, t1, f1, t2, f2,
                 />
             </div>
             <Card.Body className="px-2">
-                <Card.Title className="h6 bold">{user.prenom} {user.nom}</Card.Title>
-                {user.role ? <hr/> : null}
+                <Card.Title className="h6 bold">
+                    {user.prenom} {user.nom} {additionnalText}{" "}
+                </Card.Title>
+                {user.role ? <hr /> : null}
                 {!isModifying && <Card.Text className="small">{user.role}</Card.Text>}
                 {isModifying && <>
                     {values.map((elt, i) =>
                         <Form.Group key={i} className="mb-2">
                             <Form.Label>{elt.label}</Form.Label>
-                            <Form.Control value={elt.value} onChange={elt.onChange} />
+                            {
+                                elt.type === "checkbox"
+                                    ? <Form.Check checked={elt.value} onChange={elt.onChange} />
+                                    : <Form.Control value={elt.value} onChange={elt.onChange} />
+                            }
+
                         </Form.Group>
                     )}
                     <Button variant="success" onClick={validate}>Valider</Button>

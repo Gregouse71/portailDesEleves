@@ -123,7 +123,8 @@ export default function Header() {
                                 ["navigate", "/publications", "Publicatons récentes"],
                                 ["navigate", "/vendomes", "Vendômes"],
                                 ["navigate", "/palums", "Palums"],
-                                ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
+                                // On va essayer de pas spoil les 1A avec nos histoire de baptême
+                                // ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
                                 ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
                                 ["link", "https://moodle.psl.eu/", "Moodle"],
                                 ["link", "https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing", "Sheet des stages"],
