@@ -115,6 +115,9 @@ def _from_glicko2(r, rd):
     """Convertit rating/RD de l'échelle Glicko-2 vers l'échelle classique."""
     return round(173.7178 * r + 1500), round(173.7178 * rd)
 
+def _rating_ia_effectif(rating_humain: int) -> int:
+    return max(1320, min(rating_humain + 10, 3190))
+
 
 def mettre_a_jour_elo(partie: EchecsPartie):
     if partie.elo_calcule or partie.statut not in ('mat', 'pat'):
@@ -133,8 +136,8 @@ def mettre_a_jour_elo(partie: EchecsPartie):
         elif partie.statut == 'pat':         score = 0.5
         else:                                score = 0.0
 
-        # L'IA a un RD fixe de 100 (rating assez certain) et rating = humain + 10
-        rating_ia = elo_humain.rating + 10
+        # L'IA a un RD fixe de 100 (rating assez certain), rating = celui réellement joué par Stockfish
+        rating_ia = _rating_ia_effectif(elo_humain.rating)
         r_h, rd_h = _to_glicko2(elo_humain.rating, elo_humain.rd)
         r_ia, rd_ia = _to_glicko2(rating_ia, 100)
 
@@ -156,6 +159,7 @@ def mettre_a_jour_elo(partie: EchecsPartie):
         else:              elo_humain.defaites  += 1
 
         variations[str(id_humain)] = {'avant': ancien_r, 'apres': nouveau_r}
+        variations['ia'] = {'avant': rating_ia, 'apres': rating_ia}
 
     else:
         elo_blanc = get_ou_creer_elo(partie.blanc_id)
@@ -201,17 +205,19 @@ def mettre_a_jour_elo(partie: EchecsPartie):
     db.session.commit()
 
 
-RD_SEUIL_CLASSEMENT = 250  # RD en dessous duquel un rating est jugé assez fiable pour être classé
+RD_SEUIL_CLASSEMENT = 150  # RD en dessous duquel un rating est jugé assez fiable pour être classé
 
 def leaderboard_elo(utilisateur_id: int) -> dict:
     classement_fiable = EchecsElo.query.filter(EchecsElo.rd <= RD_SEUIL_CLASSEMENT)
 
     top10 = classement_fiable.order_by(EchecsElo.rating.desc()).limit(10).all()
+    top10_ids = {e.utilisateur_id for e in top10}
     nb_classes = classement_fiable.count()
 
     mon_elo = EchecsElo.query.filter_by(utilisateur_id=utilisateur_id).first()
 
     eligible = bool(mon_elo) and mon_elo.rd <= RD_SEUIL_CLASSEMENT
+    dans_top10 = utilisateur_id in top10_ids
     ma_position = None
     mon_percentile = None
 
@@ -229,6 +235,7 @@ def leaderboard_elo(utilisateur_id: int) -> dict:
         'ma_position':    ma_position,
         'mon_percentile': mon_percentile,
         'eligible':       eligible,
+        'dans_top10':     dans_top10,
         'nb_classes':     nb_classes,
     }
 
@@ -382,7 +389,7 @@ def creer_defi(utilisateur, data: dict) -> dict:
         # Si IA est blanche, elle joue le premier coup
         if blanc_id_ia is None:
             elo_h = EchecsElo.query.filter_by(utilisateur_id=utilisateur.id).first()
-            rating_ia = (elo_h.rating if elo_h else 500) + 10
+            rating_ia = _rating_ia_effectif(elo_h.rating if elo_h else 500)
             app = current_app._get_current_object()
             _spawn_stockfish(app, partie.id, partie.fen, rating_ia)
 
@@ -449,7 +456,7 @@ def get_partie(partie_id: int) -> dict:
         hum_id    = _id_humain(partie)
         elo_h     = EchecsElo.query.filter_by(utilisateur_id=hum_id).first()
         rating_h  = elo_h.rating if elo_h else 500
-        rating_ia = rating_h + 10
+        rating_ia = _rating_ia_effectif(rating_h)
         if partie.blanc_id == hum_id:
             d['elo_blanc'] = rating_h
             d['elo_noir']  = rating_ia
@@ -531,7 +538,7 @@ def jouer_coup(partie_id: int, utilisateur_id: int, data: dict) -> dict:
     if partie.mode == 'ia' and partie.statut in ('en_cours', 'echec'):
         hum_id    = _id_humain(partie)
         elo_h     = EchecsElo.query.filter_by(utilisateur_id=hum_id).first()
-        rating_ia = (elo_h.rating if elo_h else 1500) + 10
+        rating_ia = _rating_ia_effectif(elo_h.rating if elo_h else 1500)
         app = current_app._get_current_object()
         _spawn_stockfish(app, partie.id, partie.fen, rating_ia)
 
@@ -621,21 +628,18 @@ def _sauvegarder(partie, board, move):
 
 
 def _stockfish(fen: str, elo_cible: int = 1320) -> chess.Move:
-    """Demande le meilleur coup à Stockfish via le wrapper Python."""
-    elo_sf = max(1320, min(elo_cible, 3190))
+    board_tmp = chess.Board(fen)
+    nb_pieces = len(board_tmp.piece_map())
+    en_finale = nb_pieces <= 12
+
+    elo_sf_ajuste = max(elo_cible, 2200) if en_finale else elo_cible
 
     sf = Stockfish(
         path=STOCKFISH_PATH,
-        parameters={
-            'UCI_LimitStrength': True,
-            'UCI_Elo': elo_sf,
-        },
+        parameters={'UCI_LimitStrength': True, 'UCI_Elo': elo_sf_ajuste},
     )
     sf.set_fen_position(fen)
-    # get_best_move_time() prend un délai en millisecondes
-    bestmove = sf.get_best_move_time(500)
-
+    bestmove = sf.get_best_move()
     if bestmove is None:
         raise ValueError('Stockfish n\'a pas retourné de coup')
-
     return chess.Move.from_uci(bestmove)

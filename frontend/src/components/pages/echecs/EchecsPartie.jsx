@@ -124,10 +124,8 @@ export default function EchecsPartie() {
 const eloBlancAffiche = (() => {
   if (!estTerminee || !partie.elo_variation) return partie.elo_blanc;
   if (partie.blanc_id === null) {
-    // IA est blanche : affiche elo humain + 10
-    const id = partie.noir_id;
-    const v = partie.elo_variation[String(id)];
-    return v ? v.avant + 10 : partie.elo_blanc;
+    const v = partie.elo_variation['ia'];
+    return v ? v.avant : partie.elo_blanc;
   }
   const v = partie.elo_variation[String(partie.blanc_id)];
   return v ? v.avant : partie.elo_blanc;
@@ -136,10 +134,8 @@ const eloBlancAffiche = (() => {
 const eloNoirAffiche = (() => {
   if (!estTerminee || !partie.elo_variation) return partie.elo_noir;
   if (partie.noir_id === null) {
-    // IA est noire : affiche elo humain + 10
-    const id = partie.blanc_id;
-    const v = partie.elo_variation[String(id)];
-    return v ? v.avant + 10 : partie.elo_noir;
+    const v = partie.elo_variation['ia'];
+    return v ? v.avant : partie.elo_noir;
   }
   const v = partie.elo_variation[String(partie.noir_id)];
   return v ? v.avant : partie.elo_noir;

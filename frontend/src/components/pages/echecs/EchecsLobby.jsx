@@ -183,7 +183,7 @@ export default function EchecsLobby() {
                 </p>
               )}
 
-              {eloData.eligible && eloData.ma_position > 10 && (
+              {eloData.eligible && !eloData.dans_top10 && (
                 <div className="echecs-ma-position mt-2">
                   <span className="text-muted">Ma position : </span>
                   <strong>#{eloData.ma_position}</strong>
