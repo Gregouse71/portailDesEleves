@@ -5,6 +5,7 @@ import { Container, Button, Alert, Table } from "react-bootstrap";
 import { useProtected } from "../../../Protected";
 import { getDefis, creerDefi, annulerDefi, accepterDefi, getLeaderboard } from "../../../api/api_echecs";
 import "../../../assets/styles/echecs.css";
+import Leaderboard from "../../elements/Leaderboard";
 
 export default function EchecsLobby() {
   const navigate     = useNavigate();
@@ -155,51 +156,44 @@ export default function EchecsLobby() {
 
         {/* ── Colonne droite : classement ELO ── */}
         <div className="col-lg-5">
-          <div className="echecs-section">
-            <h5>🏆 Classement ELO</h5>
+          {loadingElo || !eloData ? (
+            <Leaderboard title="🏆 Classement ELO" isLoading />
+          ) : (
+            <>
+              <Leaderboard
+                title="🏆 Classement ELO"
+                isLoading={false}
+                data={eloData.top10.map((e) => ({ ...e, id: e.utilisateur_id }))}
+                format={[
+                  { nom: "ELO", scoreKey: "rating", formatScore: (s) => <strong>{s}</strong> },
+                  { nom: "Parties Jouées", scoreKey: "nb_parties", formatScore: (s) => s },
+                ]}
+                titleRow
+              />
 
-            {loadingElo || !eloData ? (
-              <p className="text-muted">Chargement…</p>
-            ) : (
-              <>
-                <Table size="sm" className="echecs-elo-table mb-2">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Joueur</th>
-                      <th>ELO</th>
-                      <th>Parties</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {eloData.top10.map((e, i) => (
-                      <tr key={e.utilisateur_id}
-                        className={e.utilisateur_id === userData.id ? "echecs-elo-moi" : ""}>
-                        <td>{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</td>
-                        <td>{e.nom_utilisateur}</td>
-                        <td><strong>{e.rating}</strong></td>
-                        <td className="text-muted">{e.nb_parties}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+              {!eloData.mon_elo && (
+                <p className="text-muted small mt-2 text-center">
+                  Joue ta première partie pour apparaître au classement !
+                </p>
+              )}
 
-                {eloData.mon_elo && eloData.ma_position > 10 && (
-                  <div className="echecs-ma-position">
-                    <span className="text-muted">Ma position : </span>
-                    <strong>#{eloData.ma_position}</strong>
-                    <span className="ms-2 text-muted">— {eloData.mon_elo.rating} ELO</span>
-                  </div>
-                )}
+              {eloData.mon_elo && !eloData.eligible && (
+                <p className="text-muted small mt-2 text-center">
+                  Joue plus de parties pour apparaître au classement.
+                </p>
+              )}
 
-                {!eloData.mon_elo && (
-                  <p className="text-muted small mt-2">
-                    Joue ta première partie pour apparaître au classement !
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+              {eloData.eligible && eloData.ma_position > 10 && (
+                <div className="echecs-ma-position mt-2">
+                  <span className="text-muted">Ma position : </span>
+                  <strong>#{eloData.ma_position}</strong>
+                  <span className="ms-2 text-muted">
+                    — {eloData.mon_elo.rating} ELO (top {eloData.mon_percentile}%)
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
       </div>

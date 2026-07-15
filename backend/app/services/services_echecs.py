@@ -201,16 +201,35 @@ def mettre_a_jour_elo(partie: EchecsPartie):
     db.session.commit()
 
 
+RD_SEUIL_CLASSEMENT = 250  # RD en dessous duquel un rating est jugé assez fiable pour être classé
+
 def leaderboard_elo(utilisateur_id: int) -> dict:
-    top10 = EchecsElo.query.order_by(EchecsElo.rating.desc()).limit(10).all()
+    classement_fiable = EchecsElo.query.filter(EchecsElo.rd <= RD_SEUIL_CLASSEMENT)
+
+    top10 = classement_fiable.order_by(EchecsElo.rating.desc()).limit(10).all()
+    nb_classes = classement_fiable.count()
+
     mon_elo = EchecsElo.query.filter_by(utilisateur_id=utilisateur_id).first()
+
+    eligible = bool(mon_elo) and mon_elo.rd <= RD_SEUIL_CLASSEMENT
     ma_position = None
-    if mon_elo:
-        ma_position = EchecsElo.query.filter(EchecsElo.rating > mon_elo.rating).count() + 1
+    mon_percentile = None
+
+    if eligible:
+        ma_position = EchecsElo.query.filter(
+            EchecsElo.rd <= RD_SEUIL_CLASSEMENT,
+            EchecsElo.rating > mon_elo.rating,
+        ).count() + 1
+        if nb_classes:
+            mon_percentile = max(1, math.ceil(100 * ma_position / nb_classes))
+
     return {
-        'top10':       [e.to_dict() for e in top10],
-        'mon_elo':     mon_elo.to_dict() if mon_elo else None,
-        'ma_position': ma_position,
+        'top10':          [e.to_dict() for e in top10],
+        'mon_elo':        mon_elo.to_dict() if mon_elo else None,
+        'ma_position':    ma_position,
+        'mon_percentile': mon_percentile,
+        'eligible':       eligible,
+        'nb_classes':     nb_classes,
     }
 
 
