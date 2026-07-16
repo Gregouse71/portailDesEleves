@@ -13,11 +13,20 @@ from app.models.models_echecs import EchecsDefi, EchecsPartie, EchecsElo
 STOCKFISH_PATH = 'stockfish'
 EXPIRY_DEFIS   = timedelta(minutes=30)
 
+
+# ── Pour les sockets ──────────────────────────────────────────────────────────
+
 ROOM = lambda partie_id: f'echecs_{partie_id}'
+ROOM_LOBBY = 'echecs_lobby'
 
 def _emettre_etat(sio, partie_id: int):
     if sio:
         sio.emit('echecs_etat', get_partie(partie_id), room=ROOM(partie_id))
+
+def _emettre_lobby(sio):
+    if sio:
+        sio.emit('echecs_lobby_maj', room=ROOM_LOBBY)
+
 
 # ── ELO ───────────────────────────────────────────────────────────────────────
 
@@ -124,7 +133,7 @@ def _rating_ia_effectif(rating_humain: int) -> int:
     return max(1320, min(rating_humain + 10, 3190))
 
 
-def mettre_a_jour_elo(partie: EchecsPartie):
+def mettre_a_jour_elo(partie: EchecsPartie, sio=None):
     if partie.elo_calcule or partie.statut not in ('mat', 'pat'):
         return
 
@@ -208,6 +217,7 @@ def mettre_a_jour_elo(partie: EchecsPartie):
     partie.elo_calcule   = True
     partie.elo_variation = variations
     db.session.commit()
+    _emettre_lobby(sio)
 
 
 RD_SEUIL_CLASSEMENT = 150  # RD en dessous duquel un rating est jugé assez fiable pour être classé
@@ -263,7 +273,7 @@ def _spawn_stockfish(app, partie_id: int, fen: str, rating_ia: int, sio=None):
                 b.push(coup_ia)
                 _sauvegarder(p, b, coup_ia)
                 if p.statut in ('mat', 'pat'):
-                    mettre_a_jour_elo(p)
+                    mettre_a_jour_elo(p, sio)
                 _emettre_etat(sio, partie_id)
     gevent.spawn(bg)
 
@@ -414,18 +424,20 @@ def creer_defi(utilisateur, data: dict, sio=None) -> dict:
     defi = EchecsDefi(createur_id=utilisateur.id, adversaire_id=adversaire_id, mode='humain')
     db.session.add(defi)
     db.session.commit()
+    _emettre_lobby(sio)
     return {'defi_id': defi.id, 'mode': 'humain'}
 
 
-def annuler_defi(defi_id: int, utilisateur_id: int):
+def annuler_defi(defi_id: int, utilisateur_id: int, sio=None):
     defi = EchecsDefi.query.get_or_404(defi_id)
     if defi.createur_id != utilisateur_id:
         raise PermissionError('Pas ton défi')
     defi.statut = 'annule'
     db.session.commit()
+    _emettre_lobby(sio)
 
 
-def accepter_defi(defi_id: int, utilisateur) -> dict:
+def accepter_defi(defi_id: int, utilisateur, sio=None) -> dict:
     defi = EchecsDefi.query.get_or_404(defi_id)
     if defi.statut != 'en_attente':
         raise ValueError('Défi plus disponible')
@@ -445,6 +457,9 @@ def accepter_defi(defi_id: int, utilisateur) -> dict:
     defi.statut = 'accepte'
     db.session.add(partie)
     db.session.commit()
+    _emettre_lobby(sio)
+    if sio:
+        sio.emit('echecs_defi_accepte', {'partie_id': partie.id}, room=ROOM_LOBBY)
     return {'partie_id': partie.id}
 
 
@@ -537,7 +552,7 @@ def jouer_coup(partie_id: int, utilisateur_id: int, data: dict, sio=None) -> dic
     _sauvegarder(partie, board, move)
 
     if partie.statut in ('mat', 'pat'):
-        mettre_a_jour_elo(partie)
+        mettre_a_jour_elo(partie, sio)
         etat = get_partie(partie_id)
         _emettre_etat(sio, partie_id)
         return etat
@@ -566,7 +581,7 @@ def abandonner(partie_id: int, utilisateur_id: int, sio=None) -> dict:
     partie.statut  = 'mat'
     partie.gagnant = 'noir' if est_blanc else 'blanc'
     db.session.commit()
-    mettre_a_jour_elo(partie)
+    mettre_a_jour_elo(partie, sio)
     etat = get_partie(partie_id)
     _emettre_etat(sio, partie_id)
     return etat
@@ -600,7 +615,7 @@ def accepter_nulle(partie_id: int, utilisateur_id: int, sio=None) -> dict:
     partie.gagnant            = None
     partie.nulle_proposee_par = None
     db.session.commit()
-    mettre_a_jour_elo(partie)
+    mettre_a_jour_elo(partie, sio)
     etat = get_partie(partie_id)
     _emettre_etat(sio, partie_id)
     return etat

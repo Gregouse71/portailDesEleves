@@ -1,72 +1,102 @@
 import { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Container, Button, Alert, Table } from "react-bootstrap";
 import { useProtected } from "../../../Protected";
-import { getDefis, creerDefi, annulerDefi, accepterDefi, getLeaderboard } from "../../../api/api_echecs";
-import "../../../assets/styles/echecs.css";
+import { SOCKET_BASE_URL } from "../../../api/base";
 import Leaderboard from "../../elements/Leaderboard";
+import "../../../assets/styles/echecs.css";
 
 export default function EchecsLobby() {
   const navigate     = useNavigate();
-  const queryClient  = useQueryClient();
+  const location      = useLocation();
   const { userData } = useProtected();
 
-  const [erreur, setErreur] = useState(null);
-
-  const { data: defisData, isLoading } = useQuery({
-    queryKey:        ["echecs-defis"],
-    queryFn:         () => getDefis({}),
-    refetchInterval: 4000,
-  });
-
-  // Redirection automatique si partie en cours
-  const location = useLocation();
+  const socketRef = useRef(null);
   const partieQuitteeId = useRef(location.state?.quitte_partie_id ?? null);
 
+  const [defisData, setDefisData] = useState(null);
+  const [eloData,   setEloData]   = useState(null);
+  const [erreur,     setErreur]    = useState(null);
+  const [creationEnCours, setCreationEnCours] = useState(false);
+  const [annulationEnCours, setAnnulationEnCours] = useState(false);
+  const [acceptationEnCours, setAcceptationEnCours] = useState(null); // id du défi en cours d'acceptation
+
   useEffect(() => {
-    if (!defisData) return;
-    
-    // Défi fraîchement accepté → redirection prioritaire
-    if (defisData.partie_id && defisData.partie_id !== partieQuitteeId.current) {
-      navigate(`/jeux/echecs/partie/${defisData.partie_id}`);
-      return;
-    }
-    
-    // Partie en cours (retour après déconnexion)
-    if (defisData.partie_en_cours && defisData.partie_en_cours !== partieQuitteeId.current) {
-      navigate(`/jeux/echecs/partie/${defisData.partie_en_cours}`);
-    }
-  }, [defisData?.partie_id, defisData?.partie_en_cours]);
+    const socket = io(`${SOCKET_BASE_URL}`, {
+      withCredentials: true,
+      transports: ["websocket"],
+    });
+    socketRef.current = socket;
 
-  const { data: eloData, isLoading: loadingElo } = useQuery({
-    queryKey: ["echecs-leaderboard"],
-    queryFn:  () => getLeaderboard({}),
-    refetchInterval: 2000,
-  });
+    socket.on("connect", () => {
+      socket.emit("echecs_lobby_rejoindre");
+    });
 
-  const creerMutation = useMutation({
-    mutationFn: (body) => creerDefi(body),
-    onSuccess: (data) => {
-      setErreur(null);
+    socket.on("echecs_defis", (data) => {
+      setDefisData(data);
+      setAcceptationEnCours(null);
+      setAnnulationEnCours(false);
+      setCreationEnCours(false);
+
+      if (data.partie_id && data.partie_id !== partieQuitteeId.current) {
+        navigate(`/jeux/echecs/partie/${data.partie_id}`);
+        return;
+      }
+      if (data.partie_en_cours && data.partie_en_cours !== partieQuitteeId.current) {
+        navigate(`/jeux/echecs/partie/${data.partie_en_cours}`);
+      }
+    });
+
+    socket.on("echecs_leaderboard", (data) => setEloData(data));
+
+    socket.on("echecs_lobby_maj", () => {
+      socket.emit("echecs_lobby_demander_maj");
+    });
+
+    socket.on("echecs_defi_cree", (data) => {
+      setCreationEnCours(false);
       if (data?.partie_id) navigate(`/jeux/echecs/partie/${data.partie_id}`);
-      else queryClient.invalidateQueries({ queryKey: ["echecs-defis"] });
-    },
-    onError: (e) => setErreur(e.message),
-  });
+    });
 
-  const annulerMutation = useMutation({
-    mutationFn: (id) => annulerDefi(id),
-    onSuccess:  () => queryClient.invalidateQueries({ queryKey: ["echecs-defis"] }),
-  });
+    socket.on("echecs_defi_accepte_moi", (data) => {
+      setAcceptationEnCours(null);
+      if (data?.partie_id) navigate(`/jeux/echecs/partie/${data.partie_id}`);
+    });
 
-  const accepterMutation = useMutation({
-    mutationFn: (id) => accepterDefi(id),
-    onSuccess:  (data) => navigate(`/jeux/echecs/partie/${data.partie_id}`),
-    onError:    (e)    => setErreur(e.message),
-  });
+    socket.on("echecs_erreur", (data) => {
+      setErreur(data.erreur);
+      setCreationEnCours(false);
+      setAnnulationEnCours(false);
+      setAcceptationEnCours(null);
+    });
 
-  if (isLoading || !defisData) return <Container className="py-5 text-center">Chargement…</Container>;
+    return () => {
+      if (socket.connected) {
+        socket.emit("echecs_lobby_quitter");
+      }
+      socket.disconnect();
+    };
+  }, [navigate]);
+
+  const creerDefi = (body) => {
+    setCreationEnCours(true);
+    setErreur(null);
+    socketRef.current?.emit("echecs_lobby_creer_defi", body);
+  };
+
+  const annulerDefi = (id) => {
+    setAnnulationEnCours(true);
+    socketRef.current?.emit("echecs_lobby_annuler_defi", { defi_id: id });
+  };
+
+  const accepterDefi = (id) => {
+    setAcceptationEnCours(id);
+    setErreur(null);
+    socketRef.current?.emit("echecs_lobby_accepter_defi", { defi_id: id });
+  };
+
+  if (!defisData) return <Container className="py-5 text-center">Chargement…</Container>;
 
   const { ouverts, recus, le_mien } = defisData;
 
@@ -91,23 +121,23 @@ export default function EchecsLobby() {
                 <div className="d-flex align-items-center gap-2 flex-grow-1">
                   <span className="text-muted small">Défi ouvert en attente d'un adversaire…</span>
                   <Button variant="outline-danger" size="sm"
-                    onClick={() => annulerMutation.mutate(le_mien.id)}
-                    disabled={annulerMutation.isPending}>
+                    onClick={() => annulerDefi(le_mien.id)}
+                    disabled={annulationEnCours}>
                     Annuler
                   </Button>
                 </div>
               ) : (
                 <Button variant="primary" size="lg"
-                  disabled={creerMutation.isPending}
-                  onClick={() => creerMutation.mutate({ mode: "humain" })}>
-                  {creerMutation.isPending ? "Envoi…" : "⚔️ Lancer un défi"}
+                  disabled={creationEnCours}
+                  onClick={() => creerDefi({ mode: "humain" })}>
+                  {creationEnCours ? "Envoi…" : "⚔️ Lancer un défi"}
                 </Button>
               )}
 
               {/* Contre l'IA */}
               <Button variant="outline-secondary" size="lg"
-                disabled={creerMutation.isPending}
-                onClick={() => creerMutation.mutate({ mode: "ia", niveau_ia: 10 })}>
+                disabled={creationEnCours}
+                onClick={() => creerDefi({ mode: "ia", niveau_ia: 10 })}>
                 🤖 Jouer contre l'IA
               </Button>
 
@@ -122,8 +152,8 @@ export default function EchecsLobby() {
                 <div key={d.id} className="echecs-defi-card recu d-flex align-items-center justify-content-between">
                   <span><strong>{d.createur_pseudo}</strong> te défie !</span>
                   <Button variant="success" size="sm"
-                    disabled={accepterMutation.isPending}
-                    onClick={() => accepterMutation.mutate(d.id)}>
+                    disabled={acceptationEnCours === d.id}
+                    onClick={() => accepterDefi(d.id)}>
                     Accepter
                   </Button>
                 </div>
@@ -144,8 +174,8 @@ export default function EchecsLobby() {
                     <small className="text-muted ms-2">{new Date(d.cree_le).toLocaleTimeString()}</small>
                   </div>
                   <Button variant="primary" size="sm"
-                    disabled={accepterMutation.isPending}
-                    onClick={() => accepterMutation.mutate(d.id)}>
+                    disabled={acceptationEnCours === d.id}
+                    onClick={() => accepterDefi(d.id)}>
                     Accepter
                   </Button>
                 </div>
@@ -156,7 +186,7 @@ export default function EchecsLobby() {
 
         {/* ── Colonne droite : classement ELO ── */}
         <div className="col-lg-5">
-          {loadingElo || !eloData ? (
+          {!eloData ? (
             <Leaderboard title="🏆 Classement ELO" isLoading />
           ) : (
             <>
