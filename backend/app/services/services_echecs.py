@@ -13,6 +13,11 @@ from app.models.models_echecs import EchecsDefi, EchecsPartie, EchecsElo
 STOCKFISH_PATH = 'stockfish'
 EXPIRY_DEFIS   = timedelta(minutes=30)
 
+ROOM = lambda partie_id: f'echecs_{partie_id}'
+
+def _emettre_etat(sio, partie_id: int):
+    if sio:
+        sio.emit('echecs_etat', get_partie(partie_id), room=ROOM(partie_id))
 
 # ── ELO ───────────────────────────────────────────────────────────────────────
 
@@ -247,7 +252,7 @@ def _id_humain(partie: EchecsPartie) -> int:
     return partie.blanc_id if partie.blanc_id else partie.noir_id
 
 
-def _spawn_stockfish(app, partie_id: int, fen: str, rating_ia: int):
+def _spawn_stockfish(app, partie_id: int, fen: str, rating_ia: int, sio=None):
     """Lance Stockfish en arrière-plan via gevent."""
     def bg():
         with app.app_context():
@@ -259,6 +264,7 @@ def _spawn_stockfish(app, partie_id: int, fen: str, rating_ia: int):
                 _sauvegarder(p, b, coup_ia)
                 if p.statut in ('mat', 'pat'):
                     mettre_a_jour_elo(p)
+                _emettre_etat(sio, partie_id)
     gevent.spawn(bg)
 
 
@@ -357,7 +363,7 @@ def liste_defis(utilisateur_id: int) -> dict:
     }
 
 
-def creer_defi(utilisateur, data: dict) -> dict:
+def creer_defi(utilisateur, data: dict, sio=None) -> dict:
     from flask import current_app
     EchecsDefi.query.filter_by(
         createur_id=utilisateur.id, statut='en_attente'
@@ -391,7 +397,7 @@ def creer_defi(utilisateur, data: dict) -> dict:
             elo_h = EchecsElo.query.filter_by(utilisateur_id=utilisateur.id).first()
             rating_ia = _rating_ia_effectif(elo_h.rating if elo_h else 500)
             app = current_app._get_current_object()
-            _spawn_stockfish(app, partie.id, partie.fen, rating_ia)
+            _spawn_stockfish(app, partie.id, partie.fen, rating_ia, sio)
 
         return {'partie_id': partie.id, 'mode': 'ia'}
 
@@ -490,7 +496,7 @@ def coups_legaux(partie_id: int, case_idx: int, utilisateur_id: int) -> list:
     return [sq_vers_idx(m.to_square) for m in board.legal_moves if m.from_square == from_sq]
 
 
-def jouer_coup(partie_id: int, utilisateur_id: int, data: dict) -> dict:
+def jouer_coup(partie_id: int, utilisateur_id: int, data: dict, sio=None) -> dict:
     from flask import current_app
     partie = EchecsPartie.query.get_or_404(partie_id)
     board  = chess.Board(partie.fen)
@@ -532,7 +538,9 @@ def jouer_coup(partie_id: int, utilisateur_id: int, data: dict) -> dict:
 
     if partie.statut in ('mat', 'pat'):
         mettre_a_jour_elo(partie)
-        return get_partie(partie_id)
+        etat = get_partie(partie_id)
+        _emettre_etat(sio, partie_id)
+        return etat
 
     # Mode IA : Stockfish répond en arrière-plan
     if partie.mode == 'ia' and partie.statut in ('en_cours', 'echec'):
@@ -540,12 +548,13 @@ def jouer_coup(partie_id: int, utilisateur_id: int, data: dict) -> dict:
         elo_h     = EchecsElo.query.filter_by(utilisateur_id=hum_id).first()
         rating_ia = _rating_ia_effectif(elo_h.rating if elo_h else 1500)
         app = current_app._get_current_object()
-        _spawn_stockfish(app, partie.id, partie.fen, rating_ia)
+        _spawn_stockfish(app, partie.id, partie.fen, rating_ia, sio)
 
-    return get_partie(partie_id)
+    etat = get_partie(partie_id)
+    _emettre_etat(sio, partie_id)
+    return etat
 
-
-def abandonner(partie_id: int, utilisateur_id: int) -> dict:
+def abandonner(partie_id: int, utilisateur_id: int, sio=None) -> dict:
     partie = EchecsPartie.query.get_or_404(partie_id)
     if partie.statut not in ('en_cours', 'echec'):
         raise ValueError('Partie déjà terminée')
@@ -558,10 +567,12 @@ def abandonner(partie_id: int, utilisateur_id: int) -> dict:
     partie.gagnant = 'noir' if est_blanc else 'blanc'
     db.session.commit()
     mettre_a_jour_elo(partie)
-    return get_partie(partie_id)
+    etat = get_partie(partie_id)
+    _emettre_etat(sio, partie_id)
+    return etat
 
 
-def proposer_nulle(partie_id: int, utilisateur_id: int) -> dict:
+def proposer_nulle(partie_id: int, utilisateur_id: int, sio=None) -> dict:
     partie = EchecsPartie.query.get_or_404(partie_id)
     if partie.statut not in ('en_cours', 'echec'):
         raise ValueError('Partie déjà terminée')
@@ -574,10 +585,11 @@ def proposer_nulle(partie_id: int, utilisateur_id: int) -> dict:
 
     partie.nulle_proposee_par = utilisateur_id
     db.session.commit()
+    _emettre_etat(sio, partie_id)
     return {'ok': True}
 
 
-def accepter_nulle(partie_id: int, utilisateur_id: int) -> dict:
+def accepter_nulle(partie_id: int, utilisateur_id: int, sio=None) -> dict:
     partie = EchecsPartie.query.get_or_404(partie_id)
     if partie.nulle_proposee_par is None:
         raise ValueError('Aucune proposition de nulle')
@@ -589,7 +601,9 @@ def accepter_nulle(partie_id: int, utilisateur_id: int) -> dict:
     partie.nulle_proposee_par = None
     db.session.commit()
     mettre_a_jour_elo(partie)
-    return get_partie(partie_id)
+    etat = get_partie(partie_id)
+    _emettre_etat(sio, partie_id)
+    return etat
 
 
 # ── Helpers bas niveau ────────────────────────────────────────────────────────
@@ -601,7 +615,6 @@ def statut_partie_avec_historique(partie) -> str:
             board.push(chess.Move.from_uci(uci))
         except Exception:
             break
-    # print(f'Répétition: {board.is_repetition(3)}, 75 coups: {board.is_seventyfive_moves()}')
     if board.is_checkmate():               return 'mat'
     if board.is_check():                   return 'echec'
     if board.is_stalemate():               return 'pat'

@@ -1,9 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { io } from "socket.io-client";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Container, Alert, Button } from "react-bootstrap";
 import { useProtected } from "../../../Protected";
-import { getPartie, getCoupsLegaux, jouerCoup, abandonner, proposerNulle, accepterNulle } from "../../../api/api_echecs";
+import { getPartie, getCoupsLegaux } from "../../../api/api_echecs";
+import { SOCKET_BASE_URL } from "../../../api/base";
 import "../../../assets/styles/echecs.css";
 
 const BASE = "https://lichess1.org/assets/piece/cburnett/";
@@ -25,8 +27,9 @@ export default function EchecsPartie() {
   const { partieId } = useParams();
   const navigate     = useNavigate();
   const { userData } = useProtected();
-  const queryClient = useQueryClient();
+  const queryClient  = useQueryClient();
 
+  const socketRef = useRef(null);
   const coupsLegauxRef = useRef([]);
   const selectionRef = useRef(null);
 
@@ -34,50 +37,68 @@ export default function EchecsPartie() {
   const [coupsLegaux, setCoupsLegaux] = useState([]);
   const [promotion,   setPromotion]   = useState(null);
   const [erreur,      setErreur]      = useState(null);
+  const [coupEnCours, setCoupEnCours] = useState(false);
+  const [actionEnCours, setActionEnCours] = useState(null); // 'abandon' | 'nulle' | 'accepterNulle' | null
 
   const setCoupsLegauxSync = (coups) => {
     coupsLegauxRef.current = coups;
     setCoupsLegaux(coups);
   };
-  
+
   const setSelectionSync = (val) => {
     selectionRef.current = val;
     setSelection(val);
   };
 
+  // Chargement initial (fallback), plus de refetchInterval : la suite vient du socket
   const { data: partie, isLoading } = useQuery({
-    queryKey:        ["echecs-partie", partieId],
-    queryFn:         () => getPartie(partieId),
-    refetchInterval: 500,
+    queryKey: ["echecs-partie", partieId],
+    queryFn:  () => getPartie(partieId),
   });
 
+  // ── Connexion socket ──────────────────────────────────────────────
   useEffect(() => {
-    if (partie?.statut === 'mat' || partie?.statut === 'pat') {
-      queryClient.invalidateQueries({ queryKey: ["echecs-leaderboard"] });
-    }
-  }, [partie?.statut]);
+    const socket = io(`${SOCKET_BASE_URL}`, {
+      withCredentials: true,
+      transports: ["websocket"],
+    });
+    socketRef.current = socket;
 
-  const coupMutation = useMutation({
-    mutationFn: (data) => jouerCoup(partieId)(data),
-    onSuccess: (result) => {
-      if (result?.besoin_promotion) {
-        setPromotion({ de: result.de, vers: result.vers });
-        return;
+    socket.on("connect", () => {
+      socket.emit("echecs_rejoindre", { partie_id: partieId });
+    });
+
+    socket.on("echecs_etat", (nouvelEtat) => {
+      queryClient.setQueryData(["echecs-partie", partieId], nouvelEtat);
+      setCoupEnCours(false);
+      setActionEnCours(null);
+      if (nouvelEtat.statut === "mat" || nouvelEtat.statut === "pat") {
+        queryClient.invalidateQueries({ queryKey: ["echecs-leaderboard"] });
       }
-      setErreur(null);
-    },
-    onError: (e) => setErreur(e.message),
-  });
+    });
+
+    socket.on("echecs_promotion", (data) => {
+      setPromotion({ de: data.de, vers: data.vers });
+      setCoupEnCours(false);
+    });
+
+    socket.on("echecs_erreur", (data) => {
+      setErreur(data.erreur);
+      setCoupEnCours(false);
+      setActionEnCours(null);
+    });
+
+    return () => {
+      socket.emit("echecs_quitter", { partie_id: partieId });
+      socket.disconnect();
+    };
+  }, [partieId, queryClient]);
 
   const maCouleur = partie
     ? userData.id === partie.blanc_id ? "blanc"
     : userData.id === partie.noir_id  ? "noir"
     : null
     : null;
-
-  const abandonneMutation  = useMutation({ mutationFn: () => abandonner(partieId),    onError: (e) => setErreur(e.message) });
-  const nulleMutation      = useMutation({ mutationFn: () => proposerNulle(partieId), onError: (e) => setErreur(e.message) });
-  const acceptNulleMutation = useMutation({ mutationFn: () => accepterNulle(partieId), onError: (e) => setErreur(e.message) });
 
   // ELO affiché
   const monElo  = partie ? (maCouleur === "blanc" ? partie.elo_blanc : partie.elo_noir) : null;
@@ -87,12 +108,16 @@ export default function EchecsPartie() {
     if (!maCouleur || !partie)                                     return;
     if (maCouleur !== partie.trait)                                return;
     if (partie.statut !== "en_cours" && partie.statut !== "echec") return;
-    if (coupMutation.isPending)                                    return;
+    if (coupEnCours)                                                return;
 
     const piece = partie.plateau[String(idx)];
 
     if (selectionRef.current !== null && coupsLegauxRef.current.includes(idx)) {
-      coupMutation.mutate({ de: selectionRef.current, vers: idx });
+      setCoupEnCours(true);
+      setErreur(null);
+      socketRef.current?.emit("echecs_coup", {
+        partie_id: partieId, de: selectionRef.current, vers: idx,
+      });
       setSelectionSync(null);
       setCoupsLegauxSync([]);
       return;
@@ -101,19 +126,42 @@ export default function EchecsPartie() {
     if (piece && piece.couleur === maCouleur) {
       setSelectionSync(idx);
       setErreur(null);
-      const data = await getCoupsLegaux(partieId, idx);
+      const data = await getCoupsLegaux(partieId, idx); // ponctuel, pas de polling → HTTP conservé
       setCoupsLegauxSync(data?.coups || []);
       return;
     }
 
     setSelectionSync(null);
     setCoupsLegauxSync([]);
-  }, [maCouleur, partie, partieId, coupMutation]);
+  }, [maCouleur, partie, partieId, coupEnCours]);
 
   const onPromotion = (piece) => {
     if (!promotion) return;
-    coupMutation.mutate({ de: promotion.de, vers: promotion.vers, promotion: piece.toLowerCase() });
+    setCoupEnCours(true);
+    socketRef.current?.emit("echecs_coup", {
+      partie_id: partieId, de: promotion.de, vers: promotion.vers,
+      promotion: piece.toLowerCase(),
+    });
     setPromotion(null);
+  };
+
+  const onAbandonner = () => {
+    if (!window.confirm("Abandonner la partie ?")) return;
+    setActionEnCours("abandon");
+    setErreur(null);
+    socketRef.current?.emit("echecs_abandonner", { partie_id: partieId });
+  };
+
+  const onProposerNulle = () => {
+    setActionEnCours("nulle");
+    setErreur(null);
+    socketRef.current?.emit("echecs_proposer_nulle", { partie_id: partieId });
+  };
+
+  const onAccepterNulle = () => {
+    setActionEnCours("accepterNulle");
+    setErreur(null);
+    socketRef.current?.emit("echecs_accepter_nulle", { partie_id: partieId });
   };
 
   if (isLoading || !partie) return <Container className="py-5 text-center">Chargement…</Container>;
@@ -121,25 +169,25 @@ export default function EchecsPartie() {
   const estTerminee = partie.statut === "mat" || partie.statut === "pat";
   const monTour     = maCouleur === partie.trait && !estTerminee;
 
-const eloBlancAffiche = (() => {
-  if (!estTerminee || !partie.elo_variation) return partie.elo_blanc;
-  if (partie.blanc_id === null) {
-    const v = partie.elo_variation['ia'];
+  const eloBlancAffiche = (() => {
+    if (!estTerminee || !partie.elo_variation) return partie.elo_blanc;
+    if (partie.blanc_id === null) {
+      const v = partie.elo_variation['ia'];
+      return v ? v.avant : partie.elo_blanc;
+    }
+    const v = partie.elo_variation[String(partie.blanc_id)];
     return v ? v.avant : partie.elo_blanc;
-  }
-  const v = partie.elo_variation[String(partie.blanc_id)];
-  return v ? v.avant : partie.elo_blanc;
-})();
+  })();
 
-const eloNoirAffiche = (() => {
-  if (!estTerminee || !partie.elo_variation) return partie.elo_noir;
-  if (partie.noir_id === null) {
-    const v = partie.elo_variation['ia'];
+  const eloNoirAffiche = (() => {
+    if (!estTerminee || !partie.elo_variation) return partie.elo_noir;
+    if (partie.noir_id === null) {
+      const v = partie.elo_variation['ia'];
+      return v ? v.avant : partie.elo_noir;
+    }
+    const v = partie.elo_variation[String(partie.noir_id)];
     return v ? v.avant : partie.elo_noir;
-  }
-  const v = partie.elo_variation[String(partie.noir_id)];
-  return v ? v.avant : partie.elo_noir;
-})();
+  })();
 
   return (
     <Container className="echecs-partie py-3">
@@ -176,8 +224,8 @@ const eloNoirAffiche = (() => {
         <div className="d-flex gap-2 mt-2">
           <Button
             variant="outline-danger" size="sm"
-            onClick={() => { if (window.confirm('Abandonner la partie ?')) abandonneMutation.mutate(); }}
-            disabled={abandonneMutation.isPending}
+            onClick={onAbandonner}
+            disabled={actionEnCours === "abandon"}
           >
             Abandonner
           </Button>
@@ -187,16 +235,16 @@ const eloNoirAffiche = (() => {
               {partie.nulle_proposee_par && partie.nulle_proposee_par !== userData.id ? (
                 <Button
                   variant="outline-success" size="sm"
-                  onClick={() => acceptNulleMutation.mutate()}
-                  disabled={acceptNulleMutation.isPending}
+                  onClick={onAccepterNulle}
+                  disabled={actionEnCours === "accepterNulle"}
                 >
                   Accepter la nulle
                 </Button>
               ) : (
                 <Button
                   variant="outline-secondary" size="sm"
-                  onClick={() => nulleMutation.mutate()}
-                  disabled={nulleMutation.isPending || partie.nulle_proposee_par === userData.id}
+                  onClick={onProposerNulle}
+                  disabled={actionEnCours === "nulle" || partie.nulle_proposee_par === userData.id}
                 >
                   {partie.nulle_proposee_par === userData.id ? 'Nulle proposée…' : 'Proposer nulle'}
                 </Button>
@@ -239,8 +287,8 @@ const eloNoirAffiche = (() => {
       {/* Game over */}
       {estTerminee && (
         <div className="text-center mt-1" style={{ width: '100%', maxWidth: 'calc(var(--taille-case, 52px) * 8 + 22px)' }}>
-          <div className="py-1 px-3 mb-1" style={{ 
-            background: 'rgba(var(--bs-success-rgb), 0.1)', 
+          <div className="py-1 px-3 mb-1" style={{
+            background: 'rgba(var(--bs-success-rgb), 0.1)',
             border: '1px solid var(--bs-success)',
             borderRadius: 8,
             fontSize: '1rem'
