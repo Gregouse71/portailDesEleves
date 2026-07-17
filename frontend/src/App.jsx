@@ -29,8 +29,8 @@ const Palums = lazy(() => import("./components/pages/Palums"));
 const NouveauMDP = lazy(() => import("./components/NouveauMDP"));
 const MDPoublie = lazy(() => import("./components/MDPoublie"));
 const Jeux2048 = lazy(() => import("./components/pages/Jeux/2048"));
-const EchecsLobby  = lazy(() => import("./components/pages/echecs/EchecsLobby"));
-const EchecsPartie = lazy(() => import("./components/pages/echecs/EchecsPartie"));
+const EchecsLobby  = lazy(() => import("./components/pages/Jeux/Echecs/EchecsLobby"));
+const EchecsPartie = lazy(() => import("./components/pages/Jeux/Echecs/EchecsPartie"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {

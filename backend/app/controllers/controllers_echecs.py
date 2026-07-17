@@ -7,16 +7,16 @@ from app.services.services_echecs import (
     abandonner, proposer_nulle, accepter_nulle
 )
 
-controller_echecs = Blueprint('controller_echecs', __name__)
+controllers_echecs = Blueprint('controllers_echecs', __name__)
 
 
-@controller_echecs.get('/defis')
+@controllers_echecs.get('/defis')
 @login_required
 def get_defis():
     return jsonify(liste_defis(current_user.id)), 200
 
 
-@controller_echecs.post('/defis')
+@controllers_echecs.post('/defis')
 @login_required
 def post_defi():
     data = request.json or {}
@@ -26,7 +26,7 @@ def post_defi():
         return jsonify({'message': str(e)}), 400
 
 
-@controller_echecs.delete('/defis/<int:defi_id>')
+@controllers_echecs.delete('/defis/<int:defi_id>')
 @login_required
 def delete_defi(defi_id: int):
     try:
@@ -36,7 +36,7 @@ def delete_defi(defi_id: int):
         return jsonify({'erreur': str(e)}), 403
 
 
-@controller_echecs.post('/defis/<int:defi_id>/accepter')
+@controllers_echecs.post('/defis/<int:defi_id>/accepter')
 @login_required
 def post_accepter_defi(defi_id: int):
     try:
@@ -45,13 +45,13 @@ def post_accepter_defi(defi_id: int):
         return jsonify({'erreur': str(e)}), 400
 
 
-@controller_echecs.get('/parties/<int:partie_id>')
+@controllers_echecs.get('/parties/<int:partie_id>')
 @login_required
 def get_partie_route(partie_id: int):
     return jsonify(get_partie(partie_id)), 200
 
 
-@controller_echecs.get('/parties/<int:partie_id>/coups_legaux')
+@controllers_echecs.get('/parties/<int:partie_id>/coups_legaux')
 @login_required
 def get_coups_legaux(partie_id: int):
     case  = request.args.get('case', type=int)
@@ -59,7 +59,7 @@ def get_coups_legaux(partie_id: int):
     return jsonify({'coups': coups}), 200
 
 
-@controller_echecs.put('/parties/<int:partie_id>')
+@controllers_echecs.put('/parties/<int:partie_id>')
 @login_required
 def put_coup(partie_id: int):
     data = request.json or {}
@@ -69,13 +69,13 @@ def put_coup(partie_id: int):
         return jsonify({'erreur': str(e)}), 400
 
 
-@controller_echecs.get('/leaderboard')
+@controllers_echecs.get('/leaderboard')
 @login_required
 def get_leaderboard():
     return jsonify(leaderboard_elo(current_user.id)), 200
 
 
-@controller_echecs.post('/parties/<int:partie_id>/abandonner')
+@controllers_echecs.post('/parties/<int:partie_id>/abandonner')
 @login_required
 def post_abandonner(partie_id: int):
     try:
@@ -84,7 +84,7 @@ def post_abandonner(partie_id: int):
         return jsonify({'erreur': str(e)}), 400
 
 
-@controller_echecs.post('/parties/<int:partie_id>/proposer_nulle')
+@controllers_echecs.post('/parties/<int:partie_id>/proposer_nulle')
 @login_required
 def post_proposer_nulle(partie_id: int):
     try:
@@ -93,7 +93,7 @@ def post_proposer_nulle(partie_id: int):
         return jsonify({'erreur': str(e)}), 400
 
 
-@controller_echecs.post('/parties/<int:partie_id>/accepter_nulle')
+@controllers_echecs.post('/parties/<int:partie_id>/accepter_nulle')
 @login_required
 def post_accepter_nulle(partie_id: int):
     try:
