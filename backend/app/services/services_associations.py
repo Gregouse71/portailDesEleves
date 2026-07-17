@@ -142,4 +142,4 @@ def get_asso_media(asso_id):
 
 
 def is_admin_asso(utilisateur: Utilisateur, association_id: int):
-    return any(role.admin for role in utilisateur.associations if role.mandat.association_id == association_id)
+    return any(role.admin for role in utilisateur.associations if role.mandat.association_id == association_id) or current_user.est_superutilisateur

@@ -38,7 +38,8 @@ def obtenir_liste_utilisateurs(promo: str, cycles: str):
     # Récupération des utilisateurs avec seulement les champs nécessaires
     utilisateurs = Utilisateur.query.filter(
         Utilisateur.promotion == promo,
-        Utilisateur.cycle.in_(str_cycles)
+        Utilisateur.cycle.in_(str_cycles),
+        Utilisateur.est_visible
     ).order_by(Utilisateur.nom).all()
     # Conversion en JSON
     cycle = {"ic": 1, "isup": 2, "ast": 3, "vs": 4}
@@ -533,6 +534,7 @@ def search_users():
     try:
         search_term = f"%{query}%"
         query = Utilisateur.query.order_by(desc(Utilisateur.promotion)).filter(
+            Utilisateur.est_visible,
             (Utilisateur.nom_utilisateur.ilike(search_term)) |
             (Utilisateur.prenom.ilike(search_term)) |
             (Utilisateur.nom.ilike(search_term)) |

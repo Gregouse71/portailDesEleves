@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 function SondageCard({ sondage }) {
+    const queryClient = useQueryClient();
     const { data: user, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', sondage.propose_par_user_id],
         queryFn: () => obtenirDataUser(sondage.propose_par_user_id),
