@@ -91,20 +91,27 @@ def glicko2_update(r, rd, sigma, opponents):
                 - (x - a) / TAU**2)
 
     A = a
-    B = math.log(delta**2 - phi**2 - v) if delta**2 > phi**2 + v else a - TAU
+    fA = f(A)
+    if delta**2 > phi**2 + v:
+        B = math.log(delta**2 - phi**2 - v)
+    else:
+        k = 1
+        while f(a - k * TAU) < 0:
+            k += 1
+        B = a - k * TAU
+    fB = f(B)
+
     max_iter = 100
     i = 0
     while abs(B - A) > EPSILON and i < max_iter:
-        C = A + (A - B) * f(A) / (f(B) - f(A))
+        C = A + (A - B) * fA / (fB - fA)
         fC = f(C)
-        if fC * f(B) < 0:
-            A = B
+        if fC * fB < 0:
+            A, fA = B, fB
         else:
-            f_A = f(A) / 2
-        B = C
+            fA = fA / 2
+        B, fB = C, fC
         i += 1
-        if abs(B - A) <= EPSILON:
-            break
 
     sigma_new = math.exp(A / 2)
 
