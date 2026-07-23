@@ -35,6 +35,8 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
 
     Si *actuel* == True, l'utilisateur doit être un membre du mandat principal
     ou du mandat avec le rang le plus élevé de l'association.
+
+    Si *admin* == True, l'utilisateur doit etre admin de l'asso
     """
     if f is None:
         def decorator(func):
@@ -54,26 +56,31 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
         if not user_roles_in_asso:
             return jsonify({"message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
 
-        if not (mandat or actuel or admin): # Membre quelconque OK si mandat==False et actuel==False
+        if not (mandat or actuel or admin): # Membre quelconque OK si mandat==False et actuel==False et admin==False
             return f(*args, **kwargs)
 
         mandats_asso = AssociationMandat.query.filter_by(association_id=association_id).all()
         if mandats_asso:
+            # --- Calcul des appartenances
             max_position = max(m.position for m in mandats_asso)
             is_membre_actuel = any(role.mandat.actuel for role in user_roles_in_asso)
             is_membre_max = any(role.mandat.position == max_position for role in user_roles_in_asso)
             is_admin = is_admin_asso(current_user, association_id)
-            if is_membre_actuel or is_membre_max or is_admin: # Membre actuel/max/admin OK
+
+            is_membre_mandat = False
+            if mandat:
+                mandat_id = kwargs.get("mandat_id")
+                if mandat_id is None:
+                    return jsonify({"message": "l'URL doit contenir l'id du mandat."}), 400
+
+                is_membre_mandat = any(role.mandat.id == mandat_id for role in user_roles_in_asso)
+
+            if (admin and is_admin)\
+                or (actuel and (is_admin or is_membre_actuel or is_membre_max))\
+                or (mandat and (is_membre_mandat or is_admin or is_membre_actuel or is_membre_max))\
+                or current_user.est_superutilisateur:
                 return f(*args, **kwargs)
 
-        if mandat:
-            mandat_id = kwargs.get("mandat_id")
-            if mandat_id is None:
-                return jsonify({"message": "l'URL doit contenir l'id du mandat."}), 400
-
-            is_membre_mandat = any(role.mandat.id == mandat_id for role in user_roles_in_asso)
-            if is_membre_mandat:
-                return f(*args, **kwargs)
 
         return jsonify({"message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
     return decorated_function
