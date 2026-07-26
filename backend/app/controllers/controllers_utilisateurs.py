@@ -10,7 +10,7 @@ from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
 from app.utils.decorators import superutilisateur_required
 from app.utils.divers_utils import get_embed_url
-from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, get_user_media
+from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, get_user_media, get_utilisateur, obtenir_famille, obtenir_chemin
 from app.services.services_media import upload_media, delete_media
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import AssociationMembre, AssociationMandat
@@ -611,3 +611,30 @@ def modifier_ordre_assos(user_id: int):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Erreur : {str(e)}"}), 500
+    
+
+@controllers_utilisateurs.route('/famille/<int:id_utilisateur>', methods=['GET'])
+@login_required
+def famille_utilisateur(id_utilisateur):
+    utilisateur = get_utilisateur(id_utilisateur)
+    if utilisateur is None:
+        return jsonify({"message": "Utilisateur introuvable"}), 404
+    return jsonify(obtenir_famille(utilisateur))
+ 
+ 
+@controllers_utilisateurs.route('/chemin', methods=['GET'])
+@login_required
+def chemin_utilisateurs():
+    id_depart = request.args.get("depart", type=int)
+    id_arrivee = request.args.get("arrivee", type=int)
+ 
+    if id_depart is None or id_arrivee is None:
+        return jsonify({"message": "Paramètres 'depart' et 'arrivee' requis"}), 400
+ 
+    utilisateur1 = get_utilisateur(id_depart)
+    utilisateur2 = get_utilisateur(id_arrivee)
+    if utilisateur1 is None or utilisateur2 is None:
+        return jsonify({"message": "Utilisateur introuvable"}), 404
+ 
+    return jsonify(obtenir_chemin(utilisateur1, utilisateur2))
+ 

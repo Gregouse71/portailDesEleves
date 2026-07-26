@@ -24,3 +24,70 @@
     color: var(--primary-color);
   }
 }
+
+.autocomplete-conteneur {
+    position: relative;
+    max-width: 420px;
+}
+ 
+.autocomplete-liste {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+ 
+.genealogy-scroll {
+    overflow: auto;
+    max-width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #fafafa;
+}
+ 
+.genealogy-svg {
+    .noeud rect {
+        fill: #fff;
+        stroke: #6c757d;
+        stroke-width: 2;
+    }
+
+    .noeud-chemin rect {
+        fill: #ffd8a8;
+        stroke: #e8590c;
+        stroke-width: 3;
+    }
+
+    .noeud text {
+        font-size: 12px;
+        fill: #212529;
+        pointer-events: none;
+    }
+ 
+    .lien-marrainage {
+        stroke: #adb5bd;
+        stroke-width: 1.5;
+    }
+ 
+    .lien-co {
+        stroke: #0d6efd;
+        stroke-width: 2;
+        stroke-dasharray: 4 3;
+    }
+ 
+    .lien-chemin {
+        stroke: #e8590c;
+        stroke-width: 4;
+        stroke-linecap: round;
+    }
+
+    .lien-pointille {
+        stroke-dasharray: 10 1;
+        stroke-linecap: butt;
+    }
+}

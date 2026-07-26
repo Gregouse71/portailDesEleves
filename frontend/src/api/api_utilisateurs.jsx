@@ -265,3 +265,18 @@ export const obtenirPhotosUtilisateur = createApiGet(`${UTILISATEUR_BASE_URL}/co
  * 
  */
 export const supprimerPhotoUtilisateur = createApiDelete(`${UTILISATEUR_BASE_URL}/content`)
+
+export async function obtenirFamilleUtilisateur(id_utilisateur) {
+  const res = await fetch(`${API_BASE_URL}/users/famille/${id_utilisateur}`, {
+    credentials: "include",
+  });
+  return handleResponse(res);
+}
+ 
+export async function obtenirCheminEntreUtilisateurs(id_depart, id_arrivee) {
+  const res = await fetch(
+    `${API_BASE_URL}/users/chemin?depart=${id_depart}&arrivee=${id_arrivee}`,
+    { credentials: "include" }
+  );
+  return handleResponse(res);
+}

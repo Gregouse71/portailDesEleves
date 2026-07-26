@@ -6,6 +6,7 @@ from app.models.models_media import ElementMedia
 from datetime import date, timedelta, datetime, timezone
 from itertools import groupby
 from sqlalchemy import func
+from collections import deque
 import secrets
 import string
 import os
@@ -187,3 +188,279 @@ def set_user_banniere(user_id: int, banniere_id: str):
     if user:
         user.banniere_id = banniere_id
         db.session.commit()
+
+
+def marrainage_valide(marrain: Utilisateur, fillot: Utilisateur) -> bool:
+    return (
+        marrain.est_visible
+        and fillot.est_visible
+        and int(marrain.promotion) <= int(fillot.promotion)
+    )
+
+
+def obtenir_famille(utilisateur: Utilisateur) -> dict:
+    """
+    Construit l'arbre généalogique complet (ascendants + descendants) d'un utilisateur. 
+    Renvoie :
+    {
+        "noeuds": [{"id", "nom_utilisateur", "promotion"}, ...],
+        "liens":  [{"source": marrain_id, "cible": fillot_id, "type": "marrainage"}, ...]
+    }
+    """
+    noeuds = {}
+    liens = []
+    ids_vus = {utilisateur.id}
+    a_visiter = [utilisateur]
+ 
+    def ajouter_noeud(u: Utilisateur):
+        noeuds[u.id] = {
+            "id": u.id,
+            "nom_utilisateur": u.nom_utilisateur,
+            "promotion": int(u.promotion),
+        }
+ 
+    ajouter_noeud(utilisateur)
+ 
+    while a_visiter:
+        courant = a_visiter.pop()
+ 
+        # Ascendants : les marrains du courant
+        for marrain in courant.marrains:
+            if not marrainage_valide(marrain, courant):
+                continue
+            liens.append({"source": marrain.id, "cible": courant.id, "type": "marrainage"})
+            if marrain.id not in ids_vus:
+                ids_vus.add(marrain.id)
+                ajouter_noeud(marrain)
+                a_visiter.append(marrain)
+ 
+        # Descendants : les fillots du courant
+        for fillot in courant.fillots:
+            if not marrainage_valide(courant, fillot):
+                continue
+            liens.append({"source": courant.id, "cible": fillot.id, "type": "marrainage"})
+            if fillot.id not in ids_vus:
+                ids_vus.add(fillot.id)
+                ajouter_noeud(fillot)
+                a_visiter.append(fillot)
+ 
+    return {"noeuds": list(noeuds.values()), "liens": liens}
+ 
+ 
+def _construire_graphe_combine() -> dict:
+    """
+    Graphe non orienté {user_id: {voisin_ids}} combinant les relations
+    marrain-fillot et colocation (cos). Utilisé pour le calcul du plus court
+    chemin entre deux utilisateurs.
+    """
+    utilisateurs = Utilisateur.query.filter_by(est_visible=True).all()
+    graphe = {}
+ 
+    def ajouter_arc(a, b):
+        graphe.setdefault(a, set()).add(b)
+        graphe.setdefault(b, set()).add(a)
+ 
+    for u in utilisateurs:
+        for fillot in u.fillots:
+            if not marrainage_valide(u, fillot):
+                continue
+            ajouter_arc(u.id, fillot.id)
+
+        for co in u.cos:
+            if not co.est_visible:
+                continue
+            ajouter_arc(u.id, co.id)
+ 
+    return graphe
+ 
+ 
+def obtenir_chemin(utilisateur1: Utilisateur, utilisateur2: Utilisateur) -> dict:
+    """
+    Calcule le plus court chemin entre deux utilisateurs, puis complète le
+    graphe affiché en explorant les relations marrain-fillot des personnes
+    du chemin (et de proche en proche).
+ 
+    L'intervalle de promotion de référence [promo_min, promo_max] est celui
+    des deux utilisateurs demandés (pas de tout le chemin) : si le chemin
+    passe par des personnes dont la promotion est hors de cet intervalle
+    (parce que le plus court chemin est passé par des colocations vers des
+    promotions plus extrêmes), on les complète quand même, mais seulement
+    en direction de l'intervalle -- un candidat marrain ou fillot n'est
+    ajouté que si sa promotion RAPPROCHE de l'intervalle par rapport à la
+    personne courante (ou si elle est déjà dedans). Une fois rentré dans
+    l'intervalle, l'exploration reste normale (ne peut plus en ressortir,
+    puisqu'aucun candidat ne peut être "plus proche que 0").
+ 
+    Renvoie :
+    {
+        "chemin": [id1, id2, ...],
+        "noeuds": [{"id", "nom_utilisateur", "promotion"}, ...],
+        "liens":  [{"source", "cible", "type": "chemin" | "marrainage", "relation"?: "marrainage" | "co"}, ...]
+    }
+    Renvoie des listes vides si aucun chemin n'existe entre les deux.
+    """
+    if utilisateur1.id == utilisateur2.id:
+        return {"chemin": [utilisateur1.id], "noeuds": [{
+            "id": utilisateur1.id,
+            "nom_utilisateur": utilisateur1.nom_utilisateur,
+            "promotion": int(utilisateur1.promotion),
+        }], "liens": []}
+ 
+    graphe = _construire_graphe_combine()
+ 
+    precedent = {utilisateur1.id: None}
+    file_attente = deque([utilisateur1.id])
+    while file_attente:
+        courant = file_attente.popleft()
+        if courant == utilisateur2.id:
+            break
+        for voisin in graphe.get(courant, ()):
+            if voisin not in precedent:
+                precedent[voisin] = courant
+                file_attente.append(voisin)
+ 
+    if utilisateur2.id not in precedent:
+        return {"chemin": [], "noeuds": [], "liens": []}
+ 
+    chemin = []
+    courant = utilisateur2.id
+    while courant is not None:
+        chemin.append(courant)
+        courant = precedent[courant]
+    chemin.reverse()
+ 
+    utilisateurs_chemin = Utilisateur.query.filter(Utilisateur.id.in_(chemin)).all()
+    par_id_chemin = {u.id: u for u in utilisateurs_chemin}
+ 
+    # Intervalle de référence : uniquement les 2 utilisateurs demandés, pas
+    # tout le chemin (voir docstring).
+    promo_min = min(int(utilisateur1.promotion), int(utilisateur2.promotion))
+    promo_max = max(int(utilisateur1.promotion), int(utilisateur2.promotion))
+ 
+    def distance_intervalle(promo):
+        """Distance d'une promotion à l'intervalle [promo_min, promo_max] ;
+        0 si elle est dedans."""
+        if promo < promo_min:
+            return promo_min - promo
+        if promo > promo_max:
+            return promo - promo_max
+        return 0
+ 
+    # Liens du chemin : on retrouve la vraie nature de la relation
+    # (marrainage, avec le bon sens marrain -> fillot, ou colocation)
+    liens = []
+    for i in range(len(chemin) - 1):
+        a_id, b_id = chemin[i], chemin[i + 1]
+        a, b = par_id_chemin[a_id], par_id_chemin[b_id]
+        if any(marrainage_valide(a, f) and f.id == b_id for f in a.fillots):
+            liens.append({"source": a_id, "cible": b_id, "type": "chemin", "relation": "marrainage"})
+        elif any(marrainage_valide(m, a) and m.id == b_id for m in a.marrains):
+            liens.append({"source": b_id, "cible": a_id, "type": "chemin", "relation": "marrainage"})
+        else:
+            liens.append({"source": a_id, "cible": b_id, "type": "chemin", "relation": "co"})
+    paires_deja_liees = {(l["source"], l["cible"]) for l in liens}
+ 
+    # Complète le graphe en explorant, de proche en proche, les relations marrain-fillot des personnes ajoutées.
+    # si le chemin passe par plus de 2 relations de co ou si l'écart de promo est plus grand que 8, on ne complète que les arbres des 2 extrémités
+ 
+    liens_co = [l for l in liens if l.get("relation") == "co"]
+ 
+    if len(liens_co) > 2 and (promo_max - promo_min) >= 3:
+        ids_depart = {utilisateur1.id, utilisateur2.id}
+    elif (promo_max - promo_min) >= 6:
+        ids_depart = {utilisateur1.id, utilisateur2.id}
+    else:
+        ids_depart = set(chemin)
+ 
+    noeuds_par_id = dict(par_id_chemin)
+ 
+    def ajouter_noeud(u):
+        if u.id not in noeuds_par_id:
+            noeuds_par_id[u.id] = u
+ 
+    marrains_explores = set()
+ 
+    def explorer_marrains(utilisateur):
+        pile = [utilisateur]
+ 
+        while pile:
+            courant = pile.pop()
+            if courant.id in marrains_explores:
+                continue
+            marrains_explores.add(courant.id)
+ 
+            d_courant = distance_intervalle(int(courant.promotion))
+ 
+            for marrain in courant.marrains:
+                if not marrainage_valide(marrain, courant):
+                    continue
+ 
+                d_marrain = distance_intervalle(int(marrain.promotion))
+                # On accepte le marrain s'il est dans l'intervalle, ou s'il
+                # en rapproche strictement par rapport à `courant`.
+                if not (d_marrain == 0 or d_marrain < d_courant):
+                    continue
+ 
+                paire = (marrain.id, courant.id)
+ 
+                if paire not in paires_deja_liees:
+                    liens.append({
+                        "source": marrain.id,
+                        "cible": courant.id,
+                        "type": "marrainage",
+                    })
+                    paires_deja_liees.add(paire)
+ 
+                ajouter_noeud(marrain)
+                if marrain.id not in marrains_explores:
+                    pile.append(marrain)
+ 
+    fillots_explores = set()
+ 
+    def explorer_fillots(utilisateur):
+        pile = [utilisateur]
+ 
+        while pile:
+            courant = pile.pop()
+            if courant.id in fillots_explores:
+                continue
+            fillots_explores.add(courant.id)
+ 
+            d_courant = distance_intervalle(int(courant.promotion))
+ 
+            for fillot in courant.fillots:
+                if not marrainage_valide(courant, fillot):
+                    continue
+ 
+                d_fillot = distance_intervalle(int(fillot.promotion))
+                # On accepte le fillot s'il est dans l'intervalle, ou s'il
+                # en rapproche strictement par rapport à `courant`.
+                if not (d_fillot == 0 or d_fillot < d_courant):
+                    continue
+ 
+                paire = (courant.id, fillot.id)
+ 
+                if paire not in paires_deja_liees:
+                    liens.append({
+                        "source": courant.id,
+                        "cible": fillot.id,
+                        "type": "marrainage",
+                    })
+                    paires_deja_liees.add(paire)
+ 
+                ajouter_noeud(fillot)
+                if fillot.id not in fillots_explores:
+                    pile.append(fillot)
+ 
+    utilisateurs_depart = Utilisateur.query.filter(Utilisateur.id.in_(ids_depart)).all()
+ 
+    for utilisateur in utilisateurs_depart:
+        explorer_marrains(utilisateur)
+        explorer_fillots(utilisateur)
+ 
+    noeuds = [
+        {"id": u.id, "nom_utilisateur": u.nom_utilisateur, "promotion": int(u.promotion)}
+        for u in noeuds_par_id.values()
+    ]
+ 
+    return {"chemin": chemin, "noeuds": noeuds, "liens": liens}
