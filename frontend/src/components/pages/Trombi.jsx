@@ -44,7 +44,7 @@ function OngletFamille() {
 function OngletLien() {
     const [premier, setPremier] = useState(null);
     const [second, setSecond] = useState(null);
-    const memeUtilisateur = premier.id === second.id;
+    const memeUtilisateur = premier && second && premier.id === second.id;
 
     const { data: resultat, isFetching } = useQuery({
         queryKey: ['cheminUtilisateurs', premier?.id, second?.id],
