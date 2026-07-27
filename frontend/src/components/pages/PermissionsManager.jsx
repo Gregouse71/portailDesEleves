@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Table, Form, Button, InputGroup, Badge, Modal, Row, Col } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { addPermission, deletePermission, getPermissions } from "../../api/api_global";
+import { addPermission, deletePermission, getPermissions, resetMotDePasse } from "../../api/api_global";
 import RenderPagination from "../elements/RenderPagination";
 import { modifierInfos } from "../../api/api_utilisateurs";
 import { PencilSquare, Person, Envelope, Mortarboard, JournalBookmark, Droplet } from "react-bootstrap-icons";
@@ -53,6 +53,7 @@ export default function PermissionsManager() {
     const [showModal, setShowModal] = useState(false);
     const [editUser, setEditUser] = useState(null);
     const [newPermission, setNewPermission] = useState("");
+    const [resetMsg, setResetMsg] = useState(null);
 
     const queryClient = useQueryClient();
 
@@ -112,7 +113,17 @@ export default function PermissionsManager() {
     const handleEditClick = (user) => {
         setEditUser({ ...user });
         setNewPermission("");
+        setResetMsg(null);
         setShowModal(true);
+    };
+
+    const handleResetPassword = async () => {
+        try {
+            await resetMotDePasse(editUser.nom_utilisateur);
+            setResetMsg({ type: "success", text: "Requête envoyée au serveur !" });
+        } catch (e) {
+            setResetMsg({ type: "danger", text: "Erreur lors de l'envoi." });
+        }
     };
 
     const handleEditChange = (e) => {
@@ -343,6 +354,14 @@ export default function PermissionsManager() {
 
                     </Modal.Body>
                     <Modal.Footer>
+                        {resetMsg && (
+                            <div className={`text-${resetMsg.type} me-auto small fw-bold`}>
+                                {resetMsg.text}
+                            </div>
+                        )}
+                        <Button variant="warning" onClick={handleResetPassword}>
+                            <Envelope className="me-2" /> Renvoyer mail de réinitialisation du mot de passe
+                        </Button>
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Annuler
                         </Button>
