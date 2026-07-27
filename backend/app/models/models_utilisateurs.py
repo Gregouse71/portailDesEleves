@@ -57,6 +57,10 @@ class Utilisateur(db.Model, UserMixin) :
     cycle = db.Column(db.String(10), nullable=False) # Parmi 'ic', 'ast', 'vs', 'ev', 'isup', 'de'
     est_visible = db.Column(db.Boolean, nullable=False, default=True)
     est_superutilisateur = db.Column(db.Boolean, nullable=False, default=False)
+    
+    # Colonnes dépréciées (conservées pour compatibilité avec l'ancienne BDD de production)
+    est_cotisant_biero = db.Column(db.Boolean, nullable=True, default=False)
+    est_cotisant_octo = db.Column(db.Boolean, nullable=True, default=False)
 
     # Modifiable avec un formulaire prevu a cet effet
     mot_de_passe = db.Column(db.String(255), nullable=False)
