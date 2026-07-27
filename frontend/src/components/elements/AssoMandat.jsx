@@ -1,7 +1,7 @@
 import { Card, Form, Button, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Select from "react-select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ajouterMembre, modifierMandat, modifierMembreAsso, retirerMembre, supprimerMandat } from "../../api/api_associations";
+import { ajouterMembre, chargerMandat, modifierMandat, modifierMembreAsso, retirerMembre, supprimerMandat } from "../../api/api_associations";
 import { useState } from "react";
 import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
@@ -9,23 +9,26 @@ import ConfirmationModal from "./ConfirmationModal"
 import Autocomplete from "./Autocompletion";
 import { chargerUtilisateurs, obtenirListeDesPromos } from "../../api/api_utilisateurs";
 
-export default function AssoMandat({ mandat, asso, membreData }) {
+export default function AssoMandat({ id, asso, membreData }) {
     const queryClient = useQueryClient();
 
     const [deletingMandat, setDeletingMandat] = useState(false);
 
     const [isEditing, setIsEditing] = useState(false);
-    const [editingMandat, setEditingMandat] = useState(mandat);
+    const [editingMandat, setEditingMandat] = useState();
 
     const [idMembreModifier, setIdMembreModifier] = useState(null); // Id du membre à modifier
     const [nouveauRole, setNouveauRole] = useState("");
     const [nouvellePosition, setNouvellePosition] = useState("");
     const [nouveauAdmin, setNouveauAdmin] = useState(false);
 
-    const [listeNouveauxMembres, setListeNouveauxMembres] = useState([]);
-
     const [isAjoutMembre, setIsAjoutMembre] = useState(false);
-    const [promoAjoutMembre, setPromoAjoutMembre] = useState(null);
+    const [idNouveauMembre, setIdNouveauMembre] = useState();
+
+    const { data: mandat, isLoading } = useQuery({
+        queryKey: ['mandatAsso', id],
+        queryFn: () => chargerMandat({}, id)
+    })
 
     const { data: listePromos = [] } = useQuery({
         queryKey: ['listePromos'],
@@ -51,6 +54,7 @@ export default function AssoMandat({ mandat, asso, membreData }) {
                 }
             }
             queryClient.invalidateQueries(['asso', asso.id]);
+            queryClient.invalidateQueries(['mandatAsso', id]);
             setIsEditing(false);
             setEditingMandat(null);
         } catch (error) {
@@ -75,55 +79,37 @@ export default function AssoMandat({ mandat, asso, membreData }) {
         if (!memberToModify) return;
 
         await modifierMembreAsso({ role: nouveauRole, position: nouvellePosition, admin: nouveauAdmin }, asso.id, mandat.id, membreId)
-        queryClient.invalidateQueries(['asso', asso.id]);
+        queryClient.invalidateQueries(['mandatAsso', id]);
 
         setIdMembreModifier(null);
-    }
-
-    const startAjoutMembre = () => {
-        if (isAjoutMembre) return;
-
-        setIsAjoutMembre(true);
-        if (listePromos.length > 0 && !promoAjoutMembre) {
-            const latestPromo = listePromos[0];
-            handlePromoChange({ value: latestPromo, label: latestPromo });
-        }
     }
 
     const handleRetirerMembre = async (membreId) => {
         try {
             await retirerMembre(asso.id, mandat.id, membreId);
-            queryClient.invalidateQueries(['asso', asso.id]);
+            queryClient.invalidateQueries(['mandatAsso', id]);
         } catch (error) {
             console.error(error);
         }
     };
 
-    const handlePromoChange = async (selectedOption) => {
-        setPromoAjoutMembre(selectedOption);
-        setIdAjoutMembre(null); // Reset user selection
-        setListeNouveauxMembres([]); // Reset user list
-
-        if (selectedOption) {
-            try {
-                const listeMembres = await chargerUtilisateurs(selectedOption.value);
-                setListeNouveauxMembres(listeMembres);
-            } catch (erreur) {
-                console.error(erreur);
-            }
-        }
-    }
-
-    const handleAjoutMembre = async (idAjoutMembre) => {
+    const handleAjoutMembre = async () => {
         try {
-            await ajouterMembre(asso.id, mandat.id, idAjoutMembre);
+            await ajouterMembre(asso.id, mandat.id, idNouveauMembre);
             setIsAjoutMembre(false);
-            queryClient.invalidateQueries(['asso', asso.id]);
+            queryClient.invalidateQueries(['mandatAsso', id]);
         } catch (erreur) {
             console.error(erreur);
         }
     }
 
+    if (isLoading) {
+        return
+        <Card key={mandat.id} className="mb-4">
+            <Card.Header>
+            </Card.Header>
+        </Card>
+    }
 
     return (
         <Card key={mandat.id} className="mb-4">
@@ -175,7 +161,7 @@ export default function AssoMandat({ mandat, asso, membreData }) {
                         :
                         membreData.autorise && <DropdownEditer list={[
                             { can: true, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
-                            { can: true, onClick: startAjoutMembre, name: "Ajouter un membre" },
+                            { can: true, onClick: () => setIsAjoutMembre(true), name: "Ajouter un membre" },
                             "divider",
                             { can: true, onClick: () => setDeletingMandat(true), name: "Supprimer" },
                         ]}
@@ -191,10 +177,10 @@ export default function AssoMandat({ mandat, asso, membreData }) {
                             <div className="d-flex justify-content-between">
                                 <Autocomplete
                                     placeholder="Rechercher un utilisateur..."
-                                    onSelect={(user) => handleAjoutMembre(user.id)}
+                                    onSelect={(user) => setIdNouveauMembre(user.id)}
                                     filter={u => !mandat.membres.map(u => u.id).includes(u.id)}
                                 />
-                                <Button variant="primary" onClick={() => setIsAjoutMembre(false)} className="ms-2">Terminer</Button>
+                                <Button variant="primary" onClick={handleAjoutMembre} className="ms-2">Ajouter</Button>
                             </div>
 
                         </Card.Body>

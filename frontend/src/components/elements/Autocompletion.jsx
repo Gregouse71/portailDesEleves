@@ -62,7 +62,7 @@ function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale
 
     const choisir = (item) => {
         console.log(item, libelleUtilisateur(item))
-        setTexte(libelleUtilisateur(item));
+        setTexte("");
         setOuvert(false);
         onSelect(item);
     };

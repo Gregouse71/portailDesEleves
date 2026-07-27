@@ -107,9 +107,9 @@ class Association(db.Model):
             "banniere_path": self.get_banniere_file(),
             "description": self.description,
             "modules": self.modules,
-            "mandats": [m.to_dict() for m in self.mandats]
+            "mandats": [{"id": m.id, "actuel": m.actuel, "position": m.position} for m in self.mandats]
         }
-    
+
     def get_photo_file(self):
         if self.logo_id is None:
             return None
