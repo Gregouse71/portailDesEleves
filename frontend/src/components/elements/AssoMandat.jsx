@@ -6,6 +6,7 @@ import { useState } from "react";
 import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
 import ConfirmationModal from "./ConfirmationModal"
+import Autocomplete from "./Autocompletion";
 import { chargerUtilisateurs, obtenirListeDesPromos } from "../../api/api_utilisateurs";
 
 export default function AssoMandat({ mandat, asso, membreData }) {
@@ -25,7 +26,6 @@ export default function AssoMandat({ mandat, asso, membreData }) {
 
     const [isAjoutMembre, setIsAjoutMembre] = useState(false);
     const [promoAjoutMembre, setPromoAjoutMembre] = useState(null);
-    const [idAjoutMembre, setIdAjoutMembre] = useState(null);
 
     const { data: listePromos = [] } = useQuery({
         queryKey: ['listePromos'],
@@ -114,15 +114,13 @@ export default function AssoMandat({ mandat, asso, membreData }) {
         }
     }
 
-    const handleAjoutMembre = async () => {
-        if (idAjoutMembre) {
-            try {
-                await ajouterMembre(asso.id, mandat.id, idAjoutMembre.value);
-                setIsAjoutMembre(false);
-                queryClient.invalidateQueries(['asso', asso.id]);
-            } catch (erreur) {
-                console.error(erreur);
-            }
+    const handleAjoutMembre = async (idAjoutMembre) => {
+        try {
+            await ajouterMembre(asso.id, mandat.id, idAjoutMembre);
+            setIsAjoutMembre(false);
+            queryClient.invalidateQueries(['asso', asso.id]);
+        } catch (erreur) {
+            console.error(erreur);
         }
     }
 
@@ -190,35 +188,15 @@ export default function AssoMandat({ mandat, asso, membreData }) {
                     <Card className="mb-3">
                         <Card.Body>
                             <Card.Title>Ajouter un membre</Card.Title>
-                            <div className="w-100 p-2">
-                                <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Promotion</Form.Label>
-                                    <Select
-                                        options={listePromos.map(p => ({ value: p, label: p }))}
-                                        value={promoAjoutMembre}
-                                        onChange={handlePromoChange}
-                                        placeholder="Choisir une promo..."
-                                        menuPortalTarget={document.body}
-                                        styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                                        classNamePrefix="react-select"
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3 text-start">
-                                    <Form.Label>Utilisateur</Form.Label>
-                                    <Select
-                                        options={listeNouveauxMembres.map(u => ({ value: u.id, label: u.nom_utilisateur }))}
-                                        value={idAjoutMembre}
-                                        onChange={setIdAjoutMembre}
-                                        placeholder="Choisir un utilisateur..."
-                                        isDisabled={!promoAjoutMembre || listeNouveauxMembres.length === 0}
-                                        menuPortalTarget={document.body}
-                                        styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                                        classNamePrefix="react-select"
-                                    />
-                                </Form.Group>
-                                <Button variant="primary" onClick={handleAjoutMembre} disabled={!idAjoutMembre}>Ajouter</Button>
-                                <Button variant="secondary" onClick={() => setIsAjoutMembre(false)} className="ms-2">Annuler</Button>
+                            <div className="d-flex justify-content-between">
+                                <Autocomplete
+                                    placeholder="Rechercher un utilisateur..."
+                                    onSelect={(user) => handleAjoutMembre(user.id)}
+                                    filter={u => !mandat.membres.map(u => u.id).includes(u.id)}
+                                />
+                                <Button variant="primary" onClick={() => setIsAjoutMembre(false)} className="ms-2">Terminer</Button>
                             </div>
+
                         </Card.Body>
                     </Card>
                 )}

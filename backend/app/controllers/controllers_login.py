@@ -96,9 +96,10 @@ def delete_permission (id):
     Supprime la permission
     """
     perm = Permission.query.get(id)
+    d = perm.to_dict()
     db.session.delete(perm)
     db.session.commit()
-    return jsonify(perm.to_dict())
+    return jsonify(d)
 
 @controllers_login.post('/permissions')
 @superutilisateur_required

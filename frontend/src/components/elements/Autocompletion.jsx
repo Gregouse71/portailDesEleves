@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Form, ListGroup, Spinner } from 'react-bootstrap';
 import { searchUsers } from '../../api/api_utilisateurs';
+import "../../assets/styles/autocomplete.scss"
 
 function useDebounce(valeur, delai = 250) {
     const [valeurDebounced, setValeurDebounced] = useState(valeur);
@@ -24,6 +25,8 @@ function normaliserResultats(reponse) {
 }
 
 function libelleUtilisateur(u) {
+    if (u.prenom && u.nom && u.cycle && u.promotion)
+        return `${u.prenom} ${u.nom} ${u.cycle}${u.promotion}`
     if (u.nom_utilisateur) return u.nom_utilisateur;
     if (u.prenom || u.nom) return `${u.prenom ?? ''} ${u.nom ?? ''}`.trim();
     return `#${u.id}`;
@@ -32,7 +35,7 @@ function libelleUtilisateur(u) {
 /**
  * Champ d'autocomplétion basé sur POST /users/search (searchUsers).
  */
-function Autocomplete({ onSelect, placeholder, valeurInitiale = '', longueurMin = 2 }) {
+function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale = '', longueurMin = 2 }) {
     const [texte, setTexte] = useState(valeurInitiale);
     const [ouvert, setOuvert] = useState(false);
     const conteneurRef = useRef(null);
@@ -58,6 +61,7 @@ function Autocomplete({ onSelect, placeholder, valeurInitiale = '', longueurMin 
     }, []);
 
     const choisir = (item) => {
+        console.log(item, libelleUtilisateur(item))
         setTexte(libelleUtilisateur(item));
         setOuvert(false);
         onSelect(item);
@@ -86,7 +90,7 @@ function Autocomplete({ onSelect, placeholder, valeurInitiale = '', longueurMin 
                     {!isFetching && resultats.length === 0 && (
                         <ListGroup.Item disabled>Aucun résultat</ListGroup.Item>
                     )}
-                    {!isFetching && resultats.map((item) => (
+                    {!isFetching && resultats.filter(item => filter(item)).map((item) => (
                         <ListGroup.Item key={item.id} action onClick={() => choisir(item)}>
                             {libelleUtilisateur(item)}
                         </ListGroup.Item>

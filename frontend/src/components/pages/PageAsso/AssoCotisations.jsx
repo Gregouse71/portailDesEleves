@@ -14,6 +14,7 @@ import {
 import { obtenirDataUser, searchUsers } from "../../../api/api_utilisateurs";
 import ConfirmationModal from "../../elements/ConfirmationModal";
 import DropdownEditer from "../../elements/DropdownEditer";
+import Autocomplete from "../../elements/Autocompletion";
 
 const format_date = (s) => s ? new Date(s).toLocaleDateString("fr-FR") : "Non précisé";
 
@@ -146,6 +147,7 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
 
     const today = new Date().toISOString().split("T")[0];
     const isActive = cotisationData.date_debut <= today && today <= cotisationData.date_fin;
+    console.log(cotisationData)
 
     return (
         <Card className="mb-3">
@@ -189,41 +191,13 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                 {showMembres && canModify && (
                     <div className="mt-3">
                         <h6>Ajouter un cotisant</h6>
-                        <Form.Group className="mb-3 position-relative">
-                            <InputGroup>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Rechercher"
-                                    value={searchQuery}
-                                    onChange={(e) => handleSearch(e.target.value)}
-                                />
-                                {searchQuery && (
-                                    <Button variant="outline-secondary" onClick={() => { setSearchQuery(""); setSearchResults([]); }}>
-                                        X
-                                    </Button>
-                                )}
-                            </InputGroup>
-                            {searchResults.length > 0 && (
-                                <ListGroup className="position-absolute w-100 shadow-sm mt-1" style={{ zIndex: 1000 }}>
-                                    {searchResults.map((user) => {
-                                        const alreadyPaid = cotisationData.membres.includes(user.id);
-                                        return (
-                                            <ListGroup.Item key={user.id} className="d-flex justify-content-between align-items-center">
-                                                <span>{user.prenom} {user.nom} {user.cycle}{user.promotion}</span>
-                                                <Button
-                                                    variant={alreadyPaid ? "outline-secondary" : "primary"}
-                                                    size="sm"
-                                                    disabled={alreadyPaid}
-                                                    onClick={() => addMemberMutation.mutate(user.id)}
-                                                >
-                                                    {alreadyPaid ? "Déjà cotisé" : "Ajouter"}
-                                                </Button>
-                                            </ListGroup.Item>
-                                        );
-                                    })}
-                                </ListGroup>
-                            )}
-                        </Form.Group>
+                        <div className="mb-3">
+                            <Autocomplete
+                                placeholder="Rechercher un utilisateur..."
+                                onSelect={(user) => addMemberMutation.mutate(user.id)}
+                                filter={u => !cotisationData.membres.map(u => u.id).includes(u.id)}
+                            />
+                        </div>
 
                         {/* List of current members */}
                         <h6>Cotisants</h6>

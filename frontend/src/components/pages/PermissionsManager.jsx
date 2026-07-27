@@ -3,6 +3,7 @@ import { Table, Form, Button, InputGroup, FormControl } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addPermission, deletePermission, getPermissions } from "../../api/api_global";
 import RenderPagination from "../elements/RenderPagination";
+import Autocomplete from "../elements/Autocompletion";
 import Select from "react-select";
 import { chargerUtilisateurs } from "../../api/api_utilisateurs";
 
@@ -30,12 +31,6 @@ export default function PermissionsManager() {
 
     const queryClient = useQueryClient();
 
-    const { data: allUsers = [] } = useQuery({
-        queryKey: ["allUsers"],
-        queryFn: () => chargerUtilisateurs(),
-    });
-    const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
-
     const { data = { permissions: [], count: 0 }, isLoading, isError } = useQuery({
         queryKey: ["permissions", page, query],
         queryFn: () => getPermissions({ page, per_page: PER_PAGE, query }),
@@ -46,7 +41,7 @@ export default function PermissionsManager() {
 
     const addMutation = useMutation({
         mutationFn: async () => {
-            await addPermission({ user_id: selectedUser.value, permission })
+            await addPermission({ user_id: selectedUser, permission })
             return
         },
         onSuccess: () => {
@@ -90,11 +85,12 @@ export default function PermissionsManager() {
                 </thead>
                 <tbody>
                     <tr>
-                        <td><Form>
-                            <Select options={options} value={selectedUser} onChange={setSelectedUser}
-                                isClearable classNamePrefix="react-select"
+                        <td>
+                            <Autocomplete
+                                placeholder="Rechercher un utilisateur..."
+                                onSelect={(user) => setSelectedUser(user.id)}
                             />
-                        </Form></td>
+                        </td>
                         <td><Form>
                             <Form.Control type="text" value={permission} onChange={(e) => setPermission(e.target.value)}></Form.Control>
                         </Form></td>
