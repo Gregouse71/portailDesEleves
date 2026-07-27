@@ -152,3 +152,23 @@ def set_new_password(token: str, password: str):
     user.mot_de_passe = ph.hash(password)
     db.session.commit()
     return True
+
+def generate_reset_token(user: Utilisateur) -> str:
+    """
+    Génère un token JWT pour la réinitialisation du mot de passe
+    """
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode = {"sub": user.nom_utilisateur, "exp": expire}
+    return jwt.encode(to_encode, key, algorithm=algorithm)
+
+def set_password_admin(user_id: int, password: str) -> bool:
+    """
+    Définit directement un mot de passe pour un utilisateur en tant qu'administrateur
+    """
+    user = Utilisateur.query.get(user_id)
+    if not user:
+        return False
+    user.mot_de_passe = ph.hash(password)
+    db.session.commit()
+    return True
+

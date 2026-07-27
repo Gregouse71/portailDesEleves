@@ -85,3 +85,7 @@ export const verifierPermission = createApiGet(`${LOGIN_BASE_URL}/verifier_permi
  * 
  */
 export const baptiserToutLeMonde = createApiPost(`${LOGIN_BASE_URL}/baptiser_tous`)
+
+export const generateResetLinkAdmin = createApiPost(`${LOGIN_BASE_URL}/admin/generate_reset_link`);
+export const setPasswordAdmin = createApiPost(`${LOGIN_BASE_URL}/admin/set_password`);
+

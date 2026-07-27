@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Table, Form, Button, InputGroup, Badge, Modal, Row, Col } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { addPermission, deletePermission, getPermissions, resetMotDePasse } from "../../api/api_global";
+import { addPermission, deletePermission, getPermissions, resetMotDePasse, generateResetLinkAdmin, setPasswordAdmin } from "../../api/api_global";
 import RenderPagination from "../elements/RenderPagination";
 import { modifierInfos } from "../../api/api_utilisateurs";
-import { PencilSquare, Person, Envelope, Mortarboard, JournalBookmark, Droplet } from "react-bootstrap-icons";
+import { PencilSquare, Person, Envelope, Mortarboard, JournalBookmark, Droplet, Link45deg, Key } from "react-bootstrap-icons";
 
 const PER_PAGE = 15;
 
@@ -54,6 +54,8 @@ export default function PermissionsManager() {
     const [editUser, setEditUser] = useState(null);
     const [newPermission, setNewPermission] = useState("");
     const [resetMsg, setResetMsg] = useState(null);
+    const [magicLink, setMagicLink] = useState(null);
+    const [passwordMsg, setPasswordMsg] = useState(null);
 
     const queryClient = useQueryClient();
 
@@ -114,6 +116,8 @@ export default function PermissionsManager() {
         setEditUser({ ...user });
         setNewPermission("");
         setResetMsg(null);
+        setMagicLink(null);
+        setPasswordMsg(null);
         setShowModal(true);
     };
 
@@ -123,6 +127,41 @@ export default function PermissionsManager() {
             setResetMsg({ type: "success", text: "Requête envoyée au serveur !" });
         } catch (e) {
             setResetMsg({ type: "danger", text: "Erreur lors de l'envoi." });
+        }
+    };
+
+    const handleGenerateLink = async () => {
+        try {
+            const data = await generateResetLinkAdmin({ user_id: editUser.id });
+            const link = `${window.location.origin}/reset/${data.token}`;
+            setMagicLink(link);
+            setResetMsg({ type: "success", text: "Lien magique généré avec succès !" });
+        } catch (e) {
+            setResetMsg({ type: "danger", text: "Erreur lors de la génération du lien." });
+        }
+    };
+
+    const handleSetPasswordPrompt = async () => {
+        const pass1 = window.prompt("Veuillez entrer le nouveau mot de passe pour cet utilisateur :");
+        if (!pass1) return;
+
+        const pass2 = window.prompt("Veuillez confirmer le nouveau mot de passe en le retapant :");
+        if (pass1 !== pass2) {
+            window.alert("Les mots de passe ne correspondent pas. Opération annulée.");
+            return;
+        }
+
+        if (window.confirm(`Vous êtes sur le point de forcer le mot de passe de @${editUser.nom_utilisateur}. Êtes-vous sûr ?`)) {
+            if (window.confirm("Vraiment sûr ? Cette action est immédiate et irréversible.")) {
+                try {
+                    await setPasswordAdmin({ user_id: editUser.id, password: pass1 });
+                    setPasswordMsg({ type: "success", text: "Mot de passe modifié avec succès !" });
+                    setResetMsg(null);
+                    setMagicLink(null);
+                } catch (e) {
+                    setPasswordMsg({ type: "danger", text: "Erreur lors de la modification." });
+                }
+            }
         }
     };
 
@@ -310,6 +349,44 @@ export default function PermissionsManager() {
                             </Col>
                         </Row>
 
+                        <h5 className="mb-3 border-bottom pb-2">Gestion du mot de passe</h5>
+                        <Row className="mb-4">
+                            <Col md={12}>
+                                <div className="d-flex flex-wrap gap-2 mb-3">
+                                    <Button variant="outline-warning" onClick={handleResetPassword}>
+                                        <Envelope className="me-2" /> Envoyer un mail
+                                    </Button>
+                                    <Button variant="outline-info" onClick={handleGenerateLink}>
+                                        <Link45deg className="me-2" /> Générer un lien
+                                    </Button>
+                                    <Button variant="outline-danger" onClick={handleSetPasswordPrompt}>
+                                        <Key className="me-2" /> Forcer le mot de passe
+                                    </Button>
+                                </div>
+                                
+                                {resetMsg && (
+                                    <div className={`text-${resetMsg.type} mb-2 small`}>
+                                        {resetMsg.text}
+                                    </div>
+                                )}
+                                {passwordMsg && (
+                                    <div className={`text-${passwordMsg.type} mb-2 small`}>
+                                        {passwordMsg.text}
+                                    </div>
+                                )}
+                                
+                                {magicLink && (
+                                    <div className="mb-3">
+                                        <Form.Label>Lien magique :</Form.Label>
+                                        <InputGroup size="sm">
+                                            <Form.Control readOnly value={magicLink} />
+                                            <Button variant="outline-secondary" onClick={() => navigator.clipboard.writeText(magicLink)}>Copier</Button>
+                                        </InputGroup>
+                                    </div>
+                                )}
+                            </Col>
+                        </Row>
+
                         <h5 className="mb-3 border-bottom pb-2">Permissions</h5>
                         <div className="mb-3">
                             {editUser.permissions && editUser.permissions.length > 0 ? (
@@ -354,14 +431,6 @@ export default function PermissionsManager() {
 
                     </Modal.Body>
                     <Modal.Footer>
-                        {resetMsg && (
-                            <div className={`text-${resetMsg.type} me-auto small fw-bold`}>
-                                {resetMsg.text}
-                            </div>
-                        )}
-                        <Button variant="warning" onClick={handleResetPassword}>
-                            <Envelope className="me-2" /> Renvoyer mail de réinitialisation du mot de passe
-                        </Button>
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Annuler
                         </Button>

@@ -3,7 +3,10 @@ from flask_login import current_user, login_user, logout_user, login_required
 
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_divers import Permission
-from app.services.services_login import send_reset_mail, set_new_password, check_pw, get_permissions, has_permission
+from app.services.services_login import (
+    send_reset_mail, set_new_password, check_pw, get_permissions, 
+    has_permission, generate_reset_token, set_password_admin
+)
 from app.utils.decorators import superutilisateur_required
 from app import db, limiter
 
@@ -141,3 +144,34 @@ def baptiser_tout_le_monde():
         u.est_baptise = True
     db.session.commit()
     return jsonify({"message": "Utilisateurs baptisés"}), 200
+
+@controllers_login.post('/admin/generate_reset_link')
+@superutilisateur_required
+def admin_generate_reset_link():
+    data = request.get_json() or {}
+    user_id = data.get('user_id')
+    
+    if not user_id:
+        return jsonify({"message": "user_id requis"}), 400
+        
+    user = Utilisateur.query.get(user_id)
+    if not user:
+        return jsonify({"message": "L'utilisateur n'existe pas"}), 404
+        
+    token = generate_reset_token(user)
+    return jsonify({"token": token}), 200
+
+@controllers_login.post('/admin/set_password')
+@superutilisateur_required
+def admin_set_password():
+    data = request.get_json() or {}
+    user_id = data.get('user_id')
+    password = data.get('password')
+    
+    if not user_id or not password:
+        return jsonify({"message": "user_id et password requis"}), 400
+        
+    if set_password_admin(user_id, password):
+        return jsonify({"message": "Mot de passe modifié avec succès"}), 200
+    else:
+        return jsonify({"message": "L'utilisateur n'existe pas"}), 404

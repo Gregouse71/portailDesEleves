@@ -15,7 +15,7 @@ from app.services.services_associations import is_admin_asso
 def superutilisateur_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if current_user.est_superutilisateur:
+        if current_user.is_authenticated and current_user.est_superutilisateur:
             return f(*args, **kwargs)
         else :
             return jsonify({"message": "Vous devez etre un superutilisateur pour effectuer cette action"}), 403
@@ -49,7 +49,7 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
         if association_id is None:
             return jsonify({"message": "l'URL doit contenir l'id de l'association."}), 400
 
-        if current_user.est_superutilisateur: # Superutilisateur OK
+        if current_user.is_authenticated and current_user.est_superutilisateur: # Superutilisateur OK
             return f(*args, **kwargs)
 
         user_roles_in_asso = [role for role in current_user.associations if role.mandat.association_id == association_id]
@@ -78,7 +78,7 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
             if (admin and is_admin)\
                 or (actuel and (is_admin or is_membre_actuel or is_membre_max))\
                 or (mandat and (is_membre_mandat or is_admin or is_membre_actuel or is_membre_max))\
-                or current_user.est_superutilisateur:
+                or (current_user.is_authenticated and current_user.est_superutilisateur):
                 return f(*args, **kwargs)
 
 
@@ -93,7 +93,7 @@ def a_permission(*args1):
     def decorated_function(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            if current_user.est_superutilisateur:
+            if current_user.is_authenticated and current_user.est_superutilisateur:
                 return f(*args, **kwargs)
 
             if any([has_permission(current_user, perm) for perm in args1]):
