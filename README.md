@@ -46,6 +46,11 @@ Pour windows, passez par wsl. Il faut installer *valkey* pour permettre au chat,
 
 Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier ou d'ajouter les colonnes nécessaires.
 
+#### Alternative : Développement natif sous Windows (Sans Docker ni WSL)
+
+1. **Frontend** : Allez dans le dossier `frontend/` et installez les paquets avec `pnpm install`, puis lancez le serveur avec `pnpm dev`.
+2. **Backend** : Allez dans le dossier `backend/` et installez les dépendances via `pip install -r requirements.txt`, puis démarrez avec `python run.py`. L'initialisation (fichiers config, `init_db.py`, `creer_environnement_dev.py`) reste identique à la méthode classique ci-dessus.
+
 #### À chaque fois
 
 1. Le portail est démarré avec 

@@ -4,5 +4,6 @@ from config import Config
 
 socketio, app = create_app(Config)
 
+import os
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=(os.name != 'nt'))

@@ -1,4 +1,6 @@
-from gevent import monkey; monkey.patch_all()
+import os
+if os.name != 'nt':
+    from gevent import monkey; monkey.patch_all()
 
 """
 Ce fichier crée et initialise l'application et les extensions. Il charge la configuration
@@ -28,7 +30,7 @@ from config import Config
 # Initialisation des extensions (sans encore les attacher à l'application)
 limiter = Limiter(get_remote_address)
 socketio = SocketIO(
-    async_mode='gevent',
+    async_mode='gevent' if os.name != 'nt' else None,
     cors_allowed_origins="*",
     message_queue=Config.REDIS_URL
 )
@@ -95,6 +97,6 @@ def create_app(config: Config):
     authorization.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=False), CodeChallenge(required=False)])
 
     from .tasks import tasks
-    if not scheduler.running:
+    if not scheduler.running and os.name != 'nt':
         socketio.start_background_task(scheduler.start)
     return socketio, app
