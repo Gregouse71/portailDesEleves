@@ -312,7 +312,7 @@ class Utilisateur(db.Model, UserMixin) :
 
     def get_photo_file(self):
         if self.photo_id is None:
-            return None
+            return 'utilisateurs/Logo.png'
         return ElementMedia.query.get(self.photo_id).file_path
 
     def get_banniere_file(self):

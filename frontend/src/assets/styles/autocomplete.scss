@@ -1,0 +1,17 @@
+
+
+.autocomplete-conteneur {
+    position: relative;
+    max-width: 420px;
+}
+ 
+.autocomplete-liste {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}

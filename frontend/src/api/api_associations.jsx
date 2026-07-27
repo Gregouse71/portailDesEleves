@@ -16,6 +16,12 @@ export const obtenirPhotosAsso = createApiGet(`${ASSOCIATIONS_BASE_URL}/content`
  */
 export const supprimerPhotoAsso = createApiDelete(`${ASSOCIATIONS_BASE_URL}/content`)
 
+/** Charge le mandat
+ * args :
+ * - id : l'id du mandat
+ */
+export const chargerMandat = createApiGet(`${ASSOCIATIONS_BASE_URL}/mandat`)
+
 
 export async function ajouterAsso(nom, description, type_association, ordre_importance, logo_path, banniere_path, a_cacher_aux_nouveaux) {
   try {

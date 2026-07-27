@@ -8,7 +8,7 @@ from app.services.services_utilisateurs import get_utilisateur
 from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member, get_asso_media, is_admin_asso
 from app.services.services_media import upload_media, delete_media
 
-from app.models.models_associations import Association
+from app.models.models_associations import Association, AssociationMandat
 from app.models.models_media import ElementMedia
 
 # TO DO :
@@ -355,6 +355,17 @@ def route_get_asso(association_id):
         return jsonify({"error": "Association not found"}), 404
 
     return jsonify(asso.to_dict())
+
+
+@controllers_associations.route('/mandat/<int:mandat_id>', methods=['GET'])
+@login_required
+def route_get_mandat(mandat_id):
+    mandat = AssociationMandat.query.get(mandat_id)
+    if mandat is None\
+       or (mandat.association.a_cacher_aux_nouveaux and not (current_user.est_baptise or current_user.est_superutilisateur)):
+        return jsonify({"error": "Mandat not found"}), 404
+
+    return jsonify(mandat.to_dict())
 
 
 @controllers_associations.route("route_est_membre_de_asso/<int:id_association>", methods=["GET"])

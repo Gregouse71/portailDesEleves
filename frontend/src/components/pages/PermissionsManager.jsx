@@ -207,7 +207,7 @@ export default function PermissionsManager() {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="7" className="text-center py-4 text-muted">
+                            <td colSpan="8" className="text-center py-4 text-muted">
                                 Aucun utilisateur trouvé correspondant à ces critères.
                             </td>
                         </tr>

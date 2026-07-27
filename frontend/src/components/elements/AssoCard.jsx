@@ -70,7 +70,10 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
     };
 
     return (isLoading
-        ? <div> Chargement ...</div>
+        ? <Card className="h-100 text-center">
+            <Card.Body>
+            </Card.Body>
+        </Card>
         : <Card
             className="h-100 text-center"
             onClick={handleCardClick}

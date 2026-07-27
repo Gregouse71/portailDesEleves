@@ -10,7 +10,7 @@ function AssoMembres({ asso_id, membreData }) {
     const [isAjoutMandat, setIsAjoutMandat] = useState(false);
     const [nomNouveauMandat, setNomNouveauMandat] = useState("");
 
-    const { data: asso = {mandat: ""}, isLoading } = useQuery({
+    const { data: asso = { mandat: "" }, isLoading } = useQuery({
         queryKey: ['asso', asso_id],
         queryFn: () => chargerAsso(asso_id),
     });
@@ -24,7 +24,10 @@ function AssoMembres({ asso_id, membreData }) {
         });
     }, [asso]);
 
-    if (isLoading) return <>Chargement...</>
+    if (isLoading) return <Card>
+        <Card.Body>
+        </Card.Body>
+    </Card>
 
     const handleNouveauMandat = async (nom) => {
         if (nom) {
@@ -69,7 +72,7 @@ function AssoMembres({ asso_id, membreData }) {
             </div>
 
             {sortedMandats.map((mandat, i) => (
-                <AssoMandat key={i} mandat={mandat} asso={asso} membreData={membreData} />
+                <AssoMandat key={i} id={mandat.id} asso={asso} membreData={membreData} />
             ))}
         </div>
     )
