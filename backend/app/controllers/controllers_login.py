@@ -86,8 +86,15 @@ def get_get_permissions():
     """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
-    query = request.args.get('query', "", type=str)
-    return jsonify(get_permissions(page, per_page, query)), 200
+    pseudo = request.args.get('pseudo', "", type=str)
+    identite = request.args.get('identite', "", type=str)
+    email = request.args.get('email', "", type=str)
+    promo = request.args.get('promo', "", type=str)
+    cycle = request.args.get('cycle', "", type=str)
+    permission = request.args.get('permission', "", type=str)
+    est_baptise = request.args.get('est_baptise', "", type=str)
+    
+    return jsonify(get_permissions(page, per_page, pseudo, identite, email, promo, cycle, permission, est_baptise)), 200
 
 @controllers_login.delete("/permissions/<int:id>")
 @superutilisateur_required

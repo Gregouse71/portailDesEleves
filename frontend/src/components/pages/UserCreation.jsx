@@ -212,7 +212,7 @@ export default function UserCreation() {
             <Card className="h-100 shadow-sm">
                 <Card.Header className="bg-success text-white">
                     <h5 className="mb-0 d-flex align-items-center">
-                        <PersonPlus className="me-2" /> Ajout manuel d&apos;utilisateur (ne marche pas)
+                        <PersonPlus className="me-2" /> Ajout manuel d&apos;utilisateur
                     </h5>
                 </Card.Header>
                 <Card.Body>
@@ -315,14 +315,20 @@ export default function UserCreation() {
                                     <Form.Label>Cycle</Form.Label>
                                     <InputGroup>
                                         <InputGroup.Text><JournalBookmark /></InputGroup.Text>
-                                        <Form.Control
-                                            type="text"
+                                        <Form.Select
                                             name="cycle"
                                             value={ajoutUtilisateurForm.cycle}
                                             onChange={handleAjoutUtilisateurChange}
                                             required
-                                            placeholder="Ex: IC"
-                                        />
+                                        >
+                                            <option value="">Sélectionner un cycle...</option>
+                                            <option value="ic">IC</option>
+                                            <option value="ast">AST</option>
+                                            <option value="vs">VS</option>
+                                            <option value="ev">EV</option>
+                                            <option value="isup">ISUP</option>
+                                            <option value="de">DE</option>
+                                        </Form.Select>
                                     </InputGroup>
                                 </Form.Group>
                             </Col>

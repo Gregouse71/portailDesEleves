@@ -306,6 +306,7 @@ class Utilisateur(db.Model, UserMixin) :
             "meilleur_score_2048": self.meilleur_score_2048,
             "victoires": self.victoires,
             "defaites": self.defaites,
+            "permissions": [{"id": p.id, "permission": p.permission} for p in self.permissions],
             "cotisations": [c.to_dict() for c in AssociationCotisationUtilisateur.query.filter_by(utilisateur_id=self.id)]
         }
 

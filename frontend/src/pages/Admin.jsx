@@ -16,7 +16,7 @@ export default function Admin() {
 
     const sections = [
         { title: "Gestion du baptême", element: BaptemeManager, isOpen: baptemeOpen, trigger: setBaptemeOpen },
-        { title: "Gestion des permissions", element: PermissionsManager, isOpen: permissionsOpen, trigger: setPermissionsOpen },
+        { title: "Base de données & Permissions", element: PermissionsManager, isOpen: permissionsOpen, trigger: setPermissionsOpen },
         { title: "Ajout d'utilisateurs", element: UserCreation, isOpen: userCreationOpen, trigger: setUserCreationOpen },
     ]
 

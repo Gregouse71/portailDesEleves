@@ -30,20 +30,47 @@ def has_permission(user: Utilisateur, perm: str):
     """
     return Permission.query.filter_by(utilisateur=user, permission=perm).count() > 0
 
-def get_permissions(page: int, per_page: int, query_str: str=""):
+def get_permissions(page: int, per_page: int, pseudo: str, identite: str, email: str, promo: str, cycle: str, permission: str, est_baptise: str = ""):
     """
-    Récupère tous les utilisateurs avec leurs permissions, avec pagination.
+    Récupère tous les utilisateurs avec leurs permissions, avec pagination et filtres par colonne.
     """
-    query = Permission.query
-    if len(query_str) >= 1:
-        query = query.join(Permission.utilisateur).filter(
+    query = Utilisateur.query.order_by(Utilisateur.nom_utilisateur)
+    
+    if pseudo:
+        query = query.filter(Utilisateur.nom_utilisateur.ilike(f"%{pseudo}%"))
+    if identite:
+        query = query.filter(
             or_(
-                Utilisateur.nom_utilisateur.ilike(f"%{query_str}%"),
-                Permission.permission.ilike(f"%{query_str}%")
+                Utilisateur.prenom.ilike(f"%{identite}%"),
+                Utilisateur.nom.ilike(f"%{identite}%")
             )
         )
-    perms = query.paginate(page=page, per_page=per_page)
-    return {"permissions": [p.to_dict() for p in perms], "count": perms.total}
+    if email:
+        query = query.filter(Utilisateur.email.ilike(f"%{email}%"))
+    if promo:
+        query = query.filter(Utilisateur.promotion.ilike(f"%{promo}%"))
+    if cycle:
+        query = query.filter(Utilisateur.cycle == cycle.lower())
+    if est_baptise:
+        if est_baptise.lower() == "true":
+            query = query.filter(Utilisateur.est_baptise == True)
+        elif est_baptise.lower() == "false":
+            query = query.filter(Utilisateur.est_baptise == False)
+    if permission:
+        if permission == "avec":
+            query = query.filter(Utilisateur.permissions.any())
+        else:
+            query = query.join(Utilisateur.permissions).filter(Permission.permission == permission)
+
+    users = query.paginate(page=page, per_page=per_page)
+    
+    result = []
+    for u in users:
+        d = u.to_dict()
+        d["est_baptise"] = u.est_baptise
+        result.append(d)
+        
+    return {"permissions": result, "count": users.total}
 
 def send_reset_mail(username: str):
     """

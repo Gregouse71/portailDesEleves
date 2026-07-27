@@ -208,6 +208,13 @@ def set_user_infos(user_id: int):
         return jsonify({"message": "Pas le droit"}), 401
 
     data = request.get_json()
+    
+    # Securité pour le baptême : seul un admin peut le modifier
+    if "est_baptise" in data:
+        if current_user.est_superutilisateur:
+            utilisateur.est_baptise = bool(data["est_baptise"])
+        del data["est_baptise"]
+
     utilisateur.update(data)
     db.session.add(utilisateur)
     db.session.commit()
@@ -491,10 +498,8 @@ def route_changer_marrain():
 @controllers_utilisateurs.route('/add_utilisateur', methods=['POST'])
 @superutilisateur_required
 def route_add_utilisateur():
-    return jsonify({"message": "Not implemented"}), 501
     data = request.form
-    photo = request.files['photo']
-    # TODO : upload photo en même temps, ou faire interface pour upload bcp de photos
+    photo = request.files.get('photo')
     try:
         nom_utilisateur = data['nom_utilisateur']
         email = data['email']
@@ -511,10 +516,11 @@ def route_add_utilisateur():
                         nom=nom,
                         promotion=promotion,
                         cycle=cycle)
-        req = upload_media(photo, user_id).file_path
-        filename = req[0].json['file_name']
-        set_user_photo(user_id, filename)
-        return jsonify({"message": "Utilisateur ajouté avec succès"}), 203
+        if photo:
+            media = upload_media(photo, dir="utilisateurs", user_id=user_id)
+            if media and not isinstance(media, tuple):
+                set_user_photo(user_id, media.id)
+        return jsonify({"message": "Utilisateur ajouté avec succès"}), 201
     except ValueError as e:
         return jsonify({"message": f"Au moins un champ est invalide pour l'ajout d'un utilisateur: {str(e)}"}), 400
     except Exception as e:
