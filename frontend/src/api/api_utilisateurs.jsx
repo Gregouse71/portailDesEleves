@@ -41,7 +41,16 @@ export async function ajouterUtilisateur(nomUtilisateur, email, prenom, nom, cyc
     });
 
     if (!res.ok) {
-      throw new Error("Erreur lors de l'ajout de l'utilisateur");
+      let msg = "Erreur lors de l'ajout de l'utilisateur";
+      try {
+          const errData = await res.json();
+          if (errData && errData.message) {
+              msg = errData.message;
+          }
+      } catch (e) {
+          msg += ` (Statut: ${res.status})`;
+      }
+      throw new Error(msg);
     }
     return res
 }
