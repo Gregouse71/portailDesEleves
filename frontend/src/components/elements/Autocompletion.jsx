@@ -38,6 +38,7 @@ function libelleUtilisateur(u) {
 function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale = '', longueurMin = 2 }) {
     const [texte, setTexte] = useState(valeurInitiale);
     const [ouvert, setOuvert] = useState(false);
+    const [estSelection, setEstSelection] = useState(false); 
     const conteneurRef = useRef(null);
     const texteDebounced = useDebounce(texte);
 
@@ -61,8 +62,8 @@ function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale
     }, []);
 
     const choisir = (item) => {
-        console.log(item, libelleUtilisateur(item))
-        setTexte("");
+        setTexte(libelleUtilisateur(item));
+        setEstSelection(true);
         setOuvert(false);
         onSelect(item);
     };
@@ -76,9 +77,16 @@ function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale
                 autoComplete="off"
                 onChange={(evenement) => {
                     setTexte(evenement.target.value);
+                    setEstSelection(false);
                     setOuvert(true);
                 }}
-                onFocus={() => setOuvert(true)}
+                onFocus={() => {
+                    if (estSelection) {
+                        setTexte('');
+                        setEstSelection(false);
+                    }
+                    setOuvert(true);
+                }}
             />
             {ouvert && rechercheActive && (
                 <ListGroup className="autocomplete-liste">
