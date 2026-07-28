@@ -54,7 +54,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
 
     const { userData } = useProtected();
     const queryClient = useQueryClient();
-    const { data: postData, isLoading } = useQuery({
+    const { data: postData, isLoading, isError } = useQuery({
         queryKey: ['publications', postId],
         queryFn: () => obtenirPublication(postId),
         enabled: !!postId,
@@ -93,6 +93,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
 
     }, [modifyPostFile, modifyPostMiniatureFile]);
 
+    if (isError) return <></>
     if (isLoading || !post) return <div>Loading ...</div>
 
     const handleSetModifyPost = (e) => {

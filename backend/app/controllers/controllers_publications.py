@@ -132,6 +132,13 @@ def route_add_get_publications_recentes():
         if not current_user.est_superutilisateur:
             user_associations_ids = [membre.mandat.association.id for membre in current_user.associations]
 
+            publications = publications.filter(
+                or_(
+                    current_user.est_baptise,
+                    Association.a_cacher_aux_nouveaux.isnot(True)
+                )
+            )
+
             # L'utilisateur a accès si la publication n'est pas interne, ou si elle l'est mais qu'il est membre de l'asso
             is_accessible_interne = or_(
                 Publication.is_publication_interne.isnot(True),
@@ -154,10 +161,8 @@ def route_add_get_publications_recentes():
         
         if len(query) > 0:
             publications = publications.filter(
-                (
-                    Publication.titre.like(f"%{query}%") |
-                    Association.nom.like(f"%{query}%")
-                )
+                Publication.titre.like(f"%{query}%")
+                | Association.nom.like(f"%{query}%")
             )
 
         publications = publications.order_by(desc(Publication.date_publication)).paginate(page=page, per_page=per, error_out=False)
