@@ -5,6 +5,10 @@ from app.services import db
 from app.models.models_associations import Association, AssociationMandat, AssociationMembre
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_media import ElementMedia
+import os
+import shutil
+from datetime import datetime
+from config import Config
 
 
 # GESTION DES ASSOCIATIONS
@@ -54,21 +58,80 @@ def add_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
 def add_mandat(association: Association, nom: str, position: int):
     """
     Crée un nouveau mandat pour l'association.
-    Copie le logo et la bannière du dernier mandat (par position) s'il existe.
+    Copie physiquement le logo et la bannière du dernier mandat (par position) s'il existe.
     """
     association = Association.query.get(association.id)
     if association:
         mandat = AssociationMandat(association, nom, position)
 
-        # Copier le logo/bannière du dernier mandat
-        last_mandat = AssociationMandat.query.filter_by(
-            association_id=association.id
-        ).order_by(AssociationMandat.position.desc()).first()
-        if last_mandat:
-            mandat.logo_id = last_mandat.logo_id
-            mandat.banniere_id = last_mandat.banniere_id
-
+        # Copier le logo/bannière du mandat actuel
+        mandat_actuel = AssociationMandat.query.filter_by(
+            association_id=association.id,
+            actuel=True
+        ).first()
+        
         db.session.add(mandat)
+        db.session.flush()  # To get the mandat.id generated
+
+        if mandat_actuel:
+            def duplicate_media(media_id):
+                if not media_id:
+                    return None
+                old_media = db.session.get(ElementMedia, media_id)
+                if not old_media:
+                    return None
+                
+                # S'il s'agit d'un lien distant, on copie juste la référence dans un nouvel objet ElementMedia
+                if old_media.file_path.startswith("http://") or old_media.file_path.startswith("https://"):
+                    new_media = ElementMedia(
+                        old_media.utilisateur_id,
+                        old_media.association_id,
+                        old_media.file_path,
+                        cache=old_media.cache,
+                        protege=old_media.protege,
+                        nom=old_media.nom,
+                        mandat_id=mandat.id
+                    )
+                    db.session.add(new_media)
+                    db.session.flush()
+                    return new_media.id
+
+                # Copie physique sur le disque
+                old_full_path = os.path.join(Config.UPLOAD_BASE_FOLDER, old_media.file_path)
+                if not os.path.exists(old_full_path):
+                    # Si le fichier physique n'existe pas, on retourne None ou on copie juste l'ancien media ?
+                    # Mieux vaut retourner l'ancien ID si le fichier est perdu, ou None. Retournons None.
+                    return None
+                
+                # Génération d'un nouveau nom de fichier avec timestamp
+                directory, filename = os.path.split(old_media.file_path)
+                name, ext = os.path.splitext(filename)
+                
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                new_filename = f"{name}_copy_{timestamp}{ext}"
+                new_file_path = os.path.join(directory, new_filename).replace('\\', '/')
+                
+                new_full_path = os.path.join(Config.UPLOAD_BASE_FOLDER, new_file_path)
+                
+                # Copie du fichier
+                shutil.copy2(old_full_path, new_full_path)
+                
+                new_media = ElementMedia(
+                    old_media.utilisateur_id,
+                    old_media.association_id,
+                    new_file_path,
+                    cache=old_media.cache,
+                    protege=old_media.protege,
+                    nom=old_media.nom,
+                    mandat_id=mandat.id
+                )
+                db.session.add(new_media)
+                db.session.flush()
+                return new_media.id
+            
+            mandat.logo_id = duplicate_media(mandat_actuel.logo_id)
+            mandat.banniere_id = duplicate_media(mandat_actuel.banniere_id)
+
         db.session.commit()
         return True
     else:
