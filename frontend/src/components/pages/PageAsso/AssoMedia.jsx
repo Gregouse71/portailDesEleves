@@ -67,7 +67,7 @@ export default function AssosMedia({ asso_id, membreData }) {
 
     const startRename = (elt) => {
         setEditingMediaId(elt.id);
-        setEditingName(elt.nom || (elt.file_path ? elt.file_path.split('/').pop() : ""));
+        setEditingName(elt.nom || (elt.file_path ? elt.file_path.split('/').pop().split('.').shift() : ""));
     };
 
     const handleSaveRename = (id) => {
