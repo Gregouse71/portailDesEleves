@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { obtenirPhotosUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur, ajouterContenuUtilisateur, supprimerPhotoUtilisateur, ajouterLienVideoUtilisateur, renommerPhotoUtilisateur, obtenirUtilisateur } from "../../../api/api_utilisateurs";
+import { obtenirPhotosUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur, ajouterContenuUtilisateur, supprimerPhotoUtilisateur, ajouterLienVideoUtilisateur, renommerPhotoUtilisateur, obtenirDataUser } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Card, Form } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
@@ -18,8 +18,8 @@ export default function TabMedia({ id, autoriseAModifier }) {
     });
 
     const { data: utilisateur } = useQuery({
-        queryKey: ['utilisateur', id],
-        queryFn: () => obtenirUtilisateur({}, id),
+        queryKey: ['donneesUtilisateur', id],
+        queryFn: () => obtenirDataUser(id),
     });
 
     const toggleGestion = () => {
@@ -221,7 +221,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
                                                 autoFocus
                                             />
                                         </Form.Group>
-                                        <Button size="sm" variant="success" onClick={() => handleSaveRename(elt.id)} className="mb-2 w-100">
+                                        <Button size="sm" variant="success" onClick={() => handleSaveRename(elt.id)} className="mb-2">
                                             Valider
                                         </Button>
                                         {!isIframe && (

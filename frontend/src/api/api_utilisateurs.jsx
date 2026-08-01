@@ -26,33 +26,33 @@ export const createBulk = createApiPost(`${UTILISATEUR_BASE_URL}/create_bulk`)
 export async function ajouterUtilisateur(nomUtilisateur, email, prenom, nom, cycle, promotion, photo) {
 
   const formData = new FormData();
-    formData.append("nom_utilisateur", nomUtilisateur);
-    formData.append("prenom", prenom);
-    formData.append("nom", nom);
-    formData.append("cycle", cycle);
-    formData.append("promotion", promotion)
-    formData.append("email", email);
-    formData.append("photo", photo);
+  formData.append("nom_utilisateur", nomUtilisateur);
+  formData.append("prenom", prenom);
+  formData.append("nom", nom);
+  formData.append("cycle", cycle);
+  formData.append("promotion", promotion)
+  formData.append("email", email);
+  formData.append("photo", photo);
 
-    const res = await fetch(`${API_BASE_URL}/users/add_utilisateur`, {
-      method: "POST",
-      body: formData,
-      credentials: "include"
-    });
+  const res = await fetch(`${API_BASE_URL}/users/add_utilisateur`, {
+    method: "POST",
+    body: formData,
+    credentials: "include"
+  });
 
-    if (!res.ok) {
-      let msg = "Erreur lors de l'ajout de l'utilisateur";
-      try {
-          const errData = await res.json();
-          if (errData && errData.message) {
-              msg = errData.message;
-          }
-      } catch (e) {
-          msg += ` (Statut: ${res.status})`;
+  if (!res.ok) {
+    let msg = "Erreur lors de l'ajout de l'utilisateur";
+    try {
+      const errData = await res.json();
+      if (errData && errData.message) {
+        msg = errData.message;
       }
-      throw new Error(msg);
+    } catch (e) {
+      msg += ` (Statut: ${res.status})`;
     }
-    return res
+    throw new Error(msg);
+  }
+  return res
 }
 
 export async function obtenirAssosUtilisateur(id_utilisateur) {
@@ -208,7 +208,7 @@ export async function ajouterContenuUtilisateur(id_utilisateur, file) {
     if (!response.ok) {
       throw new Error(data.message || "Erreur lors du téléversement du fichier");
     }
-    return { success: true, message: data.message, fileName: data.file_name };
+    return { success: true, message: data.message, fileName: data.file_name, mediaId: data.media_id };
   } catch (error) {
     console.error("Erreur réseau :", error);
     return { success: false, message: error.message };
@@ -230,7 +230,7 @@ export async function ajouterLienVideoUtilisateur(id_utilisateur, url) {
     if (!response.ok) {
       throw new Error(data.message || "Erreur lors de l'ajout du lien vidéo");
     }
-    return { success: true, message: data.message, fileName: data.file_name };
+    return { success: true, message: data.message, fileName: data.file_name, mediaId: data.media_id };
   } catch (error) {
     console.error("Erreur réseau :", error);
     return { success: false, message: error.message };
@@ -248,7 +248,7 @@ export async function changerPhotoUtilisateur(id_utilisateur, new_name) {
 
 
 export const changerBanniereUtilisateur = (id, fileName) =>
-    createApiPost(`${API_BASE_URL}/users/${id}/modifier_banniere`)({ banniere: fileName });
+  createApiPost(`${API_BASE_URL}/users/${id}/modifier_banniere`)({ banniere: fileName });
 
 
 export async function modifierOrdreAssos(id_utilisateur, ordre) {
@@ -286,7 +286,7 @@ export async function obtenirFamilleUtilisateur(id_utilisateur) {
   });
   return handleResponse(res);
 }
- 
+
 export async function obtenirCheminEntreUtilisateurs(id_depart, id_arrivee) {
   const res = await fetch(
     `${API_BASE_URL}/users/chemin?depart=${id_depart}&arrivee=${id_arrivee}`,

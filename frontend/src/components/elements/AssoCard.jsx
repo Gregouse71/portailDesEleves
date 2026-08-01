@@ -123,6 +123,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                         role="button"
                         tabIndex="0"
                         style={{ cursor: 'auto' }}
+                        className="d-flex flex-column"
                     >
                         <Form.Group className="mb-2">
                             <Form.Label>Nom</Form.Label>
@@ -140,9 +141,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
                                 onChange={(e) => setOrdre(e.target.value)}
                             />
                         </Form.Group>
-                        <div className="d-flex justify-content-around mt-2">
-                            <Button variant="success" onClick={handleSave}>Valider</Button>
-                        </div>
+                        <Button variant="success" className="mt-2" onClick={handleSave}>Valider</Button>
                     </div>
                 )}
             </Card.Body>

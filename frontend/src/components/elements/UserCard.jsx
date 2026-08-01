@@ -33,7 +33,7 @@ export default function UserCard({
                 </Card.Title>
                 {user.role ? <hr /> : null}
                 {!isModifying && <Card.Text className="small">{user.role}</Card.Text>}
-                {isModifying && <>
+                {isModifying && <div className="d-flex flex-column">
                     {values.map((elt, i) =>
                         <Form.Group key={i} className="mb-2">
                             <Form.Label>{elt.label}</Form.Label>
@@ -45,8 +45,8 @@ export default function UserCard({
 
                         </Form.Group>
                     )}
-                    <Button variant="success" onClick={validate}>Valider</Button>
-                </>}
+                    <Button variant="success" className="mt-2" onClick={validate}>Valider</Button>
+                </div>}
             </Card.Body>
             {isGestion && !isModifying && <Card.Footer>Position : {user.position}</Card.Footer>}
         </Card>
