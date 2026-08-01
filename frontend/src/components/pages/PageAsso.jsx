@@ -97,8 +97,8 @@ function Asso() {
                 >
                 </Card.Header>
                 <Card.Body>
-                    <Row className="d-flex flex-column flex-md-row align-items-center">
-                        <Col xs="auto" md="auto">
+                    <Row className="align-items-center flex-nowrap">
+                        <Col xs="auto">
                             <Image
                                 className="rounded-3"
                                 src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
@@ -113,15 +113,15 @@ function Asso() {
                                 }}
                             />
                         </Col>
-                        <Col md="auto" className="text-center text-md-start">
-                            <h2>{asso.nom}</h2>
-                        </Col>
-                        <Col className="text-left text-md-start">
-                            {membreData.is_membre && <Badge bg="success" className="ms-3">membre</Badge>}
-                            {membreData.cotisant && <Badge bg="primary" className="ms-3">cotisant</Badge>}
+                        <Col className="text-truncate text-start ms-2">
+                            <h2 className="mb-0 text-truncate">{asso.nom}</h2>
+                            <div>
+                                {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
+                                {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
+                            </div>
                         </Col>
                         {membreData.autorise && (
-                            <Col className="text-end ms-auto">
+                            <Col xs="auto" className="text-end">
                                 <DropdownEditer list={[
                                     { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
                                     { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },

@@ -88,16 +88,22 @@ function PageUtilisateur() {
                 >
                 </Card.Header>
                 <Card.Body>
-                    <Row className="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
+                    <Row className="align-items-center flex-nowrap">
                         {autoriseAModifier && (
-                            <Col className="text-start me-md-auto mb-3 mb-md-0 order-first">
+                            <Col xs="auto">
                                 <DropdownEditer list={[
                                     { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer la photo" },
                                     { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
                                 ]} />
                             </Col>
                         )}
-                        <Col xs="auto" md="auto" className="order-md-last">
+                        <Col className="text-truncate text-end ms-2">
+                            <h2 className="mb-0 text-truncate">
+                                {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
+                                {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
+                            </h2>
+                        </Col>
+                        <Col xs="auto">
                             <Image
                                 className="rounded-3"
                                 src={`${UPLOAD_BASE_URL}/${donneesUtilisateur.photo}`}
@@ -111,12 +117,6 @@ function PageUtilisateur() {
                                     marginBottom: '-170px'
                                 }}
                             />
-                        </Col>
-                        <Col className="text-center text-md-end">
-                            <h2>
-                                {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
-                                {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
-                            </h2>
                         </Col>
                     </Row>
                 </Card.Body>

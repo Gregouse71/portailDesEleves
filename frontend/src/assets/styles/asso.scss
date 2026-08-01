@@ -4,13 +4,15 @@
 
 .member-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /*6 cards per row*/
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  /*6 cards per row*/
   gap: 0.5rem;
 }
 
 .asso-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /*5 cards per row*/
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  /*5 cards per row*/
   gap: 0.5rem;
 }
 
@@ -18,7 +20,26 @@
   .card-title {
     font-size: 1rem;
   }
+
   .card-text {
     font-size: 0.85rem;
   }
+}
+
+/* En-tête du mandat (bannière + logo, version réduite de l'en-tête asso) */
+.mandat-header-banner {
+  height: 60px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--bs-tertiary-bg);
+  border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0;
+}
+
+.mandat-header-logo {
+  position: relative;
+  top: -40px;
+  height: 80px;
+  border: 2px solid var(--bs-card-bg, white);
+  background: var(--bs-card-bg, white);
+  margin-bottom: -40px;
 }

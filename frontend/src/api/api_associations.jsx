@@ -203,12 +203,12 @@ export async function retirerMembre(associationId, mandatId, membreId) {
 export const modifierMembreAsso = createApiPatch(`${ASSOCIATIONS_BASE_URL}/modifier_membre`)
 
 
-export async function ajouterContenuAsso(associationId, file) {
+export async function ajouterContenuAsso(associationId, mandatId, file) {
   try {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/associations/${associationId}/add_content`, {
+    const response = await fetch(`${API_BASE_URL}/associations/${associationId}/add_content/${mandatId}`, {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -252,9 +252,9 @@ export async function uploadLogoBanniereAsso(associationId, type, file) {
   }
 }
 
-export async function changerPhotoAsso(asso_id, photo_type, new_id) {
+export async function changerPhotoAsso(asso_id, photo_type, mandat_id, new_id) {
   try {
-    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${new_id}`, {
+    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${mandat_id}/${new_id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

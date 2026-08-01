@@ -208,7 +208,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
                                     </>
                                 )}
                             </div>
-                            <Card.Body className="p-2 d-flex flex-column justify-content-center">
+                            <Card.Footer className="p-2 d-flex flex-column justify-content-center">
                                 {editingMediaId === elt.id ? (
                                     <>
                                         <Form.Group className="mb-2">
@@ -236,7 +236,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
                                         {fileName}
                                     </div>
                                 )}
-                            </Card.Body>
+                            </Card.Footer>
                         </Card>
                     </Col>
                 );

@@ -111,14 +111,18 @@ class Association(db.Model):
         }
 
     def get_photo_file(self):
-        if self.logo_id is None:
-            return None
-        return ElementMedia.query.get(self.logo_id).file_path
+        actuel_mandat = next((m for m in self.mandats if m.actuel), None)
+        if actuel_mandat and actuel_mandat.logo_id:
+            media = ElementMedia.query.get(actuel_mandat.logo_id)
+            return media.file_path if media else None
+        return None
 
     def get_banniere_file(self):
-        if self.banniere_id is None:
-            return None
-        return ElementMedia.query.get(self.banniere_id).file_path
+        actuel_mandat = next((m for m in self.mandats if m.actuel), None)
+        if actuel_mandat and actuel_mandat.banniere_id:
+            media = ElementMedia.query.get(actuel_mandat.banniere_id)
+            return media.file_path if media else None
+        return None
 
     def create_association_folder(self):
         """
@@ -148,19 +152,43 @@ class AssociationMandat(db.Model):
     # Membres
     membres = db.relationship('AssociationMembre', back_populates='mandat')
 
+    # Media du mandat
+    media = db.relationship('ElementMedia', back_populates='mandat')
+
+    # Logo et bannière du mandat
+    logo_id = db.Column(db.Integer, nullable=True)
+    banniere_id = db.Column(db.Integer, nullable=True)
+
     def __init__(self, asso: Association, nom: str, position: int = 0, actuel: bool = False):
         self.nom = nom
         self.association = asso
         self.position = position
         self.actuel = actuel
-    
+
+    def get_logo_file(self):
+        if self.logo_id is None:
+            return None
+        media = ElementMedia.query.get(self.logo_id)
+        return media.file_path if media else None
+
+    def get_banniere_file(self):
+        if self.banniere_id is None:
+            return None
+        media = ElementMedia.query.get(self.banniere_id)
+        return media.file_path if media else None
+
     def to_dict(self):
         return {
-            "membres" :[m.to_dict() for m in self.membres],
+            "membres": [m.to_dict() for m in self.membres],
+            "media": [m.to_dict() for m in self.media if not m.cache],
             "position": self.position,
             "nom": self.nom,
             "actuel": self.actuel,
-            "id": self.id
+            "id": self.id,
+            "logo": self.get_logo_file(),
+            "banniere": self.get_banniere_file(),
+            "logo_id": self.logo_id,
+            "banniere_id": self.banniere_id
         }
 
 

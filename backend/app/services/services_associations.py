@@ -53,11 +53,21 @@ def add_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str):
 
 def add_mandat(association: Association, nom: str, position: int):
     """
-    Crée un nouveau mandat pour l'association
+    Crée un nouveau mandat pour l'association.
+    Copie le logo et la bannière du dernier mandat (par position) s'il existe.
     """
     association = Association.query.get(association.id)
     if association:
         mandat = AssociationMandat(association, nom, position)
+
+        # Copier le logo/bannière du dernier mandat
+        last_mandat = AssociationMandat.query.filter_by(
+            association_id=association.id
+        ).order_by(AssociationMandat.position.desc()).first()
+        if last_mandat:
+            mandat.logo_id = last_mandat.logo_id
+            mandat.banniere_id = last_mandat.banniere_id
+
         db.session.add(mandat)
         db.session.commit()
         return True
@@ -72,6 +82,10 @@ def del_mandat(mandat: int):
     membres = AssociationMembre.query.filter_by(mandat_id = mandat.id).all ()
     for m in membres:
         db.session.delete(m)
+    # Supprimer les médias associés au mandat de la base de données.
+    # Note : Les fichiers physiques correspondants sont volontairement conservés sur le disque dur.
+    for media in mandat.media:
+        db.session.delete(media)
     db.session.delete(mandat)
     db.session.commit()
     return True

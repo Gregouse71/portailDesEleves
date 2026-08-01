@@ -228,27 +228,31 @@ def route_modifier_role_membre(association_id, mandat_id, membre_id):
         return jsonify({"message": f"Erreur lors de la modification du role du membre : {str(e)}"}), 500
 
 
-@controllers_associations.post('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<path:new_id>')
+@controllers_associations.post('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<int:mandat_id>/<int:new_id>')
 @login_required
 @est_membre_de_asso(actuel=True)
-def route_modifier_logo_banniere(association_id: int, logo_banniere: str, new_id: str):
+def route_modifier_logo_banniere(association_id: int, logo_banniere: str, mandat_id: int, new_id: int):
     """
-    Modifie la bannière de l'association
+    Modifie le logo ou la bannière d'un mandat.
     """
     association = db.session.get(Association, association_id)
     media = db.session.get(ElementMedia, new_id)
-    if media is None or association is None:
-        return jsonify({"message": "Association ou media non trouvé"}), 404
+    mandat = db.session.get(AssociationMandat, mandat_id)
+    if media is None or association is None or mandat is None:
+        return jsonify({"message": "Association, mandat ou media non trouvé"}), 404
+    if mandat.association_id != association_id:
+        return jsonify({"message": "Le mandat n'appartient pas à cette association"}), 403
+
     if logo_banniere == 'logo':
-        association.logo_id = new_id
+        mandat.logo_id = new_id
         db.session.commit()
-        return jsonify({"message": "logo modifie avec succes"}), 200
+        return jsonify({"message": "logo modifié avec succès"}), 200
     elif logo_banniere == 'banniere':
-        association.banniere_id = new_id
+        mandat.banniere_id = new_id
         db.session.commit()
-        return jsonify({"message": "banniere modifie avec succes"}), 200
+        return jsonify({"message": "bannière modifiée avec succès"}), 200
     else:
-        return jsonify({"message": "erreur : veulliez entrer logo/new_logo_path ou banner/new_banner_path"}), 404
+        return jsonify({"message": "erreur : veuillez entrer logo ou banniere"}), 400
 
 
 @controllers_associations.route('/<int:association_id>/upload_logo_banniere/<string:photo_type>', methods=['POST'])
@@ -278,16 +282,18 @@ def route_upload_logo_banniere(association_id: int, photo_type: str):
     custom_name = f"{photo_type}_{timestamp}"
     UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
 
-    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id, custom_filename=custom_name)
+    actuel_mandat = next((m for m in asso.mandats if m.actuel), None)
+    if not actuel_mandat:
+        return jsonify({"success": False, "message": "Aucun mandat actuel défini"}), 400
+
+    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id, custom_filename=custom_name, mandat_id=actuel_mandat.id)
     if not media:
         return jsonify({"success": False, "message": "Impossible de créer le fichier."}), 400
 
     if photo_type == 'logo':
-        asso.logo_id = media.id
-        asso.logo_path = media.file_path
+        actuel_mandat.logo_id = media.id
     elif photo_type == 'banniere':
-        asso.banniere_id = media.id
-        asso.banniere_path = media.file_path
+        actuel_mandat.banniere_id = media.id
 
     db.session.commit()
 
@@ -327,6 +333,10 @@ def delete_content_asso(association_id: int, media_id: int):
         u.banniere_id = None
     for u in Association.query.filter_by(logo_id=cached_media_id).all():
         u.logo_id = None
+    for m in AssociationMandat.query.filter_by(banniere_id=cached_media_id).all():
+        m.banniere_id = None
+    for m in AssociationMandat.query.filter_by(logo_id=cached_media_id).all():
+        m.logo_id = None
     db.session.commit()
 
     return jsonify({"message": "Media supprimé avec succès"}), 200
@@ -362,16 +372,21 @@ def rename_content_asso(association_id: int, media_id: int):
 
 
 
-@controllers_associations.route('/<int:association_id>/add_content', methods=['POST'])
+@controllers_associations.route('/<int:association_id>/add_content/<int:mandat_id>', methods=['POST'])
 @login_required
 @est_membre_de_asso
-def route_add_content(association_id):
+def route_add_content(association_id, mandat_id):
     """
-    Ajoute du contenu au dossier de l'association
+    Ajoute du contenu au dossier de l'association, associé à un mandat
     """
     asso = get_association(association_id)
     if not asso:
         return jsonify({"success": False, "message": "Association introuvable"}), 404
+
+    mandat = db.session.get(AssociationMandat, mandat_id)
+    if not mandat or mandat.association_id != association_id:
+        return jsonify({"success": False, "message": "Mandat introuvable"}), 404
+
     # Définition du dossier d'upload
     UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -383,7 +398,7 @@ def route_add_content(association_id):
     if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
         return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
 
-    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id)
+    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id, mandat_id=mandat_id)
     if not media:
         return jsonify({"message": "Impossible de créer le fichier."}), 400
     return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": media.file_path}), 200
