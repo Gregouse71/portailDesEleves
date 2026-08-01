@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 import os
+from datetime import datetime
 
 from app import db
 from app.utils.decorators import est_membre_de_asso, superutilisateur_required
@@ -248,6 +249,54 @@ def route_modifier_logo_banniere(association_id: int, logo_banniere: str, new_id
         return jsonify({"message": "banniere modifie avec succes"}), 200
     else:
         return jsonify({"message": "erreur : veulliez entrer logo/new_logo_path ou banner/new_banner_path"}), 404
+
+
+@controllers_associations.route('/<int:association_id>/upload_logo_banniere/<string:photo_type>', methods=['POST'])
+@login_required
+@est_membre_de_asso
+def route_upload_logo_banniere(association_id: int, photo_type: str):
+    """
+    Téléverse et définit directement un nouveau logo ou une nouvelle bannière pour l'association.
+    Nomme le fichier logo_{timestamp} ou banniere_{timestamp} et l'ajoute aux éléments media.
+    """
+    if photo_type not in ['logo', 'banniere']:
+        return jsonify({"success": False, "message": "Type invalide (doit être logo ou banniere)"}), 400
+
+    asso = get_association(association_id)
+    if not asso:
+        return jsonify({"success": False, "message": "Association introuvable"}), 404
+
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "Aucun fichier reçu"}), 400
+
+    file = request.files['file']
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
+        return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
+
+    timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+    custom_name = f"{photo_type}_{timestamp}"
+    UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
+
+    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id, custom_filename=custom_name)
+    if not media:
+        return jsonify({"success": False, "message": "Impossible de créer le fichier."}), 400
+
+    if photo_type == 'logo':
+        asso.logo_id = media.id
+        asso.logo_path = media.file_path
+    elif photo_type == 'banniere':
+        asso.banniere_id = media.id
+        asso.banniere_path = media.file_path
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": f"{photo_type.capitalize()} modifié avec succès",
+        "file_name": media.file_path,
+        "media_id": media.id
+    }), 200
 
 
 @controllers_associations.get('/content/<int:asso_id>')

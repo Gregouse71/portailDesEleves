@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { Row, Col, Image, Button } from "react-bootstrap";
+import { Row, Col, Button, Card } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import { ajouterContenuAsso, changerPhotoAsso, obtenirPhotosAsso, supprimerPhotoAsso } from "../../../api/api_associations";
@@ -71,27 +71,38 @@ export default function AssosMedia({ asso_id, membreData }) {
         </div>
 
         <Row xs={2} sm={3} md={4} lg={5} className="g-3">
-            {photos.map((elt, i) =>
-                <Col key={i}>
-                    <div className="ratio ratio-1x1">
-                        <Image
-                            src={`${UPLOAD_BASE_URL}/${elt.file_path}`}
-                            alt="Photo"
-                            style={{ objectFit: 'scale-down' }}
-                        />
-                        {membreData.autorise && isGestion && (
-                            <div className="position-absolute top-0 end-0 p-1">
-                                <DropdownEditer list={[
-                                    { can: true, onClick: () => mutationPhoto.mutate({ type: "logo", id: elt.id }), name: "Mettre logo" },
-                                    { can: true, onClick: () => mutationPhoto.mutate({ type: "banniere", id: elt.id }), name: "Mettre en bannière" },
-                                    "divider",
-                                    { can: true, onClick: () => mutationSupprimer.mutate(elt.id), name: "Supprimer" },
-                                ]} />
+            {photos.map((elt, i) => {
+                const fileName = elt.file_path ? elt.file_path.split('/').pop() : "";
+                return (
+                    <Col key={i}>
+                        <Card className="h-100 text-center">
+                            <div className="ratio ratio-1x1 position-relative">
+                                <Card.Img
+                                    variant="top"
+                                    src={`${UPLOAD_BASE_URL}/${elt.file_path}`}
+                                    alt="Photo"
+                                    style={{ objectFit: 'scale-down', cursor: 'pointer' }}
+                                    className="p-2"
+                                    onClick={() => window.open(`${UPLOAD_BASE_URL}/${elt.file_path}`, '_blank')}
+                                />
+                                {membreData.autorise && isGestion && (
+                                    <div className="position-absolute top-0 end-0 p-1">
+                                        <DropdownEditer list={[
+                                            { can: true, onClick: () => mutationPhoto.mutate({ type: "logo", id: elt.id }), name: "Mettre logo" },
+                                            { can: true, onClick: () => mutationPhoto.mutate({ type: "banniere", id: elt.id }), name: "Mettre en bannière" },
+                                            "divider",
+                                            { can: true, onClick: () => mutationSupprimer.mutate(elt.id), name: "Supprimer" },
+                                        ]} />
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </Col>
-            )}
+                            <Card.Footer className="p-2 text-center text-truncate text-muted" title={fileName} style={{ fontSize: '0.85rem' }}>
+                                {fileName}
+                            </Card.Footer>
+                        </Card>
+                    </Col>
+                );
+            })}
         </Row>
     </>)
 }

@@ -12,27 +12,30 @@ from app.models.models_media import ElementMedia
 from config import Config
 
 
-def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=False):
+def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=False, custom_filename: str=None):
     """
     Crée un fichier pour l'utilisateur/association.
     Si user_id est non nul, asso_id est ignoré.
     Si asso_id et user_id sont nuls, aucun fichier n'est créé
     """
-    if file.filename == '':
-        return jsonify({"message": "Aucun fichier n'a été sélectionné"}), 400
+    if not file or file.filename == '':
+        return None
     if asso_id is not None and user_id is not None:
-        return jsonify({"message": "Le fichier ne peut pas être associé à un utilisateur et une asso"}), 400
+        return None
 
     if file:
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
-        if ext not in {'.png', '.jpg', '.jpeg', '.gif'}:
+        if ext.lower() not in {'.png', '.jpg', '.jpeg', '.gif'}:
             return None
-        uid = uuid.uuid4()
+        
+        if custom_filename:
+            unique_filename = f"{custom_filename}{ext}"
+        else:
+            uid = uuid.uuid4()
+            unique_filename = f"{name}_{uid}{ext}"
 
-        unique_filename = f"{name}_{uid}{ext}"
-
-        path = os.path.join(dir, unique_filename)
+        path = os.path.join(dir, unique_filename).replace('\\', '/')
         media = ElementMedia(user_id, asso_id, path, cache=cache)
         db.session.add(media)
         db.session.commit()
@@ -44,8 +47,8 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
             except FileExistsError:
                 pass
 
-        path = os.path.join(Config.UPLOAD_BASE_FOLDER, path)
-        file.save(path)
+        full_save_path = os.path.join(Config.UPLOAD_BASE_FOLDER, dir, unique_filename)
+        file.save(full_save_path)
         return media
 
 

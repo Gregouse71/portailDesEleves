@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { obtenirPhotosUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur, ajouterContenuUtilisateur, supprimerPhotoUtilisateur, ajouterLienVideoUtilisateur } from "../../../api/api_utilisateurs";
-import { Row, Col, Image, Button } from "react-bootstrap";
+import { Row, Col, Button, Card } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 
@@ -98,39 +98,49 @@ export default function TabMedia({ id, autoriseAModifier }) {
         <Row xs={2} sm={3} md={4} lg={5} className="g-3">
             {photos.map((elt, i) => {
                 const isIframe = elt.file_path && (elt.file_path.startsWith("http://") || elt.file_path.startsWith("https://"));
+                const fileName = elt.file_path ? elt.file_path.split('/').pop() : "";
                 return (
                     <Col key={i}>
-                        <div className="ratio ratio-1x1">
-                            {isIframe ? (
-                                <iframe
-                                    src={elt.file_path}
-                                    title="Video player"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                ></iframe>
-                            ) : (
-                                <Image
-                                    src={`${UPLOAD_BASE_URL}/${elt.file_path}`}
-                                    alt="Photo"
-                                    style={{ objectFit: 'scale-down' }}
-                                />
-                            )}
-                            {autoriseAModifier && isGestion && (
-                                <div className="position-absolute top-0 end-0 p-1">
-                                    <DropdownEditer list={
-                                        isIframe ? [
-                                            { can: true, onClick: () => mutationSupprimer.mutate(elt.id), name: "Supprimer" },
-                                        ] : [
-                                            { can: true, onClick: () => mutationPhoto.mutate(elt.id), name: "Mettre en photo de profil" },
-                                            { can: true, onClick: () => mutationBanniere.mutate(elt.id), name: "Mettre en bannière" },
-                                            "divider",
-                                            { can: true, onClick: () => mutationSupprimer.mutate(elt.id), name: "Supprimer" },
-                                        ]
-                                    } />
-                                </div>
-                            )}
-                        </div>
+                        <Card className="h-100 text-center">
+                            <div className="ratio ratio-1x1 position-relative">
+                                {isIframe ? (
+                                    <iframe
+                                        src={elt.file_path}
+                                        title="Video player"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                        className="card-img-top p-2"
+                                    ></iframe>
+                                ) : (
+                                    <Card.Img
+                                        variant="top"
+                                        src={`${UPLOAD_BASE_URL}/${elt.file_path}`}
+                                        alt="Photo"
+                                        style={{ objectFit: 'scale-down', cursor: 'pointer' }}
+                                        className="p-2"
+                                        onClick={() => window.open(`${UPLOAD_BASE_URL}/${elt.file_path}`, '_blank')}
+                                    />
+                                )}
+                                {autoriseAModifier && isGestion && (
+                                    <div className="position-absolute top-0 end-0 p-1">
+                                        <DropdownEditer list={
+                                            isIframe ? [
+                                                { can: true, onClick: () => mutationSupprimer.mutate(elt.id), name: "Supprimer" },
+                                            ] : [
+                                                { can: true, onClick: () => mutationPhoto.mutate(elt.id), name: "Mettre en photo de profil" },
+                                                { can: true, onClick: () => mutationBanniere.mutate(elt.id), name: "Mettre en bannière" },
+                                                "divider",
+                                                { can: true, onClick: () => mutationSupprimer.mutate(elt.id), name: "Supprimer" },
+                                            ]
+                                        } />
+                                    </div>
+                                )}
+                            </div>
+                            <Card.Footer className="p-2 text-center text-truncate text-muted" title={fileName} style={{ fontSize: '0.85rem' }}>
+                                {fileName}
+                            </Card.Footer>
+                        </Card>
                     </Col>
                 );
             })}
