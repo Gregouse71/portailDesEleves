@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, createApiPut, handleResponse } from "./base";
 
 const ASSOCIATIONS_BASE_URL = `${API_BASE_URL}/associations`;
 
@@ -15,6 +15,11 @@ export const obtenirPhotosAsso = createApiGet(`${ASSOCIATIONS_BASE_URL}/content`
  * 
  */
 export const supprimerPhotoAsso = createApiDelete(`${ASSOCIATIONS_BASE_URL}/content`)
+
+/** Renommer un media
+ * 
+ */
+export const renommerPhotoAsso = createApiPut(`${ASSOCIATIONS_BASE_URL}/content`)
 
 /** Charge le mandat
  * args :

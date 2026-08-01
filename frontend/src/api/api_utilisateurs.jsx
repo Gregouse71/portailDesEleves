@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPost, createApiPut, handleResponse } from "./base";
 
 const UTILISATEUR_BASE_URL = `${API_BASE_URL}/users`;
 
@@ -274,6 +274,11 @@ export const obtenirPhotosUtilisateur = createApiGet(`${UTILISATEUR_BASE_URL}/co
  * 
  */
 export const supprimerPhotoUtilisateur = createApiDelete(`${UTILISATEUR_BASE_URL}/content`)
+
+/** Renommer un media
+ * 
+ */
+export const renommerPhotoUtilisateur = createApiPut(`${UTILISATEUR_BASE_URL}/content`)
 
 export async function obtenirFamilleUtilisateur(id_utilisateur) {
   const res = await fetch(`${API_BASE_URL}/users/famille/${id_utilisateur}`, {

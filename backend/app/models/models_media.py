@@ -18,8 +18,9 @@ class ElementMedia(db.Model):
     position = db.Column(db.Integer, nullable=False, default=0)
     cache = db.Column(db.Boolean, nullable=False, default=False)
     protege = db.Column(db.Boolean, nullable=False, default=False)
+    nom = db.Column(db.String(255), nullable=True)
 
-    def __init__(self, utilisateur_id: int, association_id: int, file_path: str, cache: bool=False, protege=False) :
+    def __init__(self, utilisateur_id: int, association_id: int, file_path: str, cache: bool=False, protege=False, nom: str=None) :
         """
         Cree un nouveau sondage
         """
@@ -31,6 +32,7 @@ class ElementMedia(db.Model):
         self.position = 0
         self.cache = cache
         self.protege = protege
+        self.nom = nom
 
     def to_dict(self):
         return {
@@ -38,5 +40,6 @@ class ElementMedia(db.Model):
             "file_path": self.file_path,
             "position": self.position,
             "utilisateur_id": self.utilisateur_id,
-            "association_id": self.association_id
+            "association_id": self.association_id,
+            "nom": self.nom
         }

@@ -317,8 +317,6 @@ def delete_content_asso(association_id: int, media_id: int):
     if media is None:
         return jsonify({"message": "Media non trouvé"}), 404
 
-    if len(Association.query.filter_by(logo_id=media.id).all()) > 0:
-        return jsonify({"message": "Impossible de supprimer le logo"}), 400
 
     cached_media_id = media.id
 
@@ -327,9 +325,41 @@ def delete_content_asso(association_id: int, media_id: int):
 
     for u in Association.query.filter_by(banniere_id=cached_media_id).all():
         u.banniere_id = None
+    for u in Association.query.filter_by(logo_id=cached_media_id).all():
+        u.logo_id = None
     db.session.commit()
 
     return jsonify({"message": "Media supprimé avec succès"}), 200
+
+
+@controllers_associations.put('/content/<int:association_id>/<int:media_id>')
+@login_required
+@est_membre_de_asso(actuel=True)
+def rename_content_asso(association_id: int, media_id: int):
+    """
+    Renomme un contenu (photo) pour une association.
+    """
+    media = ElementMedia.query.get(media_id)
+    if media is None:
+        return jsonify({"message": "Media non trouvé"}), 404
+
+    if media.association_id != association_id:
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    data = request.get_json() or {}
+    new_name = data.get('name')
+    if not new_name:
+        return jsonify({"message": "Nom manquant"}), 400
+
+    try:
+        media.nom = new_name
+        db.session.commit()
+        return jsonify({"message": "Media renommé avec succès", "nom": media.nom}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors du renommage : {str(e)}"}), 500
+
+
 
 
 @controllers_associations.route('/<int:association_id>/add_content', methods=['POST'])

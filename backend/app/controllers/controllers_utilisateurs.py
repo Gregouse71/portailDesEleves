@@ -240,7 +240,7 @@ def add_content_to_user(user_id: int):
         if not embed_url:
             return jsonify({"message": "Lien URL invalide"}), 400
 
-        media = ElementMedia(utilisateur_id=user_id, association_id=None, file_path=embed_url)
+        media = ElementMedia(utilisateur_id=user_id, association_id=None, file_path=embed_url, nom=input_url)
         db.session.add(media)
         db.session.commit()
         return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path}), 200
@@ -273,8 +273,6 @@ def delete_content_user(media_id):
     if not (media.utilisateur_id == current_user.id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
 
-    if len(Utilisateur.query.filter_by(photo_id=media.id).all()) > 0:
-        return jsonify({"message": "Impossible de supprimer une photo de profil"}), 400
 
     cached_media_id = media.id
 
@@ -282,9 +280,39 @@ def delete_content_user(media_id):
         return jsonify({"message": "Media protégé"}), 400
     for u in Utilisateur.query.filter_by(banniere_id=cached_media_id).all():
         u.banniere_id = None
+    for u in Utilisateur.query.filter_by(photo_id=cached_media_id).all():
+        u.photo_id = None
     db.session.commit()
 
     return jsonify({"message": "Media supprimé avec succès"}), 200
+
+
+@controllers_utilisateurs.put('/content/<int:media_id>')
+@login_required
+def rename_content_user(media_id):
+    """
+    Renomme un contenu (photo ou vidéo) pour un utilisateur.
+    """
+    media = ElementMedia.query.get(media_id)
+    if media is None:
+        return jsonify({"message": "Media non trouvé"}), 404
+
+    if not (media.utilisateur_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    data = request.get_json() or {}
+    new_name = data.get('name')
+    if not new_name:
+        return jsonify({"message": "Nom manquant"}), 400
+
+    try:
+        media.nom = new_name
+        db.session.commit()
+        return jsonify({"message": "Media renommé avec succès", "nom": media.nom}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors du renommage : {str(e)}"}), 500
+
 
 
 @controllers_utilisateurs.route('/<int:user_id>/modifier_photo/<int:new_id>', methods=['POST'])
