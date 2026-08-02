@@ -3,6 +3,7 @@
 
 .env
 .DS_Store
+.idea
 
 instance/*
 *.sql
