@@ -45,6 +45,36 @@ def run_migration():
             db.session.rollback()
             print(f"Error (probably column already exists): {e}")
 
+        # --- DATA MIGRATION STEP ---
+        try:
+            print("Migrating data: linking media to current mandats...")
+            # 1. Re-link existing association media to the currently active mandat
+            db.session.execute(text("""
+                UPDATE media_element
+                SET mandat_id = (
+                    SELECT id FROM associations_mandat 
+                    WHERE associations_mandat.association_id = media_element.association_id 
+                    AND actuel = 1
+                )
+                WHERE association_id IS NOT NULL;
+            """))
+            
+            print("Migrating data: copying logo and banniere to current mandats...")
+            # 2. Copy the logo and banner IDs to the currently active mandat
+            db.session.execute(text("""
+                UPDATE associations_mandat
+                SET 
+                    logo_id = (SELECT logo_id FROM associations_association WHERE associations_association.id = associations_mandat.association_id),
+                    banniere_id = (SELECT banniere_id FROM associations_association WHERE associations_association.id = associations_mandat.association_id)
+                WHERE actuel = 1;
+            """))
+            db.session.commit()
+            print("Successfully migrated data.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error migrating data: {e}")
+        # -------------------------------
+
         # 5. Remove association_id from media_element (and its foreign key)
         try:
             print("Looking for foreign key on 'association_id'...")
