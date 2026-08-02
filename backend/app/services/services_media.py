@@ -36,7 +36,7 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
             unique_filename = f"{name}_{uid}{ext}"
 
         path = os.path.join(dir, unique_filename).replace('\\', '/')
-        media = ElementMedia(user_id, asso_id, path, cache=cache, nom=filename, mandat_id=mandat_id)
+        media = ElementMedia(user_id, asso_id, path, cache=cache, nom=filename.split(".")[0], mandat_id=mandat_id)
         db.session.add(media)
         db.session.commit()
 

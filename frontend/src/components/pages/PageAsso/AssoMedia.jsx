@@ -155,7 +155,7 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
                 ) : (
                     <Row xs={2} sm={3} md={4} lg={5} className="g-3">
                         {photos.map((elt, i) => {
-                            const fileName = elt.nom || (elt.file_path ? elt.file_path.split('/').pop() : "");
+                            const fileName = elt.nom || (elt.file_path ? elt.file_path.split('/').pop().split('.').shift() : "");
                             const isLogo = mandat.logo_id === elt.id;
                             const isBanniere = mandat.banniere_id === elt.id;
                             return (
@@ -276,7 +276,7 @@ export default function AssosMedia({ asso_id, membreData }) {
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>Mes photos</h2>
+                <h2>Les photos</h2>
             </div>
 
             {sortedMandats.map((mandat) => (

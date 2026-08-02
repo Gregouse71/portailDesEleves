@@ -90,7 +90,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
 
     const startRename = (elt) => {
         setEditingMediaId(elt.id);
-        setEditingName(elt.nom || (elt.file_path ? elt.file_path.split('/').pop() : ""));
+        setEditingName(elt.nom || (elt.file_path ? elt.file_path.split('/').pop().split('.').shift() : ""));
     };
 
     const handleSaveRename = (id) => {
@@ -141,7 +141,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
         <Row xs={2} sm={3} md={4} lg={5} className="g-3">
             {photos.map((elt, i) => {
                 const isIframe = elt.file_path && (elt.file_path.startsWith("http://") || elt.file_path.startsWith("https://"));
-                const fileName = elt.nom || (elt.file_path ? elt.file_path.split('/').pop() : "");
+                const fileName = elt.nom || (elt.file_path ? elt.file_path.split('/').pop().split('.').shift() : "");
                 return (
                     <Col key={i}>
                         <Card className="h-100 text-center">
