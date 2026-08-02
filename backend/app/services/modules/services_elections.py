@@ -71,10 +71,13 @@ def ajouter_photo(file, election, choix):
     except (KeyError, ValueError, AttributeError, TypeError):
         pass
     
+    actuel_mandat = next((m for m in election.association.mandats if m.actuel), None)
+    mandat_id = actuel_mandat.id if actuel_mandat else None
+
     media = upload_media(
         file,
         os.path.join('associations', election.association.nom_dossier),
-        asso_id=election.association.id, cache=True
+        mandat_id=mandat_id, cache=True
     )
     if not media:
         return None

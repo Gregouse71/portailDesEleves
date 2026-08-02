@@ -286,7 +286,7 @@ def route_upload_logo_banniere(association_id: int, photo_type: str):
     if not actuel_mandat:
         return jsonify({"success": False, "message": "Aucun mandat actuel défini"}), 400
 
-    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id, custom_filename=custom_name, mandat_id=actuel_mandat.id)
+    media = upload_media(file, UPLOAD_FOLDER, custom_filename=custom_name, mandat_id=actuel_mandat.id)
     if not media:
         return jsonify({"success": False, "message": "Impossible de créer le fichier."}), 400
 
@@ -398,7 +398,7 @@ def route_add_content(association_id, mandat_id):
     if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
         return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
 
-    media = upload_media(file, UPLOAD_FOLDER, asso_id=association_id, mandat_id=mandat_id)
+    media = upload_media(file, UPLOAD_FOLDER, mandat_id=mandat_id)
     if not media:
         return jsonify({"message": "Impossible de créer le fichier."}), 400
     return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": media.file_path}), 200

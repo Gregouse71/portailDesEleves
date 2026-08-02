@@ -34,8 +34,6 @@ class Association(db.Model):
     # Affichage d'une tab election sur la page du portail
     modules = db.Column(db.JSON, nullable=False)
 
-    media = db.relationship('ElementMedia', back_populates='association')
-
     def __init__(
         self, nom: str, ordre_importance: int,description: str = None,
         type_association: str = None, logo_path: str = None,  banniere_path: str = None,

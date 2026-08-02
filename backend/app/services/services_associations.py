@@ -84,9 +84,8 @@ def add_mandat(association: Association, nom: str, position: int):
                 # S'il s'agit d'un lien distant, on copie juste la référence dans un nouvel objet ElementMedia
                 if old_media.file_path.startswith("http://") or old_media.file_path.startswith("https://"):
                     new_media = ElementMedia(
-                        old_media.utilisateur_id,
-                        old_media.association_id,
-                        old_media.file_path,
+                        utilisateur_id=old_media.utilisateur_id,
+                        file_path=old_media.file_path,
                         cache=old_media.cache,
                         protege=old_media.protege,
                         nom=old_media.nom,
@@ -117,9 +116,8 @@ def add_mandat(association: Association, nom: str, position: int):
                 shutil.copy2(old_full_path, new_full_path)
                 
                 new_media = ElementMedia(
-                    old_media.utilisateur_id,
-                    old_media.association_id,
-                    new_file_path,
+                    utilisateur_id=old_media.utilisateur_id,
+                    file_path=new_file_path,
                     cache=old_media.cache,
                     protege=old_media.protege,
                     nom=old_media.nom,
@@ -214,7 +212,13 @@ def update_member(mandat: AssociationMandat, utilisateur: Utilisateur, role: str
 
 
 def get_asso_media(asso_id):
-    files = ElementMedia.query.filter_by(association_id=asso_id, cache=False)
+    asso = Association.query.get(asso_id)
+    if not asso:
+        return []
+    
+    files = []
+    for mandat in asso.mandats:
+        files.extend([m for m in mandat.media if not m.cache])
     return [f.to_dict() for f in files]
 
 

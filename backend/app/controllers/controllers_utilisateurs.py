@@ -240,7 +240,7 @@ def add_content_to_user(user_id: int):
         if not embed_url:
             return jsonify({"message": "Lien URL invalide"}), 400
 
-        media = ElementMedia(utilisateur_id=user_id, association_id=None, file_path=embed_url, nom=input_url)
+        media = ElementMedia(utilisateur_id=user_id, file_path=embed_url, nom=input_url)
         db.session.add(media)
         db.session.commit()
         return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path, "media_id": media.id}), 200

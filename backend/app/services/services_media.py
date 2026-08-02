@@ -12,15 +12,15 @@ from app.models.models_media import ElementMedia
 from config import Config
 
 
-def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=False, custom_filename: str=None, mandat_id: int=None):
+def upload_media(file, dir: str, user_id: int=None, cache=False, custom_filename: str=None, mandat_id: int=None):
     """
-    Crée un fichier pour l'utilisateur/association.
-    Si user_id est non nul, asso_id est ignoré.
-    Si asso_id et user_id sont nuls, aucun fichier n'est créé
+    Crée un fichier pour l'utilisateur/mandat.
+    Si user_id est non nul, mandat_id est ignoré.
+    Si mandat_id et user_id sont nuls, aucun fichier n'est créé
     """
     if not file or file.filename == '':
         return None
-    if asso_id is not None and user_id is not None:
+    if mandat_id is not None and user_id is not None:
         return None
 
     if file:
@@ -36,7 +36,7 @@ def upload_media(file, dir: str, user_id: int=None, asso_id: int=None, cache=Fal
             unique_filename = f"{name}_{uid}{ext}"
 
         path = os.path.join(dir, unique_filename).replace('\\', '/')
-        media = ElementMedia(user_id, asso_id, path, cache=cache, nom=filename, mandat_id=mandat_id)
+        media = ElementMedia(utilisateur_id=user_id, file_path=path, cache=cache, nom=filename, mandat_id=mandat_id)
         db.session.add(media)
         db.session.commit()
 

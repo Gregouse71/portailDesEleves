@@ -11,8 +11,6 @@ class ElementMedia(db.Model):
     # A priori seul utilisateur _ou bien_ assocition est non nul
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
     utilisateur = db.relationship('Utilisateur', back_populates='media')
-    association_id = db.Column(db.Integer, db.ForeignKey('associations_association.id'), nullable=True)
-    association = db.relationship('Association', back_populates='media')
     mandat_id = db.Column(db.Integer, db.ForeignKey('associations_mandat.id'), nullable=True)
     mandat = db.relationship('AssociationMandat', back_populates='media')
 
@@ -22,14 +20,13 @@ class ElementMedia(db.Model):
     protege = db.Column(db.Boolean, nullable=False, default=False)
     nom = db.Column(db.String(255), nullable=True)
 
-    def __init__(self, utilisateur_id: int, association_id: int, file_path: str, cache: bool=False, protege=False, nom: str=None, mandat_id: int=None) :
+    def __init__(self, utilisateur_id: int, file_path: str, cache: bool=False, protege=False, nom: str=None, mandat_id: int=None) :
         """
         Cree un nouveau sondage
         """
-        if utilisateur_id is None and association_id is None:
-            raise ValueError("Le media doit être associé à un utilisateur ou une association")
+        if utilisateur_id is None and mandat_id is None:
+            raise ValueError("Le media doit être associé à un utilisateur ou un mandat")
         self.utilisateur_id = utilisateur_id
-        self.association_id = association_id
         self.mandat_id = mandat_id
         self.file_path = file_path
         self.position = 0
@@ -43,6 +40,5 @@ class ElementMedia(db.Model):
             "file_path": self.file_path,
             "position": self.position,
             "utilisateur_id": self.utilisateur_id,
-            "association_id": self.association_id,
             "nom": self.nom
         }
