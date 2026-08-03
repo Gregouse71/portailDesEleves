@@ -75,8 +75,8 @@ def ajouter_photo(file, election, choix):
     mandat_id = actuel_mandat.id if actuel_mandat else None
 
     media = upload_media(
-        file,
         os.path.join('associations', election.association.nom_dossier),
+        file=file,
         mandat_id=mandat_id, cache=True
     )
     if not media:

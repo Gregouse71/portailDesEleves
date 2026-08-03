@@ -13,7 +13,7 @@ from app.models.models_media import ElementMedia
 from config import Config
 
 
-def upload_media(dir: str, file=None, url: str=None, user_id: int=None, cache=False, custom_filename: str=None, mandat_id: int=None):
+def upload_media(dir: str, file=None, url: str=None, user_id: int=None, cache=False, custom_filename: str=None, mandat_id: int=None, protege: bool=False):
     """
     Crée un fichier pour l'utilisateur/mandat.
     Si user_id est non nul, mandat_id est ignoré.
@@ -27,7 +27,7 @@ def upload_media(dir: str, file=None, url: str=None, user_id: int=None, cache=Fa
         if not embed_url:
             return None
 
-        media = ElementMedia(utilisateur_id=user_id, mandat_id=mandat_id, file_path=embed_url, nom=url)
+        media = ElementMedia(utilisateur_id=user_id, mandat_id=mandat_id, file_path=embed_url, nom=url, protege=protege)
         db.session.add(media)
         db.session.commit()
         return media
@@ -45,7 +45,7 @@ def upload_media(dir: str, file=None, url: str=None, user_id: int=None, cache=Fa
             unique_filename = f"{name}_{uid}{ext}"
 
         path = os.path.join(dir, unique_filename).replace('\\', '/')
-        media = ElementMedia(utilisateur_id=user_id, file_path=path, cache=cache, nom=filename.split(".")[0], mandat_id=mandat_id)
+        media = ElementMedia(utilisateur_id=user_id, file_path=path, cache=cache, nom=filename.split(".")[0], mandat_id=mandat_id, protege=protege)
         db.session.add(media)
         db.session.commit()
 

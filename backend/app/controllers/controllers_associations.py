@@ -286,7 +286,7 @@ def route_upload_logo_banniere(association_id: int, photo_type: str):
     if not actuel_mandat:
         return jsonify({"success": False, "message": "Aucun mandat actuel défini"}), 400
 
-    media = upload_media(file, UPLOAD_FOLDER, custom_filename=custom_name, mandat_id=actuel_mandat.id)
+    media = upload_media(UPLOAD_FOLDER, file=file, custom_filename=custom_name, mandat_id=actuel_mandat.id)
     if not media:
         return jsonify({"success": False, "message": "Impossible de créer le fichier."}), 400
 

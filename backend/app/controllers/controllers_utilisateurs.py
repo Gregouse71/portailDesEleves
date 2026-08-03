@@ -543,7 +543,7 @@ def route_add_utilisateur():
                         promotion=promotion,
                         cycle=cycle)
         if photo:
-            media = upload_media(photo, dir="utilisateurs", user_id=user_id)
+            media = upload_media("utilisateurs", file=photo, user_id=user_id, protege=True)
             if media and not isinstance(media, tuple):
                 set_user_photo(user_id, media.id)
         return jsonify({"message": "Utilisateur ajouté avec succès"}), 201
