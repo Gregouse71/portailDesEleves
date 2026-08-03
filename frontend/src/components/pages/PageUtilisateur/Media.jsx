@@ -48,12 +48,8 @@ export default function TabMedia({ id, autoriseAModifier }) {
         const url = window.prompt("Entrez le lien de la vidéo (YouTube, PeerTube, Vimeo, Dailymotion...) :");
         if (url) {
             try {
-                const result = await ajouterLienVideoUtilisateur(id, url);
-                if (result.success) {
-                    queryClient.invalidateQueries(['photosUtilisateur', id]);
-                } else {
-                    alert(`Erreur : ${result.message}`);
-                }
+                await ajouterLienVideoUtilisateur({ url: url }, id);
+                queryClient.invalidateQueries(['photosUtilisateur', id]);
             } catch (error) {
                 alert(`Erreur : ${error.message}`);
             }
@@ -177,13 +173,16 @@ export default function TabMedia({ id, autoriseAModifier }) {
                                             onClick={() => {
                                                 let confirmMsg = "Êtes-vous sûr de vouloir supprimer ce média ?";
                                                 if (utilisateur?.photo === elt.file_path) {
-                                                    confirmMsg = "Attention, ce média est actuellement utilisé comme photo de profil. Si vous le supprimez, vous n'aurez plus de photo de profil. Continuer ?";
+                                                    confirmMsg = "Attention, ce média est actuellement utilisé comme photo de profil. Vous ne pouvez pas le supprimer.";
                                                 } else if (utilisateur?.banniere === elt.file_path) {
-                                                    confirmMsg = "Attention, ce média est actuellement utilisé comme bannière. Si vous le supprimez, vous n'aurez plus de bannière. Continuer ?";
+                                                    confirmMsg = "Attention, ce média est actuellement utilisé comme bannière. Vous ne pouvez pas le supprimer.";
+                                                } else {
+                                                    if (window.confirm(confirmMsg)) {
+                                                        mutationSupprimer.mutate(elt.id);
+                                                    }
+                                                    return
                                                 }
-                                                if (window.confirm(confirmMsg)) {
-                                                    mutationSupprimer.mutate(elt.id);
-                                                }
+                                                window.confirm(confirmMsg)
                                             }}
                                             style={{ zIndex: 1 }}
                                         >

@@ -83,7 +83,8 @@ function PageUtilisateur() {
                         backgroundImage: `url(${UPLOAD_BASE_URL}/${donneesUtilisateur.banniere})`,
                         height: '170px',
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        imageRendering: donneesUtilisateur.banniere.slice(-4) === ".gif" ? 'pixelated' : 'auto',
                     }}
                 >
                 </Card.Header>

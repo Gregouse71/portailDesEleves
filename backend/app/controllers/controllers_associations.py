@@ -372,7 +372,7 @@ def rename_content_asso(association_id: int, media_id: int):
 
 
 
-@controllers_associations.route('/<int:association_id>/add_content/<int:mandat_id>', methods=['POST'])
+@controllers_associations.route('/add_content/<int:association_id>/<int:mandat_id>', methods=['POST'])
 @login_required
 @est_membre_de_asso
 def route_add_content(association_id, mandat_id):
@@ -387,21 +387,32 @@ def route_add_content(association_id, mandat_id):
     if not mandat or mandat.association_id != association_id:
         return jsonify({"success": False, "message": "Mandat introuvable"}), 404
 
+
     # Définition du dossier d'upload
     UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    # Vérifier si un fichier a été envoyé
-    if 'file' not in request.files:
-        return jsonify({"success": False, "message": "Aucun fichier reçu"}), 400
-    file = request.files['file']
-    # Vérifier si l'extension du fichier est autorisée
-    if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
-        return jsonify({"success": False, "message": "Extension de fichier non autorisée"}), 400
 
-    media = upload_media(file, UPLOAD_FOLDER, mandat_id=mandat_id)
-    if not media:
-        return jsonify({"message": "Impossible de créer le fichier."}), 400
-    return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": media.file_path}), 200
+    if request.is_json:
+        data = request.get_json() or {}
+        input_url = data.get('url')
+        if not input_url:
+            return jsonify({"message": "Aucune URL fournie"}), 400
+
+        media = upload_media(UPLOAD_FOLDER, url=input_url, mandat_id=mandat_id)
+        if media is None:
+            return jsonify({"message": "Lien URL invalide"}), 400
+        return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path, "media_id": media.id}), 200
+
+
+    else:
+        if 'file' not in request.files:
+            return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
+
+        file = request.files['file']
+        media = upload_media(UPLOAD_FOLDER, file=file, mandat_id=mandat_id)
+        if not media:
+            return jsonify({"message": "Impossible de créer le fichier."}), 400
+
+        return jsonify({"success": True, "message": "Fichier ajouté avec succès", "file_name": media.file_path}), 200
 
 
 @controllers_associations.route('/route_creer_asso', methods=["POST"])

@@ -236,22 +236,20 @@ def add_content_to_user(user_id: int):
         if not input_url:
             return jsonify({"message": "Aucune URL fournie"}), 400
         
-        embed_url = get_embed_url(input_url)
-        if not embed_url:
+        media = upload_media('utilisateurs', url=input_url, user_id=user_id)
+        if media is None:
             return jsonify({"message": "Lien URL invalide"}), 400
-
-        media = ElementMedia(utilisateur_id=user_id, file_path=embed_url, nom=input_url)
-        db.session.add(media)
-        db.session.commit()
         return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path, "media_id": media.id}), 200
 
-    if 'file' not in request.files:
-        return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
+    else:
+        if 'file' not in request.files:
+            return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
 
-    file = request.files['file']
-    media = upload_media(file, 'utilisateurs', user_id=user_id)
-    if not media:
-        return jsonify({"message": "Impossible de créer le fichier."}), 400
+        file = request.files['file']
+        media = upload_media('utilisateurs', file=file, user_id=user_id)
+        if not media:
+            return jsonify({"message": "Impossible de créer le fichier."}), 400
+
     return jsonify({"message": "Fichier téléversé avec succès", "file_name": media.file_path, "media_id": media.id}), 200
 
 @controllers_utilisateurs.get('/content/<int:user_id>')

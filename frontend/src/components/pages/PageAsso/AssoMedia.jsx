@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Row, Col, Button, Card, Form, Image } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
-import { ajouterContenuAsso, changerPhotoAsso, supprimerPhotoAsso, renommerPhotoAsso, chargerAsso, chargerMandat } from "../../../api/api_associations";
+import { ajouterContenuAsso, changerPhotoAsso, supprimerPhotoAsso, renommerPhotoAsso, chargerAsso, chargerMandat, ajouterLienVideoAsso } from "../../../api/api_associations";
 
 
 /**
@@ -42,6 +42,18 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
             }
         }
         event.target.value = '';
+    };
+
+    const handleAjouterVideo = async () => {
+        const url = window.prompt("Entrez le lien de la vidéo (YouTube, PeerTube, Vimeo, Dailymotion...) :");
+        if (url) {
+            try {
+                await ajouterLienVideoAsso({ url: url }, asso_id, mandatId);
+                queryClient.invalidateQueries(['mandatAsso', mandatId]);
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
     };
 
     const mutationPhoto = useMutation({
@@ -132,7 +144,8 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
                         {membreData.autorise && (
                             <DropdownEditer list={[
                                 { can: true, onClick: toggleGestion, name: isGestion ? "Terminer" : "Modifier" },
-                                { can: true, onClick: ajouterPhoto, name: "Ajouter" },
+                                { can: true, onClick: ajouterPhoto, name: "Ajouter une photo" },
+                                { can: true, onClick: handleAjouterVideo, name: "Ajouter un lien vidéo" },
                             ]} />
                         )}
                     </Col>
@@ -155,6 +168,7 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
                 ) : (
                     <Row xs={2} sm={3} md={4} lg={5} className="g-3">
                         {photos.map((elt, i) => {
+                            const isIframe = elt.file_path && (elt.file_path.startsWith("http://") || elt.file_path.startsWith("https://"));
                             const fileName = elt.nom || (elt.file_path ? elt.file_path.split('/').pop().split('.').shift() : "");
                             const isLogo = mandat.logo_id === elt.id;
                             const isBanniere = mandat.banniere_id === elt.id;
@@ -163,14 +177,25 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
                                     <Card className="h-100 text-center">
                                         <div className="position-relative">
                                             <div className="ratio ratio-1x1">
-                                                <Card.Img
-                                                    variant="top"
-                                                    src={`${UPLOAD_BASE_URL}/${elt.file_path}`}
-                                                    alt="Photo"
-                                                    style={{ objectFit: 'scale-down', cursor: 'pointer' }}
-                                                    className="p-2"
-                                                    onClick={() => window.open(`${UPLOAD_BASE_URL}/${elt.file_path}`, '_blank')}
-                                                />
+                                                {isIframe ? (
+                                                    <iframe
+                                                        src={elt.file_path}
+                                                        title="Video player"
+                                                        frameBorder="0"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                        allowFullScreen
+                                                        className="card-img-top p-2"
+                                                    ></iframe>
+                                                ) : (
+                                                    <Card.Img
+                                                        variant="top"
+                                                        src={`${UPLOAD_BASE_URL}/${elt.file_path}`}
+                                                        alt="Photo"
+                                                        style={{ objectFit: 'scale-down', cursor: 'pointer' }}
+                                                        className="p-2"
+                                                        onClick={() => window.open(`${UPLOAD_BASE_URL}/${elt.file_path}`, '_blank')}
+                                                    />
+                                                )}
                                             </div>
                                             {membreData.autorise && isGestion && (
                                                 <>

@@ -215,27 +215,14 @@ export async function ajouterContenuUtilisateur(id_utilisateur, file) {
   }
 }
 
-export async function ajouterLienVideoUtilisateur(id_utilisateur, url) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/users/content/${id_utilisateur}`, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ url: url }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Erreur lors de l'ajout du lien vidéo");
-    }
-    return { success: true, message: data.message, fileName: data.file_name, mediaId: data.media_id };
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    return { success: false, message: error.message };
-  }
-}
+/**
+ * Ajoute un lien vidéo aux medias de l'utilisateur
+ * 
+ * args :
+ * - { url } : l'url du lien
+ * - id: l'id de l'utilisateur
+ */
+export const ajouterLienVideoUtilisateur = createApiPost(`${API_BASE_URL}/users/content`)
 
 export async function changerPhotoUtilisateur(id_utilisateur, new_name) {
   const res = await fetch(`${API_BASE_URL}/users/${id_utilisateur}/modifier_photo/${new_name}`, {

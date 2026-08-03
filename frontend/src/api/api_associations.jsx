@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, createApiPut, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, createApiPost, createApiPut, handleResponse } from "./base";
 
 const ASSOCIATIONS_BASE_URL = `${API_BASE_URL}/associations`;
 
@@ -26,6 +26,15 @@ export const renommerPhotoAsso = createApiPut(`${ASSOCIATIONS_BASE_URL}/content`
  * - id : l'id du mandat
  */
 export const chargerMandat = createApiGet(`${ASSOCIATIONS_BASE_URL}/mandat`)
+
+/** Ajoute un lien vidéo aux medias de l'utilisateur
+ * 
+ * args :
+ * - { url } : l'url du lien
+ * - association_id: l'id de l'asso
+ * - mandat_id: l'id du mandat
+ */
+export const ajouterLienVideoAsso = createApiPost(`${ASSOCIATIONS_BASE_URL}/add_content`)
 
 
 export async function ajouterAsso(nom, description, type_association, ordre_importance, logo_path, banniere_path, a_cacher_aux_nouveaux) {
@@ -208,7 +217,7 @@ export async function ajouterContenuAsso(associationId, mandatId, file) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/associations/${associationId}/add_content/${mandatId}`, {
+    const response = await fetch(`${API_BASE_URL}/associations/add_content/${associationId}/${mandatId}`, {
       method: "POST",
       headers: {
         "Accept": "application/json",
