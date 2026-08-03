@@ -94,14 +94,6 @@ def run_migration():
             db.session.rollback()
             print(f"Could not drop foreign key (safe to ignore if using SQLite or already dropped): {e}")
 
-        try:
-            print("Removing column 'association_id' from 'media_element' table...")
-            db.session.execute(text("ALTER TABLE media_element DROP COLUMN association_id;"))
-            db.session.commit()
-            print("Successfully removed column 'association_id'.")
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error removing column: {e}")
 
 if __name__ == "__main__":
     run_migration()
