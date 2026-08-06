@@ -10,6 +10,7 @@ import PublicationsRecentes from "./components/pages/PublicationsRecentes";
 
 // Lazy imports
 const Soifguard = lazy(() => import("./pages/Soifguard"));
+const Bibliotheque = lazy(() => import("./pages/Bibliotheque"));
 const Admin = lazy(() => import("./pages/Admin"));
 const ListeAssos = lazy(() => import("./components/pages/AssoListe"));
 const Home = lazy(() => import("./components/pages/Home"));
@@ -87,6 +88,8 @@ export default function App() {
               <Route path="publications" element={<PublicationsRecentes />} />
             </Route>
             <Route path="soifguard/*" element={<Soifguard />}>
+            </Route>
+            <Route path="bibliotheque/*" element={<Bibliotheque />}>
             </Route>
             <Route path="/administration" element={<Admin />} />
           </Route>

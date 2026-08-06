@@ -245,6 +245,7 @@ export default function PermissionsManager() {
                                 <option value="octo">octo</option>
                                 <option value="biero">biero</option>
                                 <option value="admin_soifguard">admin_soifguard</option>
+                                <option value="admin_biblio">admin_biblio</option>
                             </Form.Select>
                         </th>
                         <th></th>
@@ -419,6 +420,7 @@ export default function PermissionsManager() {
                                 <option value="octo">octo</option>
                                 <option value="biero">biero</option>
                                 <option value="admin_soifguard">admin_soifguard</option>
+                                <option value="admin_biblio">admin_biblio</option>
                             </Form.Select>
                             <Button 
                                 variant="info" 

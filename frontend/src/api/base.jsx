@@ -5,6 +5,7 @@ export const BASE_URL = _BASE_URL;
 export const API_BASE_URL = `${BASE_URL}/api`;
 export const UPLOAD_BASE_URL = `${BASE_URL}/upload`;
 export const SOIFGUARD_BASE_URL = `${API_BASE_URL}/soifguard`;
+export const BIBLIOTHEQUE_BASE_URL = `${API_BASE_URL}/bibliotheque`;
 export const SOCKET_BASE_URL = `${BASE_URL}`
 
 export async function handleResponse(response) {
