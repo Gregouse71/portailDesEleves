@@ -147,88 +147,131 @@ function ModifierLivreModal({ livre, onClose, onModifie }) {
     );
 }
 
-/** Onglet "Emprunter" : on cherche un livre disponible, puis un utilisateur */
+/** Onglet "Emprunter" : recherche de livres disponibles avec sélection multiple, puis un utilisateur */
 function OngletEmprunt() {
     const queryClient = useQueryClient();
     const [bookQuery, setBookQuery] = useState("");
-    const [selectedBook, setSelectedBook] = useState(null);
+    const [selectedBooks, setSelectedBooks] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
 
-    const { data: livres = [], isLoading: loadingLivres } = useQuery({
+    const rechercheActive = bookQuery.trim().length >= 2;
+
+    const { data: livres = [], isFetching: loadingLivres } = useQuery({
         queryKey: ["rechercheLivresDispo", bookQuery],
         queryFn: () => getListeLivres({ query: bookQuery, disponible: true, per_page: 15 }).then(r => r.livres),
+        enabled: rechercheActive,
     });
 
+    // On ne propose pas un livre déjà sélectionné
+    const resultatsFiltres = livres.filter(l => !selectedBooks.some(sb => sb.id === l.id));
+
+    const ajouterLivreSelection = (livre) => {
+        setSelectedBooks(prev => [...prev, livre]);
+    };
+
+    const retirerLivreSelection = (livreId) => {
+        setSelectedBooks(prev => prev.filter(l => l.id !== livreId));
+    };
+
     const emprunterMutation = useMutation({
-        mutationFn: () => emprunterLivre({ livre_id: selectedBook.id, utilisateur_id: selectedUser.id }),
+        mutationFn: () =>
+            Promise.all(
+                selectedBooks.map(l =>
+                    emprunterLivre({ livre_id: l.id, utilisateur_id: selectedUser.id })
+                )
+            ),
         onSuccess: () => {
             queryClient.invalidateQueries(["rechercheLivresDispo"]);
-            setSelectedBook(null);
+            setSelectedBooks([]);
             setSelectedUser(null);
             setBookQuery("");
         }
     });
 
-    if (!selectedBook) {
-        return (
-            <div className="biblio-tab-content">
-                <Form.Control
-                    autoFocus
-                    placeholder="Rechercher un livre disponible (série, auteur, référence)..."
-                    value={bookQuery}
-                    onChange={(e) => setBookQuery(e.target.value)}
-                    className="mb-3"
-                />
-                <ListGroup>
-                    {livres.map(l => (
-                        <ListGroup.Item key={l.id} action onClick={() => setSelectedBook(l)}>
+    return (
+        <div className="biblio-tab-content">
+            <Form.Control
+                autoFocus
+                placeholder="Rechercher un livre disponible (série, auteur, référence)..."
+                value={bookQuery}
+                onChange={(e) => setBookQuery(e.target.value)}
+                className="mb-2"
+            />
+
+            {rechercheActive && (
+                <ListGroup className="mb-3">
+                    {loadingLivres && (
+                        <ListGroup.Item disabled>Recherche...</ListGroup.Item>
+                    )}
+                    {!loadingLivres && resultatsFiltres.map(l => (
+                        <ListGroup.Item key={l.id} action onClick={() => ajouterLivreSelection(l)}>
                             <strong>{l.serie}</strong>{l.tome && ` — Tome ${l.tome}`}
                             {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
                         </ListGroup.Item>
                     ))}
-                    {!loadingLivres && livres.length === 0 && (
-                        <div className="default-message">Aucun livre disponible trouvé.</div>
+                    {!loadingLivres && resultatsFiltres.length === 0 && (
+                        <ListGroup.Item disabled>Aucun livre disponible trouvé.</ListGroup.Item>
                     )}
                 </ListGroup>
-            </div>
-        );
-    }
-
-    return (
-        <div className="biblio-tab-content">
-            <div className="biblio-selection-recap">
-                <span>
-                    Livre choisi : <strong>{selectedBook.serie}{selectedBook.tome ? ` — Tome ${selectedBook.tome}` : ""}</strong>
-                </span>
-                <Button variant="link" size="sm" onClick={() => { setSelectedBook(null); setSelectedUser(null); }}>
-                    Changer de livre
-                </Button>
-            </div>
-
-            {!selectedUser && (
-                <Autocomplete
-                    placeholder="Rechercher un utilisateur..."
-                    onSelect={setSelectedUser}
-                />
             )}
 
-            {selectedUser && (
-                <div className="biblio-selection-recap mt-3">
-                    <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
-                    <Button variant="link" size="sm" onClick={() => setSelectedUser(null)}>
-                        Changer d'utilisateur
-                    </Button>
+            {selectedBooks.length > 0 && (
+                <div className="biblio-selection-livres mb-3">
+                    <div className="fw-bold mb-1">Livres sélectionnés ({selectedBooks.length})</div>
+                    <ListGroup>
+                        {selectedBooks.map(l => (
+                            <ListGroup.Item key={l.id} className="d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>{l.serie}</strong>{l.tome && ` — Tome ${l.tome}`}
+                                    {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
+                                </span>
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => retirerLivreSelection(l.id)}
+                                >
+                                    <Trash />
+                                </Button>
+                            </ListGroup.Item>
+                        ))}
+                    </ListGroup>
                 </div>
             )}
 
-            <Button
-                variant="primary"
-                className="mt-3"
-                disabled={!selectedUser || emprunterMutation.isPending}
-                onClick={() => emprunterMutation.mutate()}
-            >
-                {emprunterMutation.isPending ? "Emprunt en cours..." : "Emprunter"}
-            </Button>
+            {selectedBooks.length > 0 && (
+                <>
+                    {!selectedUser && (
+                        <Autocomplete
+                            placeholder="Rechercher un utilisateur..."
+                            onSelect={setSelectedUser}
+                        />
+                    )}
+
+                    {selectedUser && (
+                        <div className="biblio-selection-recap mt-3">
+                            <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
+                            <Button variant="link" size="sm" onClick={() => setSelectedUser(null)}>
+                                Changer d'utilisateur
+                            </Button>
+                        </div>
+                    )}
+
+                    <Button
+                        variant="primary"
+                        className="mt-3"
+                        disabled={!selectedUser || emprunterMutation.isPending}
+                        onClick={() => emprunterMutation.mutate()}
+                    >
+                        {emprunterMutation.isPending
+                            ? "Emprunt en cours..."
+                            : `Emprunter ${selectedBooks.length} livre${selectedBooks.length > 1 ? "s" : ""}`}
+                    </Button>
+
+                    {emprunterMutation.isError && (
+                        <p className="text-danger mt-2">Une erreur est survenue pendant l'emprunt.</p>
+                    )}
+                </>
+            )}
         </div>
     );
 }
