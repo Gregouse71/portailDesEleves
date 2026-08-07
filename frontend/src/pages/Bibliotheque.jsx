@@ -276,11 +276,11 @@ function OngletEmprunt() {
     );
 }
 
-/** Onglet "Retourner" : on cherche un utilisateur, puis ses emprunts en cours */
+/** Onglet "Retourner" : on cherche un utilisateur, puis on coche les livres à rendre */
 function OngletRetour() {
     const queryClient = useQueryClient();
     const [selectedUser, setSelectedUser] = useState(null);
-    const [selectedEmprunt, setSelectedEmprunt] = useState(null);
+    const [empruntsSelectionnes, setEmpruntsSelectionnes] = useState([]);
 
     const { data: empruntsData = { emprunts: [] }, isLoading: loadingEmprunts } = useQuery({
         queryKey: ["empruntsEnCours", selectedUser?.id],
@@ -288,11 +288,22 @@ function OngletRetour() {
         enabled: !!selectedUser,
     });
 
+    const toggleEmprunt = (emprunt) => {
+        setEmpruntsSelectionnes(prev =>
+            prev.some(e => e.id === emprunt.id)
+                ? prev.filter(e => e.id !== emprunt.id)
+                : [...prev, emprunt]
+        );
+    };
+
     const retournerMutation = useMutation({
-        mutationFn: () => retournerLivre({ livre_id: selectedEmprunt.livre_id }),
+        mutationFn: () =>
+            Promise.all(
+                empruntsSelectionnes.map(e => retournerLivre({ livre_id: e.livre_id }))
+            ),
         onSuccess: () => {
             queryClient.invalidateQueries(["empruntsEnCours"]);
-            setSelectedEmprunt(null);
+            setEmpruntsSelectionnes([]);
         }
     });
 
@@ -314,7 +325,7 @@ function OngletRetour() {
                 <Button
                     variant="link"
                     size="sm"
-                    onClick={() => { setSelectedUser(null); setSelectedEmprunt(null); }}
+                    onClick={() => { setSelectedUser(null); setEmpruntsSelectionnes([]); }}
                 >
                     Changer d'utilisateur
                 </Button>
@@ -322,13 +333,14 @@ function OngletRetour() {
 
             <ListGroup className="mt-3">
                 {empruntsData.emprunts.map(e => (
-                    <ListGroup.Item
-                        key={e.id}
-                        action
-                        active={selectedEmprunt?.id === e.id}
-                        onClick={() => setSelectedEmprunt(e)}
-                    >
-                        {e.livre_nom} — emprunté le {new Date(e.date_emprunt).toLocaleDateString('fr-FR')}
+                    <ListGroup.Item key={e.id}>
+                        <Form.Check
+                            type="checkbox"
+                            id={`emprunt-${e.id}`}
+                            checked={empruntsSelectionnes.some(sel => sel.id === e.id)}
+                            onChange={() => toggleEmprunt(e)}
+                            label={`${e.livre_nom} — emprunté le ${new Date(e.date_emprunt).toLocaleDateString('fr-FR')}`}
+                        />
                     </ListGroup.Item>
                 ))}
                 {!loadingEmprunts && empruntsData.emprunts.length === 0 && (
@@ -339,11 +351,17 @@ function OngletRetour() {
             <Button
                 variant="success"
                 className="mt-3"
-                disabled={!selectedEmprunt || retournerMutation.isPending}
+                disabled={empruntsSelectionnes.length === 0 || retournerMutation.isPending}
                 onClick={() => retournerMutation.mutate()}
             >
-                {retournerMutation.isPending ? "Retour en cours..." : "Rendre"}
+                {retournerMutation.isPending
+                    ? "Retour en cours..."
+                    : `Rendre ${empruntsSelectionnes.length} livre${empruntsSelectionnes.length > 1 ? "s" : ""}`}
             </Button>
+
+            {retournerMutation.isError && (
+                <p className="text-danger mt-2">Une erreur est survenue pendant le retour.</p>
+            )}
         </div>
     );
 }
