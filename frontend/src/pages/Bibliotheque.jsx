@@ -77,7 +77,7 @@ function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSu
                             value={form.etat}
                             onChange={(e) => setForm({ ...form, etat: e.target.value })}
                         >
-                            <option value="">—</option>
+                            <option value="">-</option>
                             <option value="Neuf">Neuf</option>
                             <option value="Bon état">Bon état</option>
                             <option value="Usé">Usé</option>
@@ -205,7 +205,7 @@ function OngletEmprunt() {
                     )}
                     {!loadingLivres && resultatsFiltres.map(l => (
                         <ListGroup.Item key={l.id} action onClick={() => ajouterLivreSelection(l)}>
-                            <strong>{l.serie}</strong>{l.tome && ` — Tome ${l.tome}`}
+                            <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
                             {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
                         </ListGroup.Item>
                     ))}
@@ -222,7 +222,7 @@ function OngletEmprunt() {
                         {selectedBooks.map(l => (
                             <ListGroup.Item key={l.id} className="d-flex justify-content-between align-items-center">
                                 <span>
-                                    <strong>{l.serie}</strong>{l.tome && ` — Tome ${l.tome}`}
+                                    <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
                                     {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
                                 </span>
                                 <Button
@@ -339,7 +339,7 @@ function OngletRetour() {
                             id={`emprunt-${e.id}`}
                             checked={empruntsSelectionnes.some(sel => sel.id === e.id)}
                             onChange={() => toggleEmprunt(e)}
-                            label={`${e.livre_nom} — emprunté le ${new Date(e.date_emprunt).toLocaleDateString('fr-FR')}`}
+                            label={`${e.livre_nom} - emprunté le ${new Date(e.date_emprunt).toLocaleDateString('fr-FR')}`}
                         />
                     </ListGroup.Item>
                 ))}
@@ -483,20 +483,21 @@ export default function Bibliotheque() {
                     <ArrowLeft className="me-1" /> Retour
                 </Button>
                 <h2 className="mb-0">Bibliothèque</h2>
-                <div />
             </div>
 
-            <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
-                <Tab eventKey="emprunt" title="Emprunter">
-                    <OngletEmprunt />
-                </Tab>
-                <Tab eventKey="retour" title="Retourner">
-                    <OngletRetour />
-                </Tab>
-                <Tab eventKey="gestion" title="Gestion">
-                    <OngletGestion />
-                </Tab>
-            </Tabs>
+            <div className="biblio-content">
+                <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
+                    <Tab eventKey="emprunt" title="Emprunter">
+                        <OngletEmprunt />
+                    </Tab>
+                    <Tab eventKey="retour" title="Retourner">
+                        <OngletRetour />
+                    </Tab>
+                    <Tab eventKey="gestion" title="Gestion">
+                        <OngletGestion />
+                    </Tab>
+                </Tabs>
+            </div>
         </div>
     );
 }

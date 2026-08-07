@@ -124,7 +124,7 @@ export default function Header() {
                                 ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
                                     [["navigate", "/soifguard", "Soifguard"]] : [],
                                 ... (biblioAdminPermission) ?
-                                    [["navigate", "/bibliotheque", "Bibliotheque"]] : [],
+                                    [["navigate", "/bibliotheque", "Bibliothèque"]] : [],
                                 ["divider"],
                                 ["navigate", "/publications", "Publicatons récentes"],
                                 ["navigate", "/vendomes", "Vendômes"],

@@ -1,124 +1,229 @@
+/* Conteneur principal */
 .biblio-container {
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   gap: 15px;
 }
 
 /* HEADER */
 .biblio-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    min-height: 70px;
 }
 
-.biblio-header-buttons button {
-  margin-left: 10px;
+.biblio-header h2 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
 }
 
-/* FILTRES */
-.biblio-filters {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+.biblio-header button {
+    z-index: 1;
 }
 
-/* GRILLE DE LIVRES */
-.biblio-grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
+@media (max-width: 576px) {
+  .biblio-header {
+    padding: 8px 10px;
+    min-height: 52px;
+  }
+
+  .biblio-header h2 {
+    font-size: 1.1rem;
+    max-width: calc(100% - 80px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .biblio-header button span {
+    display: none;
+  }
 }
 
-.biblio-grid-item {
-  border-radius: 8px;
-  padding: 15px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background-color: #fafafa;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s;
+/* CONTENU PRINCIPAL */
+.biblio-container .biblio-content {
+  min-width: 0;
+  overflow-x: auto;
+  flex: 1;
+  padding: 0 10px;
 }
 
-.biblio-grid-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+@media (max-width: 576px) {
+  .biblio-container .biblio-content {
+    padding: 0 6px;
+    overflow-x: hidden; 
+  }
 }
 
-/* COULEUR SELON LE STATUT */
-.biblio-grid-item.biblio-disponible {
-  background-color: #e6f9ec;
-  border-color: #2ecc71;
-}
-
-.biblio-grid-item.biblio-emprunte {
-  background-color: #fdecea;
-  border-color: #e74c3c;
-}
-
-.biblio-titre {
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.biblio-tome {
-  color: #444;
-  font-size: 13px;
-  margin-bottom: 2px;
-}
-
-.biblio-auteur {
-  font-style: italic;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.biblio-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: 12px;
-  color: white;
-}
-
-.biblio-badge-disponible {
-  background-color: #2ecc71;
-}
-
-.biblio-badge-emprunte {
-  background-color: #e74c3c;
-}
-
-/* Message par defaut */
-.default-message {
-  font-style: italic;
-  color: #888;
-  margin-top: 20px;
-  grid-column: 1 / -1;
-  text-align: center;
-}
-
-/* ONGLETS EMPRUNT / RETOUR */
-.biblio-tabs {
+/* ONGLETS EMPRUNT / RETOUR / GESTION */
+.biblio-container .biblio-tabs {
   border-bottom: 2px solid #ddd;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
-.biblio-tab-content {
+.biblio-container .biblio-tabs .nav-link {
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-tabs .nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+.biblio-container .biblio-tab-content {
   max-width: 600px;
   margin: 20px auto 0;
 }
 
-.biblio-tab-content-large {
+@media (max-width: 576px) {
+  .biblio-container .biblio-tab-content {
+    margin: 15px 0 0;
+  }
+}
+
+.biblio-container .biblio-tab-content-large {
   max-width: 100%;
+  min-width: 0;
   margin-top: 20px;
 }
 
-.biblio-selection-recap {
+/* TABLEAU DE GESTION */
+.biblio-container .table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 576px) {
+  // Le tableau devient une liste de cartes empilées
+  .biblio-container .table-responsive {
+    overflow-x: visible;
+  }
+
+  .biblio-container table thead {
+    display: none;
+  }
+
+  .biblio-container table,
+  .biblio-container table tbody,
+  .biblio-container table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .biblio-container table tr {
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: #fff;
+  }
+
+  .biblio-container table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: right;
+  }
+
+  .biblio-container table td:last-child {
+    border-bottom: none;
+  }
+
+  // Labels générés dans l'ordre des colonnes du tableau
+  .biblio-container table td:nth-of-type(1)::before { content: "Série"; }
+  .biblio-container table td:nth-of-type(2)::before { content: "Tome"; }
+  .biblio-container table td:nth-of-type(3)::before { content: "Auteur"; }
+  .biblio-container table td:nth-of-type(4)::before { content: "Référence"; }
+  .biblio-container table td:nth-of-type(5)::before { content: "État"; }
+  .biblio-container table td:nth-of-type(6)::before { content: "Statut"; }
+  .biblio-container table td:nth-of-type(7)::before { content: "Actions"; }
+
+  .biblio-container table td::before {
+    font-weight: bold;
+    color: #555;
+    text-align: left;
+  }
+
+  .biblio-container table td:last-child {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .biblio-container table td:last-child::before {
+    display: none;
+  }
+}
+
+/* Barre de recherche + bouton ajouter (onglet Gestion) */
+@media (max-width: 576px) {
+  .biblio-container .d-flex.justify-content-between.align-items-center.mb-3 {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .biblio-container .d-flex.justify-content-between.align-items-center.mb-3 .form-control {
+    max-width: 100% !important;
+  }
+}
+
+/* RECAP DE SELECTION (livre choisi / utilisateur choisi) */
+.biblio-container .biblio-selection-recap {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f0f7ff;
-  border: 1px solid #cce5ff;
-  border-radius: 6px;
-  padding: 10px 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #e0f7fa;
+  transition: background 0.3s ease-in-out;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* LISTE DE LIVRES/EMPRUNTS SELECTIONNES */
+.biblio-container .biblio-selection-livres .list-group-item {
+  background-color: #f9f9f9;
+}
+
+.biblio-container .biblio-selection-livres .list-group-item:hover {
+  background-color: #e9ecef;
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-selection-livres .list-group-item {
+    flex-wrap: nowrap; 
+    gap: 8px;
+  }
+
+  .biblio-container .biblio-selection-livres .list-group-item span {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .biblio-container .biblio-selection-livres .list-group-item button {
+    flex-shrink: 0; 
+  }
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-tab-content > .btn {
+    width: 100%;
+  }
 }
