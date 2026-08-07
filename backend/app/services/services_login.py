@@ -87,7 +87,7 @@ def send_reset_mail(username: str):
     encoded_jwt = jwt.encode(to_encode, key, algorithm=algorithm)
 
     text = mailBody.format (encoded_jwt, user.nom_utilisateur)
-    send_mail("no-reply@eleves.mines-paris.eu", user.email, "Réinitialisation de mot de passe", text)
+    send_mail("no-reply@rezal-mdm.com", user.email, "Réinitialisation de mot de passe", text)
     return True
 
 def check_pw(user: Utilisateur, password:str):
