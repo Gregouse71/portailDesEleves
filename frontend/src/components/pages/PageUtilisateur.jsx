@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur} from '../../api/api_utilisateurs';
 import { useProtected } from '../../Protected';
 import TabInfo from './PageUtilisateur/Info';
@@ -6,7 +7,7 @@ import TabQuestions from './PageUtilisateur/Question';
 import { useParams, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import DropdownEditer from '../elements/DropdownEditer';
 import TabMedia from './PageUtilisateur/Media';
 
@@ -15,6 +16,33 @@ function PageUtilisateur() {
     const { id } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+
+    const logoInputRef = useRef(null);
+    const banniereInputRef = useRef(null);
+
+    const handleFileUpload = async (e, type) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const result = await ajouterContenuUtilisateur(id, file);
+                if (result.success) {
+                    if (type === 'photo') {
+                        await changerPhotoUtilisateur(id, result.mediaId);
+                    } else if (type === 'banniere') {
+                        await changerBanniereUtilisateur(id, result.mediaId);
+                    }
+                    queryClient.invalidateQueries(['donneesUtilisateur', id]);
+                    queryClient.invalidateQueries(['photosUtilisateur', id]);
+                } else {
+                    alert(`Erreur : ${result.message}`);
+                }
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+        e.target.value = '';
+    };
 
     const { data: donneesUtilisateur, isLoading } = useQuery({
         queryKey: ['donneesUtilisateur', id],
@@ -35,19 +63,48 @@ function PageUtilisateur() {
 
     return (
         <Container className="py-4">
+            <input
+                type="file"
+                ref={logoInputRef}
+                className="d-none"
+                accept="image/png, image/jpeg, image/jpg, image/gif"
+                onChange={(e) => handleFileUpload(e, 'photo')}
+            />
+            <input
+                type="file"
+                ref={banniereInputRef}
+                className="d-none"
+                accept="image/png, image/jpeg, image/jpg, image/gif"
+                onChange={(e) => handleFileUpload(e, 'banniere')}
+            />
             <Card className='mb-3'>
                 <Card.Header
                     style={{
                         backgroundImage: `url(${UPLOAD_BASE_URL}/${donneesUtilisateur.banniere})`,
                         height: '170px',
                         backgroundSize: 'cover',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        imageRendering: donneesUtilisateur.banniere.slice(-4) === ".gif" ? 'pixelated' : 'auto',
                     }}
                 >
                 </Card.Header>
                 <Card.Body>
-                    <Row className="d-flex flex-column flex-md-row align-items-center justify-content-md-end">
-                        <Col xs="auto" md="auto" className="order-md-last">
+                    <Row className="align-items-center flex-nowrap">
+                        {autoriseAModifier && (
+                            <Col xs="auto">
+                                <DropdownEditer list={[
+                                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer la photo" },
+                                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                                ]} />
+                            </Col>
+                        )}
+                        <Col className="text-truncate text-end ms-2">
+                            <h2 className="mb-0 text-truncate">
+                                {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
+                                {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
+                            </h2>
+                        </Col>
+                        <Col xs="auto">
                             <Image
                                 className="rounded-3"
                                 src={`${UPLOAD_BASE_URL}/${donneesUtilisateur.photo}`}
@@ -61,12 +118,6 @@ function PageUtilisateur() {
                                     marginBottom: '-170px'
                                 }}
                             />
-                        </Col>
-                        <Col className="text-center text-md-end">
-                            <h2>
-                                {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
-                                {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
-                            </h2>
                         </Col>
                     </Row>
                 </Card.Body>

@@ -1,5 +1,6 @@
 import '../../assets/styles/asso.scss';
-import { chargerAsso, estUtilisateurDansAsso, ajouterContenuAsso } from '../../api/api_associations';
+import { useRef } from 'react';
+import { chargerAsso, estUtilisateurDansAsso, uploadLogoBanniereAsso } from '../../api/api_associations';
 import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
@@ -9,7 +10,7 @@ import AssoCotisations from './PageAsso/AssoCotisations';
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { Container, Row, Col, Nav, Image, Badge, Card } from 'react-bootstrap';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 import DropdownEditer from "../elements/DropdownEditer";
 import AssosMedia from './PageAsso/AssoMedia';
@@ -18,6 +19,10 @@ function Asso() {
     const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
+    const queryClient = useQueryClient();
+
+    const logoInputRef = useRef(null);
+    const banniereInputRef = useRef(null);
 
     const { data: asso = null } = useQuery({
         queryKey: ['asso', id],
@@ -27,6 +32,24 @@ function Asso() {
         queryKey: ['membreData', id],
         queryFn: () => { return estUtilisateurDansAsso(id) },
     });
+
+    const handleFileUpload = async (e, type) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const result = await uploadLogoBanniereAsso(id, type, file);
+                if (result.success) {
+                    queryClient.invalidateQueries(['asso', id]);
+                    queryClient.invalidateQueries(['photosAsso', id]);
+                } else {
+                    alert(`Erreur : ${result.message}`);
+                }
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+        e.target.value = '';
+    };
 
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
@@ -48,6 +71,21 @@ function Asso() {
 
     return (
         <Container className='py-4'>
+            <input
+                type="file"
+                ref={logoInputRef}
+                className="d-none"
+                accept="image/png, image/jpeg, image/jpg, image/gif"
+                onChange={(e) => handleFileUpload(e, 'logo')}
+            />
+            <input
+                type="file"
+                ref={banniereInputRef}
+                className="d-none"
+                accept="image/png, image/jpeg, image/jpg, image/gif"
+                onChange={(e) => handleFileUpload(e, 'banniere')}
+            />
+
             <Card className='mb-3'>
                 <Card.Header
                     style={{
@@ -59,8 +97,8 @@ function Asso() {
                 >
                 </Card.Header>
                 <Card.Body>
-                    <Row className="d-flex flex-column flex-md-row align-items-center">
-                        <Col xs="auto" md="auto">
+                    <Row className="align-items-center flex-nowrap">
+                        <Col xs="auto">
                             <Image
                                 className="rounded-3"
                                 src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
@@ -75,13 +113,21 @@ function Asso() {
                                 }}
                             />
                         </Col>
-                        <Col md="auto" className="text-center text-md-start">
-                            <h2>{asso.nom}</h2>
+                        <Col className="text-truncate text-start ms-2">
+                            <h2 className="mb-0 text-truncate">{asso.nom}</h2>
+                            <div>
+                                {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
+                                {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
+                            </div>
                         </Col>
-                        <Col className="text-left text-md-start">
-                            {membreData.is_membre && <Badge bg="success" className="ms-3">membre</Badge>}
-                            {membreData.cotisant && <Badge bg="primary" className="ms-3">cotisant</Badge>}
-                        </Col>
+                        {membreData.autorise && (
+                            <Col xs="auto" className="text-end">
+                                <DropdownEditer list={[
+                                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
+                                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                                ]} />
+                            </Col>
+                        )}
                     </Row>
                 </Card.Body>
             </Card>

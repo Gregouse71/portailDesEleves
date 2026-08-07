@@ -236,23 +236,21 @@ def add_content_to_user(user_id: int):
         if not input_url:
             return jsonify({"message": "Aucune URL fournie"}), 400
         
-        embed_url = get_embed_url(input_url)
-        if not embed_url:
+        media = upload_media('utilisateurs', url=input_url, user_id=user_id)
+        if media is None:
             return jsonify({"message": "Lien URL invalide"}), 400
+        return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path, "media_id": media.id}), 200
 
-        media = ElementMedia(utilisateur_id=user_id, association_id=None, file_path=embed_url)
-        db.session.add(media)
-        db.session.commit()
-        return jsonify({"message": "Lien vidéo ajouté avec succès", "file_name": media.file_path}), 200
+    else:
+        if 'file' not in request.files:
+            return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
 
-    if 'file' not in request.files:
-        return jsonify({"message": "Aucun fichier n'a été envoyé"}), 400
+        file = request.files['file']
+        media = upload_media('utilisateurs', file=file, user_id=user_id)
+        if not media:
+            return jsonify({"message": "Impossible de créer le fichier."}), 400
 
-    file = request.files['file']
-    media = upload_media(file, 'utilisateurs', user_id=user_id)
-    if not media:
-        return jsonify({"message": "Impossible de créer le fichier."}), 400
-    return jsonify({"message": "Fichier téléversé avec succès", "file_name": media.file_path}), 200
+    return jsonify({"message": "Fichier téléversé avec succès", "file_name": media.file_path, "media_id": media.id}), 200
 
 @controllers_utilisateurs.get('/content/<int:user_id>')
 @login_required
@@ -273,8 +271,6 @@ def delete_content_user(media_id):
     if not (media.utilisateur_id == current_user.id or current_user.est_superutilisateur):
         return jsonify({"message": "Action non autorisée"}), 403
 
-    if len(Utilisateur.query.filter_by(photo_id=media.id).all()) > 0:
-        return jsonify({"message": "Impossible de supprimer une photo de profil"}), 400
 
     cached_media_id = media.id
 
@@ -282,9 +278,39 @@ def delete_content_user(media_id):
         return jsonify({"message": "Media protégé"}), 400
     for u in Utilisateur.query.filter_by(banniere_id=cached_media_id).all():
         u.banniere_id = None
+    for u in Utilisateur.query.filter_by(photo_id=cached_media_id).all():
+        u.photo_id = None
     db.session.commit()
 
     return jsonify({"message": "Media supprimé avec succès"}), 200
+
+
+@controllers_utilisateurs.put('/content/<int:media_id>')
+@login_required
+def rename_content_user(media_id):
+    """
+    Renomme un contenu (photo ou vidéo) pour un utilisateur.
+    """
+    media = ElementMedia.query.get(media_id)
+    if media is None:
+        return jsonify({"message": "Media non trouvé"}), 404
+
+    if not (media.utilisateur_id == current_user.id or current_user.est_superutilisateur):
+        return jsonify({"message": "Action non autorisée"}), 403
+
+    data = request.get_json() or {}
+    new_name = data.get('name')
+    if not new_name:
+        return jsonify({"message": "Nom manquant"}), 400
+
+    try:
+        media.nom = new_name
+        db.session.commit()
+        return jsonify({"message": "Media renommé avec succès", "nom": media.nom}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors du renommage : {str(e)}"}), 500
+
 
 
 @controllers_utilisateurs.route('/<int:user_id>/modifier_photo/<int:new_id>', methods=['POST'])
@@ -517,7 +543,7 @@ def route_add_utilisateur():
                         promotion=promotion,
                         cycle=cycle)
         if photo:
-            media = upload_media(photo, dir="utilisateurs", user_id=user_id)
+            media = upload_media("utilisateurs", file=photo, user_id=user_id, protege=True)
             if media and not isinstance(media, tuple):
                 set_user_photo(user_id, media.id)
         return jsonify({"message": "Utilisateur ajouté avec succès"}), 201

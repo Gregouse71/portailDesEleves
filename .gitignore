@@ -3,8 +3,9 @@
 
 .env
 .DS_Store
+.idea
 
-*/instance/*
+instance/*
 *.sql
 portail/*
 

@@ -1,7 +1,8 @@
-import { Card, Form, Button, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Card, Form, Button, Row, Col, OverlayTrigger, Tooltip, Image } from "react-bootstrap";
 import Select from "react-select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ajouterMembre, chargerMandat, modifierMandat, modifierMembreAsso, retirerMembre, supprimerMandat } from "../../api/api_associations";
+import { UPLOAD_BASE_URL } from "../../api/base";
 import { useState } from "react";
 import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
@@ -111,10 +112,28 @@ export default function AssoMandat({ id, asso, membreData }) {
         </Card>
     }
 
+    const mandatBanniere = mandat.banniere || null;
+    const mandatLogo = mandat.logo || null;
+
     return (
         <Card key={mandat.id} className="mb-4">
-            <Card.Header><Row className="align-items-center">
-                <Col xs={12} md>
+            {/* Bannière du mandat */}
+            <div
+                className="mandat-header-banner"
+                style={{
+                    backgroundImage: mandatBanniere ? `url(${UPLOAD_BASE_URL}/${mandatBanniere})` : 'none',
+                }}
+            />
+            <Card.Header><Row className="align-items-center flex-nowrap">
+                <Col xs="auto">
+                    <Image
+                        className="mandat-header-logo rounded-3"
+                        src={mandatLogo ? `${UPLOAD_BASE_URL}/${mandatLogo}` : '/assets/icons/group.svg'}
+                        alt={mandat.nom}
+                        rounded
+                    />
+                </Col>
+                <Col className="text-truncate">
                     {isEditing ? (
                         <Form className="w-100">
                             <Row className="align-items-end">
@@ -152,7 +171,7 @@ export default function AssoMandat({ id, asso, membreData }) {
                         <Card.Title className="m-0">{mandat.nom}</Card.Title>
                     )}
                 </Col>
-                <Col xs={12} md="auto" className="d-flex gap-2 mt-2 mt-md-0">
+                <Col xs="auto" className="d-flex gap-2">
                     {isEditing ?
                         <>
                             <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
@@ -221,7 +240,7 @@ export default function AssoMandat({ id, asso, membreData }) {
                 onHide={() => setDeletingMandat(false)}
                 onConfirm={() => handleDelMandat(mandat.id)}
                 title="Suppression"
-                body={`Êtes-vous sûr de vouloir supprimer le mandat ${mandat.nom} ?`}
+                body={`Êtes-vous sûr de vouloir supprimer le mandat ${mandat.nom} ? Attention : tous les médias associés à ce mandat seront également supprimés.`}
             />
         </Card>);
 }

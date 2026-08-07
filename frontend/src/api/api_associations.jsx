@@ -1,4 +1,4 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, handleResponse } from "./base";
+import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, createApiPost, createApiPut, handleResponse } from "./base";
 
 const ASSOCIATIONS_BASE_URL = `${API_BASE_URL}/associations`;
 
@@ -16,11 +16,25 @@ export const obtenirPhotosAsso = createApiGet(`${ASSOCIATIONS_BASE_URL}/content`
  */
 export const supprimerPhotoAsso = createApiDelete(`${ASSOCIATIONS_BASE_URL}/content`)
 
+/** Renommer un media
+ * 
+ */
+export const renommerPhotoAsso = createApiPut(`${ASSOCIATIONS_BASE_URL}/content`)
+
 /** Charge le mandat
  * args :
  * - id : l'id du mandat
  */
 export const chargerMandat = createApiGet(`${ASSOCIATIONS_BASE_URL}/mandat`)
+
+/** Ajoute un lien vidéo aux medias de l'utilisateur
+ * 
+ * args :
+ * - { url } : l'url du lien
+ * - association_id: l'id de l'asso
+ * - mandat_id: l'id du mandat
+ */
+export const ajouterLienVideoAsso = createApiPost(`${ASSOCIATIONS_BASE_URL}/add_content`)
 
 
 export async function ajouterAsso(nom, description, type_association, ordre_importance, logo_path, banniere_path, a_cacher_aux_nouveaux) {
@@ -198,12 +212,12 @@ export async function retirerMembre(associationId, mandatId, membreId) {
 export const modifierMembreAsso = createApiPatch(`${ASSOCIATIONS_BASE_URL}/modifier_membre`)
 
 
-export async function ajouterContenuAsso(associationId, file) {
+export async function ajouterContenuAsso(associationId, mandatId, file) {
   try {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/associations/${associationId}/add_content`, {
+    const response = await fetch(`${API_BASE_URL}/associations/add_content/${associationId}/${mandatId}`, {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -222,9 +236,34 @@ export async function ajouterContenuAsso(associationId, file) {
   }
 }
 
-export async function changerPhotoAsso(asso_id, photo_type, new_id) {
+export async function uploadLogoBanniereAsso(associationId, type, file) {
   try {
-    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${new_id}`, {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/associations/${associationId}/upload_logo_banniere/${type}`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+      },
+      credentials: "include",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Erreur lors du téléversement du fichier");
+    }
+    return { success: true, message: data.message, fileName: data.file_name };
+  } catch (error) {
+    console.error("Erreur réseau :", error);
+    return { success: false, message: error.message };
+  }
+}
+
+export async function changerPhotoAsso(asso_id, photo_type, mandat_id, new_id) {
+  try {
+    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${mandat_id}/${new_id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

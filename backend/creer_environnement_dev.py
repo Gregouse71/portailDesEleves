@@ -27,10 +27,10 @@ with app.app_context():
 
     # 2. Créer les associations
     print("Création des associations...")
-    bde = Association(nom="BDE", description="Bureau des élèves", type_association="loi 1901", logo_path="Capture_decran_2024-08-16_162358.png", ordre_importance=1, modules=['Info', 'Membres', 'Events', 'Posts', 'Elections'])
-    bds = Association(nom="BDS", description="Bureau des sports", type_association="loi 1901", logo_path="logo_jump.png", ordre_importance=2, modules=['Info', 'Membres', 'Events', 'Posts'])
+    bde = Association(nom="BDE", description="Bureau des élèves", type_association="loi 1901", logo_path="Capture_decran_2024-08-16_162358.png", ordre_importance=1, modules=['Info', 'Membres', 'Events', 'Posts', 'Media', 'Elections'])
+    bds = Association(nom="BDS", description="Bureau des sports", type_association="loi 1901", logo_path="logo_jump.png", ordre_importance=2, modules=['Info', 'Membres', 'Events', 'Posts', 'Media'])
     # On ajoute le module 'Audio' au BDA
-    bda = Association(nom="BDA", description="Bureau des arts", type_association="loi 1901", logo_path="channels4_profile%20(2).jpg", banniere_path="bannerBDA.png", ordre_importance=3, modules=['Info', 'Membres', 'Events', 'Posts', 'Audio'])
+    bda = Association(nom="BDA", description="Bureau des arts", type_association="loi 1901", logo_path="channels4_profile%20(2).jpg", banniere_path="bannerBDA.png", ordre_importance=3, modules=['Info', 'Membres', 'Events', 'Posts', 'Audio', 'Media'])
     
     db.session.add_all([bde, bds, bda])
     db.session.commit()

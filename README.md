@@ -37,19 +37,21 @@ Le site est composé de deux éléments : le frontend, ce qui tourne sur le navi
 
 #### La première fois
 
-Pour windows, passez par wsl. Il faut installer *valkey* pour permettre au chat, aux jeux et aux sondages de fonctionner.
+Pour windows, ~~passez par wsl~~ **suivez la méthode alternative décrite plus bas**.
+Il faut installer *valkey* pour permettre au chat, aux jeux et aux sondages de fonctionner.
 
-1. **Installer les modules** : `conda env create -f environment.yml`
-2. **Configurer l'application** : Créer un fichier `config.py` en copiant `config.example.py`, et en apportant les modifications voulues (il est bien configuré par défaut).
-3. **Créer la base de données** : `python init_db.py`. Cela crée les tables à partir des modèles.
-4. **Peupler l'environnement** : `python creer_environnement_dev.py`. Cela permet d'avoir des données à afficher.
+1. **Aller dans backend** : `cd backend`
+2. **Installer les modules** : `conda env create -f environment.yml`
+3. **Configurer l'application** : Créer un fichier `config.py` en copiant `config.example.py`, et en apportant les modifications voulues (il est bien configuré par défaut).
+4. **Créer la base de données** : `python init_db.py`. Cela crée les tables à partir des modèles.
+5. **Peupler l'environnement** : `python creer_environnement_dev.py`. Cela permet d'avoir des données à afficher.
 
 Cette initialisation n'a lieu qu'une fois. Attention, si la structure de la base est modifiée, pour éviter les erreurs il est nécessaire de la supprimer puis de la recréer en exécutant à nouveau ce fichier ou d'ajouter les colonnes nécessaires.
 
 #### Alternative : Développement natif sous Windows (Sans Docker ni WSL)
 
 1. **Frontend** : Allez dans le dossier `frontend/` et installez les paquets avec `pnpm install`, puis lancez le serveur avec `pnpm dev`.
-2. **Backend** : Allez dans le dossier `backend/` et installez les dépendances via `pip install -r requirements.txt`, puis démarrez avec `python run.py`. L'initialisation (fichiers config, `init_db.py`, `creer_environnement_dev.py`) reste identique à la méthode classique ci-dessus.
+2. **Backend** : Allez dans le dossier `backend/` et installez les dépendances via `pip install -r requirements.txt`. Configurez `REDIS_URL = None` dans `config.py`, puis démarrez avec `python run.py`. L'initialisation (fichiers config, `init_db.py`, `creer_environnement_dev.py`) reste identique à la méthode classique ci-dessus.
 
 #### À chaque fois
 
