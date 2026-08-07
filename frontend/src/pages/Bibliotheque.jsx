@@ -14,7 +14,7 @@ import {
     retournerLivre,
     listeEmprunts,
 } from "../api/api_bibliotheque";
-import { searchUsers } from "../api/api_utilisateurs";
+import Autocomplete from "../components/elements/Autocompletion";
 import RenderPagination from "../components/elements/RenderPagination";
 
 /** Formulaire de livre reutilise pour l'ajout et la modification */
@@ -152,18 +152,11 @@ function OngletEmprunt() {
     const queryClient = useQueryClient();
     const [bookQuery, setBookQuery] = useState("");
     const [selectedBook, setSelectedBook] = useState(null);
-    const [userQuery, setUserQuery] = useState("");
     const [selectedUser, setSelectedUser] = useState(null);
 
     const { data: livres = [], isLoading: loadingLivres } = useQuery({
         queryKey: ["rechercheLivresDispo", bookQuery],
         queryFn: () => getListeLivres({ query: bookQuery, disponible: true, per_page: 15 }).then(r => r.livres),
-    });
-
-    const { data: utilisateurs = [] } = useQuery({
-        queryKey: ["rechercheUtilisateursEmprunt", userQuery],
-        queryFn: () => searchUsers({ query: userQuery }),
-        enabled: !!selectedBook && userQuery.length >= 2,
     });
 
     const emprunterMutation = useMutation({
@@ -172,7 +165,6 @@ function OngletEmprunt() {
             queryClient.invalidateQueries(["rechercheLivresDispo"]);
             setSelectedBook(null);
             setSelectedUser(null);
-            setUserQuery("");
             setBookQuery("");
         }
     });
@@ -208,30 +200,26 @@ function OngletEmprunt() {
                 <span>
                     Livre choisi : <strong>{selectedBook.serie}{selectedBook.tome ? ` — Tome ${selectedBook.tome}` : ""}</strong>
                 </span>
-                <Button variant="link" size="sm" onClick={() => { setSelectedBook(null); setSelectedUser(null); setUserQuery(""); }}>
+                <Button variant="link" size="sm" onClick={() => { setSelectedBook(null); setSelectedUser(null); }}>
                     Changer de livre
                 </Button>
             </div>
 
-            <Form.Control
-                autoFocus
-                placeholder="Rechercher un utilisateur (2 caractères min.)..."
-                value={userQuery}
-                onChange={(e) => { setUserQuery(e.target.value); setSelectedUser(null); }}
-                className="mb-3 mt-3"
-            />
-            <ListGroup>
-                {utilisateurs.map(u => (
-                    <ListGroup.Item
-                        key={u.id}
-                        action
-                        active={selectedUser?.id === u.id}
-                        onClick={() => setSelectedUser(u)}
-                    >
-                        @{u.nom_utilisateur} — {u.prenom} {u.nom}
-                    </ListGroup.Item>
-                ))}
-            </ListGroup>
+            {!selectedUser && (
+                <Autocomplete
+                    placeholder="Rechercher un utilisateur..."
+                    onSelect={setSelectedUser}
+                />
+            )}
+
+            {selectedUser && (
+                <div className="biblio-selection-recap mt-3">
+                    <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
+                    <Button variant="link" size="sm" onClick={() => setSelectedUser(null)}>
+                        Changer d'utilisateur
+                    </Button>
+                </div>
+            )}
 
             <Button
                 variant="primary"
@@ -248,15 +236,8 @@ function OngletEmprunt() {
 /** Onglet "Retourner" : on cherche un utilisateur, puis ses emprunts en cours */
 function OngletRetour() {
     const queryClient = useQueryClient();
-    const [userQuery, setUserQuery] = useState("");
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedEmprunt, setSelectedEmprunt] = useState(null);
-
-    const { data: utilisateurs = [] } = useQuery({
-        queryKey: ["rechercheUtilisateursRetour", userQuery],
-        queryFn: () => searchUsers({ query: userQuery }),
-        enabled: !selectedUser && userQuery.length >= 2,
-    });
 
     const { data: empruntsData = { emprunts: [] }, isLoading: loadingEmprunts } = useQuery({
         queryKey: ["empruntsEnCours", selectedUser?.id],
@@ -275,20 +256,10 @@ function OngletRetour() {
     if (!selectedUser) {
         return (
             <div className="biblio-tab-content">
-                <Form.Control
-                    autoFocus
-                    placeholder="Rechercher un utilisateur (2 caractères min.)..."
-                    value={userQuery}
-                    onChange={(e) => setUserQuery(e.target.value)}
-                    className="mb-3"
+                <Autocomplete
+                    placeholder="Rechercher un utilisateur..."
+                    onSelect={setSelectedUser}
                 />
-                <ListGroup>
-                    {utilisateurs.map(u => (
-                        <ListGroup.Item key={u.id} action onClick={() => setSelectedUser(u)}>
-                            @{u.nom_utilisateur} — {u.prenom} {u.nom}
-                        </ListGroup.Item>
-                    ))}
-                </ListGroup>
             </div>
         );
     }
@@ -300,7 +271,7 @@ function OngletRetour() {
                 <Button
                     variant="link"
                     size="sm"
-                    onClick={() => { setSelectedUser(null); setUserQuery(""); setSelectedEmprunt(null); }}
+                    onClick={() => { setSelectedUser(null); setSelectedEmprunt(null); }}
                 >
                     Changer d'utilisateur
                 </Button>
