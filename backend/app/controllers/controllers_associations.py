@@ -342,10 +342,10 @@ def delete_content_asso(association_id: int, media_id: int):
     return jsonify({"message": "Media supprimé avec succès"}), 200
 
 
-@controllers_associations.put('/content/<int:association_id>/<int:media_id>')
+@controllers_associations.put('/content/<int:association_id>/<int:mandat_id>/<int:media_id>')
 @login_required
 @est_membre_de_asso(actuel=True)
-def rename_content_asso(association_id: int, media_id: int):
+def rename_content_asso(association_id: int, mandat_id: int, media_id: int):
     """
     Renomme un contenu (photo) pour une association.
     """
@@ -353,7 +353,8 @@ def rename_content_asso(association_id: int, media_id: int):
     if media is None:
         return jsonify({"message": "Media non trouvé"}), 404
 
-    if media.association_id != association_id:
+    mandat = AssociationMandat.query.get(mandat_id)
+    if media.mandat_id != mandat_id or mandat is None or mandat.association_id != association_id:
         return jsonify({"message": "Action non autorisée"}), 403
 
     data = request.get_json() or {}

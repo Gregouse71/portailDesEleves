@@ -10,15 +10,15 @@ import { ajouterContenuAsso, changerPhotoAsso, supprimerPhotoAsso, renommerPhoto
 /**
  * Media d'un seul mandat — similaire à AssoMandat pour les membres.
  */
-function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
+function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
     const [editingMediaId, setEditingMediaId] = useState(null);
     const [editingName, setEditingName] = useState("");
 
     const { data: mandat, isLoading } = useQuery({
-        queryKey: ['mandatAsso', mandatId],
-        queryFn: () => chargerMandat({}, mandatId),
+        queryKey: ['mandatAsso', mandat_id],
+        queryFn: () => chargerMandat({}, mandat_id),
     });
 
     const toggleGestion = () => {
@@ -28,15 +28,15 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
     };
 
     const ajouterPhoto = () => {
-        document.getElementById(`photo-upload-${mandatId}`).click();
+        document.getElementById(`photo-upload-${mandat_id}`).click();
     };
 
     const handleAjouterPhoto = async (event) => {
         const file = event.target.files[0];
         if (file) {
             try {
-                await ajouterContenuAsso(asso_id, mandatId, file);
-                queryClient.invalidateQueries(['mandatAsso', mandatId]);
+                await ajouterContenuAsso(asso_id, mandat_id, file);
+                queryClient.invalidateQueries(['mandatAsso', mandat_id]);
             } catch (error) {
                 alert(`Erreur : ${error.message}`);
             }
@@ -48,8 +48,8 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
         const url = window.prompt("Entrez le lien de la vidéo (YouTube, PeerTube, Vimeo, Dailymotion...) :");
         if (url) {
             try {
-                await ajouterLienVideoAsso({ url: url }, asso_id, mandatId);
-                queryClient.invalidateQueries(['mandatAsso', mandatId]);
+                await ajouterLienVideoAsso({ url: url }, asso_id, mandat_id);
+                queryClient.invalidateQueries(['mandatAsso', mandat_id]);
             } catch (error) {
                 alert(`Erreur : ${error.message}`);
             }
@@ -57,19 +57,19 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
     };
 
     const mutationPhoto = useMutation({
-        mutationFn: async ({ type, id }) => await changerPhotoAsso(asso_id, type, mandatId, id),
+        mutationFn: async ({ type, id }) => await changerPhotoAsso(asso_id, type, mandat_id, id),
         onSuccess: () => {
             queryClient.invalidateQueries(['asso', asso_id]);
-            queryClient.invalidateQueries(['mandatAsso', mandatId]);
+            queryClient.invalidateQueries(['mandatAsso', mandat_id]);
         }
     });
 
     const mutationRenommer = useMutation({
         mutationFn: async ({ id, name }) => {
-            await renommerPhotoAsso({ name }, asso_id, id);
+            await renommerPhotoAsso({ name }, asso_id, mandat_id, id);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['mandatAsso', mandatId]);
+            queryClient.invalidateQueries(['mandatAsso', mandat_id]);
             setEditingMediaId(null);
             setEditingName("");
         },
@@ -102,7 +102,7 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
             }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['mandatAsso', mandatId]);
+            queryClient.invalidateQueries(['mandatAsso', mandat_id]);
             queryClient.invalidateQueries(['asso', asso_id]);
         }
     });
@@ -154,7 +154,7 @@ function MandatMedia({ mandatId, asso_id, assoData, membreData }) {
 
             <input
                 type="file"
-                id={`photo-upload-${mandatId}`}
+                id={`photo-upload-${mandat_id}`}
                 className="d-none"
                 accept="image/png, image/jpeg, image/jpg"
                 onChange={handleAjouterPhoto}
@@ -307,7 +307,7 @@ export default function AssosMedia({ asso_id, membreData }) {
             {sortedMandats.map((mandat) => (
                 <MandatMedia
                     key={mandat.id}
-                    mandatId={mandat.id}
+                    mandat_id={mandat.id}
                     asso_id={asso_id}
                     assoData={asso}
                     membreData={membreData}
