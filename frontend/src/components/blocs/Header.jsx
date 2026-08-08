@@ -84,10 +84,6 @@ export default function Header() {
         queryKey: ['permAdminBiero'],
         queryFn: () => verifierPermission({}, "admin_biero", userData.id),
     });
-    const { data: biblioAdminPermission = false } = useQuery({
-        queryKey: ['permAdminBiblio'],
-        queryFn: () => verifierPermission({}, "admin_biblio", userData.id),
-    });
 
     const handleSearchSubmit = (e) => {
         setExpanded(false);
@@ -123,8 +119,6 @@ export default function Header() {
                                 ["navigate", "/trombi", "Trombinoscope"],
                                 ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
                                     [["navigate", "/soifguard", "Soifguard"]] : [],
-                                ... (biblioAdminPermission) ?
-                                    [["navigate", "/bibliotheque", "Bibliothèque"]] : [],
                                 ["divider"],
                                 ["navigate", "/publications", "Publicatons récentes"],
                                 ["navigate", "/vendomes", "Vendômes"],

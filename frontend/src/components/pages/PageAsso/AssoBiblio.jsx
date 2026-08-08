@@ -1,9 +1,8 @@
-import "../assets/styles/bibliotheque.scss";
+import "../../../assets/styles/bibliotheque.scss";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge } from "react-bootstrap";
-import { ArrowLeft, PencilSquare, Trash } from "react-bootstrap-icons";
+import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge, Alert } from "react-bootstrap";
+import { PencilSquare, Trash } from "react-bootstrap-icons";
 
 import {
     getListeLivres,
@@ -13,9 +12,9 @@ import {
     emprunterLivre,
     retournerLivre,
     listeEmprunts,
-} from "../api/api_bibliotheque";
-import Autocomplete from "../components/elements/Autocompletion";
-import RenderPagination from "../components/elements/RenderPagination";
+} from "../../../api/modules/api_bibliotheque";
+import Autocomplete from "../../../components/elements/Autocompletion";
+import RenderPagination from "../../../components/elements/RenderPagination";
 
 /** Formulaire de livre reutilise pour l'ajout et la modification */
 function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSubmit, isPending, isError }) {
@@ -366,8 +365,11 @@ function OngletRetour() {
     );
 }
 
-/** Onglet "Gestion" : recherche parmi tous les livres, ajout/modification/suppression */
-function OngletGestion() {
+/** Onglet "Gestion" : recherche parmi tous les livres.
+ *  En lecture seule (peutGerer=false) : pas d'ajout/modif/suppression,
+ *  et le nom de l'emprunteur n'est pas affiché.
+ */
+function OngletGestion({ peutGerer }) {
     const queryClient = useQueryClient();
     const PER_PAGE = 20;
     const [query, setQuery] = useState("");
@@ -408,9 +410,11 @@ function OngletGestion() {
                     onChange={(e) => { setQuery(e.target.value); setPage(1); }}
                     style={{ maxWidth: "400px" }}
                 />
-                <Button variant="success" onClick={() => setShowAjout(true)}>
-                    + Ajouter un livre
-                </Button>
+                {peutGerer && (
+                    <Button variant="success" onClick={() => setShowAjout(true)}>
+                        + Ajouter un livre
+                    </Button>
+                )}
             </div>
 
             <Table striped bordered hover responsive>
@@ -422,15 +426,15 @@ function OngletGestion() {
                         <th>Référence</th>
                         <th>État</th>
                         <th>Statut</th>
-                        <th className="text-center">Actions</th>
+                        {peutGerer && <th className="text-center">Actions</th>}
                     </tr>
                 </thead>
                 <tbody>
                     {isLoading && (
-                        <tr><td colSpan="7">Chargement...</td></tr>
+                        <tr><td colSpan={peutGerer ? 7 : 6}>Chargement...</td></tr>
                     )}
                     {!isLoading && data.livres.length === 0 && (
-                        <tr><td colSpan="7" className="text-center text-muted py-3">Aucun livre trouvé.</td></tr>
+                        <tr><td colSpan={peutGerer ? 7 : 6} className="text-center text-muted py-3">Aucun livre trouvé.</td></tr>
                     )}
                     {data.livres.map(livre => (
                         <tr key={livre.id}>
@@ -443,23 +447,27 @@ function OngletGestion() {
                                 {livre.disponible ? (
                                     <Badge bg="success">Disponible</Badge>
                                 ) : (
-                                    <Badge bg="danger">Emprunté{livre.emprunt ? ` (${livre.emprunt.utilisateur})` : ""}</Badge>
+                                    <Badge bg="danger">
+                                        Emprunté{peutGerer && livre.emprunt ? ` (${livre.emprunt.utilisateur})` : ""}
+                                    </Badge>
                                 )}
                             </td>
-                            <td className="text-center">
-                                <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setLivreAModifier(livre)}>
-                                    <PencilSquare />
-                                </Button>
-                                <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    disabled={!livre.disponible}
-                                    title={!livre.disponible ? "Impossible de supprimer un livre emprunté" : "Supprimer"}
-                                    onClick={() => handleSupprimer(livre)}
-                                >
-                                    <Trash />
-                                </Button>
-                            </td>
+                            {peutGerer && (
+                                <td className="text-center">
+                                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setLivreAModifier(livre)}>
+                                        <PencilSquare />
+                                    </Button>
+                                    <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        disabled={!livre.disponible}
+                                        title={!livre.disponible ? "Impossible de supprimer un livre emprunté" : "Supprimer"}
+                                        onClick={() => handleSupprimer(livre)}
+                                    >
+                                        <Trash />
+                                    </Button>
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>
@@ -467,24 +475,32 @@ function OngletGestion() {
 
             <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="d-flex" />
 
-            <AjouterLivreModal show={showAjout} onClose={() => setShowAjout(false)} onAdded={invalidate} />
-            <ModifierLivreModal livre={livreAModifier} onClose={() => setLivreAModifier(null)} onModifie={invalidate} />
+            {peutGerer && (
+                <>
+                    <AjouterLivreModal show={showAjout} onClose={() => setShowAjout(false)} onAdded={invalidate} />
+                    <ModifierLivreModal livre={livreAModifier} onClose={() => setLivreAModifier(null)} onModifie={invalidate} />
+                </>
+            )}
         </div>
     );
 }
 
-export default function Bibliotheque() {
-    const navigate = useNavigate();
+export default function Bibliotheque({ asso_id, membreData }) {
+    const peutGerer = !!membreData?.autorise;
+
+    // Non autorise (y compris non-membre) : uniquement la recherche/consultation, sans onglets
+    if (!peutGerer) {
+        return (
+            <div className="biblio-container">
+                <div className="biblio-content">
+                    <OngletGestion peutGerer={false} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="biblio-container">
-            <div className="biblio-header">
-                <Button variant="outline-secondary" onClick={() => navigate(-1)}>
-                    <ArrowLeft className="me-1" /> Retour
-                </Button>
-                <h2 className="mb-0">Bibliothèque</h2>
-            </div>
-
             <div className="biblio-content">
                 <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
                     <Tab eventKey="emprunt" title="Emprunter">
@@ -494,7 +510,7 @@ export default function Bibliotheque() {
                         <OngletRetour />
                     </Tab>
                     <Tab eventKey="gestion" title="Gestion">
-                        <OngletGestion />
+                        <OngletGestion peutGerer={true} />
                     </Tab>
                 </Tabs>
             </div>

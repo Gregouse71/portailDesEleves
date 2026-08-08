@@ -1,4 +1,4 @@
-import { BIBLIOTHEQUE_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGet } from "./base";
+import { BIBLIOTHEQUE_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGet } from "../base";
 
 /** Recupere la liste paginee des livres, avec recherche et filtres
  * args :
