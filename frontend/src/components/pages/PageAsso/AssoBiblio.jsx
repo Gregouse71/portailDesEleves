@@ -1,7 +1,7 @@
 import "../../../assets/styles/bibliotheque.scss";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge } from "react-bootstrap";
+import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge, Alert } from "react-bootstrap";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
 
 import {
