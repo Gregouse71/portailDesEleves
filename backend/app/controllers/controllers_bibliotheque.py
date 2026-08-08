@@ -12,9 +12,9 @@ from app.utils.decorators import a_permission
 controllers_bibliotheque = Blueprint('controllers_bibliotheque', __name__)
 
 
-@controllers_bibliotheque.get('/livres')
+@controllers_bibliotheque.get('/<int:asso_id>/livres')
 @login_required
-def get_livres():
+def get_livres(asso_id: int):
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 20))
     query = request.args.get("query", "")
@@ -25,18 +25,18 @@ def get_livres():
     disponible_arg = request.args.get("disponible")
     disponible = disponible_arg.lower() == "true" if disponible_arg is not None else None
 
-    return jsonify(liste_des_livres(page, per_page, query, serie, disponible, order_by, order_asc))
+    return jsonify(liste_des_livres(asso_id, page, per_page, query, serie, disponible, order_by, order_asc))
 
 
-@controllers_bibliotheque.post('/livres')
+@controllers_bibliotheque.post('/<int:asso_id>/livres')
 @login_required
-@a_permission("admin_biblio")
-def post_livre():
+def post_livre(asso_id: int):
     data = request.json
     if not data.get("serie"):
         return jsonify({"message": "La série est obligatoire"}), 400
 
     livre = ajouter_nouveau_livre(
+        asso_id=asso_id,
         serie=data["serie"],
         auteur=data.get("auteur"),
         edition=data.get("edition"),
@@ -47,11 +47,10 @@ def post_livre():
     return jsonify(livre)
 
 
-@controllers_bibliotheque.put('/livres/<int:livre_id>')
+@controllers_bibliotheque.put('/<int:asso_id>/livres/<int:livre_id>')
 @login_required
-@a_permission("admin_biblio")
-def put_livre(livre_id: int):
-    livre = Livre.query.get(livre_id)
+def put_livre(asso_id: int, livre_id: int):
+    livre = Livre.query.filter_by(id=livre_id, asso_id=asso_id).first()
     if not livre:
         return jsonify({"message": "Livre introuvable"}), 404
 
@@ -59,11 +58,10 @@ def put_livre(livre_id: int):
     return jsonify(livre.to_dict())
 
 
-@controllers_bibliotheque.delete('/livres/<int:livre_id>')
+@controllers_bibliotheque.delete('/<int:asso_id>/livres/<int:livre_id>')
 @login_required
-@a_permission("admin_biblio")
-def delete_livre(livre_id: int):
-    resultat = supprimer_livre(livre_id)
+def delete_livre(asso_id: int, livre_id: int):
+    resultat = supprimer_livre(asso_id, livre_id)
     if resultat is None:
         return jsonify({"message": "Livre introuvable"}), 404
     if resultat is False:
@@ -72,12 +70,11 @@ def delete_livre(livre_id: int):
     return jsonify({"success": True})
 
 
-@controllers_bibliotheque.post('/emprunter')
+@controllers_bibliotheque.post('/<int:asso_id>/emprunter')
 @login_required
-@a_permission("admin_biblio")
-def post_emprunter():
+def post_emprunter(asso_id: int):
     data = request.json
-    livre = Livre.query.get(data.get("livre_id"))
+    livre = Livre.query.filter_by(id=data.get("livre_id"), asso_id=asso_id).first()
     utilisateur = Utilisateur.query.get(data.get("utilisateur_id"))
     if not livre or not utilisateur:
         return jsonify({"message": "Livre ou utilisateur introuvable"}), 404
@@ -89,12 +86,11 @@ def post_emprunter():
     return jsonify(resultat)
 
 
-@controllers_bibliotheque.post('/retourner')
+@controllers_bibliotheque.post('/<int:asso_id>/retourner')
 @login_required
-@a_permission("admin_biblio")
-def post_retourner():
+def post_retourner(asso_id: int):
     data = request.json
-    livre = Livre.query.get(data.get("livre_id"))
+    livre = Livre.query.filter_by(id=data.get("livre_id"), asso_id=asso_id).first()
     if not livre:
         return jsonify({"message": "Livre introuvable"}), 404
 
@@ -105,13 +101,12 @@ def post_retourner():
     return jsonify(resultat)
 
 
-@controllers_bibliotheque.get('/emprunts')
+@controllers_bibliotheque.get('/<int:asso_id>/emprunts')
 @login_required
-@a_permission("admin_biblio")
-def get_emprunts():
+def get_emprunts(asso_id: int):
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 20))
     utilisateur_id = request.args.get("utilisateur_id", type=int)
     en_cours_seulement = request.args.get("en_cours_seulement", "false").lower() == "true"
 
-    return jsonify(liste_emprunts(page, per_page, utilisateur_id, en_cours_seulement))
+    return jsonify(liste_emprunts(asso_id, page, per_page, utilisateur_id, en_cours_seulement))

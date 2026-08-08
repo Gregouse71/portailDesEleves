@@ -9,11 +9,11 @@ from app.models.models_bibliotheque import Livre, EmpruntLivre
 COLONNES_TRIABLES = ("serie", "auteur", "tome", "etat", "disponible")
 
 
-def liste_des_livres(page: int = 1, per_page: int = 20, query: str = "",
+def liste_des_livres(asso_id: int, page: int = 1, per_page: int = 20, query: str = "",
                       serie: str = None, disponible: bool = None,
                       order_by: str = "serie", order_asc: bool = True):
-    """ Retourne une liste paginee de livres, avec recherche texte libre et filtres """
-    q = Livre.query
+    """ Retourne une liste paginee de livres d'une asso, avec recherche texte libre et filtres """
+    q = Livre.query.filter(Livre.asso_id == asso_id)
 
     if query:
         like = f"%{query}%"
@@ -38,17 +38,17 @@ def liste_des_livres(page: int = 1, per_page: int = 20, query: str = "",
     return {"livres": [l.to_dict() for l in livres], "count": count}
 
 
-def ajouter_nouveau_livre(serie: str, auteur: str = None, edition: str = None,
+def ajouter_nouveau_livre(asso_id: int, serie: str, auteur: str = None, edition: str = None,
                            tome: str = None, reference: str = None, etat: str = None):
-    livre = Livre(serie, auteur, edition, tome, reference, etat)
+    livre = Livre(asso_id, serie, auteur, edition, tome, reference, etat)
     db.session.add(livre)
     db.session.commit()
     return livre.to_dict()
 
 
-def supprimer_livre(livre_id: int):
-    """ Renvoie None si le livre n'existe pas, False s'il est emprunte, True si supprime """
-    livre = Livre.query.get(livre_id)
+def supprimer_livre(asso_id: int, livre_id: int):
+    """ Renvoie None si le livre n'existe pas (ou n'appartient pas a l'asso), False s'il est emprunte, True si supprime """
+    livre = Livre.query.filter_by(id=livre_id, asso_id=asso_id).first()
     if not livre:
         return None
     if not livre.disponible:
@@ -85,9 +85,10 @@ def retourner_livre(livre: Livre, auteur: Utilisateur):
     return livre.to_dict()
 
 
-def liste_emprunts(page: int = 1, per_page: int = 20, utilisateur_id: int = None, en_cours_seulement: bool = False):
-    """ Historique des emprunts, le plus recent en premier """
-    q = EmpruntLivre.query
+def liste_emprunts(asso_id: int, page: int = 1, per_page: int = 20,
+                    utilisateur_id: int = None, en_cours_seulement: bool = False):
+    """ Historique des emprunts d'une asso, le plus recent en premier """
+    q = EmpruntLivre.query.join(Livre).filter(Livre.asso_id == asso_id)
 
     if utilisateur_id:
         q = q.filter(EmpruntLivre.utilisateur_id == utilisateur_id)

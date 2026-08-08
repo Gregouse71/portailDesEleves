@@ -6,6 +6,7 @@ from app import db
 class Livre(db.Model):
     __tablename__ = "bibliotheque_livres"
     id = db.Column(db.Integer, primary_key=True)
+    asso_id = db.Column(db.Integer, db.ForeignKey("associations_association.id"), nullable=False, index=True)
 
     auteur = db.Column(db.String(500))
     edition = db.Column(db.String(255))
@@ -23,8 +24,9 @@ class Livre(db.Model):
         cascade="all, delete-orphan",
     )
 
-    def __init__(self, serie: str, auteur: str = None, edition: str = None,
+    def __init__(self, asso_id: int, serie: str, auteur: str = None, edition: str = None,
                  tome: str = None, reference: str = None, etat: str = None):
+        self.asso_id = asso_id
         self.serie = serie
         self.auteur = auteur
         self.edition = edition
@@ -59,6 +61,7 @@ class Livre(db.Model):
         emprunt = self.emprunt_en_cours()
         return {
             "id": self.id,
+            "asso_id": self.asso_id,
             "serie": self.serie,
             "tome": self.tome,
             "nom_affichage": self.nom_affichage(),

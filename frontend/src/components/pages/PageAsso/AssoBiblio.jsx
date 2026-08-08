@@ -97,9 +97,9 @@ function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSu
 
 const LIVRE_VIDE = { serie: "", auteur: "", edition: "", tome: "", reference: "", etat: "" };
 
-function AjouterLivreModal({ show, onClose, onAdded }) {
+function AjouterLivreModal({ asso_id, show, onClose, onAdded }) {
     const mutation = useMutation({
-        mutationFn: (data) => ajouterLivre(data),
+        mutationFn: (data) => ajouterLivre(asso_id, data),
         onSuccess: () => { onAdded(); onClose(); }
     });
 
@@ -117,9 +117,9 @@ function AjouterLivreModal({ show, onClose, onAdded }) {
     );
 }
 
-function ModifierLivreModal({ livre, onClose, onModifie }) {
+function ModifierLivreModal({ asso_id, livre, onClose, onModifie }) {
     const mutation = useMutation({
-        mutationFn: (data) => modifierLivre(data, livre.id),
+        mutationFn: (data) => modifierLivre(asso_id, data, livre.id),
         onSuccess: () => { onModifie(); onClose(); }
     });
 
@@ -147,7 +147,7 @@ function ModifierLivreModal({ livre, onClose, onModifie }) {
 }
 
 /** Onglet "Emprunter" : recherche de livres disponibles avec sélection multiple, puis un utilisateur */
-function OngletEmprunt() {
+function OngletEmprunt({ asso_id }) {
     const queryClient = useQueryClient();
     const [bookQuery, setBookQuery] = useState("");
     const [selectedBooks, setSelectedBooks] = useState([]);
@@ -156,8 +156,8 @@ function OngletEmprunt() {
     const rechercheActive = bookQuery.trim().length >= 2;
 
     const { data: livres = [], isFetching: loadingLivres } = useQuery({
-        queryKey: ["rechercheLivresDispo", bookQuery],
-        queryFn: () => getListeLivres({ query: bookQuery, disponible: true, per_page: 15 }).then(r => r.livres),
+        queryKey: ["rechercheLivresDispo", asso_id, bookQuery],
+        queryFn: () => getListeLivres(asso_id, { query: bookQuery, disponible: true, per_page: 15 }).then(r => r.livres),
         enabled: rechercheActive,
     });
 
@@ -176,7 +176,7 @@ function OngletEmprunt() {
         mutationFn: () =>
             Promise.all(
                 selectedBooks.map(l =>
-                    emprunterLivre({ livre_id: l.id, utilisateur_id: selectedUser.id })
+                    emprunterLivre(asso_id, { livre_id: l.id, utilisateur_id: selectedUser.id })
                 )
             ),
         onSuccess: () => {
@@ -276,14 +276,14 @@ function OngletEmprunt() {
 }
 
 /** Onglet "Retourner" : on cherche un utilisateur, puis on coche les livres à rendre */
-function OngletRetour() {
+function OngletRetour({ asso_id }) {
     const queryClient = useQueryClient();
     const [selectedUser, setSelectedUser] = useState(null);
     const [empruntsSelectionnes, setEmpruntsSelectionnes] = useState([]);
 
     const { data: empruntsData = { emprunts: [] }, isLoading: loadingEmprunts } = useQuery({
-        queryKey: ["empruntsEnCours", selectedUser?.id],
-        queryFn: () => listeEmprunts({ utilisateur_id: selectedUser.id, en_cours_seulement: true, per_page: 100 }),
+        queryKey: ["empruntsEnCours", asso_id, selectedUser?.id],
+        queryFn: () => listeEmprunts(asso_id, { utilisateur_id: selectedUser.id, en_cours_seulement: true, per_page: 100 }),
         enabled: !!selectedUser,
     });
 
@@ -298,7 +298,7 @@ function OngletRetour() {
     const retournerMutation = useMutation({
         mutationFn: () =>
             Promise.all(
-                empruntsSelectionnes.map(e => retournerLivre({ livre_id: e.livre_id }))
+                empruntsSelectionnes.map(e => retournerLivre(asso_id, { livre_id: e.livre_id }))
             ),
         onSuccess: () => {
             queryClient.invalidateQueries(["empruntsEnCours"]);
@@ -369,7 +369,7 @@ function OngletRetour() {
  *  En lecture seule (peutGerer=false) : pas d'ajout/modif/suppression,
  *  et le nom de l'emprunteur n'est pas affiché.
  */
-function OngletGestion({ peutGerer }) {
+function OngletGestion({ asso_id, peutGerer }) {
     const queryClient = useQueryClient();
     const PER_PAGE = 20;
     const [query, setQuery] = useState("");
@@ -378,8 +378,8 @@ function OngletGestion({ peutGerer }) {
     const [livreAModifier, setLivreAModifier] = useState(null);
 
     const { data = { livres: [], count: 0 }, isLoading } = useQuery({
-        queryKey: ["gestionLivres", query, page],
-        queryFn: () => getListeLivres({ query, page, per_page: PER_PAGE }),
+        queryKey: ["gestionLivres", asso_id, query, page],
+        queryFn: () => getListeLivres(asso_id, { query, page, per_page: PER_PAGE }),
         placeholderData: (previousData) => previousData,
     });
     const totalPages = Math.ceil(data.count / PER_PAGE);
@@ -390,7 +390,7 @@ function OngletGestion({ peutGerer }) {
     };
 
     const supprimerMutation = useMutation({
-        mutationFn: (id) => supprimerLivre(id),
+        mutationFn: (id) => supprimerLivre(asso_id, id),
         onSuccess: invalidate,
         onError: () => window.alert("Impossible de supprimer ce livre (peut-être encore emprunté ?)."),
     });
@@ -477,8 +477,8 @@ function OngletGestion({ peutGerer }) {
 
             {peutGerer && (
                 <>
-                    <AjouterLivreModal show={showAjout} onClose={() => setShowAjout(false)} onAdded={invalidate} />
-                    <ModifierLivreModal livre={livreAModifier} onClose={() => setLivreAModifier(null)} onModifie={invalidate} />
+                    <AjouterLivreModal asso_id={asso_id} show={showAjout} onClose={() => setShowAjout(false)} onAdded={invalidate} />
+                    <ModifierLivreModal asso_id={asso_id} livre={livreAModifier} onClose={() => setLivreAModifier(null)} onModifie={invalidate} />
                 </>
             )}
         </div>
@@ -488,12 +488,12 @@ function OngletGestion({ peutGerer }) {
 export default function Bibliotheque({ asso_id, membreData }) {
     const peutGerer = !!membreData?.autorise;
 
-    // Non autorise (y compris non-membre) : uniquement la recherche/consultation, sans onglets
+    // Non autorise : uniquement la recherche/consultation
     if (!peutGerer) {
         return (
             <div className="biblio-container">
                 <div className="biblio-content">
-                    <OngletGestion peutGerer={false} />
+                    <OngletGestion asso_id={asso_id} peutGerer={false} />
                 </div>
             </div>
         );
@@ -504,13 +504,13 @@ export default function Bibliotheque({ asso_id, membreData }) {
             <div className="biblio-content">
                 <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
                     <Tab eventKey="emprunt" title="Emprunter">
-                        <OngletEmprunt />
+                        <OngletEmprunt asso_id={asso_id} />
                     </Tab>
                     <Tab eventKey="retour" title="Retourner">
-                        <OngletRetour />
+                        <OngletRetour asso_id={asso_id} />
                     </Tab>
                     <Tab eventKey="gestion" title="Gestion">
-                        <OngletGestion peutGerer={true} />
+                        <OngletGestion asso_id={asso_id} peutGerer={true} />
                     </Tab>
                 </Tabs>
             </div>
