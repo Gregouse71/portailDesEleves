@@ -1,7 +1,7 @@
 import "../../../assets/styles/bibliotheque.scss";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge, Alert } from "react-bootstrap";
+import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge } from "react-bootstrap";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
 
 import {
@@ -146,13 +146,19 @@ function ModifierLivreModal({ asso_id, livre, onClose, onModifie }) {
     );
 }
 
-/** Onglet "Emprunter" : recherche de livres disponibles avec sélection multiple, puis un utilisateur */
-function OngletEmprunt({ asso_id }) {
+/**
+ * Onglet "Emprunt" (fusion des anciens onglets Emprunter + Retourner) :
+ * on cherche une personne, puis on peut a la fois lui emprunter des
+ * nouveaux livres et lui faire rendre des livres deja empruntes.
+ */
+function OngletEmpruntRetour({ asso_id }) {
     const queryClient = useQueryClient();
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [resetKey, setResetKey] = useState(0);
+
+    // -- partie "emprunter de nouveaux livres" --
     const [bookQuery, setBookQuery] = useState("");
     const [selectedBooks, setSelectedBooks] = useState([]);
-    const [selectedUser, setSelectedUser] = useState(null);
-
     const rechercheActive = bookQuery.trim().length >= 2;
 
     const { data: livres = [], isFetching: loadingLivres } = useQuery({
@@ -160,17 +166,8 @@ function OngletEmprunt({ asso_id }) {
         queryFn: () => getListeLivres(asso_id, { query: bookQuery, disponible: true, per_page: 15 }).then(r => r.livres),
         enabled: rechercheActive,
     });
-
-    // On ne propose pas un livre déjà sélectionné
+    // On ne propose pas un livre deja selectionne pour emprunt
     const resultatsFiltres = livres.filter(l => !selectedBooks.some(sb => sb.id === l.id));
-
-    const ajouterLivreSelection = (livre) => {
-        setSelectedBooks(prev => [...prev, livre]);
-    };
-
-    const retirerLivreSelection = (livreId) => {
-        setSelectedBooks(prev => prev.filter(l => l.id !== livreId));
-    };
 
     const emprunterMutation = useMutation({
         mutationFn: () =>
@@ -181,111 +178,19 @@ function OngletEmprunt({ asso_id }) {
             ),
         onSuccess: () => {
             queryClient.invalidateQueries(["rechercheLivresDispo"]);
+            queryClient.invalidateQueries(["empruntsEnCours"]);
             setSelectedBooks([]);
-            setSelectedUser(null);
             setBookQuery("");
         }
     });
 
-    return (
-        <div className="biblio-tab-content">
-            <Form.Control
-                autoFocus
-                placeholder="Rechercher un livre disponible (série, auteur, référence)..."
-                value={bookQuery}
-                onChange={(e) => setBookQuery(e.target.value)}
-                className="mb-2"
-            />
-
-            {rechercheActive && (
-                <ListGroup className="mb-3">
-                    {loadingLivres && (
-                        <ListGroup.Item disabled>Recherche...</ListGroup.Item>
-                    )}
-                    {!loadingLivres && resultatsFiltres.map(l => (
-                        <ListGroup.Item key={l.id} action onClick={() => ajouterLivreSelection(l)}>
-                            <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
-                            {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
-                        </ListGroup.Item>
-                    ))}
-                    {!loadingLivres && resultatsFiltres.length === 0 && (
-                        <ListGroup.Item disabled>Aucun livre disponible trouvé.</ListGroup.Item>
-                    )}
-                </ListGroup>
-            )}
-
-            {selectedBooks.length > 0 && (
-                <div className="biblio-selection-livres mb-3">
-                    <div className="fw-bold mb-1">Livres sélectionnés ({selectedBooks.length})</div>
-                    <ListGroup>
-                        {selectedBooks.map(l => (
-                            <ListGroup.Item key={l.id} className="d-flex justify-content-between align-items-center">
-                                <span>
-                                    <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
-                                    {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
-                                </span>
-                                <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() => retirerLivreSelection(l.id)}
-                                >
-                                    <Trash />
-                                </Button>
-                            </ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                </div>
-            )}
-
-            {selectedBooks.length > 0 && (
-                <>
-                    {!selectedUser && (
-                        <Autocomplete
-                            placeholder="Rechercher un utilisateur..."
-                            onSelect={setSelectedUser}
-                        />
-                    )}
-
-                    {selectedUser && (
-                        <div className="biblio-selection-recap mt-3">
-                            <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
-                            <Button variant="link" size="sm" onClick={() => setSelectedUser(null)}>
-                                Changer d'utilisateur
-                            </Button>
-                        </div>
-                    )}
-
-                    <Button
-                        variant="primary"
-                        className="mt-3"
-                        disabled={!selectedUser || emprunterMutation.isPending}
-                        onClick={() => emprunterMutation.mutate()}
-                    >
-                        {emprunterMutation.isPending
-                            ? "Emprunt en cours..."
-                            : `Emprunter ${selectedBooks.length} livre${selectedBooks.length > 1 ? "s" : ""}`}
-                    </Button>
-
-                    {emprunterMutation.isError && (
-                        <p className="text-danger mt-2">Une erreur est survenue pendant l'emprunt.</p>
-                    )}
-                </>
-            )}
-        </div>
-    );
-}
-
-/** Onglet "Retourner" : on cherche un utilisateur, puis on coche les livres à rendre */
-function OngletRetour({ asso_id }) {
-    const queryClient = useQueryClient();
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [empruntsSelectionnes, setEmpruntsSelectionnes] = useState([]);
-
+    // -- partie "rendre des livres deja empruntes" --
     const { data: empruntsData = { emprunts: [] }, isLoading: loadingEmprunts } = useQuery({
         queryKey: ["empruntsEnCours", asso_id, selectedUser?.id],
         queryFn: () => listeEmprunts(asso_id, { utilisateur_id: selectedUser.id, en_cours_seulement: true, per_page: 100 }),
         enabled: !!selectedUser,
     });
+    const [empruntsSelectionnes, setEmpruntsSelectionnes] = useState([]);
 
     const toggleEmprunt = (emprunt) => {
         setEmpruntsSelectionnes(prev =>
@@ -306,10 +211,19 @@ function OngletRetour({ asso_id }) {
         }
     });
 
+    const changerUtilisateur = () => {
+        setSelectedUser(null);
+        setSelectedBooks([]);
+        setEmpruntsSelectionnes([]);
+        setBookQuery("");
+        setResetKey(k => k + 1);
+    };
+
     if (!selectedUser) {
         return (
             <div className="biblio-tab-content">
                 <Autocomplete
+                    key={resetKey}
                     placeholder="Rechercher un utilisateur..."
                     onSelect={setSelectedUser}
                 />
@@ -321,46 +235,121 @@ function OngletRetour({ asso_id }) {
         <div className="biblio-tab-content">
             <div className="biblio-selection-recap">
                 <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
-                <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => { setSelectedUser(null); setEmpruntsSelectionnes([]); }}
-                >
+                <Button variant="link" size="sm" onClick={changerUtilisateur}>
                     Changer d'utilisateur
                 </Button>
             </div>
 
-            <ListGroup className="mt-3">
-                {empruntsData.emprunts.map(e => (
-                    <ListGroup.Item key={e.id}>
-                        <Form.Check
-                            type="checkbox"
-                            id={`emprunt-${e.id}`}
-                            checked={empruntsSelectionnes.some(sel => sel.id === e.id)}
-                            onChange={() => toggleEmprunt(e)}
-                            label={`${e.livre_nom} - emprunté le ${new Date(e.date_emprunt).toLocaleDateString('fr-FR')}`}
-                        />
-                    </ListGroup.Item>
-                ))}
-                {!loadingEmprunts && empruntsData.emprunts.length === 0 && (
-                    <div className="default-message">Aucun emprunt en cours pour cet utilisateur.</div>
+            {/* Emprunter de nouveaux livres */}
+            <div className="mt-4">
+                <div className="fw-bold mb-2">Emprunter des livres</div>
+
+                <Form.Control
+                    placeholder="Rechercher un livre disponible (série, auteur, référence)..."
+                    value={bookQuery}
+                    onChange={(e) => setBookQuery(e.target.value)}
+                    className="mb-2"
+                />
+
+                {rechercheActive && (
+                    <ListGroup className="mb-3">
+                        {loadingLivres && (
+                            <ListGroup.Item disabled>Recherche...</ListGroup.Item>
+                        )}
+                        {!loadingLivres && resultatsFiltres.map(l => (
+                            <ListGroup.Item
+                                key={l.id}
+                                action
+                                onClick={() => setSelectedBooks(prev => [...prev, l])}
+                            >
+                                <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
+                                {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
+                            </ListGroup.Item>
+                        ))}
+                        {!loadingLivres && resultatsFiltres.length === 0 && (
+                            <ListGroup.Item disabled>Aucun livre disponible trouvé.</ListGroup.Item>
+                        )}
+                    </ListGroup>
                 )}
-            </ListGroup>
 
-            <Button
-                variant="success"
-                className="mt-3"
-                disabled={empruntsSelectionnes.length === 0 || retournerMutation.isPending}
-                onClick={() => retournerMutation.mutate()}
-            >
-                {retournerMutation.isPending
-                    ? "Retour en cours..."
-                    : `Rendre ${empruntsSelectionnes.length} livre${empruntsSelectionnes.length > 1 ? "s" : ""}`}
-            </Button>
+                {selectedBooks.length > 0 && (
+                    <div className="biblio-selection-livres mb-3">
+                        <ListGroup>
+                            {selectedBooks.map(l => (
+                                <ListGroup.Item key={l.id} className="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
+                                        {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
+                                    </span>
+                                    <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => setSelectedBooks(prev => prev.filter(x => x.id !== l.id))}
+                                    >
+                                        <Trash />
+                                    </Button>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    </div>
+                )}
 
-            {retournerMutation.isError && (
-                <p className="text-danger mt-2">Une erreur est survenue pendant le retour.</p>
-            )}
+                <Button
+                    variant="primary"
+                    disabled={selectedBooks.length === 0 || emprunterMutation.isPending}
+                    onClick={() => emprunterMutation.mutate()}
+                >
+                    {emprunterMutation.isPending
+                        ? "Emprunt en cours..."
+                        : `Emprunter ${selectedBooks.length > 0 ? selectedBooks.length + " " : ""}livre${selectedBooks.length > 1 ? "s" : ""}`}
+                </Button>
+
+                {emprunterMutation.isError && (
+                    <p className="text-danger mt-2">Une erreur est survenue pendant l'emprunt.</p>
+                )}
+            </div>
+
+            <hr className="my-4" />
+
+            {/* Rendre des livres deja empruntes */}
+            <div>
+                <div className="fw-bold mb-2">Rendre des livres</div>
+
+                <ListGroup>
+                    {loadingEmprunts && (
+                        <ListGroup.Item disabled>Chargement...</ListGroup.Item>
+                    )}
+                    {!loadingEmprunts && empruntsData.emprunts.map(e => (
+                        <ListGroup.Item key={e.id}>
+                            <Form.Check
+                                type="checkbox"
+                                id={`emprunt-${e.id}`}
+                                checked={empruntsSelectionnes.some(sel => sel.id === e.id)}
+                                onChange={() => toggleEmprunt(e)}
+                                label={`${e.livre_nom} - emprunté le ${new Date(e.date_emprunt).toLocaleDateString('fr-FR')}`}
+                            />
+                        </ListGroup.Item>
+                    ))}
+                    {!loadingEmprunts && empruntsData.emprunts.length === 0 && (
+                        <div className="default-message">Aucun emprunt en cours pour cet utilisateur.</div>
+                    )}
+                </ListGroup>
+
+                <Button
+                    variant="success"
+                    className="mt-3"
+                    disabled={empruntsSelectionnes.length === 0 || retournerMutation.isPending}
+                    onClick={() => retournerMutation.mutate()}
+                >
+                    {retournerMutation.isPending
+                        ? "Retour en cours..."
+                        : `Rendre ${empruntsSelectionnes.length > 0 ? empruntsSelectionnes.length + " " : ""}livre${empruntsSelectionnes.length > 1 ? "s" : ""}`}
+                </Button>
+
+                {retournerMutation.isError && (
+                    <p className="text-danger mt-2">Une erreur est survenue pendant le retour.</p>
+                )}
+            </div>
         </div>
     );
 }
@@ -503,11 +492,8 @@ export default function Bibliotheque({ asso_id, membreData }) {
         <div className="biblio-container">
             <div className="biblio-content">
                 <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
-                    <Tab eventKey="emprunt" title="Emprunter">
-                        <OngletEmprunt asso_id={asso_id} />
-                    </Tab>
-                    <Tab eventKey="retour" title="Retourner">
-                        <OngletRetour asso_id={asso_id} />
+                    <Tab eventKey="emprunt" title="Emprunt">
+                        <OngletEmpruntRetour asso_id={asso_id} />
                     </Tab>
                     <Tab eventKey="gestion" title="Gestion">
                         <OngletGestion asso_id={asso_id} peutGerer={true} />
