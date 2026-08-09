@@ -61,7 +61,7 @@ function Asso() {
         'Media': { key: "media", titre: "Media", element: <AssosMedia asso_id={asso.id} membreData={membreData} /> },
         'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
         'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
-        ...(membreData.admin && {'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> }}),
+        ...(membreData.admin && { 'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> } }),
     };
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
@@ -97,8 +97,9 @@ function Asso() {
                 >
                 </Card.Header>
                 <Card.Body>
-                    <Row className="align-items-center flex-nowrap">
-                        <Col xs="auto">
+                    <Row className="align-items-center flex-md-nowrap">
+                        <Col xs className="d-md-none order-1"></Col>
+                        <Col xs="auto" md="auto" className="order-2 order-md-1 text-center text-md-start">
                             <Image
                                 className="rounded-3"
                                 src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
@@ -113,20 +114,22 @@ function Asso() {
                                 }}
                             />
                         </Col>
-                        <Col className="text-truncate text-start ms-2">
+                        <Col xs={12} md className="order-4 order-md-2 text-truncate text-center text-md-start">
                             <h2 className="mb-0 text-truncate">{asso.nom}</h2>
                             <div>
                                 {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
                                 {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
                             </div>
                         </Col>
-                        {membreData.autorise && (
-                            <Col xs="auto" className="text-end">
+                        {membreData.autorise ? (
+                            <Col xs md="auto" className="order-3 order-md-3 text-end">
                                 <DropdownEditer list={[
                                     { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
                                     { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
                                 ]} />
                             </Col>
+                        ) : (
+                            <Col xs className="d-md-none order-3"></Col>
                         )}
                     </Row>
                 </Card.Body>

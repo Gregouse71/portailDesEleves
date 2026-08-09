@@ -89,22 +89,24 @@ function PageUtilisateur() {
                 >
                 </Card.Header>
                 <Card.Body>
-                    <Row className="align-items-center flex-nowrap">
-                        {autoriseAModifier && (
-                            <Col xs="auto">
+                    <Row className="align-items-center flex-md-nowrap">
+                        {autoriseAModifier ? (
+                            <Col xs md="auto" className="order-1 order-md-1 text-start">
                                 <DropdownEditer list={[
                                     { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer la photo" },
                                     { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
                                 ]} />
                             </Col>
+                        ) : (
+                            <Col xs className="d-md-none order-1"></Col>
                         )}
-                        <Col className="text-truncate text-end ms-2">
+                        <Col xs={12} md className="order-4 order-md-2 text-truncate text-center text-md-end">
                             <h2 className="mb-0 text-truncate">
                                 {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
                                 {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
                             </h2>
                         </Col>
-                        <Col xs="auto">
+                        <Col xs="auto" md="auto" className="order-2 order-md-3 text-center text-md-end">
                             <Image
                                 className="rounded-3"
                                 src={`${UPLOAD_BASE_URL}/${donneesUtilisateur.photo}`}
@@ -119,6 +121,7 @@ function PageUtilisateur() {
                                 }}
                             />
                         </Col>
+                        <Col xs className="d-md-none order-3"></Col>
                     </Row>
                 </Card.Body>
             </Card>
