@@ -6,6 +6,7 @@ import chess
 from datetime import datetime, timedelta, timezone
 from stockfish import Stockfish
 import shutil
+from gevent import Timeout
 
 from app import db
 from app.models.models_echecs import EchecsDefi, EchecsPartie, EchecsElo
@@ -662,19 +663,88 @@ def _sauvegarder(partie, board, move):
     db.session.commit()
 
 
-def _stockfish(fen: str, elo_cible: int = 1320) -> chess.Move:
-    board_tmp = chess.Board(fen)
-    nb_pieces = len(board_tmp.piece_map())
-    en_finale = nb_pieces <= 12
+TIMEOUT_SECONDES = 10
+PERTE_MAX_CP = 300
 
-    elo_sf_ajuste = max(elo_cible, 2200) if en_finale else elo_cible
-
-    sf = Stockfish(
-        path=STOCKFISH_PATH,
-        parameters={'UCI_LimitStrength': True, 'UCI_Elo': elo_sf_ajuste},
-    )
+def _coup_secours(fen: str) -> chess.Move:
+    """Coup de repli rapide si Stockfish met trop de temps."""
+    sf = Stockfish(path=STOCKFISH_PATH)
     sf.set_fen_position(fen)
+    sf.set_depth(8)
     bestmove = sf.get_best_move()
     if bestmove is None:
-        raise ValueError('Stockfish n\'a pas retourné de coup')
+        board = chess.Board(fen)
+        return next(iter(board.legal_moves))
     return chess.Move.from_uci(bestmove)
+
+
+def _stockfish_logique(fen: str, elo_cible: int) -> chess.Move:
+    board_tmp = chess.Board(fen)
+    nb_pieces = len(board_tmp.piece_map())
+    en_finale = nb_pieces <= 7
+
+    sf = Stockfish(path=STOCKFISH_PATH)
+    sf.set_fen_position(fen)
+
+    if en_finale:
+        sf.update_engine_parameters({'UCI_LimitStrength': False})
+        sf.set_depth(15)
+        bestmove = sf.get_best_move()
+        if bestmove is None:
+            raise ValueError("Stockfish n'a pas retourné de coup")
+        return chess.Move.from_uci(bestmove)
+
+    # 0. Juste l'éval de référence (pas besoin du coup pour l'instant)
+    sf.update_engine_parameters({'UCI_LimitStrength': False})
+    sf.set_depth(8)
+    eval_actuelle = sf.get_evaluation()
+
+    # Mat forcé -> seul cas où on a besoin du coup dès maintenant
+    if eval_actuelle['type'] == 'mate' and eval_actuelle['value'] > 0:
+        bestmove = sf.get_best_move()
+        if bestmove is not None:
+            return chess.Move.from_uci(bestmove)
+
+    eval_objectif_cp = eval_actuelle['value'] if eval_actuelle['type'] == 'cp' else None
+
+    # 1. Coup "humain" (moteur bridé)
+    sf.update_engine_parameters({'UCI_LimitStrength': True, 'UCI_Elo': elo_cible})
+    coup_humain = sf.get_best_move()
+    if coup_humain is None:
+        sf.update_engine_parameters({'UCI_LimitStrength': False})
+        bestmove = sf.get_best_move()
+        if bestmove is None:
+            raise ValueError("Stockfish n'a pas retourné de coup")
+        return chess.Move.from_uci(bestmove)
+
+    if eval_objectif_cp is None:
+        return chess.Move.from_uci(coup_humain)
+
+    # 2. Éval après le coup humain (une seule recherche)
+    board_test = chess.Board(fen)
+    board_test.push(chess.Move.from_uci(coup_humain))
+    sf.update_engine_parameters({'UCI_LimitStrength': False})
+    sf.set_fen_position(board_test.fen())
+    eval_apres = sf.get_evaluation()
+
+    if eval_apres['type'] == 'mate':
+        perte = 100000 if eval_apres['value'] < 0 else -100000
+    else:
+        perte = eval_objectif_cp - (-eval_apres['value'])
+
+    # 3. On ne cherche le vrai meilleur coup QUE si le coup humain est catastrophique
+    if perte > PERTE_MAX_CP:
+        sf.set_fen_position(fen)
+        coup_objectif = sf.get_best_move()
+        if coup_objectif is not None:
+            return chess.Move.from_uci(coup_objectif)
+
+    return chess.Move.from_uci(coup_humain)
+
+
+def _stockfish(fen: str, elo_cible: int = 1320) -> chess.Move:
+    try:
+        with Timeout(TIMEOUT_SECONDES):
+            return _stockfish_logique(fen, elo_cible)
+    except Timeout:
+        return _coup_secours(fen)
