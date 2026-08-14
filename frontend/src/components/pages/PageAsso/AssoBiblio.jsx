@@ -1,0 +1,564 @@
+import "../../../assets/styles/bibliotheque.scss";
+import { useState, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge, Alert } from "react-bootstrap";
+import { PencilSquare, Trash } from "react-bootstrap-icons";
+
+import {
+    getListeLivres,
+    ajouterLivre,
+    modifierLivre,
+    supprimerLivre,
+    emprunterLivre,
+    retournerLivre,
+    listeEmprunts,
+    importerLivresExcel,
+} from "../../../api/modules/api_bibliotheque";
+import Autocomplete from "../../../components/elements/Autocompletion";
+import RenderPagination from "../../../components/elements/RenderPagination";
+
+/** Formulaire de livre reutilise pour l'ajout et la modification */
+function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSubmit, isPending, isError }) {
+    const [form, setForm] = useState(initialValues);
+
+    // Resynchronise le formulaire si on ouvre la modale sur un autre livre
+    const [dernieresInitialValues, setDernieresInitialValues] = useState(initialValues);
+    if (show && dernieresInitialValues !== initialValues) {
+        setDernieresInitialValues(initialValues);
+        setForm(initialValues);
+    }
+
+    return (
+        <Modal show={show} onHide={onClose} centered>
+            <Modal.Header closeButton>
+                <Modal.Title>{title}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }}>
+                    <Form.Group className="mb-2">
+                        <Form.Label>Série *</Form.Label>
+                        <Form.Control
+                            required
+                            value={form.serie}
+                            onChange={(e) => setForm({ ...form, serie: e.target.value })}
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                        <Form.Label>Tome</Form.Label>
+                        <Form.Control
+                            value={form.tome}
+                            onChange={(e) => setForm({ ...form, tome: e.target.value })}
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                        <Form.Label>Auteur</Form.Label>
+                        <Form.Control
+                            value={form.auteur}
+                            onChange={(e) => setForm({ ...form, auteur: e.target.value })}
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                        <Form.Label>Édition</Form.Label>
+                        <Form.Control
+                            value={form.edition}
+                            onChange={(e) => setForm({ ...form, edition: e.target.value })}
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                        <Form.Label>Référence</Form.Label>
+                        <Form.Control
+                            value={form.reference}
+                            onChange={(e) => setForm({ ...form, reference: e.target.value })}
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>État</Form.Label>
+                        <Form.Select
+                            value={form.etat}
+                            onChange={(e) => setForm({ ...form, etat: e.target.value })}
+                        >
+                            <option value="">-</option>
+                            <option value="Neuf">Neuf</option>
+                            <option value="Bon état">Bon état</option>
+                            <option value="Usé">Usé</option>
+                            <option value="Abîmé">Abîmé</option>
+                        </Form.Select>
+                    </Form.Group>
+                    {isError && (
+                        <p className="text-danger">Une erreur est survenue.</p>
+                    )}
+                    <Button type="submit" variant="success" disabled={isPending}>
+                        {submitLabel}
+                    </Button>
+                </Form>
+            </Modal.Body>
+        </Modal>
+    );
+}
+
+const LIVRE_VIDE = { serie: "", auteur: "", edition: "", tome: "", reference: "", etat: "" };
+
+function AjouterLivreModal({ asso_id, show, onClose, onAdded }) {
+    const mutation = useMutation({
+        mutationFn: (data) => ajouterLivre(asso_id, data),
+        onSuccess: () => { onAdded(); onClose(); }
+    });
+
+    return (
+        <LivreFormModal
+            show={show}
+            onClose={onClose}
+            title="Ajouter un livre"
+            submitLabel={mutation.isPending ? "Ajout..." : "Ajouter"}
+            initialValues={LIVRE_VIDE}
+            onSubmit={(data) => mutation.mutate(data)}
+            isPending={mutation.isPending}
+            isError={mutation.isError}
+        />
+    );
+}
+
+function ModifierLivreModal({ asso_id, livre, onClose, onModifie }) {
+    const mutation = useMutation({
+        mutationFn: (data) => modifierLivre(asso_id, data, livre.id),
+        onSuccess: () => { onModifie(); onClose(); }
+    });
+
+    if (!livre) return null;
+
+    return (
+        <LivreFormModal
+            show={!!livre}
+            onClose={onClose}
+            title={`Modifier "${livre.serie}"`}
+            submitLabel={mutation.isPending ? "Enregistrement..." : "Enregistrer"}
+            initialValues={{
+                serie: livre.serie || "",
+                auteur: livre.auteur || "",
+                edition: livre.edition || "",
+                tome: livre.tome || "",
+                reference: livre.reference || "",
+                etat: livre.etat || "",
+            }}
+            onSubmit={(data) => mutation.mutate(data)}
+            isPending={mutation.isPending}
+            isError={mutation.isError}
+        />
+    );
+}
+
+/**
+ * Onglet "Emprunt" (fusion des anciens onglets Emprunter + Retourner) :
+ * on cherche une personne, puis on peut a la fois lui emprunter des
+ * nouveaux livres et lui faire rendre des livres deja empruntes.
+ */
+function OngletEmpruntRetour({ asso_id }) {
+    const queryClient = useQueryClient();
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [resetKey, setResetKey] = useState(0);
+
+    // -- partie "emprunter de nouveaux livres" --
+    const [bookQuery, setBookQuery] = useState("");
+    const [selectedBooks, setSelectedBooks] = useState([]);
+    const rechercheActive = bookQuery.trim().length >= 2;
+
+    const { data: livres = [], isFetching: loadingLivres } = useQuery({
+        queryKey: ["rechercheLivresDispo", asso_id, bookQuery],
+        queryFn: () => getListeLivres(asso_id, { query: bookQuery, disponible: true, per_page: 15 }).then(r => r.livres),
+        enabled: rechercheActive,
+    });
+    // On ne propose pas un livre deja selectionne pour emprunt
+    const resultatsFiltres = livres.filter(l => !selectedBooks.some(sb => sb.id === l.id));
+
+    const emprunterMutation = useMutation({
+        mutationFn: () =>
+            Promise.all(
+                selectedBooks.map(l =>
+                    emprunterLivre(asso_id, { livre_id: l.id, utilisateur_id: selectedUser.id })
+                )
+            ),
+        onSuccess: () => {
+            queryClient.invalidateQueries(["rechercheLivresDispo"]);
+            queryClient.invalidateQueries(["empruntsEnCours"]);
+            setSelectedBooks([]);
+            setBookQuery("");
+        }
+    });
+
+    // -- partie "rendre des livres deja empruntes" --
+    const { data: empruntsData = { emprunts: [] }, isLoading: loadingEmprunts } = useQuery({
+        queryKey: ["empruntsEnCours", asso_id, selectedUser?.id],
+        queryFn: () => listeEmprunts(asso_id, { utilisateur_id: selectedUser.id, en_cours_seulement: true, per_page: 100 }),
+        enabled: !!selectedUser,
+    });
+    const [empruntsSelectionnes, setEmpruntsSelectionnes] = useState([]);
+
+    const toggleEmprunt = (emprunt) => {
+        setEmpruntsSelectionnes(prev =>
+            prev.some(e => e.id === emprunt.id)
+                ? prev.filter(e => e.id !== emprunt.id)
+                : [...prev, emprunt]
+        );
+    };
+
+    const retournerMutation = useMutation({
+        mutationFn: () =>
+            Promise.all(
+                empruntsSelectionnes.map(e => retournerLivre(asso_id, { livre_id: e.livre_id }))
+            ),
+        onSuccess: () => {
+            queryClient.invalidateQueries(["empruntsEnCours"]);
+            setEmpruntsSelectionnes([]);
+        }
+    });
+
+    const changerUtilisateur = () => {
+        setSelectedUser(null);
+        setSelectedBooks([]);
+        setEmpruntsSelectionnes([]);
+        setBookQuery("");
+        setResetKey(k => k + 1);
+    };
+
+    if (!selectedUser) {
+        return (
+            <div className="biblio-tab-content">
+                <Autocomplete
+                    key={resetKey}
+                    placeholder="Rechercher un utilisateur..."
+                    onSelect={setSelectedUser}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className="biblio-tab-content">
+            <div className="biblio-selection-recap">
+                <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
+                <Button variant="link" size="sm" onClick={changerUtilisateur}>
+                    Changer d'utilisateur
+                </Button>
+            </div>
+
+            {/* Emprunter de nouveaux livres */}
+            <div className="mt-4">
+                <div className="fw-bold mb-2">Emprunter des livres</div>
+
+                <Form.Control
+                    placeholder="Rechercher un livre disponible (série, auteur, référence)..."
+                    value={bookQuery}
+                    onChange={(e) => setBookQuery(e.target.value)}
+                    className="mb-2"
+                />
+
+                {rechercheActive && (
+                    <ListGroup className="mb-3">
+                        {loadingLivres && (
+                            <ListGroup.Item disabled>Recherche...</ListGroup.Item>
+                        )}
+                        {!loadingLivres && resultatsFiltres.map(l => (
+                            <ListGroup.Item
+                                key={l.id}
+                                action
+                                onClick={() => setSelectedBooks(prev => [...prev, l])}
+                            >
+                                <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
+                                {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
+                            </ListGroup.Item>
+                        ))}
+                        {!loadingLivres && resultatsFiltres.length === 0 && (
+                            <ListGroup.Item disabled>Aucun livre disponible trouvé.</ListGroup.Item>
+                        )}
+                    </ListGroup>
+                )}
+
+                {selectedBooks.length > 0 && (
+                    <div className="biblio-selection-livres mb-3">
+                        <ListGroup>
+                            {selectedBooks.map(l => (
+                                <ListGroup.Item key={l.id} className="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <strong>{l.serie}</strong>{l.tome && ` - Tome ${l.tome}`}
+                                        {l.auteur && <span className="text-muted"> · {l.auteur}</span>}
+                                    </span>
+                                    <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => setSelectedBooks(prev => prev.filter(x => x.id !== l.id))}
+                                    >
+                                        <Trash />
+                                    </Button>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    </div>
+                )}
+
+                <Button
+                    variant="primary"
+                    disabled={selectedBooks.length === 0 || emprunterMutation.isPending}
+                    onClick={() => emprunterMutation.mutate()}
+                >
+                    {emprunterMutation.isPending
+                        ? "Emprunt en cours..."
+                        : `Emprunter ${selectedBooks.length > 0 ? selectedBooks.length + " " : ""}livre${selectedBooks.length > 1 ? "s" : ""}`}
+                </Button>
+
+                {emprunterMutation.isError && (
+                    <p className="text-danger mt-2">Une erreur est survenue pendant l'emprunt.</p>
+                )}
+            </div>
+
+            <hr className="my-4" />
+
+            {/* Rendre des livres deja empruntes */}
+            <div>
+                <div className="fw-bold mb-2">Rendre des livres</div>
+
+                <ListGroup>
+                    {loadingEmprunts && (
+                        <ListGroup.Item disabled>Chargement...</ListGroup.Item>
+                    )}
+                    {!loadingEmprunts && empruntsData.emprunts.map(e => (
+                        <ListGroup.Item key={e.id}>
+                            <Form.Check
+                                type="checkbox"
+                                id={`emprunt-${e.id}`}
+                                checked={empruntsSelectionnes.some(sel => sel.id === e.id)}
+                                onChange={() => toggleEmprunt(e)}
+                                label={`${e.livre_nom} - emprunté le ${new Date(e.date_emprunt).toLocaleDateString('fr-FR')}`}
+                            />
+                        </ListGroup.Item>
+                    ))}
+                    {!loadingEmprunts && empruntsData.emprunts.length === 0 && (
+                        <div className="default-message">Aucun emprunt en cours pour cet utilisateur.</div>
+                    )}
+                </ListGroup>
+
+                <Button
+                    variant="success"
+                    className="mt-3"
+                    disabled={empruntsSelectionnes.length === 0 || retournerMutation.isPending}
+                    onClick={() => retournerMutation.mutate()}
+                >
+                    {retournerMutation.isPending
+                        ? "Retour en cours..."
+                        : `Rendre ${empruntsSelectionnes.length > 0 ? empruntsSelectionnes.length + " " : ""}livre${empruntsSelectionnes.length > 1 ? "s" : ""}`}
+                </Button>
+
+                {retournerMutation.isError && (
+                    <p className="text-danger mt-2">Une erreur est survenue pendant le retour.</p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/** Onglet "Gestion" : recherche parmi tous les livres.
+ *  En lecture seule (peutGerer=false) : pas d'ajout/modif/suppression,
+ *  et le nom de l'emprunteur n'est pas affiché.
+ */
+function OngletGestion({ asso_id, peutGerer }) {
+    const queryClient = useQueryClient();
+    const PER_PAGE = 20;
+    const [query, setQuery] = useState("");
+    const [page, setPage] = useState(1);
+    const [showAjout, setShowAjout] = useState(false);
+    const [livreAModifier, setLivreAModifier] = useState(null);
+    const fileInputRef = useRef(null);
+
+    const { data = { livres: [], count: 0 }, isLoading } = useQuery({
+        queryKey: ["gestionLivres", asso_id, query, page],
+        queryFn: () => getListeLivres(asso_id, { query, page, per_page: PER_PAGE }),
+        placeholderData: (previousData) => previousData,
+    });
+    const totalPages = Math.ceil(data.count / PER_PAGE);
+
+    const invalidate = () => {
+        queryClient.invalidateQueries(["gestionLivres"]);
+        queryClient.invalidateQueries(["rechercheLivresDispo"]);
+    };
+
+    const supprimerMutation = useMutation({
+        mutationFn: (id) => supprimerLivre(asso_id, id),
+        onSuccess: invalidate,
+        onError: () => window.alert("Impossible de supprimer ce livre (peut-être encore emprunté ?)."),
+    });
+
+    const handleSupprimer = (livre) => {
+        if (window.confirm(`Supprimer "${livre.serie}${livre.tome ? " - Tome " + livre.tome : ""}" ?`)) {
+            supprimerMutation.mutate(livre.id);
+        }
+    };
+
+const [importResult, setImportResult] = useState(null);
+
+const importMutation = useMutation({
+    mutationFn: (file) => {
+        const formData = new FormData();
+        formData.append("fichier", file);
+        return importerLivresExcel(formData, asso_id, "livres", "import");
+    },
+    onSuccess: (resultat) => {
+        invalidate();
+        setImportResult(resultat);
+    },
+    onError: (error) => {
+        window.alert(`Erreur lors de l'import : ${error.message}`);
+    }
+});
+
+const handleFichierChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        setImportResult(null); // reset avant un nouvel import
+        importMutation.mutate(file);
+    }
+    e.target.value = "";
+};
+
+    return (
+        <div className="biblio-tab-content biblio-tab-content-large">
+            <div className="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+                <Form.Control
+                    placeholder="Rechercher une série, un auteur, une référence..."
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                    style={{ maxWidth: "400px" }}
+                />
+                {peutGerer && (
+                    <div className="d-flex flex-column align-items-center align-items-md-end">
+                        <div className="d-flex gap-2 flex-wrap justify-content-center justify-content-md-end">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="d-none"
+                                accept=".xlsx,.xls"
+                                onChange={handleFichierChange}
+                            />
+                            <Button
+                                variant="outline-secondary"
+                                disabled={importMutation.isPending}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {importMutation.isPending ? "Import en cours..." : "Importer un fichier"}
+                            </Button>
+                            <Button variant="success" onClick={() => setShowAjout(true)}>
+                                + Ajouter un livre
+                            </Button>
+                        </div>
+                        <div className="text-muted small mt-1 text-center text-md-end">
+                            Colonnes attendues : Auteur, Edition, Série*, Tome, Référence, Etat
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {importResult && (
+                <div className={`small mb-3 ${importResult.ignores > 0 ? "text-warning" : "text-success"}`}>
+                    Import terminé : {importResult.crees} livre(s) créé(s)
+                    {importResult.ignores > 0 && (
+                        <>, {importResult.ignores} ligne(s) ignorée(s) : {importResult.lignes_ignorees.map(l => `#${l.ligne}`).join(", ")}</>
+                    )}
+                    .
+                </div>
+            )}
+
+            <Table striped bordered hover responsive>
+                <thead>
+                    <tr>
+                        <th>Série</th>
+                        <th>Tome</th>
+                        <th>Auteur</th>
+                        <th>Référence</th>
+                        <th>État</th>
+                        <th>Statut</th>
+                        {peutGerer && <th className="text-center">Actions</th>}
+                    </tr>
+                </thead>
+                <tbody>
+                    {isLoading && (
+                        <tr><td colSpan={peutGerer ? 7 : 6}>Chargement...</td></tr>
+                    )}
+                    {!isLoading && data.livres.length === 0 && (
+                        <tr><td colSpan={peutGerer ? 7 : 6} className="text-center text-muted py-3">Aucun livre trouvé.</td></tr>
+                    )}
+                    {data.livres.map(livre => (
+                        <tr key={livre.id}>
+                            <td>{livre.serie}</td>
+                            <td>{livre.tome}</td>
+                            <td>{livre.auteur}</td>
+                            <td>{livre.reference}</td>
+                            <td>{livre.etat}</td>
+                            <td>
+                                {livre.disponible ? (
+                                    <Badge bg="success">Disponible</Badge>
+                                ) : (
+                                    <Badge bg="danger">
+                                        Emprunté{peutGerer && livre.emprunt ? ` (${livre.emprunt.utilisateur})` : ""}
+                                    </Badge>
+                                )}
+                            </td>
+                            {peutGerer && (
+                                <td className="text-center">
+                                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setLivreAModifier(livre)}>
+                                        <PencilSquare />
+                                    </Button>
+                                    <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        disabled={!livre.disponible}
+                                        title={!livre.disponible ? "Impossible de supprimer un livre emprunté" : "Supprimer"}
+                                        onClick={() => handleSupprimer(livre)}
+                                    >
+                                        <Trash />
+                                    </Button>
+                                </td>
+                            )}
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+
+            <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="d-flex" />
+
+            {peutGerer && (
+                <>
+                    <AjouterLivreModal asso_id={asso_id} show={showAjout} onClose={() => setShowAjout(false)} onAdded={invalidate} />
+                    <ModifierLivreModal asso_id={asso_id} livre={livreAModifier} onClose={() => setLivreAModifier(null)} onModifie={invalidate} />
+                </>
+            )}
+        </div>
+    );
+}
+
+export default function Bibliotheque({ asso_id, membreData }) {
+    const peutGerer = !!membreData?.autorise;
+
+    // Non autorise : uniquement la recherche/consultation
+    if (!peutGerer) {
+        return (
+            <div className="biblio-container">
+                <div className="biblio-content">
+                    <OngletGestion asso_id={asso_id} peutGerer={false} />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="biblio-container">
+            <div className="biblio-content">
+                <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
+                    <Tab eventKey="emprunt" title="Emprunt">
+                        <OngletEmpruntRetour asso_id={asso_id} />
+                    </Tab>
+                    <Tab eventKey="gestion" title="Gestion">
+                        <OngletGestion asso_id={asso_id} peutGerer={true} />
+                    </Tab>
+                </Tabs>
+            </div>
+        </div>
+    );
+}

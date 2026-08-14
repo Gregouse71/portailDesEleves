@@ -1,0 +1,187 @@
+/* Conteneur principal */
+.biblio-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  gap: 15px;
+}
+
+/* CONTENU PRINCIPAL */
+.biblio-container .biblio-content {
+  min-width: 0;
+  flex: 1;
+  padding: 0 10px;
+  min-height: 650px;
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-content {
+    padding: 0 6px;
+    min-height: 500px;
+  }
+}
+
+/* ONGLETS EMPRUNT / RETOUR / GESTION */
+.biblio-container .biblio-tabs {
+  border-bottom: 2px solid #ddd;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.biblio-container .biblio-tabs .nav-link {
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-tabs .nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+.biblio-container .biblio-tab-content {
+  max-width: 600px;
+  margin: 20px auto 0;
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-tab-content {
+    margin: 15px 0 0;
+  }
+}
+
+.biblio-container .biblio-tab-content-large {
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 20px;
+}
+
+/* TABLEAU DE GESTION */
+.biblio-container .table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 576px) {
+  // Le tableau devient une liste de cartes empilées
+  .biblio-container .table-responsive {
+    overflow-x: visible;
+  }
+
+  .biblio-container table thead {
+    display: none;
+  }
+
+  .biblio-container table,
+  .biblio-container table tbody,
+  .biblio-container table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .biblio-container table tr {
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: #fff;
+  }
+
+  .biblio-container table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: right;
+  }
+
+  .biblio-container table td:last-child {
+    border-bottom: none;
+  }
+
+  // Labels générés dans l'ordre des colonnes du tableau
+  .biblio-container table td:nth-of-type(1)::before { content: "Série"; }
+  .biblio-container table td:nth-of-type(2)::before { content: "Tome"; }
+  .biblio-container table td:nth-of-type(3)::before { content: "Auteur"; }
+  .biblio-container table td:nth-of-type(4)::before { content: "Référence"; }
+  .biblio-container table td:nth-of-type(5)::before { content: "État"; }
+  .biblio-container table td:nth-of-type(6)::before { content: "Statut"; }
+  .biblio-container table td:nth-of-type(7)::before { content: "Actions"; }
+
+  .biblio-container table td::before {
+    font-weight: bold;
+    color: #555;
+    text-align: left;
+  }
+
+  .biblio-container table td:last-child {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .biblio-container table td:last-child::before {
+    display: none;
+  }
+}
+
+/* Barre de recherche + bouton ajouter (onglet Gestion) */
+@media (max-width: 576px) {
+  .biblio-container .d-flex.justify-content-between.align-items-center.mb-3 {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .biblio-container .d-flex.justify-content-between.align-items-center.mb-3 .form-control {
+    max-width: 100% !important;
+  }
+}
+
+/* RECAP DE SELECTION (livre choisi / utilisateur choisi) */
+.biblio-container .biblio-selection-recap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #e0f7fa;
+  transition: background 0.3s ease-in-out;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* LISTE DE LIVRES/EMPRUNTS SELECTIONNES */
+.biblio-container .biblio-selection-livres .list-group-item {
+  background-color: #f9f9f9;
+}
+
+.biblio-container .biblio-selection-livres .list-group-item:hover {
+  background-color: #e9ecef;
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-selection-livres .list-group-item {
+    flex-wrap: nowrap; 
+    gap: 8px;
+  }
+
+  .biblio-container .biblio-selection-livres .list-group-item span {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .biblio-container .biblio-selection-livres .list-group-item button {
+    flex-shrink: 0; 
+  }
+}
+
+@media (max-width: 576px) {
+  .biblio-container .biblio-tab-content > .btn {
+    width: 100%;
+  }
+}
