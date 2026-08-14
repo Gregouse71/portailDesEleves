@@ -1,3 +1,5 @@
+import pandas as pd
+
 from datetime import datetime, timezone
 
 from sqlalchemy import or_, asc, desc
@@ -44,6 +46,56 @@ def ajouter_nouveau_livre(asso_id: int, serie: str, auteur: str = None, edition:
     db.session.add(livre)
     db.session.commit()
     return livre.to_dict()
+
+def _clean(value):
+    """Convertit NaN / valeurs vides en None, sinon renvoie une string nettoyee."""
+    if pd.isna(value):
+        return None
+    value = str(value).strip()
+    return value if value else None
+
+
+def importer_livres_excel(asso_id: int, fichier):
+    """
+    Importe des livres depuis un fichier Excel envoye via l'API.
+    Colonnes attendues : Auteur | Edition | Série | Tome | Référence | Etat | Statut
+    Renvoie {"crees": int, "ignores": int, "lignes_ignorees": [...]}
+    """
+    df = pd.read_excel(fichier, dtype=str)
+    df.columns = [str(c).strip() for c in df.columns]
+
+    crees = 0
+    lignes_ignorees = []
+
+    for i, row in df.iterrows():
+        numero_ligne = i + 2  # +2 car en-tête = ligne 1, données commencent ligne 2
+
+        serie = _clean(row.get("Série"))
+        if not serie:
+            lignes_ignorees.append({
+                "ligne": numero_ligne,
+                "raison": "Série manquante",
+            })
+            continue
+
+        livre = Livre(
+            asso_id=asso_id,
+            serie=serie,
+            auteur=_clean(row.get("Auteur")),
+            edition=_clean(row.get("Edition")),
+            tome=_clean(row.get("Tome")),
+            reference=_clean(row.get("Référence")),
+            etat=_clean(row.get("Etat")),
+        )
+        db.session.add(livre)
+        crees += 1
+
+    db.session.commit()
+    return {
+        "crees": crees,
+        "ignores": len(lignes_ignorees),
+        "lignes_ignorees": lignes_ignorees,
+    }
 
 
 def supprimer_livre(asso_id: int, livre_id: int):

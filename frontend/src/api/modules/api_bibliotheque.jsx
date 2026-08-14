@@ -1,4 +1,4 @@
-import { BIBLIOTHEQUE_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGet } from "../base";
+import { BIBLIOTHEQUE_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGet, createApiPostFormData } from "../base";
 
 /** Recupere la liste paginee des livres d'une asso, avec recherche et filtres
  * appel : getListeLivres(asso_id, { page, per_page, query, serie, disponible, order_by, order_asc })
@@ -41,3 +41,10 @@ export const retournerLivre = (asso_id, data) =>
  */
 export const listeEmprunts = (asso_id, params) =>
     createApiGet(`${BIBLIOTHEQUE_BASE_URL}/${asso_id}/emprunts`)(params)
+
+/** Importe des livres depuis un fichier Excel (colonnes attendues : Auteur, Edition, Série, Tome, Référence, Etat)
+ * appel : importerLivresExcel(asso_id, formData) -> Promise<{ crees, ignores }>
+ * (formData doit contenir le fichier sous la cle "fichier")
+ */
+export const importerLivresExcel =
+    createApiPostFormData(`${BIBLIOTHEQUE_BASE_URL}`)

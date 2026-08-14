@@ -1,5 +1,5 @@
 import "../../../assets/styles/bibliotheque.scss";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge, Alert } from "react-bootstrap";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
@@ -12,6 +12,7 @@ import {
     emprunterLivre,
     retournerLivre,
     listeEmprunts,
+    importerLivresExcel,
 } from "../../../api/modules/api_bibliotheque";
 import Autocomplete from "../../../components/elements/Autocompletion";
 import RenderPagination from "../../../components/elements/RenderPagination";
@@ -365,6 +366,7 @@ function OngletGestion({ asso_id, peutGerer }) {
     const [page, setPage] = useState(1);
     const [showAjout, setShowAjout] = useState(false);
     const [livreAModifier, setLivreAModifier] = useState(null);
+    const fileInputRef = useRef(null);
 
     const { data = { livres: [], count: 0 }, isLoading } = useQuery({
         queryKey: ["gestionLivres", asso_id, query, page],
@@ -390,6 +392,32 @@ function OngletGestion({ asso_id, peutGerer }) {
         }
     };
 
+const [importResult, setImportResult] = useState(null);
+
+const importMutation = useMutation({
+    mutationFn: (file) => {
+        const formData = new FormData();
+        formData.append("fichier", file);
+        return importerLivresExcel(formData, asso_id, "livres", "import");
+    },
+    onSuccess: (resultat) => {
+        invalidate();
+        setImportResult(resultat);
+    },
+    onError: (error) => {
+        window.alert(`Erreur lors de l'import : ${error.message}`);
+    }
+});
+
+const handleFichierChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        setImportResult(null); // reset avant un nouvel import
+        importMutation.mutate(file);
+    }
+    e.target.value = "";
+};
+
     return (
         <div className="biblio-tab-content biblio-tab-content-large">
             <div className="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
@@ -400,11 +428,42 @@ function OngletGestion({ asso_id, peutGerer }) {
                     style={{ maxWidth: "400px" }}
                 />
                 {peutGerer && (
-                    <Button variant="success" onClick={() => setShowAjout(true)}>
-                        + Ajouter un livre
-                    </Button>
+                    <div className="d-flex flex-column align-items-center align-items-md-end">
+                        <div className="d-flex gap-2 flex-wrap justify-content-center justify-content-md-end">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="d-none"
+                                accept=".xlsx,.xls"
+                                onChange={handleFichierChange}
+                            />
+                            <Button
+                                variant="outline-secondary"
+                                disabled={importMutation.isPending}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {importMutation.isPending ? "Import en cours..." : "Importer un fichier"}
+                            </Button>
+                            <Button variant="success" onClick={() => setShowAjout(true)}>
+                                + Ajouter un livre
+                            </Button>
+                        </div>
+                        <div className="text-muted small mt-1 text-center text-md-end">
+                            Colonnes attendues : Auteur, Edition, Série*, Tome, Référence, Etat
+                        </div>
+                    </div>
                 )}
             </div>
+
+            {importResult && (
+                <div className={`small mb-3 ${importResult.ignores > 0 ? "text-warning" : "text-success"}`}>
+                    Import terminé : {importResult.crees} livre(s) créé(s)
+                    {importResult.ignores > 0 && (
+                        <>, {importResult.ignores} ligne(s) ignorée(s) : {importResult.lignes_ignorees.map(l => `#${l.ligne}`).join(", ")}</>
+                    )}
+                    .
+                </div>
+            )}
 
             <Table striped bordered hover responsive>
                 <thead>

@@ -5,7 +5,7 @@ from app.models import Utilisateur
 from app.models.models_bibliotheque import Livre
 from app.services.services_bibliotheque import (
     liste_des_livres, ajouter_nouveau_livre, supprimer_livre,
-    emprunter_livre, retourner_livre, liste_emprunts,
+    emprunter_livre, retourner_livre, liste_emprunts, importer_livres_excel,
 )
 from app.utils.decorators import a_permission
 
@@ -45,6 +45,21 @@ def post_livre(asso_id: int):
         etat=data.get("etat"),
     )
     return jsonify(livre)
+
+
+@controllers_bibliotheque.post('/<int:asso_id>/livres/import')
+@login_required
+def post_import_livres(asso_id: int):
+    fichier = request.files.get("fichier")
+    if not fichier:
+        return jsonify({"message": "Aucun fichier fourni"}), 400
+
+    try:
+        resultat = importer_livres_excel(asso_id, fichier)
+    except Exception as e:
+        return jsonify({"message": f"Erreur lors de la lecture du fichier : {e}"}), 400
+
+    return jsonify(resultat)
 
 
 @controllers_bibliotheque.put('/<int:asso_id>/livres/<int:livre_id>')
