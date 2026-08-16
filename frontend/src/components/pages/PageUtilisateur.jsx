@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur} from '../../api/api_utilisateurs';
+import { obtenirDataUser, ajouterContenuUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur } from '../../api/api_utilisateurs';
 import { useProtected } from '../../Protected';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
@@ -100,8 +100,8 @@ function PageUtilisateur() {
                         ) : (
                             <Col xs className="d-md-none order-1"></Col>
                         )}
-                        <Col xs={12} md className="order-4 order-md-2 text-truncate text-center text-md-end">
-                            <h2 className="mb-0 text-truncate">
+                        <Col xs={12} md className="order-4 order-md-2 text-center text-md-end">
+                            <h2 className="mb-0 text-break">
                                 {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
                                 {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
                             </h2>

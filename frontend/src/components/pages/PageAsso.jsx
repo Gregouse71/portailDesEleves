@@ -63,7 +63,7 @@ function Asso() {
         'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
         'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
         'Biblio': { key: "biblio", titre: "Bibliothèque", element: <AssoBiblio asso_id={asso.id} membreData={membreData} /> },
-        ...(membreData.admin && {'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> }}),
+        ...(membreData.admin && { 'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> } }),
     };
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
@@ -116,8 +116,8 @@ function Asso() {
                                 }}
                             />
                         </Col>
-                        <Col xs={12} md className="order-4 order-md-2 text-truncate text-center text-md-start">
-                            <h2 className="mb-0 text-truncate">{asso.nom}</h2>
+                        <Col xs={12} md className="order-4 order-md-2 text-center text-md-start">
+                            <h2 className="mb-0 text-break">{asso.nom}</h2>
                             <div>
                                 {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
                                 {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
