@@ -1,4 +1,6 @@
-import { BIBLIOTHEQUE_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGet, createApiPostFormData } from "../base";
+import { API_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGet, createApiPostFormData } from "../base";
+
+export const BIBLIOTHEQUE_BASE_URL = `${API_BASE_URL}/bibliotheque`;
 
 /** Recupere la liste paginee des livres d'une asso, avec recherche et filtres
  * appel : getListeLivres(asso_id, { page, per_page, query, serie, disponible, order_by, order_asc })

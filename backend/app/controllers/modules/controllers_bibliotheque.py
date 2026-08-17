@@ -2,8 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from app.models import Utilisateur
-from app.models.models_bibliotheque import Livre
-from app.services.services_bibliotheque import (
+from app.models.modules.models_bibliotheque import Livre
+from app.services.modules.services_bibliotheque import (
     liste_des_livres, ajouter_nouveau_livre, supprimer_livre,
     emprunter_livre, retourner_livre, liste_emprunts, importer_livres_excel,
 )
@@ -54,10 +54,10 @@ def post_import_livres(asso_id: int):
     if not fichier:
         return jsonify({"message": "Aucun fichier fourni"}), 400
 
-    try:
-        resultat = importer_livres_excel(asso_id, fichier)
-    except Exception as e:
-        return jsonify({"message": f"Erreur lors de la lecture du fichier : {e}"}), 400
+    # try:
+    resultat = importer_livres_excel(asso_id, fichier)
+    # except Exception as e:
+        # return jsonify({"message": f"Erreur lors de la lecture du fichier : {e}"}), 400
 
     return jsonify(resultat)
 

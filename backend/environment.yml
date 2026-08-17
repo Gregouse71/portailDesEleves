@@ -28,6 +28,8 @@ dependencies:
   - Authlib # Pour gérer OAuth2
   - cryptography
   - chess
+  - pandas
+  - openpyxl
   - pip
   - pip :
     - stockfish

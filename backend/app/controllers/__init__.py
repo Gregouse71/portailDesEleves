@@ -6,7 +6,7 @@ from app.controllers.controllers_sondages import controllers_sondages
 from app.controllers.controllers_associations import controllers_associations
 from app.controllers.controllers_global import controllers_global
 from app.controllers.controllers_soifguard import controllers_soifguard
-from app.controllers.controllers_bibliotheque import controllers_bibliotheque
+from app.controllers.modules.controllers_bibliotheque import controllers_bibliotheque
 from app.controllers.controllers_evenements import controllers_evenements
 from app.controllers.controllers_publications import controllers_publications
 from app.controllers.controllers_login import controllers_login
