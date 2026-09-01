@@ -367,6 +367,10 @@ function User({ user, isSelected, select, categorie, query, perms }) {
         }
     })
 
+    const normalize = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    const estCotisantIci = user.cotisations.some((c) => normalize(c.asso) === normalize(categorie));
+
     return <div
         key={user.id}
         className={`soifguard-grid-item ${isSelected ? "soifguard-selected" : ""}`}
@@ -381,7 +385,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
                 list={[
                     {
                         can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
-                        name:  user.cotisations.filter((c) => c.asso.localeCompare(categorie)).length > 0 ? <>Ne cotise pas</> : <>Cotise</>
+                        name:  estCotisantIci ? <>Ne cotise pas</> : <>Cotise</>
                     },
                     { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
                 ]}
@@ -401,7 +405,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
             <div className="ms-3 me-5">
                 <div className="fw-bold">{user.prenom} {user.nom} P{user.promotion}</div>
                 <div>
-                    {user.cotisations.filter((c) => c.asso.localeCompare(categorie)).length > 0 ? <span className="soifguard-cotisant-badge">Cotisant</span> : null}
+                    {estCotisantIci && <span className="soifguard-cotisant-badge">Cotisant</span>}
                     <span className="ms-2">
                         {categorie === "octo" && `${user.solde_octo}€`}
                         {categorie === "biero" && `${user.solde_biero}€`}
