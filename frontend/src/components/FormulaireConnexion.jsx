@@ -6,7 +6,7 @@ import { seConnecter } from "../api/api_global";
 import { Container, Form, Button, Alert, Card, Spinner } from "react-bootstrap";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-const VP_GEEK_EMAIL = "webmaster-bde@mines-paristech.fr";
+const VP_GEEK_EMAIL = "vianney.decroux@etu.minesparis.psl.eu";
 const PORTAL_TITLE = "Portail des élèves";
 
 export default function FormulaireConnexion() {
