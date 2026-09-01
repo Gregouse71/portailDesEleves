@@ -83,10 +83,10 @@ def send_reset_mail(username: str):
         return False
 
     expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode = {"sub": username, "exp": expire}
+    to_encode = {"sub": user.nom_utilisateur, "exp": expire} 
     encoded_jwt = jwt.encode(to_encode, key, algorithm=algorithm)
 
-    text = mailBody.format (encoded_jwt, user.nom_utilisateur)
+    text = mailBody.format(encoded_jwt, user.nom_utilisateur)
     send_mail("no-reply@rezal-mdm.com", user.email, "Réinitialisation de mot de passe", text)
     return True
 
