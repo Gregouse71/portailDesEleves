@@ -105,8 +105,7 @@ export default function AssoMandat({ id, asso, membreData }) {
     }
 
     if (isLoading) {
-        return
-        <Card key={mandat.id} className="mb-4">
+        return <Card key={id} className="mb-4">
             <Card.Header>
             </Card.Header>
         </Card>

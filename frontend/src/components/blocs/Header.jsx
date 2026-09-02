@@ -128,7 +128,7 @@ export default function Header() {
                                 ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
                                 ["link", "https://moodle.psl.eu/", "Moodle"],
                                 ["link", "https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing", "Sheet des stages"],
-                                ["link", "https://demarches.portail.minesparis.psl.eu/ordre-de-mission-apprenant/", "Réservation véhicule des Mines"],
+                                ["link", "https://eleves.rezal-mdm.com/upload/associations/bde/Procédure de réservation des véhicules des Mines-e2e3d411-5eca-49a0-92f6-9fe14648c115.pdf", "Réservation véhicule des Mines"],
                                 ["divider"],
                                 ["navigate", "/jeux/2048", "2048"],
                                 ["navigate", "/jeux/echecs", "Échecs"],
