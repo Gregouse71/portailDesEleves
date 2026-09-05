@@ -427,10 +427,8 @@ def route_creer_asso():
         data = request.json
         nouvelle_asso = Association(
             nom=data["nom"], description=data['description'], type_association=data["type_association"],
-            ordre_importance=data["ordre_importance"], logo_path=data["logo_path"],
-            banniere_path=data["banniere_path"], a_cacher_aux_nouveaux=data["a_cacher_aux_nouveaux"]
+            ordre_importance=data["ordre_importance"], a_cacher_aux_nouveaux=data["a_cacher_aux_nouveaux"]
         )
-        nouvelle_asso.create_association_folder()
         db.session.add(nouvelle_asso)
         db.session.commit()
         return jsonify({"message": "association ajoutee avec succes"}), 201

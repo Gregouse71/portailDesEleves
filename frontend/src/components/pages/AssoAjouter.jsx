@@ -3,9 +3,11 @@ import { ajouterAsso } from '../../api/api_associations';  // Importation de la 
 import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import RichEditor from "../elements/RichEditor";
+import { useQueryClient } from "@tanstack/react-query";
 
 function AjouterAssociation() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [nom, setNom] = useState("");
     const [description, setDescription] = useState("");
     const [typeAssociation, setTypeAssociation] = useState("");
@@ -31,7 +33,8 @@ function AjouterAssociation() {
         }
 
         // Appel à la fonction pour ajouter l'association
-        const response = await ajouterAsso(nom, description, typeAssociation, ordreImportance, "", "", estSensible);
+        const response = await ajouterAsso(nom, description, typeAssociation, ordreImportance, estSensible);
+        queryClient.invalidateQueries(['listeAssos']);
 
         if (response.success) {
             setMessage("Association ajoutée avec succès.");

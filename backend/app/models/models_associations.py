@@ -17,9 +17,7 @@ class Association(db.Model):
     nom = db.Column(db.String(1000), nullable=False)
     nom_dossier = db.Column(db.String(1000), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    logo_path = db.Column(db.String(1000), nullable=True)
     logo_id = db.Column(db.Integer, nullable=True)
-    banniere_path = db.Column(db.String(1000), nullable=True)  # banniere de l'asso
     banniere_id = db.Column(db.Integer, nullable=True)  # banniere de l'asso
     a_cacher_aux_nouveaux = db.Column(db.Boolean, nullable=False)
 
@@ -36,8 +34,8 @@ class Association(db.Model):
 
     def __init__(
         self, nom: str, ordre_importance: int,description: str = None,
-        type_association: str = None, logo_path: str = None,  banniere_path: str = None,
-        a_cacher_aux_nouveaux: bool = False, modules: list = None
+        type_association: str = None, a_cacher_aux_nouveaux: bool = False,
+        modules: list = None
     ):
         """
         Crée une nouvelle association
@@ -45,9 +43,7 @@ class Association(db.Model):
         self.nom = nom
         self.description = description
         self.type_association = type_association
-        self.logo_path = logo_path
         self.ordre_importance = ordre_importance
-        self.banniere_path = banniere_path
         self.a_cacher_aux_nouveaux = a_cacher_aux_nouveaux
         self.modules = modules or ['Info', 'Membres', 'Events', 'Posts', 'Media']
 

@@ -14,13 +14,13 @@ from config import Config
 # GESTION DES ASSOCIATIONS
 def create_association(
     nom: str, description: str, type_association: str,
-    logo_path: str, ordre_importance: int,
+    ordre_importance: int,
     a_cacher_aux_nouveaux: bool
 ) -> Association:
     """
     Crée une nouvelle association
     """
-    association = Association(nom, description, type_association, logo_path, ordre_importance, a_cacher_aux_nouveaux)
+    association = Association(nom, description, type_association, ordre_importance, a_cacher_aux_nouveaux)
     db.session.add(association)
     db.session.commit()
     return association.id

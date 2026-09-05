@@ -37,7 +37,7 @@ export const chargerMandat = createApiGet(`${ASSOCIATIONS_BASE_URL}/mandat`)
 export const ajouterLienVideoAsso = createApiPost(`${ASSOCIATIONS_BASE_URL}/add_content`)
 
 
-export async function ajouterAsso(nom, description, type_association, ordre_importance, logo_path, banniere_path, a_cacher_aux_nouveaux) {
+export async function ajouterAsso(nom, description, type_association, ordre_importance, a_cacher_aux_nouveaux) {
   try {
     const response = await fetch(`${API_BASE_URL}/associations/route_creer_asso`, {
       method: "POST",
@@ -50,8 +50,6 @@ export async function ajouterAsso(nom, description, type_association, ordre_impo
         description,
         type_association,
         ordre_importance,
-        logo_path,
-        banniere_path,
         a_cacher_aux_nouveaux,
       }),
     });
