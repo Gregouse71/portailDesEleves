@@ -40,3 +40,6 @@ class Config:
         'client_credentials': 2592000,
         'refresh_token': 2592000,
     }
+
+    DEBUG = True            # run.py démarre le site en mode Debug
+    START_SCHEDULER = True  # démarre le scheduler pour la réalisation des taches à intervalles réguliers

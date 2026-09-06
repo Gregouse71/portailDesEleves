@@ -6,4 +6,4 @@ socketio, app = create_app(Config)
 
 import os
 if __name__ == "__main__":
-    socketio.run(app, debug=(os.name != 'nt'))
+    socketio.run(app, debug=Config.DEBUG)

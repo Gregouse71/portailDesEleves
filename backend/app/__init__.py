@@ -1,5 +1,5 @@
-import os
-if os.name != 'nt':
+from config import Config
+if Config.START_SCHEDULER:
     from gevent import monkey; monkey.patch_all()
 
 """
@@ -23,8 +23,6 @@ from authlib.integrations.sqla_oauth2 import create_query_client_func, create_sa
 
 import os
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-from config import Config
 
 
 # Initialisation des extensions (sans encore les attacher à l'application)
@@ -97,6 +95,6 @@ def create_app(config: Config):
     authorization.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=False), CodeChallenge(required=False)])
 
     from .tasks import tasks
-    if not scheduler.running and os.name != 'nt':
+    if not scheduler.running and Config.START_SCHEDULER:
         socketio.start_background_task(scheduler.start)
     return socketio, app
