@@ -150,11 +150,15 @@ def assos_utilisateur(user_id: int):
         if role.mandat.association.a_cacher_aux_nouveaux and not current_user_is_baptise:
             continue  # Skip this association
 
+        mandat_logo = role.mandat.get_logo_file()
+        img = mandat_logo if mandat_logo else role.mandat.association.get_photo_file()
+
         asso_data = {
             "role": role.role,
             "mandat": role.mandat.nom,
             "asso_id": role.mandat.association_id,
-            "mandat_id": role.mandat_id
+            "mandat_id": role.mandat_id,
+            "img": img
         }
         if role.mandat.actuel:
             actuel_assos.append(asso_data)

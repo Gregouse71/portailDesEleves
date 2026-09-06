@@ -234,12 +234,16 @@ export async function ajouterContenuAsso(associationId, mandatId, file) {
   }
 }
 
-export async function uploadLogoBanniereAsso(associationId, type, file) {
+export async function uploadLogoBanniereAsso(associationId, type, file, mandatId = null) {
   try {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/associations/${associationId}/upload_logo_banniere/${type}`, {
+    const url = mandatId
+      ? `${API_BASE_URL}/associations/${associationId}/upload_logo_banniere/${type}/${mandatId}`
+      : `${API_BASE_URL}/associations/${associationId}/upload_logo_banniere/${type}`;
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Accept": "application/json",

@@ -6,7 +6,7 @@ from datetime import datetime
 from app import db
 from app.utils.decorators import est_membre_de_asso, superutilisateur_required
 from app.services.services_utilisateurs import get_utilisateur
-from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member, get_asso_media, is_admin_asso
+from app.services.services_associations import add_member, remove_member, get_association, add_mandat, get_mandat, del_mandat, modifier_mandat, update_member, get_asso_media, is_admin_asso, can_user_modify_mandat
 from app.services.services_media import upload_media, delete_media
 
 from app.models.models_associations import Association, AssociationMandat
@@ -141,7 +141,7 @@ def route_ajouter_mandat(association_id, nom):
 
 @controllers_associations.patch('/<int:association_id>/modifier_mandat/<int:mandat_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(mandat=True)
 def route_modifier_mandat(association_id, mandat_id):
     mandat = get_mandat(mandat_id)
     if not mandat or mandat.association_id != association_id:
@@ -151,7 +151,19 @@ def route_modifier_mandat(association_id, mandat_id):
         nom = request.json.get('nom')
         pos = request.json.get('position')
         actuel = request.json.get('actuel')
-        modifier_mandat(mandat, nom, pos, actuel) # This function needs to be created in services
+
+        # Si le statut 'actuel' est modifié, seul un membre du mandat actuel (ou superadmin / admin) est autorisé
+        if actuel is not None and bool(actuel) != bool(mandat.actuel):
+            user_roles = [r for r in current_user.associations if r.mandat.association_id == association_id]
+            is_current = (
+                current_user.est_superutilisateur
+                or is_admin_asso(current_user, association_id)
+                or any(r.mandat.actuel for r in user_roles)
+            )
+            if not is_current:
+                return jsonify({"message": "Seul un membre du mandat actuel ou un administrateur peut changer le mandat actuel."}), 403
+
+        modifier_mandat(mandat, nom, pos, actuel)
         return jsonify({"message": "Nom du mandat modifie avec succes"}), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de la modification du nom du mandat : {str(e)}"}), 500
@@ -230,18 +242,31 @@ def route_modifier_role_membre(association_id, mandat_id, membre_id):
 
 @controllers_associations.post('/<int:association_id>/modifier_logo_banniere/<string:logo_banniere>/<int:mandat_id>/<int:new_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(mandat=True)
 def route_modifier_logo_banniere(association_id: int, logo_banniere: str, mandat_id: int, new_id: int):
     """
     Modifie le logo ou la bannière d'un mandat.
     """
     association = db.session.get(Association, association_id)
-    media = db.session.get(ElementMedia, new_id)
     mandat = db.session.get(AssociationMandat, mandat_id)
-    if media is None or association is None or mandat is None:
-        return jsonify({"message": "Association, mandat ou media non trouvé"}), 404
+    if association is None or mandat is None:
+        return jsonify({"message": "Association ou mandat non trouvé"}), 404
     if mandat.association_id != association_id:
         return jsonify({"message": "Le mandat n'appartient pas à cette association"}), 403
+
+    if new_id == 0:
+        if logo_banniere == 'logo':
+            mandat.logo_id = None
+        elif logo_banniere == 'banniere':
+            mandat.banniere_id = None
+        else:
+            return jsonify({"message": "erreur : veuillez entrer logo ou banniere"}), 400
+        db.session.commit()
+        return jsonify({"message": f"{logo_banniere.capitalize()} retiré avec succès"}), 200
+
+    media = db.session.get(ElementMedia, new_id)
+    if media is None:
+        return jsonify({"message": "Media non trouvé"}), 404
 
     if logo_banniere == 'logo':
         mandat.logo_id = new_id
@@ -256,11 +281,11 @@ def route_modifier_logo_banniere(association_id: int, logo_banniere: str, mandat
 
 
 @controllers_associations.route('/<int:association_id>/upload_logo_banniere/<string:photo_type>', methods=['POST'])
+@controllers_associations.route('/<int:association_id>/upload_logo_banniere/<string:photo_type>/<int:mandat_id>', methods=['POST'])
 @login_required
-@est_membre_de_asso
-def route_upload_logo_banniere(association_id: int, photo_type: str):
+def route_upload_logo_banniere(association_id: int, photo_type: str, mandat_id: int = None):
     """
-    Téléverse et définit directement un nouveau logo ou une nouvelle bannière pour l'association.
+    Téléverse et définit directement un nouveau logo ou une nouvelle bannière pour un mandat (ou le mandat actuel par défaut).
     Nomme le fichier logo_{timestamp} ou banniere_{timestamp} et l'ajoute aux éléments media.
     """
     if photo_type not in ['logo', 'banniere']:
@@ -269,6 +294,18 @@ def route_upload_logo_banniere(association_id: int, photo_type: str):
     asso = get_association(association_id)
     if not asso:
         return jsonify({"success": False, "message": "Association introuvable"}), 404
+
+    if mandat_id is not None:
+        cible_mandat = db.session.get(AssociationMandat, mandat_id)
+        if not cible_mandat or cible_mandat.association_id != association_id:
+            return jsonify({"success": False, "message": "Mandat introuvable"}), 404
+    else:
+        cible_mandat = next((m for m in asso.mandats if m.actuel), None)
+        if not cible_mandat:
+            return jsonify({"success": False, "message": "Aucun mandat actuel défini"}), 400
+
+    if not can_user_modify_mandat(current_user, association_id, cible_mandat.id):
+        return jsonify({"success": False, "message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
 
     if 'file' not in request.files:
         return jsonify({"success": False, "message": "Aucun fichier reçu"}), 400
@@ -282,18 +319,14 @@ def route_upload_logo_banniere(association_id: int, photo_type: str):
     custom_name = f"{photo_type}_{timestamp}"
     UPLOAD_FOLDER = os.path.join('associations', asso.nom_dossier)
 
-    actuel_mandat = next((m for m in asso.mandats if m.actuel), None)
-    if not actuel_mandat:
-        return jsonify({"success": False, "message": "Aucun mandat actuel défini"}), 400
-
-    media = upload_media(UPLOAD_FOLDER, file=file, custom_filename=custom_name, mandat_id=actuel_mandat.id)
+    media = upload_media(UPLOAD_FOLDER, file=file, custom_filename=custom_name, mandat_id=cible_mandat.id)
     if not media:
         return jsonify({"success": False, "message": "Impossible de créer le fichier."}), 400
 
     if photo_type == 'logo':
-        actuel_mandat.logo_id = media.id
+        cible_mandat.logo_id = media.id
     elif photo_type == 'banniere':
-        actuel_mandat.banniere_id = media.id
+        cible_mandat.banniere_id = media.id
 
     db.session.commit()
 
@@ -314,7 +347,7 @@ def get_content_asso(asso_id: int):
 
 @controllers_associations.delete('/content/<int:association_id>/<int:media_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso
 def delete_content_asso(association_id: int, media_id: int):
     """
     Supprime un contenu (photo) pour un utilisateur.
@@ -323,6 +356,11 @@ def delete_content_asso(association_id: int, media_id: int):
     if media is None:
         return jsonify({"message": "Media non trouvé"}), 404
 
+    if media.mandat and media.mandat.association_id != association_id:
+        return jsonify({"message": "Le média n'appartient pas à cette association"}), 403
+
+    if not can_user_modify_mandat(current_user, association_id, media.mandat_id):
+        return jsonify({"message": "Vous n'avez pas les permissions pour supprimer ce média"}), 403
 
     cached_media_id = media.id
 
@@ -344,7 +382,7 @@ def delete_content_asso(association_id: int, media_id: int):
 
 @controllers_associations.put('/content/<int:association_id>/<int:mandat_id>/<int:media_id>')
 @login_required
-@est_membre_de_asso(actuel=True)
+@est_membre_de_asso(mandat=True)
 def rename_content_asso(association_id: int, mandat_id: int, media_id: int):
     """
     Renomme un contenu (photo) pour une association.
@@ -375,7 +413,7 @@ def rename_content_asso(association_id: int, mandat_id: int, media_id: int):
 
 @controllers_associations.route('/add_content/<int:association_id>/<int:mandat_id>', methods=['POST'])
 @login_required
-@est_membre_de_asso
+@est_membre_de_asso(mandat=True)
 def route_add_content(association_id, mandat_id):
     """
     Ajoute du contenu au dossier de l'association, associé à un mandat
@@ -475,8 +513,32 @@ def route_get_mandat(mandat_id):
 @controllers_associations.route("route_est_membre_de_asso/<int:id_association>", methods=["GET"])
 @login_required
 def route_est_membre_de_asso(id_association: int):
-    is_membre = any(role.mandat.association_id == id_association for role in current_user.associations)
-    autorise = is_membre or current_user.est_superutilisateur
+    user_roles_in_asso = [role for role in current_user.associations if role.mandat.association_id == id_association]
+    is_membre = bool(user_roles_in_asso)
+    is_admin = is_admin_asso(current_user, id_association)
+
+    mandats_asso = AssociationMandat.query.filter_by(association_id=id_association).all()
+    has_actuel = any(m.actuel for m in mandats_asso)
+    if not has_actuel and mandats_asso:
+        max_position = max(m.position for m in mandats_asso)
+        is_actuel_mandat = any(role.mandat.position == max_position for role in user_roles_in_asso)
+    else:
+        is_actuel_mandat = any(role.mandat.actuel for role in user_roles_in_asso)
+
+    is_actuel = (
+        current_user.est_superutilisateur
+        or is_admin
+        or is_actuel_mandat
+    )
+    autorise = is_actuel
     cotisant = any(cotiz.cotisation.association_id == id_association for cotiz in current_user.cotisations if cotiz.est_active())
-    admin = is_admin_asso(current_user, id_association)
-    return jsonify({"is_membre": is_membre, "autorise": autorise, "cotisant": cotisant, "admin": admin}), 200
+    user_mandat_ids = [role.mandat.id for role in user_roles_in_asso]
+
+    return jsonify({
+        "is_membre": is_membre,
+        "autorise": autorise,
+        "is_actuel": is_actuel,
+        "user_mandats": user_mandat_ids,
+        "cotisant": cotisant,
+        "admin": is_admin
+    }), 200

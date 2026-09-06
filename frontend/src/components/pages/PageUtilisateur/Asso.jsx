@@ -57,14 +57,14 @@ export default function TabAsso({ id, autoriseAModifier }) {
             <div className="asso-grid">
                 {actuel.map((asso, index) => (
                     <div
-                        key={asso.asso_id}
+                        key={asso.mandat_id || `${asso.asso_id}-${index}`}
                         draggable={autoriseAModifier}
                         onDragStart={() => handleDragStart(index)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => handleDrop(index)}
                         style={{ cursor: autoriseAModifier ? 'grab' : 'default' }}
                     >
-                        <AssoCard asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} isEditMode={false} onEditAsso={() => {}} />
+                        <AssoCard asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} img={asso.img} isEditMode={false} onEditAsso={() => {}} />
                     </div>
                 ))}
             </div>
@@ -74,14 +74,14 @@ export default function TabAsso({ id, autoriseAModifier }) {
             <div className="asso-grid">
                 {ancien.map((asso, index) => (
                     <div
-                        key={asso.asso_id}
+                        key={asso.mandat_id || `${asso.asso_id}-${index}`}
                         draggable={autoriseAModifier}
                         onDragStart={() => handleDragStartAncien(index)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => handleDropAncien(index)}
                         style={{ cursor: autoriseAModifier ? 'grab' : 'default' }}
                     >
-                        <AssoCard asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} isEditMode={false} onEditAsso={() => {}} />
+                        <AssoCard asso_id={asso.asso_id} mandat={asso.mandat} role={asso.role} img={asso.img} isEditMode={false} onEditAsso={() => {}} />
                     </div>
                 ))}
             </div>

@@ -21,6 +21,9 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
         queryFn: () => chargerMandat({}, mandat_id),
     });
 
+    const isMembreOfThisMandat = Boolean(membreData.user_mandats && membreData.user_mandats.includes(mandat_id));
+    const canModifyThisMandat = Boolean(membreData.autorise || isMembreOfThisMandat);
+
     const toggleGestion = () => {
         setIsGestion(!isGestion);
         setEditingMediaId(null);
@@ -141,7 +144,7 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
                         <Card.Title className="m-0">{mandat.nom}</Card.Title>
                     </Col>
                     <Col xs="auto">
-                        {membreData.autorise && (
+                        {canModifyThisMandat && (
                             <DropdownEditer list={[
                                 { can: true, onClick: toggleGestion, name: isGestion ? "Terminer" : "Modifier" },
                                 { can: true, onClick: ajouterPhoto, name: "Ajouter une photo" },
@@ -197,7 +200,7 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
                                                     />
                                                 )}
                                             </div>
-                                            {membreData.autorise && isGestion && (
+                                            {canModifyThisMandat && isGestion && (
                                                 <>
                                                     <Button
                                                         variant="danger"
@@ -255,8 +258,32 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
                                                         Valider
                                                     </Button>
                                                     <div className="d-flex gap-1">
-                                                        <Button size="sm" variant={isLogo ? "primary" : "outline-primary"} disabled={isLogo} className="w-50" style={{ fontSize: '0.7rem' }} onClick={() => { mutationPhoto.mutate({ type: "logo", id: elt.id }); handleCancelRename(); }}>Logo</Button>
-                                                        <Button size="sm" variant={isBanniere ? "primary" : "outline-primary"} disabled={isBanniere} className="w-50" style={{ fontSize: '0.7rem' }} onClick={() => { mutationPhoto.mutate({ type: "banniere", id: elt.id }); handleCancelRename(); }}>Bannière</Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant={isLogo ? "primary" : "outline-primary"}
+                                                            className="w-50"
+                                                            style={{ fontSize: '0.7rem' }}
+                                                            title={isLogo ? "Cliquer pour retirer des logos du mandat" : "Définir comme logo du mandat"}
+                                                            onClick={() => {
+                                                                mutationPhoto.mutate({ type: "logo", id: isLogo ? 0 : elt.id });
+                                                                handleCancelRename();
+                                                            }}
+                                                        >
+                                                            {isLogo ? "✓ Logo" : "Logo"}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant={isBanniere ? "primary" : "outline-primary"}
+                                                            className="w-50"
+                                                            style={{ fontSize: '0.7rem' }}
+                                                            title={isBanniere ? "Cliquer pour retirer des bannières du mandat" : "Définir comme bannière du mandat"}
+                                                            onClick={() => {
+                                                                mutationPhoto.mutate({ type: "banniere", id: isBanniere ? 0 : elt.id });
+                                                                handleCancelRename();
+                                                            }}
+                                                        >
+                                                            {isBanniere ? "✓ Bannière" : "Bannière"}
+                                                        </Button>
                                                     </div>
                                                 </>
                                             ) : (

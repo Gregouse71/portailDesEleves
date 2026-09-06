@@ -29,14 +29,14 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
     L'utilisateur doit être membre de l'asso pour réaliser cette action.
 
     Si *mandat* == True, l'utilisateur doit aussi être membre du mandat cible
-    (dont l'id apparaît dans l'URL), ou du mandat principal de l'association,
-    ou du mandat avec le rang le plus élevé.
+    (dont l'id apparaît dans l'URL), ou du mandat actuel de l'association,
+    ou admin de l'association, ou superutilisateur.
     Dans ce cas l'id du mandat doit apparaitre dans l'URL sous le nom *mandat_id*
 
-    Si *actuel* == True, l'utilisateur doit être un membre du mandat principal
-    ou du mandat avec le rang le plus élevé de l'association.
+    Si *actuel* == True, l'utilisateur doit être un membre du mandat actuel
+    de l'association, ou admin de l'association, ou superutilisateur.
 
-    Si *admin* == True, l'utilisateur doit etre admin de l'asso
+    Si *admin* == True, l'utilisateur doit etre admin de l'asso ou superutilisateur.
     """
     if f is None:
         def decorator(func):
@@ -49,7 +49,10 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
         if association_id is None:
             return jsonify({"message": "l'URL doit contenir l'id de l'association."}), 400
 
-        if current_user.is_authenticated and current_user.est_superutilisateur: # Superutilisateur OK
+        if not current_user.is_authenticated:
+            return jsonify({"message": "Authentification requise"}), 401
+
+        if current_user.est_superutilisateur: # Superutilisateur OK
             return f(*args, **kwargs)
 
         user_roles_in_asso = [role for role in current_user.associations if role.mandat.association_id == association_id]
@@ -62,9 +65,13 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
         mandats_asso = AssociationMandat.query.filter_by(association_id=association_id).all()
         if mandats_asso:
             # --- Calcul des appartenances
-            max_position = max(m.position for m in mandats_asso)
-            is_membre_actuel = any(role.mandat.actuel for role in user_roles_in_asso)
-            is_membre_max = any(role.mandat.position == max_position for role in user_roles_in_asso)
+            has_actuel = any(m.actuel for m in mandats_asso)
+            if not has_actuel:
+                max_position = max(m.position for m in mandats_asso)
+                is_membre_actuel = any(role.mandat.position == max_position for role in user_roles_in_asso)
+            else:
+                is_membre_actuel = any(role.mandat.actuel for role in user_roles_in_asso)
+
             is_admin = is_admin_asso(current_user, association_id)
 
             is_membre_mandat = False
@@ -76,11 +83,9 @@ def est_membre_de_asso(f=None, mandat=False, actuel=False, admin=False):
                 is_membre_mandat = any(role.mandat.id == mandat_id for role in user_roles_in_asso)
 
             if (admin and is_admin)\
-                or (actuel and (is_admin or is_membre_actuel or is_membre_max))\
-                or (mandat and (is_membre_mandat or is_admin or is_membre_actuel or is_membre_max))\
-                or (current_user.is_authenticated and current_user.est_superutilisateur):
+                or (actuel and (is_admin or is_membre_actuel))\
+                or (mandat and (is_membre_mandat or is_admin or is_membre_actuel)):
                 return f(*args, **kwargs)
-
 
         return jsonify({"message": "Vous n'avez pas les permissions pour effectuer cette action"}), 403
     return decorated_function

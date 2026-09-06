@@ -151,18 +151,30 @@ def del_mandat(mandat: int):
     db.session.commit()
     return True
 
-def modifier_mandat(mandat: AssociationMandat, nom: str, position: int, actuel: bool):
+def modifier_mandat(mandat: AssociationMandat, nom: str = None, position: int = None, actuel: bool = None):
     """
-    Modifie le nom et la position du mandat
+    Modifie le nom, la position et le statut actuel du mandat.
+    Si actuel est True, désactive le statut actuel sur les autres mandats de l'asso.
     """
     try:
-        mandat.nom = nom
-        mandat.position = position
-        mandat.actuel = actuel
+        if nom is not None:
+            mandat.nom = nom
+        if position is not None:
+            mandat.position = position
+        if actuel is not None:
+            if actuel:
+                AssociationMandat.query.filter(
+                    AssociationMandat.association_id == mandat.association_id,
+                    AssociationMandat.id != mandat.id
+                ).update({AssociationMandat.actuel: False})
+                mandat.actuel = True
+            else:
+                mandat.actuel = False
         db.session.add(mandat)
         db.session.commit()
         return True
-    except:
+    except Exception as e:
+        db.session.rollback()
         return None
 
 def remove_member(mandat: AssociationMandat, utilisateur: Utilisateur):
@@ -223,4 +235,40 @@ def get_asso_media(asso_id):
 
 
 def is_admin_asso(utilisateur: Utilisateur, association_id: int):
-    return any(role.admin for role in utilisateur.associations if role.mandat.association_id == association_id) or current_user.est_superutilisateur
+    return any(role.admin for role in utilisateur.associations if role.mandat.association_id == association_id) or (hasattr(utilisateur, 'est_superutilisateur') and utilisateur.est_superutilisateur)
+
+
+def can_user_modify_mandat(utilisateur: Utilisateur, association_id: int, mandat_id: int = None) -> bool:
+    """
+    Vérifie si l'utilisateur a le droit de modifier un mandat donné :
+    - Le superutilisateur a tous les droits.
+    - L'admin de l'asso a tous les droits.
+    - Les membres du mandat actuel peuvent modifier n'importe quel mandat.
+    - Les membres d'un autre mandat ne peuvent modifier QUE leur propre mandat.
+    """
+    if not utilisateur or not utilisateur.is_authenticated:
+        return False
+    if utilisateur.est_superutilisateur:
+        return True
+    if is_admin_asso(utilisateur, association_id):
+        return True
+
+    user_roles_in_asso = [role for role in utilisateur.associations if role.mandat.association_id == association_id]
+    if not user_roles_in_asso:
+        return False
+
+    mandats_asso = AssociationMandat.query.filter_by(association_id=association_id).all()
+    has_actuel = any(m.actuel for m in mandats_asso)
+    if not has_actuel and mandats_asso:
+        max_position = max(m.position for m in mandats_asso)
+        is_membre_actuel = any(role.mandat.position == max_position for role in user_roles_in_asso)
+    else:
+        is_membre_actuel = any(role.mandat.actuel for role in user_roles_in_asso)
+
+    if is_membre_actuel:
+        return True
+
+    if mandat_id is not None:
+        return any(role.mandat.id == mandat_id for role in user_roles_in_asso)
+
+    return False

@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { chargerAsso, modifierOrdreImportanceAsso, modifierNomAsso } from "../../api/api_associations";
 import { useEffect, useState } from "react";
 
-export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingAsso, onEditAsso }) {
+export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingAsso, onEditAsso, img }) {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -103,7 +103,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
             <Card.Img
                 variant="top"
                 className="mt-3 object-fit-contain"
-                src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
+                src={(img !== undefined ? img : asso.img) ? `${UPLOAD_BASE_URL}/${img !== undefined ? img : asso.img}` : '/assets/icons/group.svg'}
                 alt={asso.nom}
                 style={{ height: '120px', backgroundColor: "white" }}
             />

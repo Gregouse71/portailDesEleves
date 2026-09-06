@@ -14,6 +14,7 @@ export default function AssoMandat({ id, asso, membreData }) {
     const queryClient = useQueryClient();
 
     const [deletingMandat, setDeletingMandat] = useState(false);
+    const [warningActuelModal, setWarningActuelModal] = useState(false);
 
     const [isEditing, setIsEditing] = useState(false);
     const [editingMandat, setEditingMandat] = useState();
@@ -36,6 +37,10 @@ export default function AssoMandat({ id, asso, membreData }) {
         queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
     });
 
+    const isMembreOfThisMandat = Boolean(mandat && membreData.user_mandats && membreData.user_mandats.includes(mandat.id));
+    const canModifyThisMandat = Boolean(membreData.autorise || isMembreOfThisMandat);
+    const canChangeActuel = Boolean(membreData.autorise);
+
     const handleDelMandat = async () => {
         try {
             await supprimerMandat(asso.id, mandat.id);
@@ -48,20 +53,25 @@ export default function AssoMandat({ id, asso, membreData }) {
     const handleSaveMandat = async () => {
         try {
             await modifierMandat(asso.id, editingMandat.id, editingMandat.nom, editingMandat.position, editingMandat.actuel);
-            if (editingMandat.actuel) {
-                const otherMandats = asso.mandats.filter(m => m.id !== editingMandat.id && m.actuel);
-                for (const other of otherMandats) {
-                    await modifierMandat(asso.id, other.id, other.nom, other.position, false);
-                }
-            }
             queryClient.invalidateQueries(['asso', asso.id]);
             queryClient.invalidateQueries(['mandatAsso', id]);
+            queryClient.invalidateQueries(['membreData', asso.id]);
             setIsEditing(false);
             setEditingMandat(null);
         } catch (error) {
             console.error(error);
+            alert(error.message || "Erreur lors de la modification du mandat");
         }
     }
+
+    const handleActuelCheckboxChange = (e) => {
+        const checked = e.target.checked;
+        if (checked && !mandat.actuel) {
+            setWarningActuelModal(true);
+        } else {
+            setEditingMandat({ ...editingMandat, actuel: checked });
+        }
+    };
 
     const handleModifierParametres = (userId, userRole, userPosition, userAdmin) => {
         if (idMembreModifier === userId) {
@@ -160,8 +170,10 @@ export default function AssoMandat({ id, asso, membreData }) {
                                     <Form.Check
                                         type="checkbox"
                                         label="Mandat actuel"
-                                        checked={editingMandat.actuel}
-                                        onChange={(e) => setEditingMandat({ ...editingMandat, actuel: e.target.checked })}
+                                        checked={Boolean(editingMandat.actuel)}
+                                        disabled={!canChangeActuel}
+                                        title={!canChangeActuel ? "Seul un administrateur ou un membre du mandat actuel peut modifier ce statut" : ""}
+                                        onChange={handleActuelCheckboxChange}
                                     />
                                 </Col>
                             </Row>
@@ -177,11 +189,13 @@ export default function AssoMandat({ id, asso, membreData }) {
                             <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
                         </>
                         :
-                        membreData.autorise && <DropdownEditer list={[
+                        canModifyThisMandat && <DropdownEditer list={[
                             { can: true, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
                             { can: true, onClick: () => setIsAjoutMembre(true), name: "Ajouter un membre" },
-                            "divider",
-                            { can: true, onClick: () => setDeletingMandat(true), name: "Supprimer" },
+                            ...(membreData.autorise ? [
+                                "divider",
+                                { can: true, onClick: () => setDeletingMandat(true), name: "Supprimer le mandat" },
+                            ] : []),
                         ]}
                         />
                     }
@@ -240,6 +254,19 @@ export default function AssoMandat({ id, asso, membreData }) {
                 onConfirm={() => handleDelMandat(mandat.id)}
                 title="Suppression"
                 body={`Êtes-vous sûr de vouloir supprimer le mandat ${mandat.nom} ? Attention : tous les médias associés à ce mandat seront également supprimés.`}
+            />
+            <ConfirmationModal
+                show={warningActuelModal}
+                onHide={() => setWarningActuelModal(false)}
+                onConfirm={() => {
+                    setEditingMandat({ ...editingMandat, actuel: true });
+                }}
+                title="Attention - Changement de mandat actuel"
+                body={
+                    membreData.admin
+                        ? "Attention : en définissant ce mandat comme mandat actuel, les membres qui n'en font pas partie perdront le contrôle sur les autres mandats. En tant qu'administrateur, vous conserverez vos droits de gestion et pourrez modifier ce statut à tout moment. Êtes-vous sûr de vouloir continuer ?"
+                        : "Attention : si vous définissez ce mandat comme mandat actuel, vous perdrez le contrôle sur les autres mandats. Seul un administrateur ou un membre du nouveau mandat actuel pourra modifier ce statut. Êtes-vous sûr de vouloir continuer ?"
+                }
             />
         </Card>);
 }
