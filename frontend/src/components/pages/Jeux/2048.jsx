@@ -5,6 +5,7 @@ import { nouvellePartie, partieEnCours, faireUnCoup, leaderboardJeu } from "../.
 import { useProtected } from '../../../Protected';
 import '../../../assets/styles/jeux2048.scss';
 import Leaderboard from "../../elements/Leaderboard";
+import JeuxTemplate from "../../templates/jeux";
 
 const JEU = "2048";
 
@@ -119,9 +120,9 @@ export default function Jeux2048() {
 
     if (isLoading) return <>Chargement...</>;
 
-    return (
-        <Container className="jeux-2048-container py-4">
-            <h1 className="mb-3">2048</h1>
+    return <JeuxTemplate
+        titre="2048"
+        contenu={
             <Row className="w-100 justify-content-center">
                 <Col md={7} className="d-flex flex-column align-items-center">
                     <div className="score-container">
@@ -143,10 +144,10 @@ export default function Jeux2048() {
                                     <h2 className="text-danger fw-bold mb-0">Game Over</h2>
                                 </div>
                             )}
-                            <Plateau 
-                                arr={partie.etat.plateau} 
-                                onTouchStart={onTouchStart} 
-                                onTouchMove={onTouchMove} 
+                            <Plateau
+                                arr={partie.etat.plateau}
+                                onTouchStart={onTouchStart}
+                                onTouchMove={onTouchMove}
                                 onTouchEnd={onTouchEnd}
                             />
                         </>) : (
@@ -164,6 +165,6 @@ export default function Jeux2048() {
                     <Leaderboard data={fetchedData} title="Meilleures parties" isLoading={isLoading2} />
                 </Col>
             </Row>
-        </Container>
-    );
+        }
+    />;
 }
