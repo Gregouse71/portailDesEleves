@@ -117,7 +117,7 @@ export default function Header() {
                                 ["navigate", "/assos", "Associations"],
                                 ["navigate", "/assos/planning", "Planning associatif"],
                                 ["navigate", "/trombi", "Trombinoscope"],
-                                ["navigate", "/publications", "Publicatons récentes"],
+                                ["navigate", "/publications", "Publications récentes"],
                                 ["navigate", "/vendomes", "Vendômes"],
                                 ["navigate", "/palums", "Palums"],
                                 ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
