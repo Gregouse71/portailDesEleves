@@ -97,7 +97,7 @@ function Trombi() {
     const navigate = useNavigate();
     const [sousOnglet, setSousOnglet] = useState('famille');
 
-    const { data: listePromos = null } = useQuery({
+    const { data: listePromos = null, isLoading } = useQuery({
         queryKey: ['listePromos'],
         queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
     });
@@ -105,6 +105,7 @@ function Trombi() {
     return <PageRandom
         titre="Trombinoscopes"
         sousTitre="Retrouvez ici tous les trombinoscopes"
+        isLoading={isLoading}
         contenu={<>
             <Tabs defaultActiveKey="promotions" className="mb-3">
                 <Tab eventKey="promotions" title="Promotions">

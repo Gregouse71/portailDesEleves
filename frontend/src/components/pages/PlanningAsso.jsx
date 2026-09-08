@@ -5,6 +5,7 @@ import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useState } from 'react';
 import PageRandom from '../templates/pageRandom';
+import Chargement from '../elements/Chargement';
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -49,13 +50,13 @@ const Tableau = ({ value }) => {
                     <th>Description</th>
                 </tr>
             </thead>
-            <tbody>
-                {isLoading ?
-                    <tr>
-                        <td>Chargement</td>
-                    </tr>
-                    :
-                    events.filter(e => !e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
+            {isLoading ?
+                <tr>
+                    <Chargement />
+                </tr>
+                :
+                <tbody>
+                    {events.filter(e => !e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
                         <td>{formatDate(event.date_de_debut)}</td>
                         <td><GetAssoInfo assoId={event.id_association} /></td>
                         <td>{event.nom}</td>
@@ -63,7 +64,8 @@ const Tableau = ({ value }) => {
                         <td className="text-break">{event.description}</td>
                     </tr>
                     )}
-            </tbody >
+                </tbody >
+            }
         </Table>
         <h3>Événements périodiques</h3>
         <Table responsive hover>
@@ -76,13 +78,13 @@ const Tableau = ({ value }) => {
                     <th>Description</th>
                 </tr>
             </thead>
-            <tbody>
-                {isLoading ?
-                    <tr>
-                        <td>Chargement</td>
-                    </tr>
-                    :
-                    events.filter(e => e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
+            {isLoading ?
+                <tr>
+                    <Chargement />
+                </tr>
+                :
+                <tbody>
+                    {events.filter(e => e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
                         <td>{formatDate(event.date_de_debut)}</td>
                         <td><GetAssoInfo assoId={event.id_association} /></td>
                         <td>{event.nom}</td>
@@ -90,7 +92,8 @@ const Tableau = ({ value }) => {
                         <td className="text-break">{event.description}</td>
                     </tr>
                     )}
-            </tbody >
+                </tbody >
+            }
         </Table></>
 }
 

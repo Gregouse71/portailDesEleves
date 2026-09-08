@@ -11,16 +11,6 @@ function Palums() {
     queryFn: () => getPublicationsByTag("Palum", 1, 0),
   });
 
-  if (isLoading) {
-    return (
-      <Container className="py-4 text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </Spinner>
-      </Container>
-    );
-  }
-
   if (error) {
     return (
       <Container className="py-4">
@@ -34,6 +24,7 @@ function Palums() {
   return <PageRandom
     titre="Palums"
     sousTitre="Retrouvez ici toutes les Palums"
+    isLoading={isLoading}
     contenu={<>
       <h2>1A</h2>
       <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
