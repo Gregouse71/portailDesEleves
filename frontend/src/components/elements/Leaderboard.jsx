@@ -66,7 +66,19 @@ export default function Leaderboard({ data, title = "Classement", format = [{ sc
                     )}
                     <tbody>
                         {data.map((u, index) => {
-                            const rank = index + 1;
+                            // Ligne séparateur "..."
+                            if (u.isSeparator) {
+                                return (
+                                    <tr key={`sep-${index}`} className="leaderboard-list-item leaderboard-separator">
+                                        <td className="leaderboard-rank-cell">
+                                            <div className="leaderboard-rank rank-other">⋯</div>
+                                        </td>
+                                        <td className="leaderboard-user-info" colSpan={1 + format.length}></td>
+                                    </tr>
+                                );
+                            }
+
+                            const rank = u.rank ?? index + 1;
                             const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
 
                             return (
@@ -88,8 +100,7 @@ export default function Leaderboard({ data, title = "Classement", format = [{ sc
                                         return <td className="leaderboard-score" key={i}>
                                             {elt.formatScore(scoreValue)}
                                         </td>
-                                    })
-                                    }
+                                    })}
                                 </tr>
                             );
                         })}

@@ -8,6 +8,7 @@ from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
 from datetime import timedelta, datetime, timezone
+from sqlalchemy import func
 
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -287,3 +288,9 @@ def update_all_scores ():
             user.score_global_div = div
             db.session.add(user)
             db.session.commit()
+
+
+def get_rang(nombre_votes):
+    return db.session.query(func.count(Utilisateur.id)).filter(
+        Utilisateur.nombre_votes > nombre_votes
+    ).scalar() + 1

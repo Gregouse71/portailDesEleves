@@ -46,8 +46,6 @@
   }
 }
 
-
-
 .leaderboard-rank {
   display: flex;
   align-items: center;
@@ -86,4 +84,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.leaderboard-separator {
+    .leaderboard-rank {
+        background: transparent;
+        color: var(--bs-secondary, #888);
+    }
 }

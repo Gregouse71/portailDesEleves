@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import desc, asc
+from sqlalchemy import func, desc, asc, case
 
 from app.utils.decorators import a_permission
-from app.services.services_sondages import obtenir_sondage_du_jour_et_votes, sondage_dhier, creer_vote_sondage_du_jour, ErreurSondage, valider_sondage, supprimer_sondage, proposer_sondage, sondage_suivant, obtenir_sondages_non_valide
+from app.services.services_sondages import obtenir_sondage_du_jour_et_votes, sondage_dhier, creer_vote_sondage_du_jour, ErreurSondage, valider_sondage, supprimer_sondage, proposer_sondage, sondage_suivant, obtenir_sondages_non_valide, get_rang
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import Sondage
 
@@ -132,10 +132,49 @@ def get_scores_sondages():
     top_global_con = Utilisateur.query.order_by(desc(Utilisateur.score_global_con)).limit(10).all()
     top_global_div = Utilisateur.query.order_by(desc(Utilisateur.score_global_div)).limit(10).all()
 
+    # --- Contexte utilisateur pour le classement des votes ---
+    contexte_votes = None
+
+    if current_user.id not in [u.id for u in max_votes]:
+        mon_votes = current_user.nombre_votes
+        distance_promo = func.abs(Utilisateur.promotion - current_user.promotion)
+        # 0 si même cycle que l'utilisateur courant, 1 sinon -> trié en premier
+        meme_cycle = case(
+            (Utilisateur.cycle == current_user.cycle, 0),
+            else_=1
+        )
+
+        # Palier juste au-dessus : votes strictement supérieurs,
+        # priorité : palier le plus proche > promotion la plus proche > même cycle
+        avant = Utilisateur.query.filter(
+            Utilisateur.nombre_votes > mon_votes
+        ).order_by(
+            asc(Utilisateur.nombre_votes),
+            asc(distance_promo),
+            asc(meme_cycle)
+        ).first()
+
+        # Juste en dessous : votes <= aux miens (peut être ex æquo)
+        apres = Utilisateur.query.filter(
+            Utilisateur.nombre_votes <= mon_votes,
+            Utilisateur.id != current_user.id
+        ).order_by(
+            desc(Utilisateur.nombre_votes),
+            asc(distance_promo),
+            asc(meme_cycle)
+        ).first()
+
+        contexte_votes = {
+            "avant": {"rang": get_rang(avant.nombre_votes), "utilisateur": avant.to_dict()} if avant else None,
+            "moi": {"rang": get_rang(mon_votes), "utilisateur": current_user.to_dict()},
+            "apres": {"rang": get_rang(apres.nombre_votes), "utilisateur": apres.to_dict()} if apres else None,
+        }
+
     return jsonify({
         "mon_score_recent": current_user.score_recent,
         "mon_score_global": [current_user.score_global_con, current_user.score_global_div],
         "max_votes": [u.to_dict() for u in max_votes],
+        "contexte_votes": contexte_votes,
         "recent": [[u.to_dict() for u in top_recent], [u.to_dict() for u in top_recent_neg]],
         "global": [[u.to_dict(victoires=True) for u in top_global_con], [u.to_dict(defaites=True) for u in top_global_div]]
     }), 200

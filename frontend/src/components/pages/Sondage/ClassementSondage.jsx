@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Container, Row, Col, Card, Button, Collapse } from "react-bootstrap";
 import { obtenirScoresSondages } from "../../../api/api_sondages";
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ export default function ClassementSondage() {
     });
 
     // Destructure data
-    const { mon_score_recent, mon_score_global, max_votes, recent, global: globalScores } = scores;
+    const { mon_score_recent, mon_score_global, max_votes, contexte_votes, recent, global: globalScores } = scores;
 
     // Format scores for display
     const recentScore = mon_score_recent ? mon_score_recent.toFixed(3) : "0.000";
@@ -32,6 +32,22 @@ export default function ClassementSondage() {
     const formatFloatScore = (s) => s !== undefined && s !== null ? s.toFixed() : "0";
     const formatIntScore = (s) => s !== undefined && s !== null ? s : "0";
     const formatIntScoreVotes = (s) => s !== undefined && s !== null ? `${s} votes` : "0 votes";
+
+    const votesData = useMemo(() => {
+        if (!max_votes) return max_votes;
+        if (!contexte_votes) return max_votes;
+
+        const items = [...max_votes];
+        items.push({ isSeparator: true });
+
+        [contexte_votes.avant, contexte_votes.moi, contexte_votes.apres]
+            .filter(Boolean)
+            .forEach((v) => {
+                items.push({ ...v.utilisateur, rank: v.rang });
+            });
+
+        return items;
+    }, [max_votes, contexte_votes]);
 
     return (
         <Container className="mt-4">
@@ -145,7 +161,7 @@ export default function ClassementSondage() {
             <p className="text-muted">Classement basé sur le nombre total de votes effectués.</p>
             <Row className="justify-content-center">
                 <Col md={6} className="mb-4">
-                    <Leaderboard title="Top participants" data={max_votes}
+                    <Leaderboard title="Top participants" data={votesData}
                         format={[{ scoreKey: "nombre_votes", formatScore: formatIntScoreVotes }]}
                         isLoading={isLoading} />
                 </Col>
