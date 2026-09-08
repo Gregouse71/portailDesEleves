@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Spinner, Alert, Table, Dropdown } from 'react-bootstrap';
+import { Spinner, Alert, Table, Dropdown } from 'react-bootstrap';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useState } from 'react';
+import PageRandom from '../templates/pageRandom';
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -101,10 +102,11 @@ const PlanningAsso = () => {
 
     const [aAfficher, setAAfficher] = useState(0)
 
-    return (
-        <Container>
+    return <PageRandom
+        titre="Événements à venir"
+        sousTitre="Retrouvez ici toutes les événements qui arrivent dans les prochaines semaines"
+        contenu={<>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h1 className="my-4">Événements à venir</h1>
                 <Dropdown>
                     <Dropdown.Toggle as="div">{choix[aAfficher].label}</Dropdown.Toggle>
                     <Dropdown.Menu>
@@ -112,9 +114,7 @@ const PlanningAsso = () => {
                     </Dropdown.Menu>
                 </Dropdown>
             </div>
-            <Tableau value={choix[aAfficher].value} />
-        </Container>
-    );
+            <Tableau value={choix[aAfficher].value} /></>} />;
 };
 
 export default PlanningAsso;
