@@ -1,10 +1,11 @@
 import "../../assets/styles/events.scss"
-import { Alert, Card, Spinner } from 'react-bootstrap';
+import { Alert, Spinner } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from "../../api/api_associations";
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { Link } from "react-router-dom";
+import BlocTemplate from "../templates/bloc";
 
 export default function BlocEvents() {
     const { data: events = [], isLoading } = useQuery({
@@ -38,7 +39,7 @@ export default function BlocEvents() {
         if (isError) {
             return <Alert variant="danger">{error.message}</Alert>;
         }
-        
+
         return (<>
             <div>
                 <img src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
@@ -47,20 +48,15 @@ export default function BlocEvents() {
         </>);
     };
 
-    return (
-        <Card id="bloc-events" className="bloc-global mb-3">
-            <Card.Header as="h5" className="text-center">
-                <Link to="/assos/planning" className="text-decoration-none text-reset">Événements</Link>
-            </Card.Header>
-            <Card.Body>
-                {Object.keys(eventsByDate).map((key) => (<div key={key}>
-                    <div className="event-date">{key}</div>
-                    {eventsByDate[key].map((event, i) => (
-                        <GetAssoInfo key={i} event={event} />)
-                    )}
-                </div>)
+    return <BlocTemplate
+        titre={<Link to="/assos/planning" className="text-decoration-none text-reset">Événements</Link>}
+        contenu={
+            Object.keys(eventsByDate).map((key) => (<div key={key}>
+                <div className="event-date">{key}</div>
+                {eventsByDate[key].map((event, i) => (
+                    <GetAssoInfo key={i} event={event} />)
                 )}
-            </Card.Body>
-        </Card>
-    );
+            </div>)
+            )
+        } />;
 }

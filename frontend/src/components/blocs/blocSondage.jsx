@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Button, ProgressBar } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { verifierPermission } from '../../api/api_global';
+import BlocTemplate from '../templates/bloc';
 
 export default function BlocSondage() {
     const queryClient = useQueryClient();
@@ -86,12 +87,10 @@ export default function BlocSondage() {
         );
     }
 
-    return (
-        <Card className="bloc-global mb-3">
-            <Card.Header as="h5" className="text-center">Sondage du jour</Card.Header>
-            <Card.Body className='d-flex flex-column'>
-                {content}
-            </Card.Body>
+    return <BlocTemplate
+        titre="Sondage du jour"
+        contenu={<>
+            {content}
             {sondage.hier && <>
                 <Card.Header as="h6" className="text-center">Sondage d&apos;hier</Card.Header>
                 <Card.Body>
@@ -139,8 +138,7 @@ export default function BlocSondage() {
                     <img src="/assets/icons/manage.svg" alt="gestion" className="theme-icon" />
                 </Button>}
             </Card.Footer>
-        </Card>
-    );
+        </>} />;
 
 
 }

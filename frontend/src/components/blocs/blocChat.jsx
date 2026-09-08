@@ -3,9 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import { SOCKET_BASE_URL } from '../../api/base';
 import "../../assets/styles/chat.scss"
 import { obtenirPlusDeMessages } from '../../api/api_chat';
-import { Card, Form, InputGroup } from 'react-bootstrap';
+import { Form, InputGroup } from 'react-bootstrap';
 import { useProtected } from '../../Protected';
 import { Link } from 'react-router-dom';
+import BlocTemplate from '../templates/bloc';
 
 export default function BlocChat() {
   const [messages, setMessages] = useState([]);
@@ -32,7 +33,7 @@ export default function BlocChat() {
     socketRef.current = newSocket;
 
     newSocket.on("connect", () => {
-      
+
     });
 
     newSocket.on("message", (message) => {
@@ -53,7 +54,7 @@ export default function BlocChat() {
     });
 
     newSocket.on("disconnect", () => {
-      
+
     });
 
     return () => {
@@ -145,7 +146,7 @@ export default function BlocChat() {
 
     const message = { text: input };
     if (socketRef.current) {
-        socketRef.current.emit("message", message);
+      socketRef.current.emit("message", message);
     }
     setInput("");
 
@@ -167,35 +168,32 @@ export default function BlocChat() {
     return date.toLocaleTimeString('fr-FR', { month: "numeric", day: "numeric", hour: '2-digit', minute: '2-digit' });
   }
 
-  return (
-    <Card id="chat-container" className='mw-100 mb-3'>
-      <Card.Header as="h5" className="text-center">Chat</Card.Header>
-      <Card.Body>
-        <div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
-          {messages.map((msg, idx) => (
-            <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="rounded-lg chat-message">
-              <span className="text-muted">{formatTime(msg.time)}</span>{" "}
-              <Link
-                className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}
-                to={`/utilisateur/${msg.author_id}`}
-              >
-                {msg.author}
-              </Link>{" "}
-              :{" "}
-              <span>{msg.text}</span>
-            </div>
-          ))}
+  return <BlocTemplate
+    titre="Chat"
+    contenu={<><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
+      {messages.map((msg, idx) => (
+        <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="rounded-lg chat-message">
+          <span className="text-muted">{formatTime(msg.time)}</span>{" "}
+          <Link
+            className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}
+            to={`/utilisateur/${msg.author_id}`}
+          >
+            {msg.author}
+          </Link>{" "}
+          :{" "}
+          <span>{msg.text}</span>
         </div>
-        <InputGroup >
-          <Form.Control className="chat-input"
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Parle moi !!!"
-          />
-        </InputGroup>
-      </Card.Body>
-    </Card>
-  );
+      ))}
+    </div>
+      <InputGroup >
+        <Form.Control className="chat-input"
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Parle moi !!!"
+        />
+      </InputGroup>
+    </>
+    } />;
 }
