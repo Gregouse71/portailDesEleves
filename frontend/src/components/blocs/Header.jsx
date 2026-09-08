@@ -117,21 +117,22 @@ export default function Header() {
                                 ["navigate", "/assos", "Associations"],
                                 ["navigate", "/assos/planning", "Planning associatif"],
                                 ["navigate", "/trombi", "Trombinoscope"],
-                                ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
-                                    [["navigate", "/soifguard", "Soifguard"]] : [],
-                                ["divider"],
                                 ["navigate", "/publications", "Publicatons récentes"],
                                 ["navigate", "/vendomes", "Vendômes"],
                                 ["navigate", "/palums", "Palums"],
+                                ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
+                                    [["navigate", "/soifguard", "Soifguard"]] : [],
+                                ["divider"],
+                                ["navigate", "/jeux/2048", "2048"],
+                                ["navigate", "/jeux/echecs", "Échecs"],
+                                ["divider"],
                                 // On va essayer de pas spoil les 1A avec nos histoire de baptême
                                 // ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
                                 ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
                                 ["link", "https://moodle.psl.eu/", "Moodle"],
                                 ["link", "https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing", "Sheet des stages"],
                                 ["link", "https://eleves.rezal-mdm.com/upload/associations/bde/Procédure de réservation des véhicules des Mines-e2e3d411-5eca-49a0-92f6-9fe14648c115.pdf", "Réservation véhicule des Mines"],
-                                ["divider"],
-                                ["navigate", "/jeux/2048", "2048"],
-                                ["navigate", "/jeux/echecs", "Échecs"],
+                                ["link", "https://mines-paris.org/", "Portail des Alumni"],
                             ]}
                         />
 

@@ -2,6 +2,7 @@ import { Container, Card } from 'react-bootstrap';
 import Post from '../elements/Post';
 import { useQuery } from '@tanstack/react-query';
 import { obtenirPublicationsRecentes } from '../../api/api_publications';
+import { Link } from 'react-router-dom';
 
 function Home() {
     const mailingLists = [
@@ -39,7 +40,9 @@ function Home() {
         <Container fluid>
             <Card className="mb-3">
                 <Card.Body className='d-flex flex-column gap-3'>
-                    <Card.Title as="h2" className="text-end">Publications récentes</Card.Title>
+                    <Card.Title as="h2" className="text-end">
+                        <Link to="/publications" className="text-decoration-none text-reset">Publications récentes</Link>
+                    </Card.Title>
                     {(!isLoading && !isError) && data.publications.map(post_id => (
                         <Post key={post_id} postId={post_id} isGestion={false} />
                     ))}
