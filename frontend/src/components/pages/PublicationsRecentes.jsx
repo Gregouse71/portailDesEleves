@@ -18,17 +18,6 @@ export default function PublicationsRecentes() {
     });
     const { publications, totalPages } = data;
 
-
-    if (isLoading) {
-        return (
-            <Container className="py-4 text-center">
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Chargement...</span>
-                </Spinner>
-            </Container>
-        );
-    }
-
     if (isError) {
         return (
             <Container className="py-4">
@@ -42,6 +31,7 @@ export default function PublicationsRecentes() {
     return <PageRandom
         titre="Publications récentes"
         sousTitre="Retrouvez ici les dernières publications associatives"
+        isLoading={isLoading}
         avecPagination={true} paramsPag={{ totalPages, setPage, page }}
         avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); } }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}

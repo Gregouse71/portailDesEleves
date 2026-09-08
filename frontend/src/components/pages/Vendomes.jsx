@@ -24,16 +24,6 @@ function Vendomes() {
     });
     const { publications, count, totalPages } = data;
 
-    if (isLoading) {
-        return (
-            <Container className="py-4 text-center">
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Chargement...</span>
-                </Spinner>
-            </Container>
-        );
-    }
-
     if (isError) {
         return (
             <Container className="py-4">
@@ -47,6 +37,7 @@ function Vendomes() {
     return <PageRandom
         titre="Vendômes"
         sousTitre="Retrouvez ici tous les Vendômes"
+        isLoading={isLoading}
         avecPagination={true} paramsPag={{ totalPages, setPage, page }}
         avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); } }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
