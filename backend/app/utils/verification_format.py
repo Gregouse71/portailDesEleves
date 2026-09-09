@@ -16,7 +16,7 @@ def valider_chaine_texte(chaine: str) -> bool:
     """
     Accepte toutes les chaines de bases, hors emojis et caracteres d'autres langues
     """
-    pattern = r'^[\w\s\u00C0-\u00FF\u20AC\u0021\u0022\u0023\u0024\u0025\u0026\u0027\u0028\u0029\u002A\u002B\u002C\u002D\u002E\u002F\u003A\u003B\u003C\u003D\u003E\u003F\u0040\u005B\u005D\u005E\u005F\u0060\u007B\u007C\u007D\u007E\u0021-\u007E]*$'
+    pattern = r'^[\w\s\u00C0-\u00FF\u0152\u0153\u2018\u2019\u201C\u201D\u20AC\u0021-\u007E]*$'
 
     return re.match(pattern, chaine)
 
