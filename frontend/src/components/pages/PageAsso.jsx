@@ -103,7 +103,7 @@ function Asso() {
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
 
     const currentPath = location.pathname.split('/').pop();
-    const activeKey = currentPath === id ? "" : currentPath;
+    const activeKey = currentPath === id ? "infos" : currentPath;
 
     return (
         <Container className='py-4'>
