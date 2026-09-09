@@ -11,9 +11,9 @@ function Home() {
         { name: 'Élèves Césuriens IC (P24)', email: 'promo-ic25-cesure@minesparis.psl.eu' },
         { name: 'Élèves 2A IC et Césuriens IC (P24 + P25)', email: 'promo-ic25-tous@minesparis.psl.eu' },
         { name: 'Élèves 3A IC (P23 + P24)', email: 'promo-ic24-tous@minesparis.psl.eu' },
-        { name: 'Élèves 1A ISUP (I26)', email: 'promo-isupfere26@minesparis.psl.eu' },
-        { name: 'Élèves 2A ISUP (I25)', email: 'promo-isupfere25@minesparis.psl.eu' },
-        { name: 'Élèves 3A ISUP (I24)', email: 'promo-isupfere24@minesparis.psl.eu' },
+        { name: 'Élèves 1A ISUP (I26)', email: 'promo-is-fa26@minesparis.psl.eu' },
+        { name: 'Élèves 2A ISUP (I25)', email: 'promo-is-fa25@minesparis.psl.eu' },
+        { name: 'Élèves 3A ISUP (I24)', email: 'promo-is-fa24@minesparis.psl.eu' },
     ];
 
     const contacts = [
