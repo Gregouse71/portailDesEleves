@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { obtenirQuestionsReponses, modifierQuestionsReponses } from "../../../api/api_utilisateurs";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import OngletTemplate from "../../templates/ongletTab";
+import Chargement from "../../elements/Chargement";
 
 export default function TabQuestions({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -39,22 +41,16 @@ export default function TabQuestions({ id, autoriseAModifier }) {
         }
     });
 
-    if (isLoading) return <>Loading...</>
+    if (isLoading) return <Chargement/>
 
     const displayData = isGestion ? questionsReponses : questionData;
 
-    return (<>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Un peu plus sur moi</h2>
-            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                {autoriseAModifier && <DropdownEditer list={[
-                    { can: true, onClick: handleToggleGestion, name: "Modifier" },
-                ]}
-                />}
-            </div>
-        </div>
-
-        {!isGestion ?
+    return <OngletTemplate
+        titre="Un peu plus sur moi"
+        avecDropdown={autoriseAModifier} contenuDropdown={[
+            { can: true, onClick: handleToggleGestion, name: "Modifier" },
+        ]}
+        contenu={!isGestion ?
             <div className="list-question">
                 {Object.keys(displayData).map(key => {
                     return (<div key={key}><strong>{key.slice(3)}</strong> {displayData[key]}</div>)
@@ -76,6 +72,7 @@ export default function TabQuestions({ id, autoriseAModifier }) {
                     <Button variant="success" onClick={mutation.mutate}>Valider</Button>
                     <Button variant="danger" onClick={() => setIsGestion(false)}>Annuler</Button>
                 </div>
-            </Form>}
-    </>)
+            </Form>
+        }
+    />;
 }

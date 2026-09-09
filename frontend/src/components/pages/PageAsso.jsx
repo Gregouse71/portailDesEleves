@@ -57,7 +57,7 @@ function Asso() {
 
     const moduleToTab = {
         'Info': {
-            key: "infos", index: true, titre: "Infos",path: `/assos/get/${id}`,
+            key: "infos", index: true, titre: "Infos", path: `/assos/get/${id}`,
             element: <AssoInfo id={asso.id} membreData={membreData} />
         },
         'Events': {
@@ -99,7 +99,7 @@ function Asso() {
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
 
     const currentPath = location.pathname.split('/').pop();
-    const activeKey = currentPath === id ? "" : currentPath;
+    const activeKey = currentPath === id ? "infos" : currentPath;
 
     return (
         <Container className='py-4'>

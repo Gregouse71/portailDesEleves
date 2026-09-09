@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Select from "react-select";
 import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import OngletTemplate from "../../templates/ongletTab";
+import Chargement from "../../elements/Chargement";
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -27,8 +29,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const { data: allUsers = [] } = useQuery({
         queryKey: ["allUsers"],
         queryFn: () => chargerUtilisateurs(),
+        enabled: isGestion
     });
-    const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
+    const options = useMemo(
+        () => {return allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }))},
+        [allUsers]
+    );
 
     const copyToClipboard = (text) => {
         if (navigator.clipboard) {
@@ -135,20 +141,10 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     if (isPendingUser || !donneesUtilisateur) {
-        return <p>Chargement des informations...</p>
+        return <Chargement/>
     }
 
-    return (<>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Informations</h2>
-            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                {autoriseAModifier && <DropdownEditer list={[
-                    { can: true, onClick: toggleGestion, name: "Modifier" },
-                ]}
-                />}
-            </div>
-        </div>
-
+    let contenu = <>
         <Row>
             <Col md={6}>
                 <InputGroup className="mb-3">
@@ -385,7 +381,13 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Button variant="danger" onClick={handleCancel}>Annuler</Button>
                 </div>
             </Form>
-        }
-    </>
-    );
+        }</>
+
+    return <OngletTemplate
+        titre="Informations"
+        avecDropdown={autoriseAModifier} contenuDropdown={[
+            { can: true, onClick: toggleGestion, name: "Modifier" },
+        ]}
+        contenu={contenu}
+    />;
 }
