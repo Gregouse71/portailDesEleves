@@ -15,6 +15,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 import DropdownEditer from "../elements/DropdownEditer";
 import AssosMedia from './PageAsso/AssoMedia';
+import TabTemplate from '../templates/tab';
 
 function Asso() {
     const navigate = useNavigate();
@@ -55,15 +56,44 @@ function Asso() {
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
     const moduleToTab = {
-        'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} membreData={membreData} /> },
-        'Events': { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} membreData={membreData} /> },
-        'Membres': { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} membreData={membreData} /> },
-        'Posts': { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} membreData={membreData} /> },
-        'Media': { key: "media", titre: "Media", element: <AssosMedia asso_id={asso.id} membreData={membreData} /> },
-        'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
-        'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
-        'Biblio': { key: "biblio", titre: "Bibliothèque", element: <AssoBiblio asso_id={asso.id} membreData={membreData} /> },
-        ...(membreData.admin && { 'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> } }),
+        'Info': {
+            key: "infos", index: true, titre: "Infos",path: `/assos/get/${id}`,
+            element: <AssoInfo id={asso.id} membreData={membreData} />
+        },
+        'Events': {
+            key: "events", titre: "Événements", path: `/assos/get/${id}/events`,
+            element: <AssoEvents asso_id={asso.id} membreData={membreData} />
+        },
+        'Membres': {
+            key: "members", titre: "Membres", path: `/assos/get/${id}/members`,
+            element: <AssoMembres asso_id={asso.id} membreData={membreData} />
+        },
+        'Posts': {
+            key: "posts", titre: "Publications", path: `/assos/get/${id}/posts`,
+            element: <AssoPosts asso_id={asso.id} membreData={membreData} />
+        },
+        'Media': {
+            key: "media", titre: "Media", path: `/assos/get/${id}/media`,
+            element: <AssosMedia asso_id={asso.id} membreData={membreData} />
+        },
+        'Elections': {
+            key: "elections", titre: "Élections", path: `/assos/get/${id}/elections`,
+            element: <AssoElection asso_id={asso.id} membreData={membreData} />
+        },
+        'Audio': {
+            key: "audio", titre: "Audio", path: `/assos/get/${id}/audio`,
+            element: <AssoAudio asso_id={asso.id} membreData={membreData} />
+        },
+        'Biblio': {
+            key: "biblio", titre: "Bibliothèque", path: `/assos/get/${id}/biblio`,
+            element: <AssoBiblio asso_id={asso.id} membreData={membreData} />
+        },
+        ...(membreData.admin && {
+            'Cotisations': {
+                key: "cotisations", titre: "Cotisations", path: `/assos/get/${id}/cotisations`,
+                element: <AssoCotisations asso_id={asso.id} membreData={membreData} />
+            }
+        }),
     };
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
@@ -137,23 +167,12 @@ function Asso() {
                 </Card.Body>
             </Card>
 
-            <Nav variant="tabs" className="mb-3" activeKey={activeKey}>
-                {tabs.map((elt, ind) =>
-                    <Nav.Item key={ind}>
-                        <Nav.Link as={Link} eventKey={elt.key} to={`/assos/get/${id}/${elt.key}`}>
-                            {elt.titre}
-                        </Nav.Link>
-                    </Nav.Item>
-                )}
-            </Nav>
-
-            <Routes>
-                {tabs.map((elt, ind) => (
-                    <Route key={elt.key} index={ind === 0}
-                        path={ind === 0 ? undefined : elt.key} element={elt.element}
-                    />
-                ))}
-            </Routes>
+            <TabTemplate
+                activeKey={activeKey}
+                tabs={
+                    tabs
+                }
+            />
         </Container>
     );
 }

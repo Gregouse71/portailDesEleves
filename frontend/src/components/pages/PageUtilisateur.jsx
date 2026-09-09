@@ -10,6 +10,7 @@ import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import DropdownEditer from '../elements/DropdownEditer';
 import TabMedia from './PageUtilisateur/Media';
+import TabTemplate from '../templates/tab';
 
 function PageUtilisateur() {
     const { userData } = useProtected();
@@ -126,35 +127,24 @@ function PageUtilisateur() {
                 </Card.Body>
             </Card>
 
-            <Nav variant="tabs" className="mb-3" activeKey={getActiveKey()}>
-                <Nav.Item>
-                    <Nav.Link key={1} as={Link} to={`/utilisateur/${id}`} eventKey="info">
-                        Infos
-                    </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link key={2} as={Link} to={`/utilisateur/${id}/assos`} eventKey="assos">
-                        Associations
-                    </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link key={3} as={Link} to={`/utilisateur/${id}/questions`} eventKey="questions">
-                        Questions/Réponses
-                    </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link key={4} as={Link} to={`/utilisateur/${id}/media`} eventKey="media">
-                        Media
-                    </Nav.Link>
-                </Nav.Item>
-            </Nav>
-
-            <Routes>
-                <Route index={true} element={<TabInfo id={id} autoriseAModifier={autoriseAModifier} />} />
-                <Route path="assos" element={<TabAsso id={id} autoriseAModifier={autoriseAModifier} />} />
-                <Route path="questions" element={<TabQuestions id={id} autoriseAModifier={autoriseAModifier} />} />
-                <Route path="media" element={<TabMedia id={id} autoriseAModifier={autoriseAModifier} />} />
-            </Routes>
+            <TabTemplate activeKey={getActiveKey()} tabs={[
+                {
+                    titre: "Infos", path: `/utilisateur/${id}`, key: "info", index: true,
+                    element: <TabInfo id={id} autoriseAModifier={autoriseAModifier} />
+                },
+                {
+                    titre: "Associations", path: `/utilisateur/${id}/assos`, key: "assos",
+                    element: <TabAsso id={id} autoriseAModifier={autoriseAModifier} />
+                },
+                {
+                    titre: "Questions/Réponses", path: `/utilisateur/${id}/questions`, key: "questions",
+                    element: <TabQuestions id={id} autoriseAModifier={autoriseAModifier} />
+                },
+                {
+                    titre: "Media", path: `/utilisateur/${id}/media`, key: "media",
+                    element: <TabMedia id={id} autoriseAModifier={autoriseAModifier} />
+                },
+            ]} />
         </Container>
     );
 }

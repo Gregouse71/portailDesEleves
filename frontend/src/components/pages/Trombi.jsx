@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import Autocomplete from '../elements/Autocompletion';
 import GenealogyTree from '../elements/Genealogie';
 import PageRandom from '../templates/pageRandom';
+import TabTemplate from '../templates/tab';
 
 /** Onglet "Afficher la famille de ..." */
 function OngletFamille() {
@@ -102,45 +103,55 @@ function Trombi() {
         queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
     });
 
+    const getActiveKey = () => {
+        if (location.pathname.includes('chemin')) return 'chemin';
+        return 'promos';
+    };
+    console.log(getActiveKey())
     return <PageRandom
         titre="Trombinoscopes"
         sousTitre="Retrouvez ici tous les trombinoscopes"
         isLoading={isLoading}
-        contenu={<>
-            <Tabs defaultActiveKey="promotions" className="mb-3">
-                <Tab eventKey="promotions" title="Promotions">
-                    {listePromos === null ? (
-                        <p>Chargement...</p>
-                    ) : (
-                        <div className="member-grid">
-                            {listePromos.map((promo, index) => (
-                                <Card
-                                    onClick={() => navigate(`/trombi/get/${promo}`)}
-                                    key={index}
-                                    className="text-center trombi-card"
-                                >
-                                    <Card.Body>
-                                        <Card.Title>{promo}</Card.Title>
-                                    </Card.Body>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </Tab>
+        contenu={<TabTemplate
+                activeKey={getActiveKey()}
+                tabs={[
+                    {
+                        titre: "Trombis de promotions", path: `/trombi`, key: "promos", index: true,
+                        element: <>{listePromos === null ? (
+                            <p>Chargement...</p>
+                        ) : (
+                            <div className="member-grid">
+                                {listePromos.map((promo, index) => (
+                                    <Card
+                                        onClick={() => navigate(`/trombi/get/${promo}`)}
+                                        key={index}
+                                        className="text-center trombi-card"
+                                    >
+                                        <Card.Body>
+                                            <Card.Title>{promo}</Card.Title>
+                                        </Card.Body>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}</>
+                    },
+                    {
+                        titre: "Graphes des mineurs", path: `/trombi/chemin`, key: "chemin",
+                        element: <>
+                            <Nav variant="pills" activeKey={sousOnglet} onSelect={setSousOnglet} className="mb-3">
+                                <Nav.Item>
+                                    <Nav.Link eventKey="famille">Afficher la famille</Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="lien">Lier deux personnes</Nav.Link>
+                                </Nav.Item>
+                            </Nav>
 
-                <Tab eventKey="recherche" title="Graphe">
-                    <Nav variant="pills" activeKey={sousOnglet} onSelect={setSousOnglet} className="mb-3">
-                        <Nav.Item>
-                            <Nav.Link eventKey="famille">Afficher la famille</Nav.Link>
-                        </Nav.Item>
-                        <Nav.Item>
-                            <Nav.Link eventKey="lien">Lier deux personnes</Nav.Link>
-                        </Nav.Item>
-                    </Nav>
-
-                    {sousOnglet === 'famille' ? <OngletFamille /> : <OngletLien />}
-                </Tab>
-            </Tabs></>} />;
+                            {sousOnglet === 'famille' ? <OngletFamille /> : <OngletLien />}
+                        </>
+                    },
+                ]}
+            />} />;
 }
 
 export default Trombi;
