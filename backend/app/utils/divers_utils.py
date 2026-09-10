@@ -6,14 +6,14 @@ from email.mime.text import MIMEText
 ph = PasswordHasher()
 
 
-def send_mail(From: str, To: str, Subject: str, Text: str, attachement = None):
+def send_mail(To: str, Subject: str, Text: str, attachement = None):
     """
     Envoie, de la part de *To*, un mail à *To*, avec pour contenu le text *Text*,
     en html
     """
     message = EmailMessage()
     message['Subject'] = Subject
-    message['From'] = From
+    message['From'] = "no-reply@rezal-mdm.com"
     message['To'] = To
 
     message.set_content(Text, subtype='html')

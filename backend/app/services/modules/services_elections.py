@@ -160,7 +160,7 @@ def voter(choix: int, election: Election, utilisateur: Utilisateur):
         )
         text = mailBody.format (election.nom, choix + 1, election.options[choix]["name"])
         send_mail(
-            "no-reply@eleves.mines-paris.eu", utilisateur.email, "Vote à l'élection", text,
+            utilisateur.email, "Vote à l'élection", text,
             attachement=(pem, "text", "plain", "key.pem")
         )
 
