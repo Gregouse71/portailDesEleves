@@ -8,14 +8,13 @@ import AssoPosts from './PageAsso/AssoPosts';
 import AssoAudio from './PageAsso/AssoAudio';
 import AssoCotisations from './PageAsso/AssoCotisations';
 import AssoBiblio from './PageAsso/AssoBiblio';
-import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { UPLOAD_BASE_URL } from '../../api/base';
-import { Container, Row, Col, Nav, Image, Badge, Card } from 'react-bootstrap';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Container, Badge } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
-import DropdownEditer from "../elements/DropdownEditer";
 import AssosMedia from './PageAsso/AssoMedia';
 import TabTemplate from '../templates/tab';
+import HeaderTemplate from '../templates/entetephoto';
 
 function Asso() {
     const navigate = useNavigate();
@@ -103,69 +102,27 @@ function Asso() {
 
     return (
         <Container className='py-4'>
-            <input
-                type="file"
-                ref={logoInputRef}
-                className="d-none"
-                accept="image/png, image/jpeg, image/jpg, image/gif"
-                onChange={(e) => handleFileUpload(e, 'logo')}
+            <HeaderTemplate
+                banniere={asso.banniere_path}
+                image={asso.img || '/assets/icons/group.svg'}
+                imageAlt={asso.nom}
+                titre={asso.nom}
+                sousTitre={
+                    <div>
+                        {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
+                        {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
+                    </div>
+                }
+                avecDropdown={membreData.autorise}
+                contenuDropdown={[
+                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
+                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                ]}
+                logoInputRef={logoInputRef}
+                banniereInputRef={banniereInputRef}
+                onLogoChange={(e) => handleFileUpload(e, 'logo')}
+                onBanniereChange={(e) => handleFileUpload(e, 'banniere')}
             />
-            <input
-                type="file"
-                ref={banniereInputRef}
-                className="d-none"
-                accept="image/png, image/jpeg, image/jpg, image/gif"
-                onChange={(e) => handleFileUpload(e, 'banniere')}
-            />
-
-            <Card className='mb-3'>
-                <Card.Header
-                    style={{
-                        backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/${asso.banniere_path})` : 'none',
-                        height: '170px',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                    }}
-                >
-                </Card.Header>
-                <Card.Body>
-                    <Row className="align-items-center flex-md-nowrap">
-                        <Col xs className="d-md-none order-1"></Col>
-                        <Col xs="auto" md="auto" className="order-2 order-md-1 text-center text-md-start">
-                            <Image
-                                className="rounded-3"
-                                src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
-                                alt={asso.nom}
-                                rounded
-                                style={{
-                                    position: 'relative',
-                                    top: '-120px',
-                                    height: '150px',
-                                    border: '2px solid white',
-                                    marginBottom: '-120px'
-                                }}
-                            />
-                        </Col>
-                        <Col xs={12} md className="order-4 order-md-2 text-center text-md-start">
-                            <h2 className="mb-0 text-break">{asso.nom}</h2>
-                            <div>
-                                {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
-                                {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
-                            </div>
-                        </Col>
-                        {membreData.autorise ? (
-                            <Col xs md="auto" className="order-3 order-md-3 text-end">
-                                <DropdownEditer list={[
-                                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
-                                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
-                                ]} />
-                            </Col>
-                        ) : (
-                            <Col xs className="d-md-none order-3"></Col>
-                        )}
-                    </Row>
-                </Card.Body>
-            </Card>
 
             <TabTemplate
                 activeKey={activeKey}

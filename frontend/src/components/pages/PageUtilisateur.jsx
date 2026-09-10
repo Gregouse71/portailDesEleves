@@ -4,13 +4,12 @@ import { useProtected } from '../../Protected';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
-import { useParams, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { UPLOAD_BASE_URL } from '../../api/base';
-import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import DropdownEditer from '../elements/DropdownEditer';
 import TabMedia from './PageUtilisateur/Media';
 import TabTemplate from '../templates/tab';
+import HeaderTemplate from '../templates/entetephoto';
 
 function PageUtilisateur() {
     const { userData } = useProtected();
@@ -64,68 +63,25 @@ function PageUtilisateur() {
 
     return (
         <Container className="py-4">
-            <input
-                type="file"
-                ref={logoInputRef}
-                className="d-none"
-                accept="image/png, image/jpeg, image/jpg, image/gif"
-                onChange={(e) => handleFileUpload(e, 'photo')}
+            <HeaderTemplate
+                photoADroite
+                banniere={donneesUtilisateur.banniere}
+                image={donneesUtilisateur.photo}
+                imageAlt={donneesUtilisateur.nom_utilisateur}
+                titre={<>
+                    {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
+                    {donneesUtilisateur.pronoms && <span style={{ fontSize: "0.7em" }}> <em>({donneesUtilisateur.pronoms})</em></span>}
+                </>}
+                avecDropdown={autoriseAModifier}
+                contenuDropdown={[
+                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer la photo" },
+                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                ]}
+                logoInputRef={logoInputRef}
+                banniereInputRef={banniereInputRef}
+                onLogoChange={(e) => handleFileUpload(e, 'photo')}
+                onBanniereChange={(e) => handleFileUpload(e, 'banniere')}
             />
-            <input
-                type="file"
-                ref={banniereInputRef}
-                className="d-none"
-                accept="image/png, image/jpeg, image/jpg, image/gif"
-                onChange={(e) => handleFileUpload(e, 'banniere')}
-            />
-            <Card className='mb-3'>
-                <Card.Header
-                    style={{
-                        backgroundImage: `url(${UPLOAD_BASE_URL}/${donneesUtilisateur.banniere})`,
-                        height: '170px',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        imageRendering: donneesUtilisateur.banniere.slice(-4) === ".gif" ? 'pixelated' : 'auto',
-                    }}
-                >
-                </Card.Header>
-                <Card.Body>
-                    <Row className="align-items-center flex-md-nowrap">
-                        {autoriseAModifier ? (
-                            <Col xs md="auto" className="order-1 order-md-1 text-start">
-                                <DropdownEditer list={[
-                                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer la photo" },
-                                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
-                                ]} />
-                            </Col>
-                        ) : (
-                            <Col xs className="d-md-none order-1"></Col>
-                        )}
-                        <Col xs={12} md className="order-4 order-md-2 text-center text-md-end">
-                            <h2 className="mb-0 text-break">
-                                {donneesUtilisateur.prenom} {donneesUtilisateur.surnom && <em>&quot;{donneesUtilisateur.surnom}&quot;</em>} {donneesUtilisateur.nom}
-                                {<span style={{ fontSize: "0.7em" }}> {donneesUtilisateur.pronoms && <em>({donneesUtilisateur.pronoms})</em>}</span>}
-                            </h2>
-                        </Col>
-                        <Col xs="auto" md="auto" className="order-2 order-md-3 text-center text-md-end">
-                            <Image
-                                className="rounded-3"
-                                src={`${UPLOAD_BASE_URL}/${donneesUtilisateur.photo}`}
-                                alt={donneesUtilisateur.nom_utilisateur}
-                                rounded
-                                style={{
-                                    position: 'relative',
-                                    top: '-170px',
-                                    height: '200px',
-                                    border: '2px solid white',
-                                    marginBottom: '-170px'
-                                }}
-                            />
-                        </Col>
-                        <Col xs className="d-md-none order-3"></Col>
-                    </Row>
-                </Card.Body>
-            </Card>
 
             <TabTemplate activeKey={getActiveKey()} tabs={[
                 {
