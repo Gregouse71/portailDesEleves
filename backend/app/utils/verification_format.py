@@ -16,14 +16,21 @@ def valider_chaine_texte(chaine: str) -> bool:
     """
     Accepte toutes les chaines de bases, hors emojis et caracteres d'autres langues
     """
-    pattern = r'^[\w\s\u00C0-\u00FF\u0152\u0153\u2018\u2019\u201C\u201D\u20AC\u0021-\u007E]*$'
+    pattern = r'^[\w\s\u00C0-\u00FF\u0152\u0153\u2018\u2019\u201C\u201D\u00AB\u00BB\u2013\u2014\u2026\u00A0\u20AC\u0021-\u007E]*$'
 
     return re.match(pattern, chaine)
 
 def valider_questions_du_portail(dictionnaire: dict) -> bool:
+    pattern = re.compile(
+        r'[^\w\s\u00C0-\u00FF\u0152\u0153\u2018\u2019\u201C\u201D'
+        r'\u00AB\u00BB\u2013\u2014\u2026\u00A0\u20AC\u0021-\u007E]'
+    )
+
     for cle, contenu in dictionnaire.items():
-        if not valider_chaine_texte(cle) or not valider_chaine_texte(contenu):
+        if not isinstance(cle, str) or not isinstance(contenu, str):
             return False
+        dictionnaire[cle] = pattern.sub('', contenu)
+
     return True
 
 def valider_instruments(instruments: list) -> bool:
