@@ -19,13 +19,14 @@ def get_livres(asso_id: int):
     per_page = int(request.args.get("per_page", 20))
     query = request.args.get("query", "")
     serie = request.args.get("serie")
+    genre = request.args.get("genre")
     order_by = request.args.get("order_by", "serie")
     order_asc = request.args.get("order_asc", "true").lower() == "true"
 
     disponible_arg = request.args.get("disponible")
     disponible = disponible_arg.lower() == "true" if disponible_arg is not None else None
 
-    return jsonify(liste_des_livres(asso_id, page, per_page, query, serie, disponible, order_by, order_asc))
+    return jsonify(liste_des_livres(asso_id, page, per_page, query, serie, genre, disponible, order_by, order_asc))
 
 
 @controllers_bibliotheque.post('/<int:asso_id>/livres')
@@ -41,6 +42,7 @@ def post_livre(asso_id: int):
         auteur=data.get("auteur"),
         edition=data.get("edition"),
         tome=data.get("tome"),
+        genre=data.get("genre"),
         reference=data.get("reference"),
         etat=data.get("etat"),
     )

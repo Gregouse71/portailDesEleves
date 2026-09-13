@@ -12,6 +12,7 @@ class Livre(db.Model):
     edition = db.Column(db.String(255))
     serie = db.Column(db.String(255), nullable=False)
     tome = db.Column(db.String(50))
+    genre = db.Column(db.String(100))
     reference = db.Column(db.String(100))
     etat = db.Column(db.String(50))
 
@@ -25,12 +26,13 @@ class Livre(db.Model):
     )
 
     def __init__(self, asso_id: int, serie: str, auteur: str = None, edition: str = None,
-                 tome: str = None, reference: str = None, etat: str = None):
+                 tome: str = None, genre: str = None, reference: str = None, etat: str = None):
         self.asso_id = asso_id
         self.serie = serie
         self.auteur = auteur
         self.edition = edition
         self.tome = tome
+        self.genre = genre
         self.reference = reference
         self.etat = etat
         self.disponible = True
@@ -53,6 +55,7 @@ class Livre(db.Model):
         self.auteur = data.get("auteur", self.auteur)
         self.edition = data.get("edition", self.edition)
         self.tome = data.get("tome", self.tome)
+        self.genre = data.get("genre", self.genre)
         self.reference = data.get("reference", self.reference)
         self.etat = data.get("etat", self.etat)
         db.session.commit()
@@ -64,6 +67,7 @@ class Livre(db.Model):
             "asso_id": self.asso_id,
             "serie": self.serie,
             "tome": self.tome,
+            "genre": self.genre,
             "nom_affichage": self.nom_affichage(),
             "auteur": self.auteur,
             "edition": self.edition,

@@ -17,6 +17,26 @@ import {
 import Autocomplete from "../../../components/elements/Autocompletion";
 import RenderPagination from "../../../components/elements/RenderPagination";
 
+/** Liste des genres, partagée entre le formulaire et le filtre de l'onglet Gestion */
+const GENRES = [
+    "Aventure",
+    "Biographie / Témoignage",
+    "Classique franco-belge",
+    "Fantastique",
+    "Fantasy",
+    "Historique",
+    "Humour",
+    "Jeunesse",
+    "Manga",
+    "Polar",
+    "Policier / Thriller",
+    "Romance",
+    "Science-fiction",
+    "Super-héros",
+    "Tranche de vie",
+    "Western",
+];
+
 /** Formulaire de livre reutilise pour l'ajout et la modification */
 function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSubmit, isPending, isError }) {
     const [form, setForm] = useState(initialValues);
@@ -49,6 +69,18 @@ function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSu
                             value={form.tome}
                             onChange={(e) => setForm({ ...form, tome: e.target.value })}
                         />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Genre</Form.Label>
+                        <Form.Select
+                            value={form.genre}
+                            onChange={(e) => setForm({ ...form, genre: e.target.value })}
+                        >
+                            <option value="">-</option>
+                            {GENRES.map((g) => (
+                                <option key={g} value={g}>{g}</option>
+                            ))}
+                        </Form.Select>
                     </Form.Group>
                     <Form.Group className="mb-2">
                         <Form.Label>Auteur</Form.Label>
@@ -96,7 +128,7 @@ function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSu
     );
 }
 
-const LIVRE_VIDE = { serie: "", auteur: "", edition: "", tome: "", reference: "", etat: "" };
+const LIVRE_VIDE = { serie: "", auteur: "", edition: "", tome: "", reference: "", genre: "", etat: "" };
 
 function AjouterLivreModal({ asso_id, show, onClose, onAdded }) {
     const mutation = useMutation({
@@ -137,6 +169,7 @@ function ModifierLivreModal({ asso_id, livre, onClose, onModifie }) {
                 auteur: livre.auteur || "",
                 edition: livre.edition || "",
                 tome: livre.tome || "",
+                genre: livre.genre || "",
                 reference: livre.reference || "",
                 etat: livre.etat || "",
             }}
@@ -148,7 +181,7 @@ function ModifierLivreModal({ asso_id, livre, onClose, onModifie }) {
 }
 
 /**
- * Onglet "Emprunt" (fusion des anciens onglets Emprunter + Retourner) :
+ * Onglet "Emprunt" :
  * on cherche une personne, puis on peut a la fois lui emprunter des
  * nouveaux livres et lui faire rendre des livres deja empruntes.
  */
@@ -358,22 +391,38 @@ function OngletEmpruntRetour({ asso_id }) {
 /** Onglet "Gestion" : recherche parmi tous les livres.
  *  En lecture seule (peutGerer=false) : pas d'ajout/modif/suppression,
  *  et le nom de l'emprunteur n'est pas affiché.
+ *
+ *  Pour le gestionnaire (peutGerer=true), les livres empruntés de la page
+ *  courante sont remontés en premier, et un filtre par genre est disponible
+ *  a cote de la recherche texte.
  */
 function OngletGestion({ asso_id, peutGerer }) {
     const queryClient = useQueryClient();
     const PER_PAGE = 20;
     const [query, setQuery] = useState("");
+    const [genreFiltre, setGenreFiltre] = useState("");
     const [page, setPage] = useState(1);
     const [showAjout, setShowAjout] = useState(false);
     const [livreAModifier, setLivreAModifier] = useState(null);
     const fileInputRef = useRef(null);
 
     const { data = { livres: [], count: 0 }, isLoading } = useQuery({
-        queryKey: ["gestionLivres", asso_id, query, page],
-        queryFn: () => getListeLivres(asso_id, { query, page, per_page: PER_PAGE }),
+        queryKey: ["gestionLivres", asso_id, query, genreFiltre, page],
+        queryFn: () => getListeLivres(asso_id, {
+            query,
+            genre: genreFiltre,
+            page,
+            per_page: PER_PAGE,
+            // Pour le gestionnaire, on trie sur "disponible" ascendant : les livres
+            // empruntés (disponible=False, donc valeur la plus basse) remontent en
+            // premier, avec un tri secondaire par série cote serveur.
+            order_by: peutGerer ? "disponible" : "serie",
+            order_asc: true,
+        }),
         placeholderData: (previousData) => previousData,
     });
     const totalPages = Math.ceil(data.count / PER_PAGE);
+    const livresAffiches = data.livres;
 
     const invalidate = () => {
         queryClient.invalidateQueries(["gestionLivres"]);
@@ -421,12 +470,24 @@ const handleFichierChange = (e) => {
     return (
         <div className="biblio-tab-content biblio-tab-content-large">
             <div className="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
-                <Form.Control
-                    placeholder="Rechercher une série, un auteur, une référence..."
-                    value={query}
-                    onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-                    style={{ maxWidth: "400px" }}
-                />
+                <div className="d-flex gap-2 flex-wrap">
+                    <Form.Control
+                        placeholder="Rechercher une série, un auteur..."
+                        value={query}
+                        onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                        style={{ maxWidth: "400px" }}
+                    />
+                    <Form.Select
+                        value={genreFiltre}
+                        onChange={(e) => { setGenreFiltre(e.target.value); setPage(1); }}
+                        style={{ maxWidth: "220px" }}
+                    >
+                        <option value="">Tous les genres</option>
+                        {GENRES.map((g) => (
+                            <option key={g} value={g}>{g}</option>
+                        ))}
+                    </Form.Select>
+                </div>
                 {peutGerer && (
                     <div className="d-flex flex-column align-items-center align-items-md-end">
                         <div className="d-flex gap-2 flex-wrap justify-content-center justify-content-md-end">
@@ -449,7 +510,7 @@ const handleFichierChange = (e) => {
                             </Button>
                         </div>
                         <div className="text-muted small mt-1 text-center text-md-end">
-                            Colonnes attendues : Auteur, Edition, Série*, Tome, Référence, Etat
+                            Colonnes attendues : Auteur, Edition, Série*, Tome, Genre, Référence, Etat
                         </div>
                     </div>
                 )}
@@ -471,7 +532,7 @@ const handleFichierChange = (e) => {
                         <th>Série</th>
                         <th>Tome</th>
                         <th>Auteur</th>
-                        <th>Référence</th>
+                        <th>Genre</th>
                         <th>État</th>
                         <th>Statut</th>
                         {peutGerer && <th className="text-center">Actions</th>}
@@ -481,15 +542,15 @@ const handleFichierChange = (e) => {
                     {isLoading && (
                         <tr><td colSpan={peutGerer ? 7 : 6}>Chargement...</td></tr>
                     )}
-                    {!isLoading && data.livres.length === 0 && (
+                    {!isLoading && livresAffiches.length === 0 && (
                         <tr><td colSpan={peutGerer ? 7 : 6} className="text-center text-muted py-3">Aucun livre trouvé.</td></tr>
                     )}
-                    {data.livres.map(livre => (
+                    {livresAffiches.map(livre => (
                         <tr key={livre.id}>
                             <td>{livre.serie}</td>
                             <td>{livre.tome}</td>
                             <td>{livre.auteur}</td>
-                            <td>{livre.reference}</td>
+                            <td>{livre.genre}</td>
                             <td>{livre.etat}</td>
                             <td>
                                 {livre.disponible ? (

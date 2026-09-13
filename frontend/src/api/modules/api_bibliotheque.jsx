@@ -3,7 +3,8 @@ import { API_BASE_URL, createApiPost, createApiPut, createApiDelete, createApiGe
 export const BIBLIOTHEQUE_BASE_URL = `${API_BASE_URL}/bibliotheque`;
 
 /** Recupere la liste paginee des livres d'une asso, avec recherche et filtres
- * appel : getListeLivres(asso_id, { page, per_page, query, serie, disponible, order_by, order_asc })
+ * appel : getListeLivres(asso_id, { page, per_page, query, serie, genre, disponible, order_by, order_asc })
+ * order_by : "serie" | "auteur" | "tome" | "etat" | "disponible" (defaut "serie")
  */
 export const getListeLivres = (asso_id, params) =>
     createApiGet(`${BIBLIOTHEQUE_BASE_URL}/${asso_id}/livres`)(params)

@@ -12,7 +12,7 @@ COLONNES_TRIABLES = ("serie", "auteur", "tome", "etat", "disponible")
 
 
 def liste_des_livres(asso_id: int, page: int = 1, per_page: int = 20, query: str = "",
-                      serie: str = None, disponible: bool = None,
+                      serie: str = None, genre: str = None, disponible: bool = None,
                       order_by: str = "serie", order_asc: bool = True):
     """ Retourne une liste paginee de livres d'une asso, avec recherche texte libre et filtres """
     q = Livre.query.filter(Livre.asso_id == asso_id)
@@ -28,11 +28,20 @@ def liste_des_livres(asso_id: int, page: int = 1, per_page: int = 20, query: str
     if serie:
         q = q.filter(Livre.serie == serie)
 
+    if genre:
+        q = q.filter(Livre.genre.ilike(genre))
+
     if disponible is not None:
         q = q.filter(Livre.disponible == disponible)
 
     colonne = getattr(Livre, order_by if order_by in COLONNES_TRIABLES else "serie")
-    q = q.order_by(asc(colonne) if order_asc else desc(colonne))
+    tri = [asc(colonne) if order_asc else desc(colonne)]
+    # Tri secondaire stable par série, pour ne pas melanger l'ordre des livres
+    # qui partagent la meme valeur sur la colonne de tri principale
+    # (typiquement : tous les livres "disponible=False" entre eux).
+    if colonne is not Livre.serie:
+        tri.append(asc(Livre.serie))
+    q = q.order_by(*tri)
 
     count = q.count()
     livres = q.offset((page - 1) * per_page).limit(per_page).all()
@@ -41,8 +50,8 @@ def liste_des_livres(asso_id: int, page: int = 1, per_page: int = 20, query: str
 
 
 def ajouter_nouveau_livre(asso_id: int, serie: str, auteur: str = None, edition: str = None,
-                           tome: str = None, reference: str = None, etat: str = None):
-    livre = Livre(asso_id, serie, auteur, edition, tome, reference, etat)
+                           tome: str = None, genre: str = None, reference: str = None, etat: str = None):
+    livre = Livre(asso_id, serie, auteur, edition, tome, genre, reference, etat)
     db.session.add(livre)
     db.session.commit()
     return livre.to_dict()
@@ -58,7 +67,7 @@ def _clean(value):
 def importer_livres_excel(asso_id: int, fichier):
     """
     Importe des livres depuis un fichier Excel envoye via l'API.
-    Colonnes attendues : Auteur | Edition | Série | Tome | Référence | Etat | Statut
+    Colonnes attendues : Auteur | Edition | Série | Tome | Genre | Référence | Etat | Statut
     Renvoie {"crees": int, "ignores": int, "lignes_ignorees": [...]}
     """
     df = pd.read_excel(fichier, dtype=str)
@@ -84,6 +93,7 @@ def importer_livres_excel(asso_id: int, fichier):
             auteur=_clean(row.get("Auteur")),
             edition=_clean(row.get("Edition")),
             tome=_clean(row.get("Tome")),
+            genre=_clean(row.get("Genre")),
             reference=_clean(row.get("Référence")),
             etat=_clean(row.get("Etat")),
         )
