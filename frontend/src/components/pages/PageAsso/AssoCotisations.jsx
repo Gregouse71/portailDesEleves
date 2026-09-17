@@ -15,6 +15,7 @@ import { obtenirDataUser, searchUsers } from "../../../api/api_utilisateurs";
 import ConfirmationModal from "../../elements/ConfirmationModal";
 import DropdownEditer from "../../elements/DropdownEditer";
 import Autocomplete from "../../elements/Autocompletion";
+import Chargement from "../../elements/Chargement";
 
 const format_date = (s) => s ? new Date(s).toLocaleDateString("fr-FR") : "Non précisé";
 
@@ -247,12 +248,14 @@ export default function AssoCotisations({ asso_id, membreData }) {
     const { userData } = useProtected();
     const [isCreating, setIsCreating] = useState(false);
 
-    const { data: cotisations = [], isLoading } = useQuery({
+    const { data: cotisations = [], isPending } = useQuery({
         queryKey: ['cotisations_asso', asso_id],
         queryFn: () => obtenirCotisationsAsso(asso_id),
     });
 
     const canModify = userData.is_superuser || membreData.autorise;
+
+    if (isPending) return <Chargement />
 
     return (
         <>
@@ -276,9 +279,7 @@ export default function AssoCotisations({ asso_id, membreData }) {
                 />
             )}
 
-            {isLoading ? (
-                <div>Chargement des cotisations...</div>
-            ) : cotisations.length === 0 ? (
+            {cotisations.length === 0 ? (
                 <div className="text-muted text-center py-4">
                     Aucune cotisation n&apos;est définie pour cette association.
                 </div>

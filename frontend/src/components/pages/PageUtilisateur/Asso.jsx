@@ -6,9 +6,10 @@ import { obtenirAssosUtilisateur, modifierOrdreAssos } from "../../../api/api_ut
 import AssoCard from "../../elements/AssoCard";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
+import Chargement from '../../elements/Chargement';
 
 export default function TabAsso({ id, autoriseAModifier }) {
-    const { data: assos = { actuel: [], ancien: [] } } = useQuery({
+    const { data: assos = { actuel: [], ancien: [] }, isPending } = useQuery({
         queryKey: ['assosUser', id],
         queryFn: () => obtenirAssosUtilisateur(id),
     });
@@ -50,6 +51,8 @@ export default function TabAsso({ id, autoriseAModifier }) {
         setAncien(nouvelOrdre);
         await modifierOrdreAssos(id, nouvelOrdre.map((a, i) => ({ id: a.mandat_id, ordre: i + 1000})));
     };
+
+    if (isPending) return <Chargement/>
 
     return (<>
         <Container className="py-4">

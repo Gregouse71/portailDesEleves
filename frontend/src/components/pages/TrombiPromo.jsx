@@ -5,6 +5,7 @@ import UserCard from '../elements/UserCard';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
 import { useQuery } from '@tanstack/react-query';
+import Chargement from '../elements/Chargement';
 
 function TrombiPromo() {
     const [cyclesSelectionnes, setCyclesSelectionnes] = useState(["ic", "ast", "ev", "vs", "isup"]); // Les cycles sont pré-cochés
@@ -13,7 +14,7 @@ function TrombiPromo() {
     const cyclesDisponibles = ["ic", "ast", "ev", "vs", "isup"];
     const { promo } = useParams();
 
-    const { data: utilisateurs = [] } = useQuery({
+    const { data: utilisateurs, isPending } = useQuery({
         queryKey: ['listePromo', promo, cyclesSelectionnes],
         queryFn: () => obtenirListeDesUtilisateurs(promo, cyclesSelectionnes),
     });
@@ -23,6 +24,8 @@ function TrombiPromo() {
             prev.includes(cycle) ? prev.filter(c => c !== cycle) : [...prev, cycle]
         );
     };
+
+    if (isPending) return <Chargement/>
 
     return (
         <Container className="py-4 trombi-promo-page">

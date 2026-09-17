@@ -6,6 +6,7 @@ import { UPLOAD_BASE_URL } from '../../../api/base';
 import { Button, Form, Card, ListGroup, Spinner, Col, Row } from 'react-bootstrap';
 import DropdownEditer from '../../elements/DropdownEditer';
 import ConfirmationModal from '../../elements/ConfirmationModal';
+import Chargement from '../../elements/Chargement';
 
 function AddAlbumForm({ mutation, onCancel }) {
     const [name, setName] = useState('');
@@ -149,7 +150,7 @@ const Album = ({ id, autorise, asso_id }) => {
     const [pendingChanges, setPendingChanges] = useState({});
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
-    const { data: album, isLoading } = useQuery({
+    const { data: album, isPending } = useQuery({
         queryKey: ['audioAlbum', id],
         queryFn: () => getAlbum({}, id),
     });
@@ -186,7 +187,8 @@ const Album = ({ id, autorise, asso_id }) => {
         return [...album.audios].sort((a, b) => b.position - a.position);
     }, [album]);
 
-    if (isLoading) return <Spinner animation="border" size="sm" />;
+
+    if (isPending) return <Chargement/>
 
     return <>
         <Card className="mb-4">
@@ -248,7 +250,7 @@ function AssoAudio({ asso_id, membreData }) {
     const queryClient = useQueryClient();
     const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
 
-    const { data: albums = [], isLoading } = useQuery({
+    const { data: albums = [], isPending } = useQuery({
         queryKey: ['audioAlbums', asso_id],
         queryFn: () => getAlbums(asso_id),
     });
@@ -263,9 +265,7 @@ function AssoAudio({ asso_id, membreData }) {
 
     const addAlbumMutation = useMutation({ mutationFn: (name) => addAlbum(asso_id, name), onSuccess: invalidateQueries });
 
-    if (isLoading) {
-        return <div className="text-center"><Spinner animation="border" /></div>;
-    }
+    if (isPending) return <Chargement/>
 
     return (
         <div>

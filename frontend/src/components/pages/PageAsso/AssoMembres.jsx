@@ -3,6 +3,7 @@ import { ajouterMandat, chargerAsso, estUtilisateurDansAsso } from "../../../api
 import { Card, Button, Form } from "react-bootstrap";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AssoMandat from "../../elements/AssoMandat";
+import Chargement from "../../elements/Chargement";
 
 function AssoMembres({ asso_id, membreData }) {
     const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ function AssoMembres({ asso_id, membreData }) {
     const [isAjoutMandat, setIsAjoutMandat] = useState(false);
     const [nomNouveauMandat, setNomNouveauMandat] = useState("");
 
-    const { data: asso = { mandat: "" }, isLoading } = useQuery({
+    const { data: asso = { mandat: "" }, isPending } = useQuery({
         queryKey: ['asso', asso_id],
         queryFn: () => chargerAsso(asso_id),
     });
@@ -24,10 +25,7 @@ function AssoMembres({ asso_id, membreData }) {
         });
     }, [asso]);
 
-    if (isLoading) return <Card>
-        <Card.Body>
-        </Card.Body>
-    </Card>
+    if (isPending) return <Chargement/>
 
     const handleNouveauMandat = async (nom) => {
         if (nom) {

@@ -5,6 +5,7 @@ import PostCard from '../elements/PostCard';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import { useState } from 'react';
 import RenderPagination from '../elements/RenderPagination'
+import Chargement from '../elements/Chargement';
 
 function Vendomes() {
     const [page, setPage] = useState(1);
@@ -17,22 +18,14 @@ function Vendomes() {
         return 30;
     });
 
-    const { data = { publications: [], count: 0 }, isLoading, isError } = useQuery({
+    const { data = { publications: [], count: 0 }, isPending, isError } = useQuery({
         queryKey: ['vendomes', perPage, page, query],
         queryFn: () => getPublicationsByTag("Vendôme", page, perPage, query),
         placeholderData: (previousData) => previousData,
     });
     const { publications, count, totalPages } = data;
 
-    if (isLoading) {
-        return (
-            <Container className="py-4 text-center">
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Chargement...</span>
-                </Spinner>
-            </Container>
-        );
-    }
+    if (isPending) return <Chargement/>
 
     if (isError) {
         return (

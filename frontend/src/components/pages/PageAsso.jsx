@@ -15,6 +15,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 import DropdownEditer from "../elements/DropdownEditer";
 import AssosMedia from './PageAsso/AssoMedia';
+import Chargement from '../elements/Chargement';
 
 function Asso() {
     const navigate = useNavigate();
@@ -52,7 +53,7 @@ function Asso() {
         e.target.value = '';
     };
 
-    if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
+    if (asso === null || membreData.is_membre === null) return <Chargement/>
 
     const moduleToTab = {
         'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} membreData={membreData} /> },

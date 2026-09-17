@@ -6,6 +6,7 @@ import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-
 import Select from 'react-select';
 import { useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import Post from "../../elements/Post";
+import Chargement from "../../elements/Chargement";
 
 const tagOptions = [
     { value: 'Vendôme', label: 'Vendôme' },
@@ -131,6 +132,7 @@ function AssoPosts({ asso_id, membreData }) {
         data,
         fetchNextPage,
         hasNextPage,
+        isLoading: isLoading1,
         isFetchingNextPage,
     } = useInfiniteQuery({
         queryKey: ['publicationData', asso_id, 'publications'],
@@ -169,6 +171,8 @@ function AssoPosts({ asso_id, membreData }) {
     }, [newPostFile, newPostMiniatureFile]);
 
     const listePosts = data?.pages.flat() || [];
+
+    if (isLoading1) return <Chargement/>
 
     return (
         <>

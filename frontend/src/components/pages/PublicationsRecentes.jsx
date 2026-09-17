@@ -5,29 +5,21 @@ import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import Post from '../elements/Post';
 import { useState } from 'react';
 import RenderPagination from '../elements/RenderPagination';
+import Chargement from '../elements/Chargement';
 
 export default function PublicationsRecentes() {
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
 
-    const { data = { publications: [], count: 0 }, isLoading, isError } = useQuery({
+    const { data = { publications: [], count: 0 }, isPending, isError } = useQuery({
         queryKey: ['publicationRecentes', 'all', query, perPage, page],
         queryFn: () => obtenirPublicationsRecentes({ page, per: perPage, query }),
         placeholderData: (previousData) => previousData,
     });
     const { publications, totalPages } = data;
 
-
-    if (isLoading) {
-        return (
-            <Container className="py-4 text-center">
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Chargement...</span>
-                </Spinner>
-            </Container>
-        );
-    }
+    if (isPending) return <Chargement/>
 
     if (isError) {
         return (

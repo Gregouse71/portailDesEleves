@@ -7,6 +7,7 @@ import '../../assets/styles/asso.scss';
 import { useProtected } from '../../Protected';
 import { useState } from 'react';
 import DropdownEditer from '../elements/DropdownEditer';
+import Chargement from '../elements/Chargement';
 
 String.prototype.localeContains = function (sub) {
     if (sub === "") return true;
@@ -25,7 +26,7 @@ export default function ListeAssos() {
     const [editingAssoId, setEditingAssoId] = useState(null);
     const [query, setQuery] = useState("");
 
-    const { data: assos = [] } = useQuery({
+    const { data: assos = [], isPending } = useQuery({
         queryKey: ['listeAssos'],
         queryFn: chargerListeAssos,
     });
@@ -35,6 +36,8 @@ export default function ListeAssos() {
         if (b.ordre_importance === null) return -1;
         return b.ordre_importance - a.ordre_importance;
     });
+
+    if (isPending) return <Chargement/>
 
     return (
         <Container className="py-4">

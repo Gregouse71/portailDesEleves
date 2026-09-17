@@ -10,6 +10,7 @@ import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import DropdownEditer from '../elements/DropdownEditer';
 import TabMedia from './PageUtilisateur/Media';
+import Chargement from '../elements/Chargement';
 
 function PageUtilisateur() {
     const { userData } = useProtected();
@@ -44,12 +45,12 @@ function PageUtilisateur() {
         e.target.value = '';
     };
 
-    const { data: donneesUtilisateur, isLoading } = useQuery({
+    const { data: donneesUtilisateur, isPending } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
     });
 
-    if (isLoading) { return (<p>Chargement...</p>); }
+    if (isPending) return <Chargement/>
 
     const autoriseAModifier = userData.id == id || userData.is_superuser;
 

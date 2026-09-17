@@ -4,6 +4,7 @@ import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useState } from 'react';
+import Chargement from '../elements/Chargement';
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -12,11 +13,9 @@ const formatDate = (dateString) => {
 };
 
 const GetAssoInfo = ({ assoId }) => {
-    const { data: asso, isLoading, isError, error } = useQuery({ queryKey: ['association', assoId], queryFn: () => chargerAsso(assoId) });
+    const { data: asso, isPending, isError, error } = useQuery({ queryKey: ['association', assoId], queryFn: () => chargerAsso(assoId) });
 
-    if (isLoading) {
-        return <Spinner animation="border" size="sm" />;
-    }
+    if (isPending) return <Chargement/>
 
     if (isError) {
         return <Alert variant="danger">{error.message}</Alert>;

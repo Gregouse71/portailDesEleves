@@ -8,6 +8,7 @@ import DropdownEditer from "../../elements/DropdownEditer";
 import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import ConfirmationModal from "../../elements/ConfirmationModal";
+import Chargement from "../../elements/Chargement";
 
 const format_date = (s) => s ? new Date(s).toLocaleString("fr-FR") : "Non précisé"
 
@@ -16,7 +17,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
     const queryClient = useQueryClient();
     const [chosenVote, setChosenVote] = useState(-1);
 
-    const { data: election, isLoading, isError } = useQuery({
+    const { data: election, isPending, isError } = useQuery({
         queryKey: ['election', id],
         queryFn: () => obtenirElection({}, id),
         enabled: !isNew,
@@ -118,7 +119,7 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
         }
     }
 
-    if (isLoading) return <>Chargement...</>;
+    if (isPending) return <Chargement/>
     if (isError) return <>Pas d&apos;élection à afficher.</>
 
     // L'utilisateur peut-il voter actuellement ?
@@ -268,10 +269,12 @@ export default function AssoElection({ asso_id }) {
     const { userData } = useProtected();
     const [isCreating, setIsCreating] = useState(false);
 
-    const { data: elections = [], isLoading } = useQuery({
+    const { data: elections = [], isPending } = useQuery({
         queryKey: ['elections_asso', asso_id],
         queryFn: () => obtenirElectionsAsso({}, asso_id),
     });
+
+    if (isPending) return <Chargement/>
 
     return (
         <>
@@ -281,7 +284,7 @@ export default function AssoElection({ asso_id }) {
                     <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
                 </Button>}
             </div>
-            {!isLoading && elections.length === 0 && <>
+            {elections.length === 0 && <>
                 Aucune election à afficher.
             </>}
             {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}

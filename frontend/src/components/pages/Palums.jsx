@@ -3,22 +3,15 @@ import { Container, Spinner, Alert } from 'react-bootstrap';
 import { getPublicationsByTag } from '../../api/api_publications';
 import PostCard from '../elements/PostCard';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
+import Chargement from '../elements/Chargement';
 
 function Palums() {
-  const { data: data, isLoading, error } = useQuery({
+  const { data: data, isPending, error } = useQuery({
     queryKey: ['palumsPublications'],
     queryFn: () => getPublicationsByTag("Palum", 1, 0),
   });
 
-  if (isLoading) {
-    return (
-      <Container className="py-4 text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </Spinner>
-      </Container>
-    );
-  }
+  if (isPending) return <Chargement/>
 
   if (error) {
     return (

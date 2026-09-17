@@ -16,6 +16,7 @@ import {
 } from "../../../api/modules/api_bibliotheque";
 import Autocomplete from "../../../components/elements/Autocompletion";
 import RenderPagination from "../../../components/elements/RenderPagination";
+import Chargement from "../../elements/Chargement";
 
 /** Formulaire de livre reutilise pour l'ajout et la modification */
 function LivreFormModal({ show, onClose, title, submitLabel, initialValues, onSubmit, isPending, isError }) {
@@ -255,7 +256,7 @@ function OngletEmpruntRetour({ asso_id }) {
                 {rechercheActive && (
                     <ListGroup className="mb-3">
                         {loadingLivres && (
-                            <ListGroup.Item disabled>Recherche...</ListGroup.Item>
+                            <ListGroup.Item disabled><Chargement /></ListGroup.Item>
                         )}
                         {!loadingLivres && resultatsFiltres.map(l => (
                             <ListGroup.Item
@@ -318,7 +319,7 @@ function OngletEmpruntRetour({ asso_id }) {
 
                 <ListGroup>
                     {loadingEmprunts && (
-                        <ListGroup.Item disabled>Chargement...</ListGroup.Item>
+                        <ListGroup.Item disabled><Chargement /></ListGroup.Item>
                     )}
                     {!loadingEmprunts && empruntsData.emprunts.map(e => (
                         <ListGroup.Item key={e.id}>
@@ -392,31 +393,31 @@ function OngletGestion({ asso_id, peutGerer }) {
         }
     };
 
-const [importResult, setImportResult] = useState(null);
+    const [importResult, setImportResult] = useState(null);
 
-const importMutation = useMutation({
-    mutationFn: (file) => {
-        const formData = new FormData();
-        formData.append("fichier", file);
-        return importerLivresExcel(formData, asso_id, "livres", "import");
-    },
-    onSuccess: (resultat) => {
-        invalidate();
-        setImportResult(resultat);
-    },
-    onError: (error) => {
-        window.alert(`Erreur lors de l'import : ${error.message}`);
-    }
-});
+    const importMutation = useMutation({
+        mutationFn: (file) => {
+            const formData = new FormData();
+            formData.append("fichier", file);
+            return importerLivresExcel(formData, asso_id, "livres", "import");
+        },
+        onSuccess: (resultat) => {
+            invalidate();
+            setImportResult(resultat);
+        },
+        onError: (error) => {
+            window.alert(`Erreur lors de l'import : ${error.message}`);
+        }
+    });
 
-const handleFichierChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-        setImportResult(null); // reset avant un nouvel import
-        importMutation.mutate(file);
-    }
-    e.target.value = "";
-};
+    const handleFichierChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImportResult(null); // reset avant un nouvel import
+            importMutation.mutate(file);
+        }
+        e.target.value = "";
+    };
 
     return (
         <div className="biblio-tab-content biblio-tab-content-large">
@@ -479,7 +480,7 @@ const handleFichierChange = (e) => {
                 </thead>
                 <tbody>
                     {isLoading && (
-                        <tr><td colSpan={peutGerer ? 7 : 6}>Chargement...</td></tr>
+                        <tr><td colSpan={peutGerer ? 7 : 6}><Chargement /></td></tr>
                     )}
                     {!isLoading && data.livres.length === 0 && (
                         <tr><td colSpan={peutGerer ? 7 : 6} className="text-center text-muted py-3">Aucun livre trouvé.</td></tr>

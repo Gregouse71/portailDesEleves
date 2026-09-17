@@ -11,6 +11,7 @@ import '../../assets/styles/trombi.scss';
 import { useQuery } from '@tanstack/react-query';
 import Autocomplete from '../elements/Autocompletion';
 import GenealogyTree from '../elements/Genealogie';
+import Chargement from '../elements/Chargement';
 
 /** Onglet "Afficher la famille de ..." */
 function OngletFamille() {
@@ -96,34 +97,32 @@ function Trombi() {
     const navigate = useNavigate();
     const [sousOnglet, setSousOnglet] = useState('famille');
  
-    const { data: listePromos = null } = useQuery({
+    const { data: listePromos, isPending } = useQuery({
         queryKey: ['listePromos'],
         queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
     });
  
+    if (isPending) return <Chargement/>
+
     return (
         <Container className="py-4">
             <h1>Trombinoscopes</h1>
  
             <Tabs defaultActiveKey="promotions" className="mb-3">
                 <Tab eventKey="promotions" title="Promotions">
-                    {listePromos === null ? (
-                        <p>Chargement...</p>
-                    ) : (
-                        <div className="member-grid">
-                            {listePromos.map((promo, index) => (
-                                <Card
-                                    onClick={() => navigate(`/trombi/get/${promo}`)}
-                                    key={index}
-                                    className="text-center trombi-card"
-                                >
-                                    <Card.Body>
-                                        <Card.Title>{promo}</Card.Title>
-                                    </Card.Body>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
+                    <div className="member-grid">
+                        {listePromos.map((promo, index) => (
+                            <Card
+                                onClick={() => navigate(`/trombi/get/${promo}`)}
+                                key={index}
+                                className="text-center trombi-card"
+                            >
+                                <Card.Body>
+                                    <Card.Title>{promo}</Card.Title>
+                                </Card.Body>
+                            </Card>
+                        ))}
+                    </div>
                 </Tab>
  
                 <Tab eventKey="recherche" title="Graphe">

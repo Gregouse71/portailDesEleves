@@ -5,12 +5,13 @@ import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import Chargement from "../../elements/Chargement";
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
 
-    const { data: donneesUtilisateur, isPending: isPendingUser } = useQuery({
+    const { data: donneesUtilisateur, isPending } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
     });
@@ -134,9 +135,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         return date.toISOString().split('T')[0];
     };
 
-    if (isPendingUser || !donneesUtilisateur) {
-        return <p>Chargement des informations...</p>
-    }
+    if (isPending) return <Chargement/>
 
     return (<>
         <div className="d-flex justify-content-between align-items-center mb-3">

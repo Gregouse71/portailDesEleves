@@ -4,12 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { obtenirQuestionsReponses, modifierQuestionsReponses } from "../../../api/api_utilisateurs";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import Chargement from "../../elements/Chargement";
 
 export default function TabQuestions({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
 
-    const { data: questionData = {}, isLoading } = useQuery({
+    const { data: questionData = {}, isPending } = useQuery({
         queryKey: ['questionsReponses', id],
         queryFn: () => obtenirQuestionsReponses(id),
     });
@@ -39,7 +40,7 @@ export default function TabQuestions({ id, autoriseAModifier }) {
         }
     });
 
-    if (isLoading) return <>Loading...</>
+    if (isPending) return <Chargement/>
 
     const displayData = isGestion ? questionsReponses : questionData;
 

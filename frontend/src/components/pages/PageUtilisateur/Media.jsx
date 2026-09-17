@@ -5,6 +5,7 @@ import { obtenirPhotosUtilisateur, changerPhotoUtilisateur, changerBanniereUtili
 import { Row, Col, Button, Card, Form } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
+import Chargement from "../../elements/Chargement";
 
 export default function TabMedia({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -12,12 +13,12 @@ export default function TabMedia({ id, autoriseAModifier }) {
     const [editingMediaId, setEditingMediaId] = useState(null);
     const [editingName, setEditingName] = useState("");
 
-    const { data: photos = [], isLoading } = useQuery({
+    const { data: photos = [], isPending } = useQuery({
         queryKey: ['photosUtilisateur', id],
         queryFn: () => obtenirPhotosUtilisateur({}, id),
     });
 
-    const { data: utilisateur } = useQuery({
+    const { data: utilisateur, isPending: isPending1 } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
     });
@@ -114,7 +115,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
         }
     })
 
-    if (isLoading) return <>Loading...</>
+    if (isPending || isPending1) return <Chargement/>
 
     return (<>
         <input

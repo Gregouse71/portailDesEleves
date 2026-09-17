@@ -10,6 +10,7 @@ import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { Card, Button, Form, Row, Col, Spinner } from "react-bootstrap";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import DropdownEditer from "../../elements/DropdownEditer";
+import Chargement from "../../elements/Chargement";
 
 const PER_PAGE = 20;
 
@@ -46,7 +47,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
     const queryClient = useQueryClient();
     const [isModifying, setIsModifying] = useState(isNew);
 
-    const { data: event, isLoading } = useQuery({
+    const { data: event, isPending } = useQuery({
         queryKey: ['event', id],
         queryFn: () => obteniEvenement({}, id),
         enabled: !isNew,
@@ -192,7 +193,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
         }
     }
 
-    if (isLoading) return <>Chargement...</>
+    if (isPending) return <Chargement/>
 
     return <Card>
         <Card.Body>
@@ -339,7 +340,7 @@ export default function AssoEvents({ asso_id, membreData }) {
     }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
 
-    if (isLoading) return <>Chargement...</>
+    if (isLoading) return <Chargement/>
 
     return <>
         <div className="d-flex justify-content-between align-items-center mb-3">

@@ -4,15 +4,18 @@ import { searchUsers } from '../../api/api_utilisateurs';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useQuery } from '@tanstack/react-query';
 import '../../assets/styles/search.scss';
+import Chargement from '../elements/Chargement';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q');
 
-  const { data: searchResults = [] } = useQuery({
+  const { data: searchResults, isPending } = useQuery({
     queryKey: ['searchResults', query],
     queryFn: () => searchUsers({ query }),
   });
+
+  if (isPending) return <Chargement/>
 
   return (
     <div className="search-results-container">

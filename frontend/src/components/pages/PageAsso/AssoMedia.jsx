@@ -5,6 +5,7 @@ import { Row, Col, Button, Card, Form, Image } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import { ajouterContenuAsso, changerPhotoAsso, supprimerPhotoAsso, renommerPhotoAsso, chargerAsso, chargerMandat, ajouterLienVideoAsso } from "../../../api/api_associations";
+import Chargement from "../../elements/Chargement";
 
 
 /**
@@ -16,7 +17,7 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
     const [editingMediaId, setEditingMediaId] = useState(null);
     const [editingName, setEditingName] = useState("");
 
-    const { data: mandat, isLoading } = useQuery({
+    const { data: mandat, isPending } = useQuery({
         queryKey: ['mandatAsso', mandat_id],
         queryFn: () => chargerMandat({}, mandat_id),
     });
@@ -110,7 +111,9 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
         }
     });
 
-    if (isLoading || !mandat) return (
+    if (isPending) return <Chargement/>
+
+    if (!mandat) return (
         <Card className="mb-4">
             <Card.Header></Card.Header>
         </Card>
