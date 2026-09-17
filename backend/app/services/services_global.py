@@ -1,4 +1,4 @@
-from app.models import GlobalVariable
+from app.models.models_global import GlobalVariable
 
 """
 Les variables globales du projet 

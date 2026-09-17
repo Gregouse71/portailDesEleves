@@ -56,9 +56,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
             await selectionnerFillots(id, selectedF.map(f => f.value));
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['donneesUtilisateur', id]);
             setIsGestion(false);
-        }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries(['donneesUtilisateur', id]);
+        },
     });
 
     const handleChange = (e) => {
