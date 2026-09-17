@@ -10,6 +10,7 @@ from app.utils.divers_utils import ph
 from app.utils.verification_format import verifier_chaine_mail, valider_chaine_texte, valider_chaine_date_naissance
 from ..utils.verification_format import valider_instruments
 from ..utils.verification_format import valider_langues
+from app.services.services_global import get_global_var
 
 
 import locale
@@ -271,6 +272,8 @@ class Utilisateur(db.Model, UserMixin) :
 
 
     def to_dict(self, victoires=False, defaites=False):
+        cache = get_global_var("mode_parrainage_actif") == "True" and not self.est_baptise
+        fake_dict = [{"id": -1, "nom_utilisateur": "?"}]
         return {
             "id": self.id,
             "nom_utilisateur": self.nom_utilisateur,
@@ -290,9 +293,9 @@ class Utilisateur(db.Model, UserMixin) :
             "sports": self.sports,
             "instruments": self.instruments if self.instruments is not None else [],
             "langues": self.langues if self.langues is not None else [],
-            "marrains": [{"id": marrain.id, "nom_utilisateur": f"{marrain.prenom} {marrain.nom}"} for marrain in self.marrains],
+            "marrains": [{"id": marrain.id, "nom_utilisateur": f"{marrain.prenom} {marrain.nom}"} for marrain in self.marrains] if not cache else fake_dict,
             "cos": [{"id": co.id, "nom_utilisateur": f"{co.prenom} {co.nom}"} for co in self.cos],
-            "fillots": [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in self.fillots],
+            "fillots": [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in self.fillots] if not cache else fake_dict,
             "vote_sondaj_du_jour": self.vote_sondaj_du_jour,
             "is_superuser": self.est_superutilisateur,
             "score_recent": self.score_recent,

@@ -16,15 +16,17 @@ with app.app_context():
     db.create_all()
     # initilaisation des variables globales
 
-    if GlobalVariable.query.filter_by(key="id_sondage_du_jour").first() is None:
-        id_sond_jour = GlobalVariable(key="id_sondage_du_jour", value=None)
-        db.session.add(id_sond_jour)
-    if GlobalVariable.query.filter_by(key="max_negatif_octo").first() is None:
-        max_negatif_octo = GlobalVariable(key="max_negatif_octo", value=None)
-        db.session.add(max_negatif_octo)
-    if GlobalVariable.query.filter_by(key="max_negatif_biero").first() is None:
-        max_negatif_biero = GlobalVariable(key="max_negatif_biero", value=None)
-        db.session.add(max_negatif_biero)
+    gloabl_vars = [
+        "id_sondage_du_jour",
+        "mode_parrainage_actif",
+        "max_negatif_octo",
+        "max_negatif_biero"
+    ]
+
+    for key in gloabl_vars:
+        if GlobalVariable.query.filter_by(key=key).first() is None:
+            db.session.add(GlobalVariable(key=key, value=None))
+
 
     db.session.commit()
 

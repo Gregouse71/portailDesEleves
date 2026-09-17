@@ -8,6 +8,7 @@ from flask_login import current_user
 from app.services.services_login import has_permission
 from app.models.models_associations import AssociationMandat
 from app.services.services_associations import is_admin_asso
+from app.services.services_global import get_global_var
 
 # a utiliser en plus de @login_required, on ne verifie pas ici l'authentification
 # le superutilisateur a tous les droits
@@ -104,5 +105,21 @@ def a_permission(*args1):
             if any([has_permission(current_user, perm) for perm in args1]):
                 return f(*args, **kwargs)
             abort(403)
+        return wrapper
+    return decorated_function
+
+def hors_mode_parrainage(baptise=False):
+    """
+    Vérifie que l'on est hors période de parrainge pour autoriser la fonction.
+    Si baptise est True, alors seuls les utilisateurs non baptisés sont bloqués
+    """
+    def decorated_function(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if get_global_var("mode_parrainage_actif") == "True"\
+                and not (baptise and current_user.is_authenticated and current_user.est_baptise):
+                return jsonify({"message": "Mode parrainage activé"}), 403
+            else :
+                return f(*args, **kwargs)
         return wrapper
     return decorated_function

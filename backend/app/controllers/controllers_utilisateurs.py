@@ -8,7 +8,7 @@ import io
 
 from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
-from app.utils.decorators import superutilisateur_required
+from app.utils.decorators import superutilisateur_required, hors_mode_parrainage
 from app.utils.divers_utils import get_embed_url
 from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, get_user_media, get_utilisateur, obtenir_famille, obtenir_chemin
 from app.services.services_media import upload_media, delete_media
@@ -417,6 +417,7 @@ def route_changer_co():
 
 @controllers_utilisateurs.route('/select_fillots', methods=["POST"])
 @login_required
+@hors_mode_parrainage()
 def route_selectionner_fillots():
     """
     Définit la liste de fillots pour un utilisateur donné.
@@ -459,6 +460,7 @@ def route_selectionner_fillots():
 
 @controllers_utilisateurs.route('/supprimer_fillots', methods=['DELETE'])
 @login_required
+@hors_mode_parrainage()
 def route_supprimer_fillots():
     """
     Supprime ses fillots. Ne renvoie pas d'erreur si l'utilisateur n'a pas de fillot. 
@@ -485,10 +487,11 @@ def route_get_anniv():
         return jsonify(ret), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
-    
+
 
 @controllers_utilisateurs.route('/changer_marrain', methods=["POST"])
 @login_required
+@hors_mode_parrainage()
 def route_changer_marrain():
     """
     Change ou supprime le marrain d'un fillot.
@@ -651,6 +654,7 @@ def modifier_ordre_assos(user_id: int):
 
 @controllers_utilisateurs.route('/famille/<int:id_utilisateur>', methods=['GET'])
 @login_required
+@hors_mode_parrainage(baptise=True)
 def famille_utilisateur(id_utilisateur):
     utilisateur = get_utilisateur(id_utilisateur)
     if utilisateur is None:
@@ -660,6 +664,7 @@ def famille_utilisateur(id_utilisateur):
  
 @controllers_utilisateurs.route('/chemin', methods=['GET'])
 @login_required
+@hors_mode_parrainage(baptise=True)
 def chemin_utilisateurs():
     id_depart = request.args.get("depart", type=int)
     id_arrivee = request.args.get("arrivee", type=int)
