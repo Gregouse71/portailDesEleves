@@ -424,10 +424,6 @@ def route_selectionner_fillots():
     if not user_id or fillots_id_list is None:
         return jsonify({"message": "user_id et fillots_ids requis"}), 400
 
-    # Authorization check
-    if not (current_user.id == user_id or current_user.est_superutilisateur):
-        return jsonify({"message": "Action non autorisée"}), 403
-
     marrain = Utilisateur.query.get(user_id)
     if not marrain:
         return jsonify({"message": "Utilisateur (marrain) non trouvé"}), 404
@@ -502,10 +498,6 @@ def route_changer_marrain():
     fillot = Utilisateur.query.get(fillot_id)
     if not fillot:
         return jsonify({"message": "Fillot non trouvé"}), 404
-
-    # Authorization check: only superuser or the fillot themselves can change marrain
-    if not (current_user.id == fillot_id or current_user.est_superutilisateur):
-        return jsonify({"message": "Action non autorisée"}), 403
 
     try:
         if marrain_id:
