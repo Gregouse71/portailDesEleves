@@ -16,8 +16,8 @@ export default function BlocSondage() {
         queryFn: obtenirSondageDuJour,
     });
     const { data: vpSondaj = false } = useQuery({
-        queryKey: ['permSondaj'],
-        queryFn: () => verifierPermission({}, "sondaj", userData.id),
+        queryKey: ['vp_sondaj'],
+        queryFn: () => verifierPermission({}, "vp_sondaj", userData.id),
     });
 
     const voterEtReload = async (id_vote) => {

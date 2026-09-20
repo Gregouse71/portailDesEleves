@@ -54,7 +54,7 @@ def route_voter_sondage(vote:int):
     
 @controllers_sondages.route('/route_valider_sondage/<int:id_sondage>', methods=['POST'])
 @login_required
-@a_permission("sondaj")
+@a_permission("vp_sondaj")
 def route_valider_sondage(id_sondage:int):
     """
     Permet a un vp sondaj de valider un sondage propose.
@@ -101,7 +101,7 @@ def route_proposer_sondage():
 # sera execute automatiquement chaque jour a minuit
 @controllers_sondages.route("/sondage_suivant", methods=["POST"])
 @login_required
-@a_permission("sondaj")
+@a_permission("vp_sondaj")
 def route_sondage_suivant() :
     try :
         sondage_suivant()
@@ -111,7 +111,7 @@ def route_sondage_suivant() :
 
 @controllers_sondages.route("/obtenir_sondages_en_attente", methods=["GET"])
 @login_required
-@a_permission("sondaj")
+@a_permission("vp_sondaj")
 def route_obtenir_sondages_en_attente() :
     try :
         sondages = obtenir_sondages_non_valide()

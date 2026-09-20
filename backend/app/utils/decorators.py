@@ -108,18 +108,16 @@ def a_permission(*args1):
         return wrapper
     return decorated_function
 
-def hors_mode_parrainage(baptise=False):
+def hors_mode_parrainage(f):
     """
     Vérifie que l'on est hors période de parrainge pour autoriser la fonction.
     Si baptise est True, alors seuls les utilisateurs non baptisés sont bloqués
     """
-    def decorated_function(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            if get_global_var("mode_parrainage_actif") == "True"\
-                and not (baptise and current_user.is_authenticated and current_user.est_baptise):
-                return jsonify({"message": "Mode parrainage activé"}), 403
-            else :
-                return f(*args, **kwargs)
-        return wrapper
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if get_global_var("mode_parrainage_actif") == "False"\
+            or (current_user.is_authenticated and (current_user.est_baptise or current_user.est_superutilisateur)):
+            return f(*args, **kwargs)
+        else:
+            return jsonify({"message": "Mode parrainage activé"}), 403
     return decorated_function

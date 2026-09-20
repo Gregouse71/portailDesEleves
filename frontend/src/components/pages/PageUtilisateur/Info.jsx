@@ -5,8 +5,11 @@ import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import { verifierPermission } from "../../../api/api_global";
+import { useProtected } from "../../../Protected";
 
 export default function TabInfo({ id, autoriseAModifier }) {
+    const  { userData } = useProtected();
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
 
@@ -14,6 +17,11 @@ export default function TabInfo({ id, autoriseAModifier }) {
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
     });
+    const { data: vpp } = useQuery({
+        queryKey: ['vpp'],
+        queryFn: () => verifierPermission({}, "vpp", userData.id),
+    });
+    console.log(vpp)
 
     const [selectedP, setSelectedP] = useState();
     const [selectedC, setSelectedC] = useState();
@@ -357,30 +365,32 @@ export default function TabInfo({ id, autoriseAModifier }) {
                         />
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Marrain</Form.Label>
-                    <Col sm="10">
-                        <Select
-                            options={options}
-                            value={selectedP}
-                            onChange={setSelectedP}
-                            isClearable
-                            classNamePrefix="react-select"
-                        />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Fillots</Form.Label>
-                    <Col sm="10">
-                        <Select
-                            isMulti
-                            options={options}
-                            value={selectedF}
-                            onChange={setSelectedF}
-                            classNamePrefix="react-select"
-                        />
-                    </Col>
-                </Form.Group>
+                {vpp && <>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Marrain</Form.Label>
+                        <Col sm="10">
+                            <Select
+                                options={options}
+                                value={selectedP}
+                                onChange={setSelectedP}
+                                isClearable
+                                classNamePrefix="react-select"
+                            />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Fillots</Form.Label>
+                        <Col sm="10">
+                            <Select
+                                isMulti
+                                options={options}
+                                value={selectedF}
+                                onChange={setSelectedF}
+                                classNamePrefix="react-select"
+                            />
+                        </Col>
+                    </Form.Group>
+                </>}
 
                 <div className="d-flex gap-2 mt-3">
                     <Button variant="success" onClick={() => mutation.mutate(userInfos)}>Valider</Button>
