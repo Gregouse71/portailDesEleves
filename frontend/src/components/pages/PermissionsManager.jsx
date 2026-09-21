@@ -8,10 +8,16 @@ import { PencilSquare, Person, Envelope, Mortarboard, JournalBookmark, Droplet, 
 
 const PER_PAGE = 15;
 
+const PERMISSIONS = [
+    "octo", "admin_octo",
+    "biero", "admin_biero",
+    "vpp", "vp_sondaj"
+]
+
 function UserRow({ user, onEdit }) {
     return (
         <tr>
-            <td><strong>@{user.nom_utilisateur}</strong></td>
+            <td><strong>{user.nom_utilisateur}</strong></td>
             <td>{user.prenom} {user.nom}</td>
             <td>{user.promotion}</td>
             <td>{user.cycle ? user.cycle.toUpperCase() : ""}</td>
@@ -195,24 +201,24 @@ export default function PermissionsManager() {
             <Table striped bordered hover responsive className="shadow-sm">
                 <thead className="table-dark">
                     <tr>
-                        <th style={{ width: '15%' }}>Pseudo</th>
-                        <th style={{ width: '20%' }}>Identité</th>
-                        <th style={{ width: '10%' }}>Promo</th>
-                        <th style={{ width: '10%' }}>Cycle</th>
+                        <th style={{ width: '15%' }}>Nom d'utilisateur</th>
+                        <th style={{ width: '20%' }}>Utilisateur</th>
+                        <th style={{ width: '5%' }}>Promo</th>
+                        <th style={{ width: '7%' }}>Cycle</th>
                         <th style={{ width: '15%' }}>Email</th>
-                        <th style={{ width: '5%' }}>Baptême</th>
-                        <th style={{ width: '15%' }}>Permissions</th>
+                        <th style={{ width: '5%' }}>Baptisé</th>
+                        <th style={{ width: '20%' }}>Permissions</th>
                         <th className="text-center" style={{ width: '10%' }}>Action</th>
                     </tr>
                     <tr className="bg-light align-middle">
                         <th>
-                            <Form.Control size="sm" name="pseudo" placeholder="Filtrer pseudo..." value={filters.pseudo} onChange={handleFilterChange} />
+                            <Form.Control size="sm" name="pseudo" placeholder="Filtrer ..." value={filters.pseudo} onChange={handleFilterChange} />
                         </th>
                         <th>
-                            <Form.Control size="sm" name="identite" placeholder="Filtrer identité..." value={filters.identite} onChange={handleFilterChange} />
+                            <Form.Control size="sm" name="identite" placeholder="Filtrer ..." value={filters.identite} onChange={handleFilterChange} />
                         </th>
                         <th>
-                            <Form.Control size="sm" name="promo" placeholder="Promo..." value={filters.promo} onChange={handleFilterChange} />
+                            <Form.Control size="sm" name="promo" placeholder="Promo ..." value={filters.promo} onChange={handleFilterChange} />
                         </th>
                         <th>
                             <Form.Select size="sm" name="cycle" value={filters.cycle} onChange={handleFilterChange}>
@@ -226,25 +232,22 @@ export default function PermissionsManager() {
                             </Form.Select>
                         </th>
                         <th>
-                            <Form.Control size="sm" name="email" placeholder="Filtrer email..." value={filters.email} onChange={handleFilterChange} />
+                            <Form.Control size="sm" name="email" placeholder="Filtrer ..." value={filters.email} onChange={handleFilterChange} />
                         </th>
                         <th>
                             <Form.Select size="sm" name="est_baptise" value={filters.est_baptise} onChange={handleFilterChange}>
                                 <option value="">Tous</option>
-                                <option value="true">True</option>
-                                <option value="false">False</option>
+                                <option value="true">Oui</option>
+                                <option value="false">Non</option>
                             </Form.Select>
                         </th>
                         <th>
                             <Form.Select size="sm" name="permission" value={filters.permission} onChange={handleFilterChange}>
-                                <option value="avec">Avec (Par défaut)</option>
+                                <option value="avec">Avec</option>
                                 <option value="">Toutes</option>
-                                <option value="admin_octo">admin_octo</option>
-                                <option value="admin_biero">admin_biero</option>
-                                <option value="admin_rezal">admin_rezal</option>
-                                <option value="octo">octo</option>
-                                <option value="biero">biero</option>
-                                <option value="admin_soifguard">admin_soifguard</option>
+                                {
+                                    PERMISSIONS.map((elt, ind) => <option key={ind} value={elt}>{elt}</option>)
+                                }
                             </Form.Select>
                         </th>
                         <th></th>
@@ -291,7 +294,7 @@ export default function PermissionsManager() {
                         </Row>
                         <Row className="mb-4">
                             <Col md={6}>
-                                <Form.Label>Pseudo</Form.Label>
+                                <Form.Label>Nom d'utilisateur</Form.Label>
                                 <InputGroup>
                                     <InputGroup.Text>@</InputGroup.Text>
                                     <Form.Control name="nom_utilisateur" value={editUser.nom_utilisateur || ""} onChange={handleEditChange} />
@@ -334,7 +337,7 @@ export default function PermissionsManager() {
                         
                         <Row className="mb-4">
                             <Col md={12}>
-                                <Form.Label>Baptême</Form.Label>
+                                <Form.Label>Baptisé</Form.Label>
                                 <InputGroup>
                                     <InputGroup.Text><Droplet /></InputGroup.Text>
                                     <Form.Select 
@@ -413,12 +416,9 @@ export default function PermissionsManager() {
                                 onChange={(e) => setNewPermission(e.target.value)}
                             >
                                 <option value="">Sélectionner une permission existante...</option>
-                                <option value="admin_octo">admin_octo</option>
-                                <option value="admin_biero">admin_biero</option>
-                                <option value="admin_rezal">admin_rezal</option>
-                                <option value="octo">octo</option>
-                                <option value="biero">biero</option>
-                                <option value="admin_soifguard">admin_soifguard</option>
+                                {
+                                    PERMISSIONS.map((elt, ind) => <option key={ind} value={elt}>{elt}</option>)
+                                }
                             </Form.Select>
                             <Button 
                                 variant="info" 

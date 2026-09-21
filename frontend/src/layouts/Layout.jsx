@@ -56,7 +56,7 @@ export function Layout() {
                         <BlocSondage />
                         <BlocSoldes />
                     </Col>
-                    <Col md={8} className="mb-3 order-1 order-md-2">
+                    <Col md={8} className="order-1 order-md-2">
                         <Outlet />
                     </Col>
                     <Col md={2} className="right order-3 order-md-3">

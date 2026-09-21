@@ -8,7 +8,7 @@ import io
 
 from app import db
 from app.utils.verification_format import valider_questions_du_portail, valider_chaine_texte
-from app.utils.decorators import superutilisateur_required
+from app.utils.decorators import superutilisateur_required, a_permission, hors_mode_parrainage
 from app.utils.divers_utils import get_embed_url
 from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, supprimer_fillots, changer_marrain, add_utilisateur, set_user_photo, set_user_banniere, get_user_media, get_utilisateur, obtenir_famille, obtenir_chemin
 from app.services.services_media import upload_media, delete_media
@@ -202,7 +202,7 @@ def questions_reponses(user_id: int):
 @login_required
 def set_user_infos(user_id: int):
     """
-    Renvoie ou modifie les réponses au questions du portail
+    Modifie les infos de la page d'un utilisateur
     """
     utilisateur = Utilisateur.query.get(user_id)
     if not utilisateur:
@@ -212,12 +212,6 @@ def set_user_infos(user_id: int):
         return jsonify({"message": "Pas le droit"}), 401
 
     data = request.get_json()
-    
-    # Securité pour le baptême : seul un admin peut le modifier
-    if "est_baptise" in data:
-        if current_user.est_superutilisateur:
-            utilisateur.est_baptise = bool(data["est_baptise"])
-        del data["est_baptise"]
 
     utilisateur.update(data)
     db.session.add(utilisateur)
@@ -417,6 +411,7 @@ def route_changer_co():
 
 @controllers_utilisateurs.route('/select_fillots', methods=["POST"])
 @login_required
+@a_permission("vpp")
 def route_selectionner_fillots():
     """
     Définit la liste de fillots pour un utilisateur donné.
@@ -428,10 +423,6 @@ def route_selectionner_fillots():
 
     if not user_id or fillots_id_list is None:
         return jsonify({"message": "user_id et fillots_ids requis"}), 400
-
-    # Authorization check
-    if not (current_user.id == user_id or current_user.est_superutilisateur):
-        return jsonify({"message": "Action non autorisée"}), 403
 
     marrain = Utilisateur.query.get(user_id)
     if not marrain:
@@ -446,34 +437,50 @@ def route_selectionner_fillots():
         return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
 
     try:
-        for f in fillots_list:
-            f.marrains = [marrain]
         marrain.fillots = fillots_list
         db.session.commit()
         return jsonify({"message": "Fillots mis à jour avec succès"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Erreur lors de la mise à jour des fillots : {str(e)}"}), 500
-# Ajouter un decorateur qui verifie si on a le droit de modifier sa genealogie (variable globale mise a True pendant le parrainnage)
 
 
-@controllers_utilisateurs.route('/supprimer_fillots', methods=['DELETE'])
+@controllers_utilisateurs.route('/select_marrains', methods=["POST"])
 @login_required
-def route_supprimer_fillots():
+@a_permission("vpp")
+def route_selectionner_marrains():
     """
-    Supprime ses fillots. Ne renvoie pas d'erreur si l'utilisateur n'a pas de fillot. 
-    Supprime donc en consequence le marrain des fillots concernes
-    Verifie avant de modifier le fillot que le lien etait bien comme il devait etre
-    Cette fonction ne doit etre utilisee qu'en cas d'erreur lors de l'attribution des fillots
+    Définit la liste de marrains pour un utilisateur donné.
+    Prend un JSON avec "user_id" et "marrains_id".
     """
+    data = request.get_json()
+    user_id = int(data.get('user_id'))
+    marrains_id_list = data.get('marrains_id')
+
+    if not user_id or marrains_id_list is None:
+        return jsonify({"message": "user_id et marrains_id requis"}), 400
+
+    fillot = Utilisateur.query.get(user_id)
+    if not fillot:
+        return jsonify({"message": "Utilisateur (fillot) non trouvé"}), 404
+
+    if not isinstance(marrains_id_list, list) or not all(isinstance(i, int) for i in marrains_id_list):
+        return jsonify({"message": "La liste d'IDs de marrains est invalide"}), 400
+
+    marrains_list = [Utilisateur.query.get(id_marrain) for id_marrain in marrains_id_list]
+
+    if None in marrains_list:
+        return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
+
     try:
-        supprimer_fillots(current_user)
-        return jsonify({"message": "Fillot(s) supprime(s) avec succes"}), 200
+        fillot.marrains = marrains_list
+        db.session.commit()
+        return jsonify({"message": "Marrains mis à jour avec succès"}), 200
     except Exception as e:
-        return jsonify({"message": f"Erreur lors de la suppression des fillots : {str(e)}"}), 500
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors de la mise à jour des marrains : {str(e)}"}), 500
 
 
-# Ajouter un decorateur qui verifie si on a le droit de modifier sa genealogie (variable globale mise a True pendant le parrainnage)
 @controllers_utilisateurs.route('/prochains_anniv', methods=['GET'])
 @login_required
 def route_get_anniv():
@@ -485,10 +492,11 @@ def route_get_anniv():
         return jsonify(ret), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
-    
+
 
 @controllers_utilisateurs.route('/changer_marrain', methods=["POST"])
 @login_required
+@a_permission("vpp")
 def route_changer_marrain():
     """
     Change ou supprime le marrain d'un fillot.
@@ -505,10 +513,6 @@ def route_changer_marrain():
     fillot = Utilisateur.query.get(fillot_id)
     if not fillot:
         return jsonify({"message": "Fillot non trouvé"}), 404
-
-    # Authorization check: only superuser or the fillot themselves can change marrain
-    if not (current_user.id == fillot_id or current_user.est_superutilisateur):
-        return jsonify({"message": "Action non autorisée"}), 403
 
     try:
         if marrain_id:
@@ -651,6 +655,7 @@ def modifier_ordre_assos(user_id: int):
 
 @controllers_utilisateurs.route('/famille/<int:id_utilisateur>', methods=['GET'])
 @login_required
+@hors_mode_parrainage
 def famille_utilisateur(id_utilisateur):
     utilisateur = get_utilisateur(id_utilisateur)
     if utilisateur is None:
@@ -660,6 +665,7 @@ def famille_utilisateur(id_utilisateur):
  
 @controllers_utilisateurs.route('/chemin', methods=['GET'])
 @login_required
+@hors_mode_parrainage
 def chemin_utilisateurs():
     id_depart = request.args.get("depart", type=int)
     id_arrivee = request.args.get("arrivee", type=int)

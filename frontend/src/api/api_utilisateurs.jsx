@@ -153,14 +153,14 @@ export async function selectionnerFillots(user_id, fillots_ids) {
   return handleResponse(response);
 }
 
-export async function changerMarrain(marrain_id, fillot_id) {
-  const response = await fetch(`${API_BASE_URL}/users/changer_marrain`, {
+export async function selectionnerMarrains(user_id, marrains_id) {
+  const response = await fetch(`${API_BASE_URL}/users/select_marrains`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ marrain_id: marrain_id, fillot_id: fillot_id }),
+    body: JSON.stringify({ user_id: user_id, marrains_id: marrains_id }),
   });
   return handleResponse(response);
 }

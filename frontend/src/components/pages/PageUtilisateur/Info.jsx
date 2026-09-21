@@ -2,17 +2,25 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Select from "react-select";
 import { Link } from "react-router-dom";
-import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
+import { chargerUtilisateurs, modifierInfos, obtenirDataUser, selectionnerFillots, changerCo, selectionnerMarrains } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
+import { verifierPermission } from "../../../api/api_global";
+import { useProtected } from "../../../Protected";
 
 export default function TabInfo({ id, autoriseAModifier }) {
+    const { userData } = useProtected();
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
+    const [isGestionLignee, setIsGestionLignee] = useState(false);
 
     const { data: donneesUtilisateur, isPending: isPendingUser } = useQuery({
         queryKey: ['donneesUtilisateur', id],
         queryFn: () => obtenirDataUser(id),
+    });
+    const { data: vpp } = useQuery({
+        queryKey: ['vpp'],
+        queryFn: () => verifierPermission({}, "vpp", userData.id),
     });
 
     const [selectedP, setSelectedP] = useState();
@@ -49,16 +57,28 @@ export default function TabInfo({ id, autoriseAModifier }) {
 
             const newCoIds = selectedC.map(c => c.value);
             await changerCo(id, newCoIds);
+        },
+        onSuccess: () => {
+            setIsGestion(false);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries(['donneesUtilisateur', id]);
+        },
+    });
 
-            const newMarrainId = selectedP?.value ?? null;
-            if (marrain?.id !== newMarrainId) await changerMarrain(newMarrainId, id);
+    const mutationLignee = useMutation({
+        mutationFn: async (updatedInfos) => {
+            const { marrain } = updatedInfos;
 
+            await selectionnerMarrains(id, selectedP.map(f => f.value));
             await selectionnerFillots(id, selectedF.map(f => f.value));
         },
         onSuccess: () => {
+            setIsGestionLignee(false);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries(['donneesUtilisateur', id]);
-            setIsGestion(false);
-        }
+        },
     });
 
     const handleChange = (e) => {
@@ -99,12 +119,6 @@ export default function TabInfo({ id, autoriseAModifier }) {
         setInstruments(donneesUtilisateur.instruments || []);
         setLangues(donneesUtilisateur.langues || []);
         setSelectedC(donneesUtilisateur.cos?.map(c => ({ value: c.id, label: c.nom_utilisateur })) || []);
-        setSelectedP(
-            donneesUtilisateur.marrains && donneesUtilisateur.marrains.length > 0
-                ? { value: donneesUtilisateur.marrains[0].id, label: donneesUtilisateur.marrains[0].nom_utilisateur }
-                : null
-        );
-        setSelectedF(donneesUtilisateur.fillots?.map(f => ({ value: f.id, label: f.nom_utilisateur })) || []);
         setIsGestion(false);
     };
 
@@ -112,13 +126,27 @@ export default function TabInfo({ id, autoriseAModifier }) {
         if (isGestion) {
             handleCancel();
         } else {
-            setSelectedP({ value: donneesUtilisateur?.marrains[0]?.id, label: donneesUtilisateur?.marrains[0]?.nom_utilisateur });
             setSelectedC(donneesUtilisateur?.cos.map(c => ({ value: c.id, label: c.nom_utilisateur })));
-            setSelectedF(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })))
             setUserInfos(donneesUtilisateur);
             setInstruments(donneesUtilisateur?.instruments);
             setLangues(donneesUtilisateur?.langues);
             setIsGestion(true);
+        }
+    };
+
+    const handleCancelLignee = () => {
+        setSelectedP(donneesUtilisateur?.marrains.map(f => ({ value: f.id, label: f.nom_utilisateur })));
+        setSelectedF(donneesUtilisateur.fillots?.map(f => ({ value: f.id, label: f.nom_utilisateur })) || []);
+        setIsGestionLignee(false);
+    };
+
+    const toggleGestionLignee = () => {
+        if (isGestionLignee) {
+            handleCancelLignee();
+        } else {
+            setSelectedP(donneesUtilisateur?.marrains.map(f => ({ value: f.id, label: f.nom_utilisateur })));
+            setSelectedF(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
+            setIsGestionLignee(true);
         }
     };
 
@@ -142,8 +170,9 @@ export default function TabInfo({ id, autoriseAModifier }) {
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Informations</h2>
             <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                {autoriseAModifier && <DropdownEditer list={[
-                    { can: true, onClick: toggleGestion, name: "Modifier" },
+                {(autoriseAModifier || vpp) && <DropdownEditer list={[
+                    { can: autoriseAModifier, onClick: toggleGestion, name: "Modifier" },
+                    { can: vpp, onClick: toggleGestionLignee, name: "Modifier la lignée" },
                 ]}
                 />}
             </div>
@@ -178,7 +207,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
             </Col>
         </Row>
 
-        {!isGestion ?
+        {!(isGestion || isGestionLignee) ?
             <div className="list-question">
                 <div><b>Promo :</b> {donneesUtilisateur.cycle !== "ic" && donneesUtilisateur.cycle}{donneesUtilisateur.promotion}</div>
                 <div><b>Date de naissance :</b> {formaterDate(donneesUtilisateur.date_de_naissance)}</div>
@@ -242,147 +271,153 @@ export default function TabInfo({ id, autoriseAModifier }) {
             </div>
             :
             <Form>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Surnom</Form.Label>
-                    <Col sm="10">
-                        <Form.Control type="text" name="surnom" value={userInfos.surnom} onChange={handleChange} />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Pronoms</Form.Label>
-                    <Col sm="10">
-                        <Form.Control type="text" name="pronoms" value={userInfos.pronoms} onChange={handleChange} />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Promo</Form.Label>
-                    <Col sm="10">
-                        <Form.Control value={userInfos.promotion} disabled />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Date de naissance</Form.Label>
-                    <Col sm="10">
-                        <Form.Control
-                            type="date"
-                            name="date_de_naissance"
-                            value={formaterDateForInput(userInfos.date_de_naissance)}
-                            onChange={handleChange}
-                        />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Ville d&apos;origine</Form.Label>
-                    <Col sm="10">
-                        <Form.Control type="text" name="ville_origine" value={userInfos.ville_origine} onChange={handleChange} />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Chambre</Form.Label>
-                    <Col sm="10">
-                        <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={handleChange} />
-                    </Col>
-                </Form.Group>
+                {isGestion && <>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Surnom</Form.Label>
+                        <Col sm="10">
+                            <Form.Control type="text" name="surnom" value={userInfos.surnom} onChange={handleChange} />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Pronoms</Form.Label>
+                        <Col sm="10">
+                            <Form.Control type="text" name="pronoms" value={userInfos.pronoms} onChange={handleChange} />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Promo</Form.Label>
+                        <Col sm="10">
+                            <Form.Control value={userInfos.promotion} disabled />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Date de naissance</Form.Label>
+                        <Col sm="10">
+                            <Form.Control
+                                type="date"
+                                name="date_de_naissance"
+                                value={formaterDateForInput(userInfos.date_de_naissance)}
+                                onChange={handleChange}
+                            />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Ville d&apos;origine</Form.Label>
+                        <Col sm="10">
+                            <Form.Control type="text" name="ville_origine" value={userInfos.ville_origine} onChange={handleChange} />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Chambre</Form.Label>
+                        <Col sm="10">
+                            <Form.Control type="text" name="chambre" value={userInfos.chambre} onChange={handleChange} />
+                        </Col>
+                    </Form.Group>
 
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Instruments</Form.Label>
-                    <Col sm="10">
-                        {instruments && instruments.map((elt, ind) => (
-                            <Row key={ind} className="mb-2 align-items-center">
-                                <Col>
-                                    <Form.Control
-                                        value={elt.name}
-                                        onChange={(e) => handleInstruChange(ind, 'name', e.target.value)}
-                                        placeholder="Instrument"
-                                    />
-                                </Col>
-                                <Col>
-                                    <Form.Control
-                                        value={elt.niveau}
-                                        onChange={(e) => handleInstruChange(ind, 'niveau', e.target.value)}
-                                        placeholder="Niveau (ex: Débutant)"
-                                    />
-                                </Col>
-                                <Col xs="auto">
-                                    <Button variant="danger" onClick={() => supprimerInstru(ind)}>
-                                        <img src="/assets/icons/delete.svg" alt="Supprimer" />
-                                    </Button>
-                                </Col>
-                            </Row>
-                        ))}
-                        <Button variant="outline-primary" size="sm" onClick={ajouterInstru}>Ajouter instrument</Button>
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Langues</Form.Label>
-                    <Col sm="10">
-                        {langues && langues.map((elt, ind) => (
-                            <Row key={ind} className="mb-2 align-items-center">
-                                <Col>
-                                    <Form.Control
-                                        value={elt.name}
-                                        onChange={(e) => handleLangueChange(ind, 'name', e.target.value)}
-                                        placeholder="Langue"
-                                    />
-                                </Col>
-                                <Col>
-                                    <Form.Control
-                                        value={elt.niveau}
-                                        onChange={(e) => handleLangueChange(ind, 'niveau', e.target.value)}
-                                        placeholder="Niveau (ex: Débutant)"
-                                    />
-                                </Col>
-                                <Col xs="auto">
-                                    <Button variant="danger" onClick={() => supprimerLangue(ind)}>
-                                        <img src="/assets/icons/delete.svg" alt="Supprimer" />
-                                    </Button>
-                                </Col>
-                            </Row>
-                        ))}
-                        <Button variant="outline-primary" size="sm" onClick={ajouterLangue}>Ajouter langue</Button>
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Co</Form.Label>
-                    <Col sm="10">
-                        <Select
-                            isMulti
-                            options={options}
-                            value={selectedC}
-                            onChange={setSelectedC}
-                            isClearable
-                            classNamePrefix="react-select"
-                        />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Marrain</Form.Label>
-                    <Col sm="10">
-                        <Select
-                            options={options}
-                            value={selectedP}
-                            onChange={setSelectedP}
-                            isClearable
-                            classNamePrefix="react-select"
-                        />
-                    </Col>
-                </Form.Group>
-                <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">Fillots</Form.Label>
-                    <Col sm="10">
-                        <Select
-                            isMulti
-                            options={options}
-                            value={selectedF}
-                            onChange={setSelectedF}
-                            classNamePrefix="react-select"
-                        />
-                    </Col>
-                </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Instruments</Form.Label>
+                        <Col sm="10">
+                            {instruments && instruments.map((elt, ind) => (
+                                <Row key={ind} className="mb-2 align-items-center">
+                                    <Col>
+                                        <Form.Control
+                                            value={elt.name}
+                                            onChange={(e) => handleInstruChange(ind, 'name', e.target.value)}
+                                            placeholder="Instrument"
+                                        />
+                                    </Col>
+                                    <Col>
+                                        <Form.Control
+                                            value={elt.niveau}
+                                            onChange={(e) => handleInstruChange(ind, 'niveau', e.target.value)}
+                                            placeholder="Niveau (ex: Débutant)"
+                                        />
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Button variant="danger" onClick={() => supprimerInstru(ind)}>
+                                            <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            ))}
+                            <Button variant="outline-primary" size="sm" onClick={ajouterInstru}>Ajouter instrument</Button>
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Langues</Form.Label>
+                        <Col sm="10">
+                            {langues && langues.map((elt, ind) => (
+                                <Row key={ind} className="mb-2 align-items-center">
+                                    <Col>
+                                        <Form.Control
+                                            value={elt.name}
+                                            onChange={(e) => handleLangueChange(ind, 'name', e.target.value)}
+                                            placeholder="Langue"
+                                        />
+                                    </Col>
+                                    <Col>
+                                        <Form.Control
+                                            value={elt.niveau}
+                                            onChange={(e) => handleLangueChange(ind, 'niveau', e.target.value)}
+                                            placeholder="Niveau (ex: Débutant)"
+                                        />
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Button variant="danger" onClick={() => supprimerLangue(ind)}>
+                                            <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            ))}
+                            <Button variant="outline-primary" size="sm" onClick={ajouterLangue}>Ajouter langue</Button>
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Co</Form.Label>
+                        <Col sm="10">
+                            <Select
+                                isMulti
+                                options={options}
+                                value={selectedC}
+                                onChange={setSelectedC}
+                                isClearable
+                                classNamePrefix="react-select"
+                            />
+                        </Col>
+                    </Form.Group>
+                </>}
+                {isGestionLignee && <>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Marrain</Form.Label>
+                        <Col sm="10">
+                            <Select
+                                isMulti
+                                options={options}
+                                value={selectedP}
+                                onChange={setSelectedP}
+                                isClearable
+                                classNamePrefix="react-select"
+                            />
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-3">
+                        <Form.Label column sm="2">Fillots</Form.Label>
+                        <Col sm="10">
+                            <Select
+                                isMulti
+                                options={options}
+                                value={selectedF}
+                                onChange={setSelectedF}
+                                isClearable
+                                classNamePrefix="react-select"
+                            />
+                        </Col>
+                    </Form.Group>
+                </>}
 
                 <div className="d-flex gap-2 mt-3">
-                    <Button variant="success" onClick={() => mutation.mutate(userInfos)}>Valider</Button>
-                    <Button variant="danger" onClick={handleCancel}>Annuler</Button>
+                    <Button variant="success" onClick={() => {isGestion && mutation.mutate(userInfos); isGestionLignee && mutationLignee.mutate(userInfos)}}>Valider</Button>
+                    <Button variant="danger" onClick={() => {isGestion && handleCancel(); isGestionLignee && handleCancelLignee()}}>Annuler</Button>
                 </div>
             </Form>
         }
