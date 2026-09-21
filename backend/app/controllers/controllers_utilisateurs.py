@@ -411,6 +411,7 @@ def route_changer_co():
 
 @controllers_utilisateurs.route('/select_fillots', methods=["POST"])
 @login_required
+@hors_mode_parrainage
 @a_permission("vpp")
 def route_selectionner_fillots():
     """
@@ -447,6 +448,7 @@ def route_selectionner_fillots():
 
 @controllers_utilisateurs.route('/select_marrains', methods=["POST"])
 @login_required
+@hors_mode_parrainage
 @a_permission("vpp")
 def route_selectionner_marrains():
     """
@@ -493,41 +495,6 @@ def route_get_anniv():
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
 
-
-@controllers_utilisateurs.route('/changer_marrain', methods=["POST"])
-@login_required
-@a_permission("vpp")
-def route_changer_marrain():
-    """
-    Change ou supprime le marrain d'un fillot.
-    Prend un JSON avec "fillot_id" et optionnellement "marrain_id".
-    Si "marrain_id" est null ou absent, le marrain est supprimé.
-    """
-    data = request.get_json()
-    fillot_id = int(data.get('fillot_id'))
-    marrain_id = data.get('marrain_id') # Can be null
-
-    if not fillot_id:
-        return jsonify({"message": "fillot_id requis"}), 400
-
-    fillot = Utilisateur.query.get(fillot_id)
-    if not fillot:
-        return jsonify({"message": "Fillot non trouvé"}), 404
-
-    try:
-        if marrain_id:
-            marrain = Utilisateur.query.get(marrain_id)
-            if not marrain:
-                return jsonify({"message": "Marrain non trouvé"}), 404
-            changer_marrain(marrain, fillot)
-        else:
-            # Remove marrain
-            fillot.marrains = []
-            db.session.commit()
-        return jsonify({"message": "Marrain mis à jour avec succès"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"message": f"Erreur lors du changement de marrain : {str(e)}"}), 500
 
 @controllers_utilisateurs.route('/add_utilisateur', methods=['POST'])
 @superutilisateur_required

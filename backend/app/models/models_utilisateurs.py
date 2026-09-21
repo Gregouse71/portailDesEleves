@@ -1,7 +1,8 @@
 from app import db
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from flask_login import UserMixin # pour faire le lien entre la class utilisateur et flask_login
+from flask_login import UserMixin, current_user # pour faire le lien entre la class utilisateur et flask_login
 from datetime import date, datetime, timedelta
+import random
 
 # verification du format des donnees :
 from app.models.models_media import ElementMedia
@@ -272,8 +273,18 @@ class Utilisateur(db.Model, UserMixin) :
 
 
     def to_dict(self, victoires=False, defaites=False):
-        cache = get_global_var("mode_parrainage_actif") == "True" and not self.est_baptise
-        fake_dict = [{"id": -1, "nom_utilisateur": "?"}]
+        if get_global_var("mode_parrainage_actif") == "True" and not current_user.est_baptise:
+            # En mode parrainage, les non-baptisés voient des marrains aléatoires
+            # mais dans un promo cohérente
+            offset = 1 if self.cycle in ["ic", "isup"] else 3 if self.cycle == "vs" else 0
+            list_marrains = utilisateur_aleatoires(str(int(self.promotion) - offset), self.cycle)
+            list_fillots = utilisateur_aleatoires(str(int(self.promotion) + offset), self.cycle)
+        else:
+            list_marrains = self.marrains
+            list_fillots = self.fillots
+        marrains = [{"id": marrain.id, "nom_utilisateur": f"{marrain.prenom} {marrain.nom}"} for marrain in list_marrains]
+        fillots = [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in list_fillots]
+
         return {
             "id": self.id,
             "nom_utilisateur": self.nom_utilisateur,
@@ -293,9 +304,9 @@ class Utilisateur(db.Model, UserMixin) :
             "sports": self.sports,
             "instruments": self.instruments if self.instruments is not None else [],
             "langues": self.langues if self.langues is not None else [],
-            "marrains": [{"id": marrain.id, "nom_utilisateur": f"{marrain.prenom} {marrain.nom}"} for marrain in self.marrains] if not cache else fake_dict,
+            "marrains": marrains,
+            "fillots": fillots,
             "cos": [{"id": co.id, "nom_utilisateur": f"{co.prenom} {co.nom}"} for co in self.cos],
-            "fillots": [{"id": fillot.id, "nom_utilisateur": f"{fillot.prenom} {fillot.nom}"} for fillot in self.fillots] if not cache else fake_dict,
             "vote_sondaj_du_jour": self.vote_sondaj_du_jour,
             "is_superuser": self.est_superutilisateur,
             "score_recent": self.score_recent,
@@ -320,3 +331,16 @@ class Utilisateur(db.Model, UserMixin) :
         if self.banniere_id is None:
             return 'utilisateurs/minesvert.jpg'
         return ElementMedia.query.get(self.banniere_id).file_path
+
+
+def utilisateur_aleatoires(promo: str, cycle: str):
+    """Renvoie 1 ou 2 utilisateurs du cycle et de la promo demandée"""
+    nb = 1 if random.random() < 0.93 else 2
+    try:
+        us = random.choices(
+            Utilisateur.query.filter_by(promotion=promo, cycle=cycle).all(),
+            k=nb
+        )
+    except IndexError:
+        us = []
+    return us
