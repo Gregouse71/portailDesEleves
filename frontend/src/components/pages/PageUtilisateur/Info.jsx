@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Select from "react-select";
 import { Link } from "react-router-dom";
-import { chargerUtilisateurs, modifierInfos, obtenirDataUser, changerMarrain, selectionnerFillots, changerCo } from "../../../api/api_utilisateurs";
+import { chargerUtilisateurs, modifierInfos, obtenirDataUser, selectionnerFillots, changerCo, selectionnerMarrains } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { verifierPermission } from "../../../api/api_global";
@@ -70,9 +70,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         mutationFn: async (updatedInfos) => {
             const { marrain } = updatedInfos;
 
-            const newMarrainId = selectedP?.value ?? null;
-            if (marrain?.id !== newMarrainId) await changerMarrain(newMarrainId, id);
-
+            await selectionnerMarrains(id, selectedP.map(f => f.value));
             await selectionnerFillots(id, selectedF.map(f => f.value));
         },
         onSuccess: () => {
@@ -121,12 +119,6 @@ export default function TabInfo({ id, autoriseAModifier }) {
         setInstruments(donneesUtilisateur.instruments || []);
         setLangues(donneesUtilisateur.langues || []);
         setSelectedC(donneesUtilisateur.cos?.map(c => ({ value: c.id, label: c.nom_utilisateur })) || []);
-        setSelectedP(
-            donneesUtilisateur.marrains && donneesUtilisateur.marrains.length > 0
-                ? { value: donneesUtilisateur.marrains[0].id, label: donneesUtilisateur.marrains[0].nom_utilisateur }
-                : null
-        );
-        setSelectedF(donneesUtilisateur.fillots?.map(f => ({ value: f.id, label: f.nom_utilisateur })) || []);
         setIsGestion(false);
     };
 
@@ -143,11 +135,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     const handleCancelLignee = () => {
-        setSelectedP(
-            donneesUtilisateur.marrains && donneesUtilisateur.marrains.length > 0
-                ? { value: donneesUtilisateur.marrains[0].id, label: donneesUtilisateur.marrains[0].nom_utilisateur }
-                : null
-        );
+        setSelectedP(donneesUtilisateur?.marrains.map(f => ({ value: f.id, label: f.nom_utilisateur })));
         setSelectedF(donneesUtilisateur.fillots?.map(f => ({ value: f.id, label: f.nom_utilisateur })) || []);
         setIsGestionLignee(false);
     };
@@ -156,7 +144,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
         if (isGestionLignee) {
             handleCancelLignee();
         } else {
-            setSelectedP({ value: donneesUtilisateur?.marrains[0]?.id, label: donneesUtilisateur?.marrains[0]?.nom_utilisateur });
+            setSelectedP(donneesUtilisateur?.marrains.map(f => ({ value: f.id, label: f.nom_utilisateur })));
             setSelectedF(donneesUtilisateur?.fillots.map(f => ({ value: f.id, label: f.nom_utilisateur })));
             setIsGestionLignee(true);
         }
@@ -403,6 +391,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                         <Form.Label column sm="2">Marrain</Form.Label>
                         <Col sm="10">
                             <Select
+                                isMulti
                                 options={options}
                                 value={selectedP}
                                 onChange={setSelectedP}
@@ -419,6 +408,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                                 options={options}
                                 value={selectedF}
                                 onChange={setSelectedF}
+                                isClearable
                                 classNamePrefix="react-select"
                             />
                         </Col>

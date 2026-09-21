@@ -437,35 +437,50 @@ def route_selectionner_fillots():
         return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
 
     try:
-        for f in fillots_list:
-            f.marrains = [marrain]
         marrain.fillots = fillots_list
         db.session.commit()
         return jsonify({"message": "Fillots mis à jour avec succès"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Erreur lors de la mise à jour des fillots : {str(e)}"}), 500
-# Ajouter un decorateur qui verifie si on a le droit de modifier sa genealogie (variable globale mise a True pendant le parrainnage)
 
 
-@controllers_utilisateurs.route('/supprimer_fillots', methods=['DELETE'])
+@controllers_utilisateurs.route('/select_marrains', methods=["POST"])
 @login_required
 @a_permission("vpp")
-def route_supprimer_fillots():
+def route_selectionner_marrains():
     """
-    Supprime ses fillots. Ne renvoie pas d'erreur si l'utilisateur n'a pas de fillot. 
-    Supprime donc en consequence le marrain des fillots concernes
-    Verifie avant de modifier le fillot que le lien etait bien comme il devait etre
-    Cette fonction ne doit etre utilisee qu'en cas d'erreur lors de l'attribution des fillots
+    Définit la liste de marrains pour un utilisateur donné.
+    Prend un JSON avec "user_id" et "marrains_id".
     """
+    data = request.get_json()
+    user_id = int(data.get('user_id'))
+    marrains_id_list = data.get('marrains_id')
+
+    if not user_id or marrains_id_list is None:
+        return jsonify({"message": "user_id et marrains_id requis"}), 400
+
+    fillot = Utilisateur.query.get(user_id)
+    if not fillot:
+        return jsonify({"message": "Utilisateur (fillot) non trouvé"}), 404
+
+    if not isinstance(marrains_id_list, list) or not all(isinstance(i, int) for i in marrains_id_list):
+        return jsonify({"message": "La liste d'IDs de marrains est invalide"}), 400
+
+    marrains_list = [Utilisateur.query.get(id_marrain) for id_marrain in marrains_id_list]
+
+    if None in marrains_list:
+        return jsonify({"message": "Un ou plusieurs IDs de fillots sont invalides"}), 404
+
     try:
-        supprimer_fillots(current_user)
-        return jsonify({"message": "Fillot(s) supprime(s) avec succes"}), 200
+        fillot.marrains = marrains_list
+        db.session.commit()
+        return jsonify({"message": "Marrains mis à jour avec succès"}), 200
     except Exception as e:
-        return jsonify({"message": f"Erreur lors de la suppression des fillots : {str(e)}"}), 500
+        db.session.rollback()
+        return jsonify({"message": f"Erreur lors de la mise à jour des marrains : {str(e)}"}), 500
 
 
-# Ajouter un decorateur qui verifie si on a le droit de modifier sa genealogie (variable globale mise a True pendant le parrainnage)
 @controllers_utilisateurs.route('/prochains_anniv', methods=['GET'])
 @login_required
 def route_get_anniv():
