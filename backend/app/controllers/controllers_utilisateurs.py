@@ -43,7 +43,7 @@ def obtenir_liste_utilisateurs(promo: str, cycles: str):
     ).order_by(Utilisateur.nom).all()
     # Conversion en JSON
     cycle = {"ic": 1, "isup": 2, "ast": 3, "vs": 4}
-    liste_utilisateurs = [u.to_dict() for u in utilisateurs]
+    liste_utilisateurs = [u.to_small_dict() for u in utilisateurs]
     return jsonify(sorted(liste_utilisateurs, key=lambda x: cycle[x["cycle"]] if x["cycle"] in cycle else 10)), 200
 
 
@@ -69,20 +69,7 @@ def charger_utilisateurs(promo: int):
     else:
         utilisateurs = Utilisateur.query.all()
 
-    liste_utilisateurs = [
-        {
-            "id": utilisateur.id,
-            "nom_utilisateur": utilisateur.nom_utilisateur,
-            "prenom": utilisateur.prenom,
-            "nom": utilisateur.nom,
-            "promotion": utilisateur.promotion,
-            "solde_octo": utilisateur.solde_octo,
-            "solde_biero": utilisateur.solde_biero
-        }
-        for utilisateur in utilisateurs
-    ]
-
-    return jsonify(liste_utilisateurs), 200
+    return jsonify([u.to_small_dict() for u in utilisateurs]), 200
 
 
 # routes API :

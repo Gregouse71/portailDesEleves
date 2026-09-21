@@ -8,7 +8,6 @@ import UserCard from "./UserCard";
 import DropdownEditer from "./DropdownEditer";
 import ConfirmationModal from "./ConfirmationModal"
 import Autocomplete from "./Autocompletion";
-import { chargerUtilisateurs, obtenirListeDesPromos } from "../../api/api_utilisateurs";
 
 export default function AssoMandat({ id, asso, membreData }) {
     const queryClient = useQueryClient();
@@ -31,11 +30,6 @@ export default function AssoMandat({ id, asso, membreData }) {
         queryKey: ['mandatAsso', id],
         queryFn: () => chargerMandat({}, id)
     })
-
-    const { data: listePromos = [] } = useQuery({
-        queryKey: ['listePromos'],
-        queryFn: () => obtenirListeDesPromos().then(r => r.filter(p => p !== null).sort((a, b) => b.localeCompare(a))),
-    });
 
     const isMembreOfThisMandat = Boolean(mandat && membreData.user_mandats && membreData.user_mandats.includes(mandat.id));
     const canModifyThisMandat = Boolean(membreData.autorise || isMembreOfThisMandat);

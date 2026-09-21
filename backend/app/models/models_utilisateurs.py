@@ -321,6 +321,16 @@ class Utilisateur(db.Model, UserMixin) :
             "permissions": [{"id": p.id, "permission": p.permission} for p in self.permissions],
             "cotisations": [c.to_dict() for c in AssociationCotisationUtilisateur.query.filter_by(utilisateur_id=self.id)]
         }
+    
+    def to_small_dict(self):
+        return {
+            "id": self.id,
+            "nom_utilisateur": self.nom_utilisateur,
+            "prenom": self.prenom,
+            "nom": self.nom,
+            "photo": self.get_photo_file(),
+            "cycle": self.cycle
+        }
 
     def get_photo_file(self):
         if self.photo_id is None:

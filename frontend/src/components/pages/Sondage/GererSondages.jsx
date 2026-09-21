@@ -1,6 +1,6 @@
 import { useProtected } from '../../../Protected';
 import { obtenirSondagesEnAttente, validerSondage, supprimerSondage, sondageSuivant } from '../../../api/api_sondages';
-import { chargerUtilisateurs, obtenirDataUser } from '../../../api/api_utilisateurs';
+import { obtenirDataUser } from '../../../api/api_utilisateurs';
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Button, Spinner, Card, ListGroup } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
