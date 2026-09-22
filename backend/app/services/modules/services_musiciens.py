@@ -1,21 +1,12 @@
 # app/services/modules/services_musiciens.py
 from app import db
 from app.models.models_utilisateurs import Utilisateur
-from app.models.models_associations import Association
 
 
-def get_musiciens_for_association(association_id: int, instrument: str = None, search: str = None, niveau: str = None):
+def get_musiciens(instrument: str = None, search: str = None, niveau: str = None):
     """
-    Récupère la liste des utilisateurs jouant d'un instrument pour une association.
-    Vérifie que l'association a bien le module 'Musiciens' activé.
+    Récupère la liste des utilisateurs jouant d'un instrument.
     """
-    asso = Association.query.get(association_id)
-    if not asso:
-        return None, "Association non trouvée", 404
-
-    if not asso.modules or 'Musiciens' not in asso.modules:
-        return None, "Le module Musiciens n'est pas activé pour cette association", 403
-
     # Récupérer les utilisateurs visibles ayant des instruments
     users = Utilisateur.query.filter(
         Utilisateur.est_visible.is_(True),

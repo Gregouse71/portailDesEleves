@@ -19,13 +19,13 @@ function normalizeString(str) {
         .trim();
 }
 
-export default function AssoMusiciens({ asso_id }) {
+export default function AssoMusiciens() {
     const [instrumentFilter, setInstrumentFilter] = useState("");
     const [sortBy, setSortBy] = useState("promo-desc");
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ["assoMusiciens", asso_id],
-        queryFn: () => getMusiciens(asso_id),
+        queryKey: ["musiciens"],
+        queryFn: () => getMusiciens(),
     });
 
     const musiciens = data?.musiciens || [];
@@ -157,21 +157,21 @@ export default function AssoMusiciens({ asso_id }) {
                                 </div>
 
                                 <div>
-                                    <p className="mb-0 fw-bold">
+                                    <p className="mb-0">
                                         {user.prenom} {user.nom}{" "}
-                                        <em className="text-muted small">
+                                        <span className="text-muted">
                                             {user.cycle}
                                             {user.promotion}
-                                        </em>
+                                        </span>
                                     </p>
-                                    <div className="text-muted small">
+                                    <div>
                                         {(user.instruments || []).map((inst, index) => {
                                             const isMatch =
                                                 normInst &&
                                                 normalizeString(inst.name).includes(normInst);
                                             return (
                                                 <span key={index}>
-                                                    <span className={isMatch ? "fw-bold text-primary" : ""}>
+                                                    <span className={"fw-bold " + (isMatch ? "text-primary" : "")}>
                                                         {inst.name}
                                                     </span>
                                                     {inst.niveau ? ` (${inst.niveau})` : ""}
