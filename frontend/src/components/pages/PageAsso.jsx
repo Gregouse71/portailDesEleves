@@ -15,6 +15,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 import DropdownEditer from "../elements/DropdownEditer";
 import AssosMedia from './PageAsso/AssoMedia';
+import AssoMusiciens from './PageAsso/AssoMusiciens';
 
 function Asso() {
     const navigate = useNavigate();
@@ -63,6 +64,7 @@ function Asso() {
         'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
         'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
         'Biblio': { key: "biblio", titre: "Bibliothèque", element: <AssoBiblio asso_id={asso.id} membreData={membreData} /> },
+        'Musiciens': { key: "musiciens", titre: "Musiciens", element: <AssoMusiciens asso_id={asso.id} membreData={membreData} /> },
         ...(membreData.admin && { 'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> } }),
     };
 

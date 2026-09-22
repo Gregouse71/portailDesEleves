@@ -26,7 +26,7 @@ export default function Search() {
               </div>
               <div>
                 <p className="mb-0">{user.prenom} {user.nom}</p>
-                <p className="mb-0 text-muted">Promo : {user.promotion}</p>
+                <p className="mb-0 text-muted">Promo : {user.cycle || ''}{user.promotion}</p>
               </div>
             </ListGroup.Item>
           ))}

@@ -29,8 +29,8 @@ with app.app_context():
     print("Création des associations...")
     bde = Association(nom="BDE", description="Bureau des élèves", type_association="loi 1901", ordre_importance=1, modules=['Info', 'Membres', 'Events', 'Posts', 'Media', 'Elections'])
     bds = Association(nom="BDS", description="Bureau des sports", type_association="loi 1901", ordre_importance=2, modules=['Info', 'Membres', 'Events', 'Posts', 'Media'])
-    # On ajoute le module 'Audio' au BDA
-    bda = Association(nom="BDA", description="Bureau des arts", type_association="loi 1901", ordre_importance=3, modules=['Info', 'Membres', 'Events', 'Posts', 'Audio', 'Media'])
+    # On ajoute les modules 'Audio' et 'Musiciens' au BDA
+    bda = Association(nom="BDA", description="Bureau des arts", type_association="loi 1901", ordre_importance=3, modules=['Info', 'Membres', 'Events', 'Posts', 'Audio', 'Media', 'Musiciens'])
     
     db.session.add_all([bde, bds, bda])
     db.session.commit()
@@ -39,9 +39,9 @@ with app.app_context():
     # 3. Créer les utilisateurs de base
     print("Création des utilisateurs de test...")
     utilisateurs_specifiques = [
-        ("23imbert", "Jules", "Imbert", 23, "jules@mail.com", "ic", "1234"),
-        ("23fruchard", "Achille", "Fruchard", 23, "achille@mail.com", "ic", "1234"),
-        ("23deferran", "Louise", "De Ferran", 24, "louise@mail.com", "ic", "1234"),
+        ("23imbert", "Jules", "Imbert", 23, "jules@mail.com", "ic", "1234", [{"name": "Piano", "niveau": "Avancé"}]),
+        ("23fruchard", "Achille", "Fruchard", 23, "achille@mail.com", "ic", "1234", [{"name": "Batterie", "niveau": "Expert"}]),
+        ("23deferran", "Louise", "De Ferran", 24, "louise@mail.com", "ic", "1234", [{"name": "Guitare", "niveau": "Intermédiaire"}, {"name": "Chant", "niveau": "Débutant"}]),
     ]
 
     for u_data in utilisateurs_specifiques:
@@ -54,12 +54,14 @@ with app.app_context():
             cycle=u_data[5],
             mot_de_passe_en_clair=u_data[6]
         )
+        nouvel_utilisateur.instruments = u_data[7]
         db.session.add(nouvel_utilisateur)
 
     # Ajouter un super utilisateur
     super_user = Utilisateur("admin", "Admin", "Dev", 23, "admin@mail.com", "ic", "1234")
     super_user.est_superutilisateur = True
     super_user.est_baptise = True
+    super_user.instruments = [{"name": "Saxophone", "niveau": "Avancé"}]
     db.session.add(super_user)
     db.session.commit()
     print("Utilisateurs de test créés.")
@@ -73,15 +75,30 @@ with app.app_context():
     promotions = [20, 21, 22, 23, 24]
     utilisateurs_aleatoires = [(random.choice(prenoms), nom, random.choice(promotions), random.choice(cycles)) for nom in noms]
 
+    instruments_disponibles = [
+        "Piano", "Guitare", "Basse", "Batterie", "Chant",
+        "Violon", "Saxophone", "Flûte", "Trompette", "Clarinette",
+        "Violoncelle", "Ukulélé", "Accordéon", "Synthétiseur"
+    ]
+    niveaux_disponibles = ["Débutant", "Intermédiaire", "Avancé", "Expert"]
+
     for i, (prenom, nom, promotion, cycle) in enumerate(utilisateurs_aleatoires):
         nom_utilisateur = f"{promotion}{unicodedata.normalize('NFKD', nom).encode('ascii', 'ignore').decode().lower()}"
         email = f"{nom_utilisateur}@example.com"
         if not Utilisateur.query.filter_by(nom_utilisateur=nom_utilisateur).first():
+            # Assigner aléatoirement des instruments à ~35% des utilisateurs
+            user_inst = []
+            if random.random() < 0.35:
+                nb_inst = random.choice([1, 1, 2, 3])
+                chosen = random.sample(instruments_disponibles, k=min(nb_inst, len(instruments_disponibles)))
+                user_inst = [{"name": inst, "niveau": random.choice(niveaux_disponibles)} for inst in chosen]
+
             utilisateur = Utilisateur(
                 nom_utilisateur=nom_utilisateur, prenom=prenom, nom=nom, promotion=promotion, email=email, cycle=cycle,
                 mot_de_passe_en_clair="1234",
                 date_de_naissance=date(year=2000 + promotion - 20, month=(i % 12) + 1, day=(i % 28) + 1)
             )
+            utilisateur.instruments = user_inst
             db.session.add(utilisateur)
     db.session.commit()
     print(f"{len(utilisateurs_aleatoires)} utilisateurs aléatoires créés.")
