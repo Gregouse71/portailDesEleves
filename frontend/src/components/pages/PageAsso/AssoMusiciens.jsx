@@ -164,7 +164,7 @@ export default function AssoMusiciens() {
                                             {user.promotion}
                                         </span>
                                     </p>
-                                    <div>
+                                    <p className="mb-0">
                                         {(user.instruments || []).map((inst, index) => {
                                             const isMatch =
                                                 normInst &&
@@ -179,7 +179,7 @@ export default function AssoMusiciens() {
                                                 </span>
                                             );
                                         })}
-                                    </div>
+                                    </p>
                                 </div>
                             </ListGroup.Item>
                         );
