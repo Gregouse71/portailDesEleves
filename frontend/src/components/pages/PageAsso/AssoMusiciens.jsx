@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Form, ListGroup, Image, Row, Col } from "react-bootstrap";
 
+import OngletTemplate from '../../templates/OngletTemplate';
 import { getMusiciens } from "../../../api/modules/api_musiciens";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import "../../../assets/styles/search.scss";
@@ -86,19 +87,8 @@ export default function AssoMusiciens() {
         });
     }, [musiciens, instrumentFilter, sortBy]);
 
-    return (
+    const contenu =
         <div className="search-results-container px-0">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="mb-0">
-                    Musiciens{" "}
-                    {!isLoading && !isError && (
-                        <small className="text-muted fs-6 fw-normal">
-                            ({processedMusiciens.length})
-                        </small>
-                    )}
-                </h2>
-            </div>
-
             <Row className="g-2 mb-3 align-items-center">
                 <Col xs={12} md={8}>
                     <Form.Control
@@ -123,9 +113,7 @@ export default function AssoMusiciens() {
                 </Col>
             </Row>
 
-            {isLoading ? (
-                <p>Chargement...</p>
-            ) : isError ? (
+            {isError ? (
                 <p className="text-danger">Erreur lors du chargement des musiciens.</p>
             ) : processedMusiciens.length === 0 ? (
                 <p className="text-muted">Aucun musicien trouvé.</p>
@@ -187,5 +175,14 @@ export default function AssoMusiciens() {
                 </ListGroup>
             )}
         </div>
-    );
+
+    return <OngletTemplate
+        titre={<>Musiciens{" "}
+            {!isLoading && !isError && (
+                <small className="text-muted fs-6 fw-normal">({processedMusiciens.length})</small>
+            )}</>
+        }
+        isLoading={isLoading}
+        contenu={contenu}
+    />;
 }

@@ -16,6 +16,7 @@ import {
 } from "../../../api/modules/api_bibliotheque";
 import Autocomplete from "../../../components/elements/Autocompletion";
 import RenderPagination from "../../../components/elements/RenderPagination";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 /** Liste des genres, partagée entre le formulaire et le filtre de l'onglet Gestion */
 const GENRES = [
@@ -441,31 +442,31 @@ function OngletGestion({ asso_id, peutGerer }) {
         }
     };
 
-const [importResult, setImportResult] = useState(null);
+    const [importResult, setImportResult] = useState(null);
 
-const importMutation = useMutation({
-    mutationFn: (file) => {
-        const formData = new FormData();
-        formData.append("fichier", file);
-        return importerLivresExcel(formData, asso_id, "livres", "import");
-    },
-    onSuccess: (resultat) => {
-        invalidate();
-        setImportResult(resultat);
-    },
-    onError: (error) => {
-        window.alert(`Erreur lors de l'import : ${error.message}`);
-    }
-});
+    const importMutation = useMutation({
+        mutationFn: (file) => {
+            const formData = new FormData();
+            formData.append("fichier", file);
+            return importerLivresExcel(formData, asso_id, "livres", "import");
+        },
+        onSuccess: (resultat) => {
+            invalidate();
+            setImportResult(resultat);
+        },
+        onError: (error) => {
+            window.alert(`Erreur lors de l'import : ${error.message}`);
+        }
+    });
 
-const handleFichierChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-        setImportResult(null); // reset avant un nouvel import
-        importMutation.mutate(file);
-    }
-    e.target.value = "";
-};
+    const handleFichierChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImportResult(null); // reset avant un nouvel import
+            importMutation.mutate(file);
+        }
+        e.target.value = "";
+    };
 
     return (
         <div className="biblio-tab-content biblio-tab-content-large">
@@ -598,17 +599,13 @@ export default function Bibliotheque({ asso_id, membreData }) {
     const peutGerer = !!membreData?.autorise;
 
     // Non autorise : uniquement la recherche/consultation
-    if (!peutGerer) {
-        return (
-            <div className="biblio-container">
-                <div className="biblio-content">
-                    <OngletGestion asso_id={asso_id} peutGerer={false} />
-                </div>
+    const contenu = !peutGerer ?
+        <div className="biblio-container">
+            <div className="biblio-content">
+                <OngletGestion asso_id={asso_id} peutGerer={false} />
             </div>
-        );
-    }
-
-    return (
+        </div>
+        :
         <div className="biblio-container">
             <div className="biblio-content">
                 <Tabs defaultActiveKey="emprunt" className="biblio-tabs mt-3 mb-3">
@@ -621,5 +618,9 @@ export default function Bibliotheque({ asso_id, membreData }) {
                 </Tabs>
             </div>
         </div>
-    );
+
+    return <OngletTemplate
+        titre="Les livres au prêt"
+        contenu={contenu}
+    />
 }

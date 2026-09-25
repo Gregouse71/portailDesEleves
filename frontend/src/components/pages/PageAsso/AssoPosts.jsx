@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { ajouterContenuPublication, creerNouvellePublication, obtenirPublicationsAsso, supprimerPublication } from "../../../api/api_publications";
 import RichEditor from "../../elements/RichEditor";
+import OngletTemplate from '../../templates/OngletTemplate';
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
 import { useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
@@ -170,17 +171,11 @@ function AssoPosts({ asso_id, membreData }) {
 
     const listePosts = data?.pages.flat() || [];
 
-    return (
-        <>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>Les publications</h2>
-                {membreData.autorise && <Button
-                    variant="outline-secondary"
-                    onClick={() => setIsNewPost(!isNewPost)}
-                >
-                    <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
-                </Button>}
-            </div>
+    return <OngletTemplate
+        titre="Les publications"
+        isLoading={isLoading}
+        avecBouton={membreData.autorise} onButonClick={() => setIsNewPost(!isNewPost)}
+        contenu={
             <div className="d-flex flex-column gap-3">
 
                 {/* formulaire pour une nouvelle publication */}
@@ -205,11 +200,11 @@ function AssoPosts({ asso_id, membreData }) {
                                         <Form.Group as={Row} className="mt-2">
                                             <Form.Label column sm="3">Date de publication</Form.Label>
                                             <Col sm="9">
-                                                <Form.Control 
-                                                    type="datetime-local" 
-                                                    name="date_publication" 
-                                                    value={newPost.date_publication} 
-                                                    onChange={handleSetNewPost} 
+                                                <Form.Control
+                                                    type="datetime-local"
+                                                    name="date_publication"
+                                                    value={newPost.date_publication}
+                                                    onChange={handleSetNewPost}
                                                 />
                                             </Col>
                                         </Form.Group>
@@ -273,7 +268,7 @@ function AssoPosts({ asso_id, membreData }) {
                             </Form.Group>
                             <div className="d-flex gap-2">
                                 <Button variant="success" onClick={validateNewPost} disabled={isLoading}>
-                                    {isLoading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Ajouter"}
+                                    Ajouter
                                 </Button>
                                 <Button variant="danger" onClick={() => setIsNewPost(false)}>Annuler</Button>
                             </div>
@@ -293,9 +288,8 @@ function AssoPosts({ asso_id, membreData }) {
                 ))}
 
                 {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}
-            </div>
-        </>
-    )
+            </div>}
+    />;
 }
 
 export default AssoPosts;

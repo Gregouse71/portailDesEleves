@@ -10,6 +10,7 @@ import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { Card, Button, Form, Row, Col, Spinner } from "react-bootstrap";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import DropdownEditer from "../../elements/DropdownEditer";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 const PER_PAGE = 20;
 
@@ -338,21 +339,11 @@ export default function AssoEvents({ asso_id, membreData }) {
         if (node) observer.current.observe(node);
     }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
-
-    if (isLoading) return <>Chargement...</>
-
-    return <>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Les événements</h2>
-            {membreData.autorise && <Button
-                variant="outline-secondary"
-                onClick={() => setIsNewEvent(!isNewEvent)}
-            >
-                <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
-            </Button>}
-        </div>
-        <div className="d-flex flex-column gap-3">
-
+    return <OngletTemplate
+        titre="Les événements"
+        isLoading={isLoading}
+        avecBouton={membreData.autorise} onButonClick={() => setIsNewEvent(!isNewEvent)}
+        contenu={<div className="d-flex flex-column gap-3">
             {/* formulaire pour un nouvel événement */}
             {isNewEvent && <Event key={-1} asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={true} />}
 
@@ -366,5 +357,5 @@ export default function AssoEvents({ asso_id, membreData }) {
 
             {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}
         </div>
-    </>
+        } />
 }

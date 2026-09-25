@@ -15,6 +15,7 @@ import { obtenirDataUser, searchUsers } from "../../../api/api_utilisateurs";
 import ConfirmationModal from "../../elements/ConfirmationModal";
 import DropdownEditer from "../../elements/DropdownEditer";
 import Autocomplete from "../../elements/Autocompletion";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 const format_date = (s) => s ? new Date(s).toLocaleDateString("fr-FR") : "Non précisé";
 
@@ -147,7 +148,6 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
 
     const today = new Date().toISOString().split("T")[0];
     const isActive = cotisationData.date_debut <= today && today <= cotisationData.date_fin;
-    console.log(cotisationData)
 
     return (
         <Card className="mb-3">
@@ -254,19 +254,13 @@ export default function AssoCotisations({ asso_id, membreData }) {
 
     const canModify = userData.is_superuser || membreData.autorise;
 
-    return (
-        <>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Gestion des Cotisations</h2>
-                {canModify && !isCreating && (
-                    <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                        <DropdownEditer list={[
-                            { can: true, onClick: () => setIsCreating(true), name: "Créer une cotisation" },
-                        ]} />
-                    </div>
-                )}
-            </div>
-
+    return <OngletTemplate
+        titre="Gestion des Cotisations"
+        isLoading={isLoading}
+        avecDropdown={canModify && !isCreating} contenuDropdown={[
+            { can: true, onClick: () => setIsCreating(true), name: "Créer une cotisation" },
+        ]}
+        contenu={<>
             {isCreating && (
                 <CotisationCard
                     isNew={true}
@@ -276,9 +270,7 @@ export default function AssoCotisations({ asso_id, membreData }) {
                 />
             )}
 
-            {isLoading ? (
-                <div>Chargement des cotisations...</div>
-            ) : cotisations.length === 0 ? (
+            {cotisations.length === 0 ? (
                 <div className="text-muted text-center py-4">
                     Aucune cotisation n&apos;est définie pour cette association.
                 </div>
@@ -293,6 +285,5 @@ export default function AssoCotisations({ asso_id, membreData }) {
                     />
                 ))
             )}
-        </>
-    );
+        </>} />;
 }

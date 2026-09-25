@@ -3,6 +3,7 @@ import { ajouterMandat, chargerAsso, estUtilisateurDansAsso } from "../../../api
 import { Card, Button, Form } from "react-bootstrap";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AssoMandat from "../../elements/AssoMandat";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 function AssoMembres({ asso_id, membreData }) {
     const queryClient = useQueryClient();
@@ -24,11 +25,6 @@ function AssoMembres({ asso_id, membreData }) {
         });
     }, [asso]);
 
-    if (isLoading) return <Card>
-        <Card.Body>
-        </Card.Body>
-    </Card>
-
     const handleNouveauMandat = async (nom) => {
         if (nom) {
             try {
@@ -43,16 +39,11 @@ function AssoMembres({ asso_id, membreData }) {
         setIsAjoutMandat(false);
     }
 
-    return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>Les membres</h2>
-                {membreData.autorise &&
-                    <Button variant="outline-secondary" onClick={() => setIsAjoutMandat(!isAjoutMandat)}>
-                        <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
-                    </Button>}
-            </div>
-
+    return <OngletTemplate
+        titre="Les membres"
+        isLoading={isLoading}
+        avecBouton={membreData.autorise} onButonClick={() => setIsAjoutMandat(!isAjoutMandat)}
+        contenu={<>
             <div className="mb-3">
                 {isAjoutMandat && (
                     <Card>
@@ -74,8 +65,7 @@ function AssoMembres({ asso_id, membreData }) {
             {sortedMandats.map((mandat, i) => (
                 <AssoMandat key={i} id={mandat.id} asso={asso} membreData={membreData} />
             ))}
-        </div>
-    )
+        </>} />
 }
 
 export default AssoMembres;

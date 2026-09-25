@@ -5,6 +5,7 @@ import { Row, Col, Button, Card, Form, Image } from "react-bootstrap";
 import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import { ajouterContenuAsso, changerPhotoAsso, supprimerPhotoAsso, renommerPhotoAsso, chargerAsso, chargerMandat, ajouterLienVideoAsso } from "../../../api/api_associations";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 
 /**
@@ -323,15 +324,11 @@ export default function AssosMedia({ asso_id, membreData }) {
         });
     }, [asso]);
 
-    if (isLoading) return <>Chargement...</>;
-
-    return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>Les photos</h2>
-            </div>
-
-            {sortedMandats.map((mandat) => (
+    return <OngletTemplate
+        titre="Les photos"
+        isLoading={isLoading}
+        contenu={
+            sortedMandats.map((mandat) => (
                 <MandatMedia
                     key={mandat.id}
                     mandat_id={mandat.id}
@@ -339,7 +336,6 @@ export default function AssosMedia({ asso_id, membreData }) {
                     assoData={asso}
                     membreData={membreData}
                 />
-            ))}
-        </div>
-    );
+            ))} />;
+
 }
