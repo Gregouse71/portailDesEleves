@@ -14,9 +14,10 @@ from flask_cors import CORS # permet d'accepter les requetes provenant de n'impo
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, login_required
 from flask_socketio import SocketIO
 from flask_apscheduler import APScheduler
+from flasgger import Swagger
 from werkzeug.middleware.proxy_fix import ProxyFix
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
@@ -36,6 +37,12 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 # session = Session()
 scheduler = APScheduler()
+swagger = Swagger(
+    template={
+        'parse': True
+    },
+    decorators=[login_required]
+)
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
 
@@ -71,6 +78,8 @@ def create_app(config: Config):
     # Importer et enregistrer le blueprint global API
     from app.controllers import api
     app.register_blueprint(api, url_prefix='/api')
+    # Initialisation du swagger, avec authentification de l'api
+    swagger.init_app(app)
     
     #permet d'avoir accès au fichier upload 
     #ne pas supprimer
