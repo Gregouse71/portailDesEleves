@@ -11,41 +11,14 @@ Il est execute pour initialiser l'application.
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS # permet d'accepter les requetes provenant de n'importe quelle origine
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_required
-from flask_socketio import SocketIO
-from flask_apscheduler import APScheduler
-from flasgger import Swagger
 from werkzeug.middleware.proxy_fix import ProxyFix
-from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
+
+from .extensions import db, limiter, login_manager, socketio, scheduler, swagger, require_oauth, authorization
+from app.services.services_cles_api import cle_valide
 
 import os
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-
-# Initialisation des extensions (sans encore les attacher à l'application)
-limiter = Limiter(get_remote_address)
-socketio = SocketIO(
-    async_mode='gevent' if os.name != 'nt' else None,
-    cors_allowed_origins="*",
-    message_queue=Config.REDIS_URL
-)
-db = SQLAlchemy()
-login_manager = LoginManager()
-# session = Session()
-scheduler = APScheduler()
-swagger = Swagger(
-    config={
-        "url_prefix": "/api"
-    },
-    merge=True,
-    decorators=[login_required]
-)
-authorization = AuthorizationServer()
-require_oauth = ResourceProtector()
 
 
 def create_app(config: Config):
@@ -71,10 +44,18 @@ def create_app(config: Config):
 
     from .models import Utilisateur  # Importer la classe Utilisateur
 
-    # Definir la fonction user_loader
+    # Definir la fonction user_loader, pour connexion classique
     @login_manager.user_loader
     def load_user(user_id):
         return Utilisateur.query.get(int(user_id))  # Charger l'utilisateur par ID
+    
+    @login_manager.request_loader
+    def load_user_from_request(req):
+        cle = req.headers.get("X-API-KEY")
+        if cle is not None:
+            cle_obj = cle_valide(cle)
+            if cle_obj is not None:
+                return cle_obj.utilisateur
 
     # Importer et enregistrer le blueprint global API
     from app.controllers import api

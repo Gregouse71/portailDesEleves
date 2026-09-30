@@ -9,7 +9,6 @@
 from datetime import datetime
 
 from app.models.models_cles_api import CleAPI, hash_cle
-from app.models.models_utilisateurs import Utilisateur
 
 
 def promo_1a_actuelle():
