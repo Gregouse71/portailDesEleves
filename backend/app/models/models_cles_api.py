@@ -2,7 +2,7 @@ import hashlib
 import secrets
 from datetime import datetime, timezone
 
-from app.extensions import db
+from app import db
 
 def _utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)

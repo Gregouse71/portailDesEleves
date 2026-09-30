@@ -12,18 +12,25 @@ import os
 
 from config import Config
 
-
 # Initialisation des extensions (sans encore les attacher à l'application)
+
+# Gestionnaire de la base de données
+db = SQLAlchemy()
+# Gestionnaire des connexions des utilisateurs
+login_manager = LoginManager()
+# Limiteur de requetes, pour éviter de se faire spammer
 limiter = Limiter(get_remote_address)
+# Gestionnaire des tâches périodiques
+scheduler = APScheduler()
+
+# Permet de gérer les websocket, pour le chat, les échecs...
 socketio = SocketIO(
     async_mode='gevent' if os.name != 'nt' else None,
     cors_allowed_origins="*",
     message_queue=Config.REDIS_URL
 )
-db = SQLAlchemy()
-login_manager = LoginManager()
-# session = Session()
-scheduler = APScheduler()
+
+# Documentation dynamique de l'api
 swagger = Swagger(
     config={
         "url_prefix": "/api",
@@ -50,5 +57,7 @@ security:
     decorators=[login_required],
     merge=True
 )
+
+# Utilitaires pour OAuth
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()

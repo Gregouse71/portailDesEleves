@@ -4,7 +4,7 @@ import jwt
 from argon2 import exceptions
 from sqlalchemy import or_
 
-from app.services import db
+from app import db
 from app.utils.divers_utils import ph
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_divers import Permission
