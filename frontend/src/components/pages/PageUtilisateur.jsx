@@ -10,7 +10,6 @@ import { Container, Row, Col, Card, Image, Nav } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import DropdownEditer from '../elements/DropdownEditer';
 import TabMedia from './PageUtilisateur/Media';
-import TabCleApi from './PageUtilisateur/CleApi';
 
 function PageUtilisateur() {
     const { userData } = useProtected();
@@ -163,7 +162,6 @@ function PageUtilisateur() {
                 <Route path="assos" element={<TabAsso id={id} autoriseAModifier={autoriseAModifier} />} />
                 <Route path="questions" element={<TabQuestions id={id} autoriseAModifier={autoriseAModifier} />} />
                 <Route path="media" element={<TabMedia id={id} autoriseAModifier={autoriseAModifier} />} />
-                <Route path="cle" element={<TabCleApi autoriseAModifier={userData.id == id} />} />
             </Routes>
         </Container>
     );

@@ -10,3 +10,6 @@ export const creerCle = createApiPost(`${CLES_BASE_URL}/creer`);
 
 /** Révoque une de SES clés */
 export const revoquerCle = createApiPost(`${CLES_BASE_URL}/revoquer`);
+
+/** Récupère la documentation de l'api */
+export const obtenirSwagger = createApiGet(`${API_BASE_URL}/apispec_1.json`)

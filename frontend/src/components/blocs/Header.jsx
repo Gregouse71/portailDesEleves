@@ -151,6 +151,7 @@ export default function Header() {
                         <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true} setExpanded={setExpanded}
                             list={[
                                 ["navigate", `/utilisateur/${userData.id}`, "Ma page"],
+                                ["navigate", "apidocs", "Clés d'API"],
                                 ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],
                                 ["onClick", handleLogout, "Déconnexion"],
                                 ["divider"],

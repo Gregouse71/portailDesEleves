@@ -508,7 +508,6 @@ def route_get_anniv():
 
     debut = date.fromisoformat(data.get("debut")) if data.get("debut") is not None else None
     fin = date.fromisoformat(data.get("fin")) if data.get("fin") is not None else None
-    print(debut, fin)
     try:
         ret = prochains_anniv(debut=debut, fin=fin)
         return jsonify(ret), 200

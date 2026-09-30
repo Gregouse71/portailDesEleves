@@ -38,9 +38,10 @@ login_manager = LoginManager()
 # session = Session()
 scheduler = APScheduler()
 swagger = Swagger(
-    template={
-        'parse': True
+    config={
+        "url_prefix": "/api"
     },
+    merge=True,
     decorators=[login_required]
 )
 authorization = AuthorizationServer()
@@ -80,7 +81,7 @@ def create_app(config: Config):
     app.register_blueprint(api, url_prefix='/api')
     # Initialisation du swagger, avec authentification de l'api
     swagger.init_app(app)
-    
+
     #permet d'avoir accès au fichier upload 
     #ne pas supprimer
     UPLOAD_FOLDER = os.path.join(os.getcwd(), Config.UPLOAD_BASE_FOLDER)

@@ -19,7 +19,7 @@ class CleAPI(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=False)
-    user = db.relationship('Utilisateur')
+    user = db.relationship('Utilisateur', backref=db.backref('cles'))
 
     nom = db.Column(db.String(100))            # libellé choisi par l'élève ("equipaps prod")
     hash = db.Column(db.String(64), nullable=False, unique=True, index=True)  # sha256 hex
