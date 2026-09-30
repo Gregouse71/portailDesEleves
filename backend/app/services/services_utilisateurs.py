@@ -3,6 +3,7 @@ from app.services import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_media import ElementMedia
 
+from flask import abort
 from datetime import date, timedelta, datetime, timezone
 from itertools import groupby
 from sqlalchemy import func
@@ -131,16 +132,27 @@ def changer_marrain(marrain:Utilisateur, fillot:Utilisateur):
 
 # AUTRES
 
-def prochains_anniv():
+def prochains_anniv(debut=None, fin=None):
+    """
+    Détermine les anniversaires dans les 7 prochains jours
+    Si *debut* est donné, les anniversaires sont ceux 7 jours après début
+    Si *fin* est aussi donné, les anniversaires sont ceux entre *debut* et *fin*
+    """
+    today = datetime.now(timezone.utc).date()
+
+    try:
+        deb = today if debut is None else debut
+        debut = date(year=2000, month=deb.month, day=deb.day)
+        fin = debut + timedelta(days=7) if fin is None else date(year=2000, month=fin.month, day=fin.day)
+    except ValueError:
+        abort(400)
+
     def must_display(d):
         if d is None:
             return False
-        today = datetime.now(timezone.utc).date()
         date1 = date(year=2000, month=d.month, day=d.day)
-        date2 = date(year=2000, month=today.month, day=today.day)
 
-        return (date2 <= date1 <= date2 + timedelta(days=7)
-                or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
+        return debut <= date1 <= fin or debut <= date1 + timedelta(days=365) <= fin
 
     now = datetime.now(timezone.utc).date().replace(year=2000)
     def aux(user):

@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import desc, asc, case
 import os
 from werkzeug.utils import secure_filename
+from datetime import date
 import csv
 import io
 
@@ -475,9 +476,41 @@ def route_selectionner_marrains():
 def route_get_anniv():
     """
     Renvoie la liste des prochains anniversaires
+    ---
+    summary: "Récupère les anniversaires à venir"
+    description: >
+      Renvoie la liste des anniversaires à venir groupés par date,
+      filtrés sur les 4 dernières promotions.
+    tags:
+      - "Utilisateurs"
+    parameters:
+      - name: "debut"
+        in: "query"
+        required: false
+        description: "Date de départ (format ISO). Par défaut : date du jour."
+        schema:
+          type: "string"
+          format: "date"
+      - name: "fin"
+        in: "query"
+        required: false
+        description: "Date de fin (format ISO). Par défaut : 7 jours après la date de début."
+        schema:
+          type: "string"
+          format: "date"
+    responses:
+      200:
+        description: "Liste chronologique des anniversaires groupés par date."
+      400:
+        description: "Paramètre de date invalide."
     """
+    data = request.args
+
+    debut = date.fromisoformat(data.get("debut")) if data.get("debut") is not None else None
+    fin = date.fromisoformat(data.get("fin")) if data.get("fin") is not None else None
+    print(debut, fin)
     try:
-        ret = prochains_anniv()
+        ret = prochains_anniv(debut=debut, fin=fin)
         return jsonify(ret), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
