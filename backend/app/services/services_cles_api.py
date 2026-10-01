@@ -4,21 +4,6 @@ from app.extensions import db
 from app.models.models_cles_api import CleAPI, hash_cle
 from app.services.services_login import has_permission
 
-
-def promo_1a_actuelle():
-    """Promotion des 1A en cours (string 2 chiffres, ex "26")."""
-    maintenant = datetime.now(tz=timezone.utc)
-    annee_rentree = maintenant.year if maintenant.month >= 8 else maintenant.year - 1
-    return str(annee_rentree % 100)
-
-
-def _promo_int(promotion):
-    try:
-        return int(str(promotion)[-2:])
-    except (TypeError, ValueError):
-        return None
-
-
 def utiliser_cle(valeur):
     """Renvoie l'utilisateur correspondant à la clé, et enregistre l'utilisation"""
     if not valeur:

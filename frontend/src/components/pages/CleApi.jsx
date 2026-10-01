@@ -17,7 +17,7 @@ export default function CleApi() {
         queryKey: ['cles'],
         queryFn: () => listerCles({}),
     });
-    const {data: apiSpec, isPending: isPendingSpec} = useQuery({
+    const { data: apiSpec, isPending: isPendingSpec } = useQuery({
         queryKey: ['apispec'],
         queryFn: () => obtenirSwagger({}),
     });
@@ -34,7 +34,7 @@ export default function CleApi() {
     });
 
     const revocation = useMutation({
-        mutationFn: (id) => revoquerCle({id}),
+        mutationFn: (id) => revoquerCle({ id }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cles'] }),
         onError: (e) => setErreur(e.message),
     });
@@ -51,20 +51,20 @@ export default function CleApi() {
     };
 
     return <Container className="py-4">
-        <h1 className="mb-3">Clés d'API</h1>
+        <h1 className="mb-3">Accès à l'API</h1>
         <Card className="mb-3">
-            <Card.Header><b>Ma clé API</b> — accès à l&apos;annuaire des élèves</Card.Header>
+            <Card.Header>Mes clé API</Card.Header>
             <Card.Body>
-                <p className="text-muted small">
+                <div className="mb-2">
                     Une clé personnelle permet aux outils des élèves (equipaps, Pain de Mine...)
                     de récupérer la base élèves depuis le portail : identifiant, login, prénom,
                     nom, email, promotion. La clé est affichée <b>une seule fois</b> à la création,
                     garde-la précieusement, et révoque-la si elle fuit.
-                </p>
+                </div>
 
                 {!eligible && (
                     <Alert variant="info" className="mb-0">
-                        Les clés API sont disponibles à partir de la deuxième année. Reviens en 2A !
+                        La création de clés d'API nécessite l'autorisation du VP Geek. Tu ne possède pas encore cette autorisation.
                     </Alert>
                 )}
 
@@ -83,25 +83,20 @@ export default function CleApi() {
 
                 {erreur && <Alert variant="danger" onClose={() => setErreur(null)} dismissible>{erreur}</Alert>}
 
-                {eligible && (
-                    <Form className="d-flex gap-2 mb-3" onSubmit={(e) => {
-                        e.preventDefault();
-                        creation.mutate(nouveauNom);
-                    }}>
+                {eligible && <>
+                    <Form className="d-flex gap-2 mb-3" onSubmit={() => creation.mutate(nouveauNom)}>
                         <Form.Control
                             type="text"
-                            placeholder="Nom de la clé (ex : equipaps prod)"
+                            placeholder="Nom de la clé"
                             value={nouveauNom}
                             onChange={(e) => setNouveauNom(e.target.value)}
-                            maxLength={100}
+                            className="flex-grow-1"
                         />
-                        <Button type="submit" disabled={creation.isPending}>
+                        <Button type="submit" disabled={creation.isPending}
+                            className="text-nowrap">
                             {creation.isPending ? "Création..." : "Créer une clé"}
                         </Button>
                     </Form>
-                )}
-
-                {eligible && (
                     <Table responsive striped hover>
                         <thead>
                             <tr>
@@ -141,10 +136,10 @@ export default function CleApi() {
                             )}
                         </tbody>
                     </Table>
-                )}
+                </>}
             </Card.Body>
         </Card>
 
-        <SwaggerUI spec={apiSpec} />
+        {eligible && <SwaggerUI spec={apiSpec} />}
     </Container>;
 }

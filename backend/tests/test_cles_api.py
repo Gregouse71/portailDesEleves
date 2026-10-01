@@ -3,7 +3,6 @@ import pytest
 from app.models import Utilisateur
 from app.models.models_cles_api import CleAPI, generer_cle
 from app.models.models_divers import Permission
-from app.services.services_cles_api import promo_1a_actuelle
 from app.services.services_login import has_permission
 
 # Tests de la brique API annuaire : clés personnelles (gate 2A+), endpoint
@@ -13,12 +12,11 @@ from app.services.services_login import has_permission
 @pytest.fixture()
 def db_cles(app, db_initialized):
     """Un 1A (promo courante) et un 2A (promo - 1), indépendants du calendrier."""
-    promo_1a = int(promo_1a_actuelle())
-    un_a = Utilisateur(nom_utilisateur=f"{promo_1a}unA", prenom="Une", nom="Premiereannee",
-                       promotion=promo_1a, email="unA@exemple.com", cycle="ic",
+    un_a = Utilisateur(nom_utilisateur="22unA", prenom="Une", nom="Premiereannee",
+                       promotion=22, email="unA@exemple.com", cycle="ic",
                        mot_de_passe_en_clair="1234")
-    deux_a = Utilisateur(nom_utilisateur=f"{promo_1a - 1}deuxA", prenom="Deux", nom="Deuxiemeannee",
-                         promotion=promo_1a - 1, email="deuxA@exemple.com", cycle="ic",
+    deux_a = Utilisateur(nom_utilisateur="21deuxA", prenom="Deux", nom="Deuxiemeannee",
+                         promotion=21, email="deuxA@exemple.com", cycle="ic",
                          mot_de_passe_en_clair="1234")
     perm = Permission(deux_a, "cle_api")
 
@@ -148,13 +146,13 @@ class TestAnnuaire:
         assert r.status_code == 401
 
 
+p = 26
 class TestAnniversaires:
     """Endpoint /api/annuaire/anniversaires?du=MM-JJ&au=MM-JJ."""
 
     @pytest.fixture()
     def db_anniv(self, app, db_initialized):
         from datetime import date
-        p = int(promo_1a_actuelle())
         users = [
             Utilisateur(f"{p-2}nov5", "Anna", "Novcinq", p - 2, "a1@x.com", "ic", "1234", date_de_naissance=date(2004, 11, 5)),
             Utilisateur(f"{p-2}nov10", "Bruno", "Novdix", p - 2, "a2@x.com", "ic", "1234", date_de_naissance=date(2003, 11, 10)),
@@ -169,7 +167,7 @@ class TestAnniversaires:
 
     def _client_avec_cle(self, app, db_anniv):
         client = app.test_client()
-        r = client.post('/api/login/connexion', json={'username': f"{int(promo_1a_actuelle())-2}nov5", 'password': '1234'})
+        r = client.post('/api/login/connexion', json={'username': f"{p - 2}nov5", 'password': '1234'})
         assert r.status_code == 200
         r = client.post('/api/cles/creer', json={'nom': 'test anniv'})
         assert r.status_code == 201
@@ -210,7 +208,6 @@ class TestAnniversaires:
         from app import db as _db
         from app.models import Utilisateur as U
 
-        p = int(promo_1a_actuelle())
         vieux = U(f"{p-9}vieux", "Yann", "Ancien", p - 9, "vieux@x.com", "ic", "1234",
                  date_de_naissance=date(1990, 5, 3))
         _db.session.add(vieux)
