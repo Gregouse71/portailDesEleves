@@ -505,9 +505,11 @@ def route_get_anniv():
         description: "Paramètre de date invalide."
     """
     data = request.args
-
-    debut = date.fromisoformat(data.get("debut")) if data.get("debut") is not None else None
-    fin = date.fromisoformat(data.get("fin")) if data.get("fin") is not None else None
+    try:
+        debut = date.fromisoformat(data.get("debut")) if data.get("debut") is not None else None
+        fin = date.fromisoformat(data.get("fin")) if data.get("fin") is not None else None
+    except ValueError:
+        return jsonify({"message": "Format de date invalide : YYYY-MM-DD requis"}), 400
     try:
         ret = prochains_anniv(debut=debut, fin=fin)
         return jsonify(ret), 200

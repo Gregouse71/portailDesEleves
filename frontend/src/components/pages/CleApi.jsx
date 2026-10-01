@@ -34,7 +34,7 @@ export default function CleApi() {
     });
 
     const revocation = useMutation({
-        mutationFn: (id) => revoquerCle({}, id),
+        mutationFn: (id) => revoquerCle({id}),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cles'] }),
         onError: (e) => setErreur(e.message),
     });

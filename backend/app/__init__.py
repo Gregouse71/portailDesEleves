@@ -15,7 +15,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
 
 from .extensions import db, limiter, login_manager, socketio, scheduler, swagger, require_oauth, authorization
-from app.services.services_cles_api import cle_valide
+from app.services.services_cles_api import utiliser_cle
 
 import os
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -52,10 +52,7 @@ def create_app(config: Config):
     @login_manager.request_loader
     def load_user_from_request(req):
         cle = req.headers.get("X-API-KEY")
-        if cle is not None:
-            cle_obj = cle_valide(cle)
-            if cle_obj is not None:
-                return cle_obj.utilisateur
+        return utiliser_cle(cle)
 
     # Importer et enregistrer le blueprint global API
     from app.controllers import api

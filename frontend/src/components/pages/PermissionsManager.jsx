@@ -11,7 +11,7 @@ const PER_PAGE = 15;
 const PERMISSIONS = [
     "octo", "admin_octo",
     "biero", "admin_biero",
-    "vpp", "vp_sondaj"
+    "vpp", "vp_sondaj", "cle_api"
 ]
 
 function UserRow({ user, onEdit }) {

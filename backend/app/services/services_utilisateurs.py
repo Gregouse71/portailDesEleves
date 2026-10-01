@@ -152,7 +152,7 @@ def prochains_anniv(debut=None, fin=None):
             return False
         date1 = date(year=2000, month=d.month, day=d.day)
 
-        return debut <= date1 <= fin or debut <= date1 + timedelta(days=365) <= fin
+        return debut <= date1 <= fin if debut <= fin else (debut <= date1 or date1 <= fin)
 
     now = datetime.now(timezone.utc).date().replace(year=2000)
     def aux(user):
