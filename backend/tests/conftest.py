@@ -124,6 +124,15 @@ def client_factory(app):
     return _create_client
 
 @pytest.fixture()
+def client_factory_user(client_factory, db_with_users):
+    def _create_client_user():
+        user = client_factory()
+        response = user.post('/api/login/connexion', json={'username': '23imbert', 'password': '1234'})
+        assert response.status_code == 200
+        return user
+    return _create_client_user
+
+@pytest.fixture()
 def client_factory_admin(client_factory):
     def _create_client_admin():
         admin = client_factory()
