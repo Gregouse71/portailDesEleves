@@ -20,7 +20,7 @@ def lister_cles_api():
     cles = CleAPI.query.filter_by(utilisateur_id=current_user.id).order_by(CleAPI.revoked.asc(), CleAPI.created_at.desc()).all()
     return jsonify({
         "cles": [c.to_dict() for c in cles],
-        "eligible": has_permission(current_user, "cle_api"),
+        "eligible_api": has_permission(current_user, "cle_api"),
     }), 200
 
 
@@ -34,10 +34,12 @@ def creer_cle_api():
     if actives >= MAX_CLES_ACTIVES:
         return jsonify({"message": f"Tu as déjà {MAX_CLES_ACTIVES} clés actives. Révoque-en une d'abord."}), 400
 
-    data = request.get_json() or {}
-    nom = (data.get("nom") or "").strip()[:100] or "Sans nom"
+    data = request.get_json()
+    nom = data.get("nom")
+    if nom is None:
+        return jsonify({"message": "La clé doit avoir un nom."}), 400
     valeur, empreinte = generer_cle()
-    cle = CleAPI(utilisateur_id=current_user.id, nom=nom, hash=empreinte)
+    cle = CleAPI(utilisateur_id=current_user.id, nom=nom.strip()[:100], hash=empreinte)
     db.session.add(cle)
     db.session.commit()
     # La valeur en clair n'est affichée QUE cette fois-ci.

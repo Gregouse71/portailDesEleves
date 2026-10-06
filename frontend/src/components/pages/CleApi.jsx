@@ -23,8 +23,11 @@ export default function CleApi() {
     });
 
     const creation = useMutation({
-        mutationFn: (nom) => creerCle({ nom }),
+        mutationFn: async (nom) => {
+            return await creerCle({ nom })
+        },
         onSuccess: (data) => {
+            console.log(data)
             setValeurCreee(data.valeur);
             setNouveauNom("");
             setErreur(null);
@@ -84,7 +87,10 @@ export default function CleApi() {
                 {erreur && <Alert variant="danger" onClose={() => setErreur(null)} dismissible>{erreur}</Alert>}
 
                 {eligible && <>
-                    <Form className="d-flex gap-2 mb-3" onSubmit={() => creation.mutate(nouveauNom)}>
+                    <Form
+                        className="d-flex gap-2 mb-3"
+                        onSubmit={(e) => { e.preventDefault(); creation.mutate(nouveauNom) }}
+                    >
                         <Form.Control
                             type="text"
                             placeholder="Nom de la clé"

@@ -1,11 +1,11 @@
 import hashlib
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app import db
 
 def _utcnow():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(timezone.utc)
 
 
 class CleAPI(db.Model):
@@ -17,11 +17,13 @@ class CleAPI(db.Model):
 
     nom = db.Column(db.String(100))            # libellé choisi par l'élève ("equipaps prod")
     hash = db.Column(db.String(64), nullable=False, unique=True, index=True)  # sha256 hex
-    portee = db.Column(db.String(50), nullable=False, default='annuaire:read')
+    # Pas utilisée pour l'instant
+    portee = db.Column(db.String(256), nullable=False, default='annuaire:read')
     created_at = db.Column(db.DateTime, default=_utcnow)
     last_used_at = db.Column(db.DateTime)
     use_count = db.Column(db.Integer, default=0)
     revoked = db.Column(db.Boolean, default=False)
+    expires_on = db.Column(db.DateTime, default=lambda: _utcnow() + timedelta(365))
 
     def to_dict(self):
         return {

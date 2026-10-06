@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
+import { listerCles } from '../../api/api_cles';
 
 const Dropdown = ({ title, list, end, setExpanded }) => {
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <NavDropdown.Divider key={i} />;
-                    case "navigate": return <NavDropdown.Item key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</NavDropdown.Item>;
+                    case "navigate": return <NavDropdown.Item key={i} onClick={() => { navigate(target); setExpanded(false) }}>{title}</NavDropdown.Item>;
                     case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
                     case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
                     case "custom": return target;
@@ -48,7 +49,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <hr key={i} className="my-2 text-muted" />;
-                    case "navigate": return <Nav.Link key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</Nav.Link>;
+                    case "navigate": return <Nav.Link key={i} onClick={() => { navigate(target); setExpanded(false) }}>{title}</Nav.Link>;
                     case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
                     case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
                     case "custom": return target;
@@ -83,6 +84,10 @@ export default function Header() {
     const { data: bieroAdminPermission = false } = useQuery({
         queryKey: ['permAdminBiero'],
         queryFn: () => verifierPermission({}, "admin_biero", userData.id),
+    });
+    const { data: { eligible_api } = { eligible_api: false } } = useQuery({
+        queryKey: ['cles'],
+        queryFn: () => listerCles({}),
     });
 
     const handleSearchSubmit = (e) => {
@@ -151,7 +156,7 @@ export default function Header() {
                         <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true} setExpanded={setExpanded}
                             list={[
                                 ["navigate", `/utilisateur/${userData.id}`, "Ma page"],
-                                ["navigate", "apidocs", "Clés d'API"],
+                                ...eligible_api ? [["navigate", "/apidocs", "Clés d'API"]] : [],
                                 ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],
                                 ["onClick", handleLogout, "Déconnexion"],
                                 ["divider"],

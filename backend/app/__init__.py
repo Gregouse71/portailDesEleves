@@ -51,13 +51,16 @@ def create_app(config: Config):
     
     @login_manager.request_loader
     def load_user_from_request(req):
+        view_func = app.view_functions.get(req.endpoint)
+        if not view_func or not getattr(view_func, '_allow_api_key', False):
+            return None
         cle = req.headers.get("X-API-KEY")
         return utiliser_cle(cle)
 
     # Importer et enregistrer le blueprint global API
     from app.controllers import api
     app.register_blueprint(api, url_prefix='/api')
-    # Initialisation du swagger, avec authentification de l'api
+    # Initialisation du swagger
     swagger.init_app(app)
 
     #permet d'avoir accès au fichier upload 

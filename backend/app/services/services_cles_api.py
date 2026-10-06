@@ -9,7 +9,7 @@ def utiliser_cle(valeur):
     if not valeur:
         return None
     cle_api = CleAPI.query.filter_by(hash=hash_cle(valeur), revoked=False).first()
-    if cle_api is not None:
+    if cle_api is not None and cle_api.expires_on > datetime.now(tz=None):
         cle_api.use_count = cle_api.use_count + 1
         cle_api.last_used_at = datetime.now(tz=timezone.utc)
         db.session.commit()

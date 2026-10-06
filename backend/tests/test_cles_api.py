@@ -138,7 +138,7 @@ class TestAnnuaire:
         db_init, un_a, _ = db_cles
 
         valeur, empreinte = generer_cle()
-        cle = CleAPI(utilisateur=un_a, nom="Cle test", hash=empreinte, revoked=True)
+        cle = CleAPI(utilisateur=un_a, nom="Cle test", hash=empreinte)
         db_init.session.add(cle)
         db_init.session.commit()
 
