@@ -5,6 +5,7 @@ from app import db
 from app.services.services_login import has_permission
 from app.models.models_cles_api import CleAPI, generer_cle
 from app.services.services_cles_api import revoquer_cle
+from app.utils.decorators import superutilisateur_required
 
 # Gestion des clés API personnelles (session portail). La brique annuaire elle-même
 # vit dans controllers_annuaire (auth par X-API-Key, pas par session).
@@ -60,3 +61,20 @@ def revoquer_cle_api():
         return jsonify({"message": "Clé introuvable."}), 404
 
     return jsonify({"cle": cle.to_dict()}), 200
+
+
+@controllers_cles.get('/revoquer_tout')
+@login_required
+@superutilisateur_required
+def revoquer_cle_utilisateur():
+    """Révoque toutes les clés d'api de l'utilisateur"""
+    user_id = request.args.get("id")
+    if user_id is None:
+        return jsonify({"message": "Aucun ID d'utilisateur reçu"}), 400
+
+    actives = CleAPI.query.filter_by(utilisateur_id=user_id, revoked=False).all()
+    for cle in actives:
+        cle.revoked = True
+    db.session.commit()
+
+    return jsonify({"message": "Clés supprimées avec succès"}), 200

@@ -5,6 +5,8 @@ import { addPermission, deletePermission, getPermissions, resetMotDePasse, gener
 import RenderPagination from "../elements/RenderPagination";
 import { modifierInfos } from "../../api/api_utilisateurs";
 import { PencilSquare, Person, Envelope, Mortarboard, JournalBookmark, Droplet, Link45deg, Key } from "react-bootstrap-icons";
+import DropdownEditer from "../elements/DropdownEditer";
+import { revoquerToutesCle } from "../../api/api_cles";
 
 const PER_PAGE = 15;
 
@@ -33,9 +35,12 @@ function UserRow({ user, onEdit }) {
                 ))}
             </td>
             <td className="text-center">
-                <Button variant="outline-primary" size="sm" onClick={() => onEdit(user)}>
-                    <PencilSquare className="me-1" /> Éditer
-                </Button>
+                <DropdownEditer list={[
+                    { can: true, onClick: () => onEdit(user), name: <><PencilSquare className="me-1" />Éditer</> },
+                    "divider",
+                    { can: true, onClick: () => revoquerToutesCle({ id: user.id }), name: "Révoquer les clé d'API" },
+                ]}
+                />
             </td>
         </tr>
     );
@@ -43,7 +48,7 @@ function UserRow({ user, onEdit }) {
 
 export default function PermissionsManager() {
     const [page, setPage] = useState(1);
-    
+
     // Filters state
     const [filters, setFilters] = useState({
         pseudo: "",
@@ -70,7 +75,7 @@ export default function PermissionsManager() {
         queryFn: () => getPermissions({ page, per_page: PER_PAGE, ...filters }),
         placeholderData: (previousData) => previousData,
     });
-    
+
     const { permissions: users, count } = data;
     const totalPages = Math.ceil(count / PER_PAGE);
 
@@ -99,8 +104,8 @@ export default function PermissionsManager() {
             queryClient.invalidateQueries(["permissions"]);
             setNewPermission("");
             setEditUser(prev => ({
-                ...prev, 
-                permissions: [...(prev.permissions||[]), { id: Date.now(), permission: newPermission }]
+                ...prev,
+                permissions: [...(prev.permissions || []), { id: Date.now(), permission: newPermission }]
             }));
         }
     });
@@ -112,7 +117,7 @@ export default function PermissionsManager() {
         onSuccess: (_, permId) => {
             queryClient.invalidateQueries(["permissions"]);
             setEditUser(prev => ({
-                ...prev, 
+                ...prev,
                 permissions: prev.permissions.filter(p => p.id !== permId)
             }));
         }
@@ -193,12 +198,12 @@ export default function PermissionsManager() {
     if (isError) return <div>Erreur lors du chargement des données.</div>;
 
     return (
-        <div>
+        <div className="overflow-visible">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="mb-0" />
             </div>
 
-            <Table striped bordered hover responsive className="shadow-sm">
+            <Table striped bordered hover className="shadow-sm">
                 <thead className="table-dark">
                     <tr>
                         <th style={{ width: '15%' }}>Nom d'utilisateur</th>
@@ -208,7 +213,7 @@ export default function PermissionsManager() {
                         <th style={{ width: '15%' }}>Email</th>
                         <th style={{ width: '5%' }}>Baptisé</th>
                         <th style={{ width: '20%' }}>Permissions</th>
-                        <th className="text-center" style={{ width: '10%' }}>Action</th>
+                        <th className="text-center" style={{ width: '5%' }}>Action</th>
                     </tr>
                     <tr className="bg-light align-middle">
                         <th>
@@ -272,11 +277,11 @@ export default function PermissionsManager() {
             {editUser && (
                 <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
                     <Modal.Header closeButton className="bg-primary text-white">
-                        <Modal.Title><PencilSquare className="me-2" /> Édition de @{editUser.nom_utilisateur}</Modal.Title>
+                        <Modal.Title><PencilSquare className="me-2" /> Édition de {editUser.nom_utilisateur}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <h5 className="mb-3 border-bottom pb-2">Identité</h5>
-                        <Row className="mb-3">
+                        <h5 className="mb-2 border-bottom pb-1">Identité</h5>
+                        <Row className="mb-2">
                             <Col md={6}>
                                 <Form.Label>Prénom</Form.Label>
                                 <InputGroup>
@@ -292,7 +297,7 @@ export default function PermissionsManager() {
                                 </InputGroup>
                             </Col>
                         </Row>
-                        <Row className="mb-4">
+                        <Row className="mb-2">
                             <Col md={6}>
                                 <Form.Label>Nom d'utilisateur</Form.Label>
                                 <InputGroup>
@@ -309,8 +314,8 @@ export default function PermissionsManager() {
                             </Col>
                         </Row>
 
-                        <h5 className="mb-3 border-bottom pb-2">Cursus</h5>
-                        <Row className="mb-4">
+                        <h5 className="mb-2 border-bottom pb-1">Cursus</h5>
+                        <Row className="mb-2">
                             <Col md={6}>
                                 <Form.Label>Promotion</Form.Label>
                                 <InputGroup>
@@ -334,14 +339,14 @@ export default function PermissionsManager() {
                                 </InputGroup>
                             </Col>
                         </Row>
-                        
-                        <Row className="mb-4">
+
+                        <Row className="mb-2">
                             <Col md={12}>
                                 <Form.Label>Baptisé</Form.Label>
                                 <InputGroup>
                                     <InputGroup.Text><Droplet /></InputGroup.Text>
-                                    <Form.Select 
-                                        name="est_baptise" 
+                                    <Form.Select
+                                        name="est_baptise"
                                         value={editUser.est_baptise ? "true" : "false"}
                                         onChange={(e) => setEditUser({ ...editUser, est_baptise: e.target.value === "true" })}
                                     >
@@ -351,9 +356,20 @@ export default function PermissionsManager() {
                                 </InputGroup>
                             </Col>
                         </Row>
+                    </Modal.Body>
 
-                        <h5 className="mb-3 border-bottom pb-2">Gestion du mot de passe</h5>
-                        <Row className="mb-4">
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowModal(false)}>
+                            Annuler
+                        </Button>
+                        <Button variant="success" onClick={handleSave} disabled={saveMutation.isPending}>
+                            {saveMutation.isPending ? "Enregistrement..." : "Enregistrer les modifications"}
+                        </Button>
+                    </Modal.Footer>
+
+                    <Modal.Body>
+                        <h5 className="mb-2 border-bottom pb-1">Gestion du mot de passe</h5>
+                        <Row className="mb-2">
                             <Col md={12}>
                                 <div className="d-flex flex-wrap gap-2 mb-3">
                                     <Button variant="outline-warning" onClick={handleResetPassword}>
@@ -366,7 +382,7 @@ export default function PermissionsManager() {
                                         <Key className="me-2" /> Forcer le mot de passe
                                     </Button>
                                 </div>
-                                
+
                                 {resetMsg && (
                                     <div className={`text-${resetMsg.type} mb-2 small`}>
                                         {resetMsg.text}
@@ -377,7 +393,7 @@ export default function PermissionsManager() {
                                         {passwordMsg.text}
                                     </div>
                                 )}
-                                
+
                                 {magicLink && (
                                     <div className="mb-3">
                                         <Form.Label>Lien magique :</Form.Label>
@@ -390,14 +406,14 @@ export default function PermissionsManager() {
                             </Col>
                         </Row>
 
-                        <h5 className="mb-3 border-bottom pb-2">Permissions</h5>
+                        <h5 className="mb-2 border-bottom pb-1">Permissions</h5>
                         <div className="mb-3">
                             {editUser.permissions && editUser.permissions.length > 0 ? (
                                 editUser.permissions.map((p, idx) => (
                                     <Badge bg="secondary" className="me-2 mb-2 p-2 fs-6" key={idx}>
                                         {p.permission}
-                                        <span 
-                                            style={{ cursor: "pointer", marginLeft: "8px", fontWeight: "bold" }} 
+                                        <span
+                                            style={{ cursor: "pointer", marginLeft: "8px", fontWeight: "bold" }}
                                             onClick={() => deletePermMutation.mutate(p.id)}
                                             title="Supprimer"
                                         >
@@ -409,9 +425,9 @@ export default function PermissionsManager() {
                                 <p className="text-muted fst-italic">Aucune permission pour cet utilisateur.</p>
                             )}
                         </div>
-                        
+
                         <InputGroup className="mt-2">
-                            <Form.Select 
+                            <Form.Select
                                 value={newPermission}
                                 onChange={(e) => setNewPermission(e.target.value)}
                             >
@@ -420,8 +436,8 @@ export default function PermissionsManager() {
                                     PERMISSIONS.map((elt, ind) => <option key={ind} value={elt}>{elt}</option>)
                                 }
                             </Form.Select>
-                            <Button 
-                                variant="info" 
+                            <Button
+                                variant="info"
                                 disabled={!newPermission || addPermMutation.isPending}
                                 onClick={() => addPermMutation.mutate(newPermission)}
                             >
@@ -430,16 +446,9 @@ export default function PermissionsManager() {
                         </InputGroup>
 
                     </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>
-                            Annuler
-                        </Button>
-                        <Button variant="success" onClick={handleSave} disabled={saveMutation.isPending}>
-                            {saveMutation.isPending ? "Enregistrement..." : "Enregistrer les modifications"}
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            )}
-        </div>
+                </Modal >
+            )
+            }
+        </div >
     );
 }

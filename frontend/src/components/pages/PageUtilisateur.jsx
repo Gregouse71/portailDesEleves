@@ -58,7 +58,6 @@ function PageUtilisateur() {
         if (location.pathname.includes('assos')) return 'assos';
         if (location.pathname.includes('questions')) return 'questions';
         if (location.pathname.includes('media')) return 'media';
-        if (location.pathname.includes('cle')) return 'cle';
         return 'info';
     };
 
@@ -148,13 +147,6 @@ function PageUtilisateur() {
                         Media
                     </Nav.Link>
                 </Nav.Item>
-                {userData.id == id && (
-                    <Nav.Item>
-                        <Nav.Link key={5} as={Link} to={`/utilisateur/${id}/cle`} eventKey="cle">
-                            Clé API
-                        </Nav.Link>
-                    </Nav.Item>
-                )}
             </Nav>
 
             <Routes>

@@ -45,7 +45,7 @@ export default function CleApi() {
     if (isPending || isPendingSpec) return <p>Chargement...</p>;
 
     const cles = donneesCles?.cles ?? [];
-    const eligible = donneesCles?.eligible ?? false;
+    const eligible = donneesCles?.eligible_api ?? false;
 
     const copier = async () => {
         try {

@@ -31,14 +31,14 @@ export default function Admin() {
 
             {sections.map((u, i) =>
                 <div key={i} className="admin-section my-4">
-                <Button
-                    variant="h2"
-                    className="d-flex justify-content-between admin-section-header"
-                    onClick={() => u.trigger(!u.isOpen)}
-                    onKeyDown={() => u.trigger(!u.isOpen)}
-                >
-                    <h2>{u.title} {u.isOpen ? <ChevronUp /> : <ChevronDown />}</h2>
-                </Button>
+                    <Button
+                        variant="h2"
+                        className="d-flex justify-content-between admin-section-header"
+                        onClick={() => u.trigger(!u.isOpen)}
+                        onKeyDown={() => u.trigger(!u.isOpen)}
+                    >
+                        <h2>{u.title} {u.isOpen ? <ChevronUp /> : <ChevronDown />}</h2>
+                    </Button>
                     <Collapse in={u.isOpen}><div><u.element /></div></Collapse>
                 </div>
             )}
