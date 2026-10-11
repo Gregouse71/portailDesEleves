@@ -9,8 +9,8 @@ import { Layout, LayoutProvider } from "./layouts/Layout";
 import PublicationsRecentes from "./components/pages/PublicationsRecentes";
 
 // Lazy imports
-const Soifguard = lazy(() => import("./pages/Soifguard"));
-const Admin = lazy(() => import("./pages/Admin"));
+const Soifguard = lazy(() => import("./layouts/Soifguard"));
+const Admin = lazy(() => import("./layouts/Admin"));
 const ListeAssos = lazy(() => import("./components/pages/AssoListe"));
 const Home = lazy(() => import("./components/pages/Home"));
 const Asso = lazy(() => import("./components/pages/PageAsso"));
@@ -31,6 +31,7 @@ const MDPoublie = lazy(() => import("./components/MDPoublie"));
 const Jeux2048 = lazy(() => import("./components/pages/Jeux/2048"));
 const EchecsLobby  = lazy(() => import("./components/pages/Jeux/Echecs/EchecsLobby"));
 const EchecsPartie = lazy(() => import("./components/pages/Jeux/Echecs/EchecsPartie"));
+const CleApi = lazy(() => import("./components/pages/CleApi"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -85,6 +86,7 @@ export default function App() {
               <Route path="vendomes" element={<Vendomes />} />
               <Route path="palums" element={<Palums />} />
               <Route path="publications" element={<PublicationsRecentes />} />
+              <Route path="apidocs" element={<CleApi />} />
             </Route>
             <Route path="soifguard/*" element={<Soifguard />}>
             </Route>
