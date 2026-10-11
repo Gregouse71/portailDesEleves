@@ -1,13 +1,21 @@
 # Documentation du nouveau portail des Élèves
 
 
-## I. Contexte général
+## I. Généralités
+
+### A - Contexte
 
 Ce portail est une modernisation du portail des élèves commencé en 2007 (?), amélioré en 2013 (?), puis par le VP Geek en 2017. Son principal problème est de n'être accessible, à ma connaissance, que depuis la machine sur laquelle il est hébergé. Il n'y avait donc pas de développement à plusieurs possibles, et s'il y avait bien un suivi git au départ, ça fait longtemps qu'il a été abandonnée (plus de 3500 fichiers modifiés ou non suivis). Il a vocation a être modifié, amélioré au fil du temps, et le repertoire git est un outil essentiel pour assurer cela, avec l'aide du déploiement automatisé permis par gitlab.
 
 Le but est d'écrire du code propre. Pour ce faire, inspirez vous de ce qui a été fait pour les événements et les élections, qui constituent un bon exemple avec api documenté et structurée de façon cohérente. Essayez aussi de maintenir un historique git aussi propre que possible, et de ne pas casser une fonctionnalité lorsque vous en déployez une autre.
 
 Par les choix qui ont été fait lors du début du développement, certaines technologies sont employées sans être indispensables (on aurait pu utiliser fastapi au lieu de flask par exemple), mais passer de l'une à l'autre n'est pas une mince affaire, surtout lorsqu'il s'agit de paramétrer correctement l'application backend, mais aussi le frontend, et le reverse proxy utilisé sur la machine virtuelle.
+
+### B - Utilisation de l'API
+
+Pour augmenter l'utilité du backend du site, certaines routes sont accessibles après authentification par clés d'API. Ainsi, elles peuvent être appelée dans des sites web créés par d'autres élèves, sans nécessiter d'utiliser de jeton de session pour l'authentification. Ce jeton pourrait en effet fuiter (courant pour les clés d'authentification utilisées dans du code), et compromettre les données disponibles sur le portail.
+
+Les administrateurs peuvent donner à un élève l'autorisation de créer des clés d'API. 3 trois clés peuvent être actives en simultané pour un élève afin de limiter les abus d'utilisation, et elles ont une durée de vie de 1 an pour limiter dans le temps les dégats causés par une fuite non détectée.
 
 ## II. Administration
 
