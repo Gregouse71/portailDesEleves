@@ -4,7 +4,7 @@ import uuid
 import os
 from flask_login import current_user
 
-from app.services import db
+from app import db
 from app.utils.divers_utils import get_embed_url
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import Association

@@ -23,6 +23,15 @@ from app.controllers.modules.controllers_musiciens import controllers_musiciens
 api = Blueprint('api', __name__)
 @api.get('/alive')
 def is_alive_route():
+    """
+    Route de vérification du fonctionnement de l'api
+    ---
+    responses:
+      200:
+        description: Une confirmation du fonctionnement de l'api
+        examples:
+          true
+    """
     return jsonify(True)
 
 # Enregistrer chaque blueprint sous le blueprint global

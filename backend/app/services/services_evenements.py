@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, time, date, timezone
 from copy import copy
 from sqlalchemy import desc
 
-from app.services import db
+from app import db
 from app.models.models_evenements import Evenement
 
 def get_events (id, page=1, per=20):

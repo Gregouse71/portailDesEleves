@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import or_, asc, desc
 
-from app.services import db
+from app import db
 from app.models import Utilisateur
 from app.models.modules.models_bibliotheque import Livre, EmpruntLivre
 

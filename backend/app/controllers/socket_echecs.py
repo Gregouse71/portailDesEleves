@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_socketio import emit, join_room, leave_room
 
-from app import socketio
+from app.extensions import socketio
 from app.services.services_echecs import (
     jouer_coup, coups_legaux, get_partie,
     abandonner, proposer_nulle, accepter_nulle,
