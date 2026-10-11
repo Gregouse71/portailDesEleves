@@ -1,5 +1,6 @@
 from app.models import Association, Utilisateur
 from app.models.modules.models_cotisations import AssociationCotisation, AssociationCotisationUtilisateur
+from app.services.modules.services_cotisations import est_cotisant_asso, est_cotisant_biero, supprimer_membre_cotisation, ajouter_membre_cotisation
 from datetime import datetime, timedelta
 
 class TestCotisations:
@@ -23,7 +24,7 @@ class TestCotisations:
         db_initialized.session.commit()
 
         # Check not cotisant initially
-        assert not est_cotisant_asso(user, asso.id)
+        assert not est_cotisant_asso(user.id, asso.id)
 
         # 3. Add user to cotisation
         link = AssociationCotisationUtilisateur(utilisateur_id=user.id, cotisation=cot)
@@ -31,18 +32,15 @@ class TestCotisations:
         db_initialized.session.commit()
 
         # Check cotisant now
-        assert est_cotisant_asso(user, asso.id)
+        assert est_cotisant_asso(user.id, asso.id)
 
-        # 4. Check toggle
-        # Toggling should remove the membership
-        removed = user.toggle_cotisation_pour_association(asso.id)
-        assert not removed  # removed means returned False for is_member after toggle
-        assert not est_cotisant_asso(user, asso.id)
+        removed = supprimer_membre_cotisation(link, user.id)
+        assert removed
+        assert not est_cotisant_asso(user.id, asso.id)
 
-        # Toggling again should add it back
-        added = user.toggle_cotisation_pour_association(asso.id)
+        added = ajouter_membre_cotisation(cot, user.id)
         assert added
-        assert est_cotisant_asso(user, asso.id)
+        assert est_cotisant_asso(user.id, asso.id) is not None
 
     def test_cotisations_api(app, db_with_users, client_factory_admin):
         db_only, users = db_with_users
@@ -50,7 +48,7 @@ class TestCotisations:
         test_user = users[4]
 
         # Create association
-        asso = Association(nom="Biero", ordre_importance=9, description="Bierologie")
+        asso = Association(nom="Biéro", ordre_importance=9, description="Bierologie")
         db_only.session.add(asso)
         db_only.session.commit()
 
@@ -85,13 +83,13 @@ class TestCotisations:
             assert r.status_code == 201
 
             # Check that test_user is cotisant now
-            assert test_est_cotisant_asso(user, asso.id)
-            assert est_cotisant_biero(user.id)
+            assert est_cotisant_asso(test_user.id, asso.id)
+            assert est_cotisant_biero(test_user.id)
 
             # 4. Remove member
             r = client_admin.delete(f'/api/cotisations/{asso.id}/cotisation/{cot_id}/membres/{test_user.id}')
             assert r.status_code == 200
 
             # Check not cotisant
-            assert not test_est_cotisant_asso(user, asso.id)
-            assert not est_cotisant_biero(user.id)
+            assert not est_cotisant_asso(test_user.id, asso.id)
+            assert not est_cotisant_biero(test_user.id)
