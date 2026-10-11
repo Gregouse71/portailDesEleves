@@ -7,7 +7,7 @@ import io
 
 from app import db
 from app.utils.verification_format import valider_questions_du_portail
-from app.utils.decorators import superutilisateur_required, a_permission, hors_mode_parrainage
+from app.utils.decorators import superutilisateur_required, a_permission, hors_mode_parrainage, cle_api_autorisee
 from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, add_utilisateur, set_user_photo, set_user_banniere, get_user_media, get_utilisateur, obtenir_famille, obtenir_chemin
 from app.services.services_media import upload_media, delete_media
 from app.models.models_utilisateurs import Utilisateur
@@ -469,6 +469,7 @@ def route_selectionner_marrains():
 
 
 @controllers_utilisateurs.route('/prochains_anniv', methods=['GET'])
+@cle_api_autorisee
 @login_required
 def route_get_anniv():
     """

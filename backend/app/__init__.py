@@ -15,6 +15,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
 
 from .extensions import db, limiter, login_manager, socketio, scheduler, swagger, require_oauth, authorization
+from app.services.services_cles_api import utiliser_cle
 
 import os
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -48,6 +49,15 @@ def create_app(config: Config):
     def load_user(user_id):
         return Utilisateur.query.get(int(user_id))  # Charger l'utilisateur par ID
     
+    @login_manager.request_loader
+    def load_user_from_request(req):
+        view_func = app.view_functions.get(req.endpoint)
+        if not view_func or not getattr(view_func, '_allow_api_key', False):
+            return None
+        cle = req.headers.get("X-API-KEY")
+        return utiliser_cle(cle)
+
+    # Importer et enregistrer le blueprint global API
     from app.controllers import api
     app.register_blueprint(api, url_prefix='/api')
     # Initialisation du swagger

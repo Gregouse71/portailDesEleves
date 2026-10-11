@@ -18,6 +18,7 @@ from app.controllers.modules.controllers_cotisations import controllers_cotisati
 from app.controllers.controllers_oauth import controllers_oauth
 from app.controllers.controllers_echecs import controllers_echecs
 from app.controllers.modules.controllers_musiciens import controllers_musiciens
+from app.controllers.controllers_cles_api import controllers_cles
 
 # Creer un blueprint global qui regroupe tous les autres
 api = Blueprint('api', __name__)
@@ -52,6 +53,7 @@ api.register_blueprint(controllers_cotisations, url_prefix='/cotisations')
 api.register_blueprint(controllers_oauth, url_prefix='/oauth')
 api.register_blueprint(controllers_echecs, url_prefix='/echecs')
 api.register_blueprint(controllers_musiciens, url_prefix='/musiciens')
+api.register_blueprint(controllers_cles, url_prefix='/cles')
 
 # Ainsi, toutes les routes seront accessibles sous `/api/users` et `/api/sondages`, etc.
 from . import socket_chat
