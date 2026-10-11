@@ -10,7 +10,7 @@ export default function DropdownEditer({ list }) {
         >
             <Dropdown.Toggle
                 as="div"
-                className="no-caret p-2 border-0 bg-transparent"
+                className="no-caret p-0 border-0 bg-transparent"
                 style={{ cursor: "pointer", fontSize: "1.2rem" }}
             >
                 ⋮
