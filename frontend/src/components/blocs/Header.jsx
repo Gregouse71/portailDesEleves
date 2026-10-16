@@ -105,7 +105,7 @@ export default function Header() {
     };
 
     return (
-        <Navbar expand="md" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
+        <Navbar expand="md" sticky="top" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
                 <Navbar.Brand style={{ cursor: "pointer" }} onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -138,10 +138,10 @@ export default function Header() {
 
                         <div className="d-none d-md-block flex-grow-1"></div>
 
-                        <Form className="d-flex" onSubmit={handleSearchSubmit}>
+                        <Form className="d-flex form-navbar" onSubmit={handleSearchSubmit}>
                             <FormControl
                                 type="search"
-                                placeholder="Rechercher"
+                                placeholder="Trouver un utilisateur"
                                 aria-label="Search"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}

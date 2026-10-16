@@ -6,11 +6,8 @@
 .global-header-header {
     background-color: var(--header-bg);
     color: var(--header-text);
-    padding: 10px 20px;
-    min-height: 40px;
-    position: sticky;
-    top: 0;
-    z-index: 1020;
+    min-height: 2.2rem;
+    max-height: 3rem;
 
     .navbar-brand,
     .nav-link {
@@ -41,5 +38,10 @@
             border-radius: $border-radius; // $border-radius can stay as it's a size variable
             margin-top: 0.5rem;
         }
+    }
+
+    .form-navbar {
+        margin: 2px;
+        max-height: 2rem;
     }
 }
