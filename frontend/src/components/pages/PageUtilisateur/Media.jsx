@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { obtenirPhotosUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur, ajouterContenuUtilisateur, supprimerPhotoUtilisateur, ajouterLienVideoUtilisateur, renommerPhotoUtilisateur, obtenirDataUser } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Card, Form } from "react-bootstrap";
-import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
+import OngletTemplate from "../../templates/OngletTemplate";
+import Chargement from "../../elements/Chargement";
 
 export default function TabMedia({ id, autoriseAModifier }) {
     const queryClient = useQueryClient();
@@ -36,7 +37,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
 
         if (file) {
             try {
-                const result = await ajouterContenuUtilisateur(id, file);
+                await ajouterContenuUtilisateur(id, file);
                 queryClient.invalidateQueries(['photosUtilisateur', id]);
             } catch (error) {
                 alert(`Erreur : ${error.message}`);
@@ -114,9 +115,9 @@ export default function TabMedia({ id, autoriseAModifier }) {
         }
     })
 
-    if (isLoading) return <>Loading...</>
+    if (isLoading) return <Chargement/>
 
-    return (<>
+    let contenu = <>
         <input
             type="file"
             id="photo-upload"
@@ -124,15 +125,6 @@ export default function TabMedia({ id, autoriseAModifier }) {
             accept="image/png, image/jpeg, image/jpg"
             onChange={handleAjouterPhoto}
         />
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Mes photos</h2>
-            {autoriseAModifier && (<DropdownEditer list={[
-                { can: true, onClick: toggleGestion, name: "Modifier" },
-                { can: true, onClick: ajouterPhoto, name: "Ajouter une photo" },
-                { can: true, onClick: handleAjouterVideo, name: "Ajouter un lien vidéo" },
-            ]} />
-            )}
-        </div>
 
         <Row xs={2} sm={3} md={4} lg={5} className="g-3">
             {photos.map((elt, i) => {
@@ -217,7 +209,6 @@ export default function TabMedia({ id, autoriseAModifier }) {
                                                 type="text"
                                                 value={editingName}
                                                 onChange={(e) => setEditingName(e.target.value)}
-                                                autoFocus
                                             />
                                         </Form.Group>
                                         <Button size="sm" variant="success" onClick={() => handleSaveRename(elt.id)} className="mb-2">
@@ -241,5 +232,14 @@ export default function TabMedia({ id, autoriseAModifier }) {
                 );
             })}
         </Row>
-    </>)
+    </>
+
+    return <OngletTemplate
+        titre="Mes photos"
+        avecDropdown={autoriseAModifier} contenuDropdown={[
+            { can: true, onClick: toggleGestion, name: "Modifier" },
+            { can: true, onClick: ajouterPhoto, name: "Ajouter une photo" },
+            { can: true, onClick: handleAjouterVideo, name: "Ajouter un lien vidéo" },
+        ]}
+        contenu={contenu} />
 }

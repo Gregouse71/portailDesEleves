@@ -8,6 +8,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import BlocEvents from '../components/blocs/blocEvents';
 import BlocSoldes from '../components/blocs/blocSoldes';
+import Footer from '../components/blocs/Footer';
 
 const LayoutContext = createContext();
 
@@ -65,6 +66,7 @@ export function Layout() {
                     </Col>
                 </Row>
             </Container>
+            <Footer />
         </div>
     );
 }

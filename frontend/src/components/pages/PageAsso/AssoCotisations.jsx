@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Badge, Button, Card, Col, Form, Row, ListGroup, InputGroup } from "react-bootstrap";
+import { Badge, Button, Card, Col, Form, Row, ListGroup } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useProtected } from "../../../Protected";
 import {
@@ -11,19 +11,37 @@ import {
     supprimerMembreCotisation,
     exporterMembresCotisation
 } from "../../../api/modules/api_cotisations";
-import { obtenirDataUser, searchUsers } from "../../../api/api_utilisateurs";
-import ConfirmationModal from "../../elements/ConfirmationModal";
+import { obtenirDataUser } from "../../../api/api_utilisateurs";
 import DropdownEditer from "../../elements/DropdownEditer";
 import Autocomplete from "../../elements/Autocompletion";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 const format_date = (s) => s ? new Date(s).toLocaleDateString("fr-FR") : "Non précisé";
+
+function Cotisant({ userId, onRemove }) {
+    const { data } = useQuery({
+        queryKey: ['donneesUtilisateur', userId],
+        queryFn: () => obtenirDataUser(userId),
+    });
+
+    if (!data) return <ListGroup.Item className="d-flex justify-content-between align-items-center py-1 text-muted small">...</ListGroup.Item>;
+
+    return (
+        <ListGroup.Item className="d-flex justify-content-between align-items-center py-1">
+            <div>
+                {data.prenom} {data.nom} {data.cycle}{data.promotion}
+            </div>
+            <Button variant="danger" className="p-0" onClick={onRemove}>
+                X
+            </Button>
+        </ListGroup.Item>
+    );
+}
 
 function CotisationCard({ isNew, id, association_id, canModify, cotisationData, stopCreating }) {
     const queryClient = useQueryClient();
     const [isModifying, setIsModifying] = useState(isNew);
     const [showMembres, setShowMembres] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
 
     const [formState, setFormState] = useState(isNew ? {
         nom: "",
@@ -68,8 +86,6 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['cotisations_asso', association_id]);
-            setSearchQuery("");
-            setSearchResults([]);
         }
     });
 
@@ -81,18 +97,6 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
             queryClient.invalidateQueries(['cotisations_asso', association_id]);
         }
     });
-
-    const handleSearch = async (val) => {
-        setSearchQuery(val);
-        if (val.trim().length > 1) {
-            const results = await searchUsers({ query: val, limit: 5 });
-            if (results) {
-                setSearchResults(results);
-            }
-        } else {
-            setSearchResults([]);
-        }
-    };
 
     if (isModifying) {
         return (
@@ -147,7 +151,6 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
 
     const today = new Date().toISOString().split("T")[0];
     const isActive = cotisationData.date_debut <= today && today <= cotisationData.date_fin;
-    console.log(cotisationData)
 
     return (
         <Card className="mb-3">
@@ -223,26 +226,6 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
     );
 }
 
-function Cotisant({ userId, onRemove }) {
-    const { data, isPending: isPendingUser } = useQuery({
-        queryKey: ['donneesUtilisateur', userId],
-        queryFn: () => obtenirDataUser(userId),
-    });
-
-    if (!data) return <ListGroup.Item className="d-flex justify-content-between align-items-center py-1 text-muted small">...</ListGroup.Item>;
-
-    return (
-        <ListGroup.Item className="d-flex justify-content-between align-items-center py-1">
-            <div>
-                {data.prenom} {data.nom} {data.cycle}{data.promotion}
-            </div>
-            <Button variant="danger" className="p-0" onClick={onRemove}>
-                X
-            </Button>
-        </ListGroup.Item>
-    );
-}
-
 export default function AssoCotisations({ asso_id, membreData }) {
     const { userData } = useProtected();
     const [isCreating, setIsCreating] = useState(false);
@@ -254,19 +237,13 @@ export default function AssoCotisations({ asso_id, membreData }) {
 
     const canModify = userData.is_superuser || membreData.autorise;
 
-    return (
-        <>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Gestion des Cotisations</h2>
-                {canModify && !isCreating && (
-                    <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                        <DropdownEditer list={[
-                            { can: true, onClick: () => setIsCreating(true), name: "Créer une cotisation" },
-                        ]} />
-                    </div>
-                )}
-            </div>
-
+    return <OngletTemplate
+        titre="Gestion des Cotisations"
+        isLoading={isLoading}
+        avecDropdown={canModify && !isCreating} contenuDropdown={[
+            { can: true, onClick: () => setIsCreating(true), name: "Créer une cotisation" },
+        ]}
+        contenu={<>
             {isCreating && (
                 <CotisationCard
                     isNew={true}
@@ -276,9 +253,7 @@ export default function AssoCotisations({ asso_id, membreData }) {
                 />
             )}
 
-            {isLoading ? (
-                <div>Chargement des cotisations...</div>
-            ) : cotisations.length === 0 ? (
+            {cotisations.length === 0 ? (
                 <div className="text-muted text-center py-4">
                     Aucune cotisation n&apos;est définie pour cette association.
                 </div>
@@ -293,6 +268,5 @@ export default function AssoCotisations({ asso_id, membreData }) {
                     />
                 ))
             )}
-        </>
-    );
+        </>} />;
 }

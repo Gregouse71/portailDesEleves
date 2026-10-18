@@ -201,7 +201,7 @@ export default function PermissionsManager() {
             <Table striped bordered hover responsive className="shadow-sm">
                 <thead className="table-dark">
                     <tr>
-                        <th style={{ width: '15%' }}>Nom d'utilisateur</th>
+                        <th style={{ width: '15%' }}>Nom d&apos;utilisateur</th>
                         <th style={{ width: '20%' }}>Utilisateur</th>
                         <th style={{ width: '5%' }}>Promo</th>
                         <th style={{ width: '7%' }}>Cycle</th>
@@ -294,7 +294,7 @@ export default function PermissionsManager() {
                         </Row>
                         <Row className="mb-4">
                             <Col md={6}>
-                                <Form.Label>Nom d'utilisateur</Form.Label>
+                                <Form.Label>Nom d&apos;utilisateur</Form.Label>
                                 <InputGroup>
                                     <InputGroup.Text>@</InputGroup.Text>
                                     <Form.Control name="nom_utilisateur" value={editUser.nom_utilisateur || ""} onChange={handleEditChange} />
@@ -398,7 +398,7 @@ export default function PermissionsManager() {
                                         {p.permission}
                                         <span 
                                             style={{ cursor: "pointer", marginLeft: "8px", fontWeight: "bold" }} 
-                                            onClick={() => deletePermMutation.mutate(p.id)}
+                                            onClick={() => deletePermMutation.mutate(p.id)} onKeyDown={() => deletePermMutation.mutate(p.id)}
                                             title="Supprimer"
                                         >
                                             &times;

@@ -100,10 +100,6 @@ export default function EchecsPartie() {
                 : null
         : null;
 
-    // ELO affiché
-    const monElo = partie ? (maCouleur === "blanc" ? partie.elo_blanc : partie.elo_noir) : null;
-    const sonElo = partie ? (maCouleur === "blanc" ? partie.elo_noir : partie.elo_blanc) : null;
-
     const onCaseClick = useCallback(async (idx) => {
         if (!maCouleur || !partie) return;
         if (maCouleur !== partie.trait) return;
@@ -373,7 +369,7 @@ function Plateau({ plateau, selection, coupsLegaux, dernierCoup, maCouleur, onCa
                         ].filter(Boolean).join(" ");
 
                         return (
-                            <div key={i} className={classes} onClick={() => onCaseClick(i)}>
+                            <div key={i} className={classes} onClick={() => onCaseClick(i)} onKeyDown={() => onCaseClick(i)}>
                                 {piece && (
                                     <img className="echecs-piece" src={IMG[piece.piece]}
                                         alt={piece.piece} draggable={false} />

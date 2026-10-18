@@ -8,6 +8,7 @@ import DropdownEditer from "../../elements/DropdownEditer";
 import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import ConfirmationModal from "../../elements/ConfirmationModal";
+import OngletTemplate from "../../templates/OngletTemplate";
 
 const format_date = (s) => s ? new Date(s).toLocaleString("fr-FR") : "Non précisé"
 
@@ -273,19 +274,18 @@ export default function AssoElection({ asso_id }) {
         queryFn: () => obtenirElectionsAsso({}, asso_id),
     });
 
-    return (
-        <>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>Élections</h2>
-                {userData.is_superuser && <Button variant='outline-secondary' onClick={() => setIsCreating(true)}>
-                    <img src="/assets/icons/plus.svg" alt="ajouter" className="theme-icon" />
-                </Button>}
-            </div>
+
+    return <OngletTemplate
+        titre="Élections"
+        isLoading={isLoading}
+        avecBouton={userData.is_superuser}
+        onButonClick={() => setIsCreating(true)}
+        contenu={<>
             {!isLoading && elections.length === 0 && <>
                 Aucune election à afficher.
             </>}
             {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}
             {elections.map(id => <Election key={id} id={id} canModify={userData.is_superuser} isNew={false} asso_id={asso_id} />)}
-        </>
-    )
+        </>}
+    />;
 }

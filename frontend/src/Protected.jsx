@@ -10,7 +10,7 @@ const ProtectedContext = createContext();
 export function ProtectedRoute() {
     const location = useLocation();
 
-    const { data: isAlive, isError: isDead } = useQuery({
+    const { data: isAlive = true, isError: isDead } = useQuery({
         queryKey: ["alive"],
         queryFn: obtenirAlive,
         retry: 1,
@@ -50,7 +50,7 @@ export function ProtectedRoute() {
         }
     });
 
-    if (isDead) return <>
+    if (isDead || !isAlive) return <>
         <h1 className="text-center mb-4 fs-3">
             <strong className="text-primary">Portail des élèves</strong>
         </h1>

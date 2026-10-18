@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAlbums, addAlbum, addAudio, removeAudio, updateAlbum, deleteAlbum, updateAudio, getAlbum } from '../../../api/modules/api_audio';
-import { estUtilisateurDansAsso } from '../../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../../api/base';
 import { Button, Form, Card, ListGroup, Spinner, Col, Row } from 'react-bootstrap';
 import DropdownEditer from '../../elements/DropdownEditer';
 import ConfirmationModal from '../../elements/ConfirmationModal';
+import OngletTemplate from '../../templates/OngletTemplate';
 
 function AddAlbumForm({ mutation, onCancel }) {
     const [name, setName] = useState('');
@@ -263,21 +263,11 @@ function AssoAudio({ asso_id, membreData }) {
 
     const addAlbumMutation = useMutation({ mutationFn: (name) => addAlbum(asso_id, name), onSuccess: invalidateQueries });
 
-    if (isLoading) {
-        return <div className="text-center"><Spinner animation="border" /></div>;
-    }
-
-    return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>Audios</h2>
-                {membreData.autorise && (
-                    <Button variant="outline-secondary" onClick={() => setShowAddAlbumForm(prev => !prev)}>
-                        <img src="/assets/icons/plus.svg" alt="Créer un album" className="theme-icon" />
-                    </Button>
-                )}
-            </div>
-
+    return <OngletTemplate
+        titre="Audios"
+        isLoading={isLoading}
+        avecBouton={membreData.autorise} onButonClick={() => setShowAddAlbumForm(prev => !prev)}
+        contenu={<div>
             {showAddAlbumForm && <AddAlbumForm mutation={addAlbumMutation} onCancel={() => setShowAddAlbumForm(false)} />}
 
             <div className="d-flex flex-column gap-3">
@@ -286,7 +276,8 @@ function AssoAudio({ asso_id, membreData }) {
                 ))}
             </div>
         </div>
-    );
+        }
+    />
 }
 
 export default AssoAudio;

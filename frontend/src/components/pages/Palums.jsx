@@ -1,24 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Spinner, Alert } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
 import { getPublicationsByTag } from '../../api/api_publications';
 import PostCard from '../elements/PostCard';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
+import PageRandom from '../templates/PageRandom';
 
 function Palums() {
   const { data: data, isLoading, error } = useQuery({
     queryKey: ['palumsPublications'],
     queryFn: () => getPublicationsByTag("Palum", 1, 0),
   });
-
-  if (isLoading) {
-    return (
-      <Container className="py-4 text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </Spinner>
-      </Container>
-    );
-  }
 
   if (error) {
     return (
@@ -30,10 +21,11 @@ function Palums() {
     );
   }
 
-  return (
-    <Container className="py-4">
-      <h1 className="mb-3">Palums</h1>
-      <p className="text-muted">Retrouvez ici toutes les Palums</p>
+  return <PageRandom
+    titre="Palums"
+    sousTitre="Retrouvez ici toutes les Palums"
+    isLoading={isLoading}
+    contenu={<>
       <h2>1A</h2>
       <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
         {data.publications.filter(p => p.titre.includes("1")).map((post) => (
@@ -56,9 +48,7 @@ function Palums() {
         <Alert variant="info" className="mt-4">
           Aucune publication trouvée avec le tag &quot;Palum&quot;.
         </Alert>
-      )}
-    </Container>
-  );
+      )}</>} />;
 }
 
 export default Palums;

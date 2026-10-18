@@ -65,7 +65,7 @@ export default function App() {
                 <Route path="ajouter" element={<AjouterAssociation />} />
               </Route>
               <Route path="trombi">
-                <Route index element={<Trombi />} />
+                <Route index path="*" element={<Trombi />} />
                 <Route path="get/:promo" element={<TrombiPromo />} />
               </Route>
               <Route path="sondage">

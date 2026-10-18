@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { obtenirListeDesUtilisateurs } from '../../api/api_utilisateurs';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import UserCard from '../elements/UserCard';
-import { Container, Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Row, Col } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
 import { useQuery } from '@tanstack/react-query';
+import PageRandom from '../templates/PageRandom';
 
-function TrombiPromo() {
+export default function TrombiPromo() {
     const [cyclesSelectionnes, setCyclesSelectionnes] = useState(["ic", "ast", "ev", "vs", "isup"]); // Les cycles sont pré-cochés
-    const navigate = useNavigate();
 
     const cyclesDisponibles = ["ic", "ast", "ev", "vs", "isup"];
     const { promo } = useParams();
@@ -24,12 +24,10 @@ function TrombiPromo() {
         );
     };
 
-    return (
-        <Container className="py-4 trombi-promo-page">
-            <Button variant="outline-secondary" onClick={() => navigate("/trombi")} className="mb-3">
-                Retour
-            </Button>
-            <h1>Promotion {promo}</h1>
+    return <PageRandom
+        titre={`Promotion ${promo}`}
+        avecBoutonRetour destRetour={"/trombi"}
+        contenu={<>
             <Form className="mb-4">
                 <Row>
                     <Col>
@@ -58,8 +56,5 @@ function TrombiPromo() {
             ) : (
                 <p>Aucun cycle sélectionné.</p>
             )}
-        </Container>
-    );
+        </>} />;
 }
-
-export default TrombiPromo;

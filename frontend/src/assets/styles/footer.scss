@@ -1,0 +1,11 @@
+
+@import "bootstrap/scss/variables";
+
+.global-footer-footer {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+
+    img {
+        height: 1rem;
+    }
+}

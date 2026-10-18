@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Hash simple et déterministe d'une chaîne en entier 32 bits (djb2-like).
@@ -91,7 +92,7 @@ function construireClustersCos(ids, cosDe) {
             const vus = new Set([depart]);
             let precedent = null;
             let courant = depart;
-            while (true) {
+            for (;;) {
                 const suivants = voisinsAuNiveau(courant).filter(
                     (v) => membres.has(v) && v !== precedent && !vus.has(v)
                 );
@@ -773,6 +774,8 @@ function estMeilleure(a, b) {
 }
 
 function GenealogyTree({ noeuds = [], liens = [], noeudsChemin = [] }) {
+    const navigate = useNavigate();
+
     const { positions, largeur, hauteur } = useMemo(() => {
         if (!noeuds.length) {
             return { positions: new Map(), largeur: 0, hauteur: 0 };
@@ -825,7 +828,7 @@ function GenealogyTree({ noeuds = [], liens = [], noeudsChemin = [] }) {
         if (evenement.ctrlKey || evenement.metaKey || evenement.button === 1) {
             window.open(url, '_blank');
         } else {
-            window.location.href = url;
+            navigate(url);
         }
     };
 

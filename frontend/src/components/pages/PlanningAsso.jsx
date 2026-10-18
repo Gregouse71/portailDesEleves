@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Spinner, Alert, Table, Dropdown } from 'react-bootstrap';
+import { Spinner, Alert, Table, Dropdown } from 'react-bootstrap';
 import { getEvenementsMois } from '../../api/api_evenements';
 import { chargerAsso } from '../../api/api_associations';
 import { UPLOAD_BASE_URL } from '../../api/base';
 import { useState } from 'react';
+import PageRandom from '../templates/PageRandom';
+import Chargement from '../elements/Chargement';
 
 const formatDate = (dateString) => {
     const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
@@ -48,13 +50,13 @@ const Tableau = ({ value }) => {
                     <th>Description</th>
                 </tr>
             </thead>
-            <tbody>
-                {isLoading ?
-                    <tr>
-                        <td>Chargement</td>
-                    </tr>
-                    :
-                    events.filter(e => !e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
+            {isLoading ?
+                <tr>
+                    <Chargement />
+                </tr>
+                :
+                <tbody>
+                    {events.filter(e => !e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
                         <td>{formatDate(event.date_de_debut)}</td>
                         <td><GetAssoInfo assoId={event.id_association} /></td>
                         <td>{event.nom}</td>
@@ -62,7 +64,8 @@ const Tableau = ({ value }) => {
                         <td className="text-break">{event.description}</td>
                     </tr>
                     )}
-            </tbody >
+                </tbody >
+            }
         </Table>
         <h3>Événements périodiques</h3>
         <Table responsive hover>
@@ -75,13 +78,13 @@ const Tableau = ({ value }) => {
                     <th>Description</th>
                 </tr>
             </thead>
-            <tbody>
-                {isLoading ?
-                    <tr>
-                        <td>Chargement</td>
-                    </tr>
-                    :
-                    events.filter(e => e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
+            {isLoading ?
+                <tr>
+                    <Chargement />
+                </tr>
+                :
+                <tbody>
+                    {events.filter(e => e.evenement_periodique).map(event => <tr key={event.id} className="align-items-start">
                         <td>{formatDate(event.date_de_debut)}</td>
                         <td><GetAssoInfo assoId={event.id_association} /></td>
                         <td>{event.nom}</td>
@@ -89,7 +92,8 @@ const Tableau = ({ value }) => {
                         <td className="text-break">{event.description}</td>
                     </tr>
                     )}
-            </tbody >
+                </tbody >
+            }
         </Table></>
 }
 
@@ -101,10 +105,11 @@ const PlanningAsso = () => {
 
     const [aAfficher, setAAfficher] = useState(0)
 
-    return (
-        <Container>
+    return <PageRandom
+        titre="Événements à venir"
+        sousTitre="Retrouvez ici toutes les événements qui arrivent dans les prochaines semaines"
+        contenu={<>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h1 className="my-4">Événements à venir</h1>
                 <Dropdown>
                     <Dropdown.Toggle as="div">{choix[aAfficher].label}</Dropdown.Toggle>
                     <Dropdown.Menu>
@@ -112,9 +117,7 @@ const PlanningAsso = () => {
                     </Dropdown.Menu>
                 </Dropdown>
             </div>
-            <Tableau value={choix[aAfficher].value} />
-        </Container>
-    );
+            <Tableau value={choix[aAfficher].value} /></>} />;
 };
 
 export default PlanningAsso;

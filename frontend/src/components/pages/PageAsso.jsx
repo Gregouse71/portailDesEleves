@@ -8,17 +8,16 @@ import AssoPosts from './PageAsso/AssoPosts';
 import AssoAudio from './PageAsso/AssoAudio';
 import AssoCotisations from './PageAsso/AssoCotisations';
 import AssoBiblio from './PageAsso/AssoBiblio';
-import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { UPLOAD_BASE_URL } from '../../api/base';
-import { Container, Row, Col, Nav, Image, Badge, Card } from 'react-bootstrap';
+import { useLocation, useParams } from 'react-router-dom';
+import { Container, Badge } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
-import DropdownEditer from "../elements/DropdownEditer";
 import AssosMedia from './PageAsso/AssoMedia';
 import AssoMusiciens from './PageAsso/AssoMusiciens';
+import TabTemplate from '../templates/TabTemplate';
+import HeaderTemplate from '../templates/HeaderTemplate';
 
 function Asso() {
-    const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
     const queryClient = useQueryClient();
@@ -56,106 +55,85 @@ function Asso() {
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
 
     const moduleToTab = {
-        'Info': { key: "", titre: "Infos", element: <AssoInfo id={asso.id} membreData={membreData} /> },
-        'Events': { key: "events", titre: "Événements", element: <AssoEvents asso_id={asso.id} membreData={membreData} /> },
-        'Membres': { key: "members", titre: "Membres", element: <AssoMembres asso_id={asso.id} membreData={membreData} /> },
-        'Posts': { key: "posts", titre: "Publications", element: <AssoPosts asso_id={asso.id} membreData={membreData} /> },
-        'Media': { key: "media", titre: "Media", element: <AssosMedia asso_id={asso.id} membreData={membreData} /> },
-        'Elections': { key: "elections", titre: "Élections", element: <AssoElection asso_id={asso.id} membreData={membreData} /> },
-        'Audio': { key: "audio", titre: "Audio", element: <AssoAudio asso_id={asso.id} membreData={membreData} /> },
-        'Biblio': { key: "biblio", titre: "Bibliothèque", element: <AssoBiblio asso_id={asso.id} membreData={membreData} /> },
-        'Musiciens': { key: "musiciens", titre: "Musiciens", element: <AssoMusiciens asso_id={asso.id} membreData={membreData} /> },
-        ...(membreData.admin && { 'Cotisations': { key: "cotisations", titre: "Cotisations", element: <AssoCotisations asso_id={asso.id} membreData={membreData} /> } }),
+        'Info': {
+            key: "infos", index: true, titre: "Infos", path: `/assos/get/${id}`,
+            element: <AssoInfo id={asso.id} membreData={membreData} />
+        },
+        'Events': {
+            key: "events", titre: "Événements", path: `/assos/get/${id}/events`,
+            element: <AssoEvents asso_id={asso.id} membreData={membreData} />
+        },
+        'Membres': {
+            key: "members", titre: "Membres", path: `/assos/get/${id}/members`,
+            element: <AssoMembres asso_id={asso.id} membreData={membreData} />
+        },
+        'Posts': {
+            key: "posts", titre: "Publications", path: `/assos/get/${id}/posts`,
+            element: <AssoPosts asso_id={asso.id} membreData={membreData} />
+        },
+        'Media': {
+            key: "media", titre: "Media", path: `/assos/get/${id}/media`,
+            element: <AssosMedia asso_id={asso.id} membreData={membreData} />
+        },
+        'Elections': {
+            key: "elections", titre: "Élections", path: `/assos/get/${id}/elections`,
+            element: <AssoElection asso_id={asso.id} membreData={membreData} />
+        },
+        'Audio': {
+            key: "audio", titre: "Audio", path: `/assos/get/${id}/audio`,
+            element: <AssoAudio asso_id={asso.id} membreData={membreData} />
+        },
+        'Biblio': {
+            key: "biblio", titre: "Bibliothèque", path: `/assos/get/${id}/biblio`,
+            element: <AssoBiblio asso_id={asso.id} membreData={membreData} />
+        },
+        'Musiciens': {
+            key: "musiciens", titre: "Musiciens", path: `/assos/get/${id}/musiciens`,
+            element: <AssoMusiciens asso_id={asso.id} membreData={membreData} />
+        },
+        ...(membreData.admin && {
+            'Cotisations': {
+                key: "cotisations", titre: "Cotisations", path: `/assos/get/${id}/cotisations`,
+                element: <AssoCotisations asso_id={asso.id} membreData={membreData} />
+            }
+        }),
     };
 
     const tabs = asso.modules.map(moduleName => moduleToTab[moduleName]).filter(Boolean);
 
     const currentPath = location.pathname.split('/').pop();
-    const activeKey = currentPath === id ? "" : currentPath;
+    const activeKey = currentPath === id ? "infos" : currentPath;
 
     return (
         <Container className='py-4'>
-            <input
-                type="file"
-                ref={logoInputRef}
-                className="d-none"
-                accept="image/png, image/jpeg, image/jpg, image/gif"
-                onChange={(e) => handleFileUpload(e, 'logo')}
+            <HeaderTemplate
+                banniere={asso.banniere_path}
+                image={asso.img || '/assets/icons/group.svg'}
+                imageAlt={asso.nom}
+                titre={asso.nom}
+                sousTitre={
+                    <div>
+                        {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
+                        {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
+                    </div>
+                }
+                avecDropdown={membreData.autorise}
+                contenuDropdown={[
+                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
+                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                ]}
+                logoInputRef={logoInputRef}
+                banniereInputRef={banniereInputRef}
+                onLogoChange={(e) => handleFileUpload(e, 'logo')}
+                onBanniereChange={(e) => handleFileUpload(e, 'banniere')}
             />
-            <input
-                type="file"
-                ref={banniereInputRef}
-                className="d-none"
-                accept="image/png, image/jpeg, image/jpg, image/gif"
-                onChange={(e) => handleFileUpload(e, 'banniere')}
+
+            <TabTemplate
+                activeKey={activeKey}
+                tabs={
+                    tabs
+                }
             />
-
-            <Card className='mb-3'>
-                <Card.Header
-                    style={{
-                        backgroundImage: asso.banniere_path ? `url(${UPLOAD_BASE_URL}/${asso.banniere_path})` : 'none',
-                        height: '170px',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                    }}
-                >
-                </Card.Header>
-                <Card.Body>
-                    <Row className="align-items-center flex-md-nowrap">
-                        <Col xs className="d-md-none order-1"></Col>
-                        <Col xs="auto" md="auto" className="order-2 order-md-1 text-center text-md-start">
-                            <Image
-                                className="rounded-3"
-                                src={asso.img ? `${UPLOAD_BASE_URL}/${asso.img}` : '/assets/icons/group.svg'}
-                                alt={asso.nom}
-                                rounded
-                                style={{
-                                    position: 'relative',
-                                    top: '-120px',
-                                    height: '150px',
-                                    border: '2px solid white',
-                                    marginBottom: '-120px'
-                                }}
-                            />
-                        </Col>
-                        <Col xs={12} md className="order-4 order-md-2 text-center text-md-start">
-                            <h2 className="mb-0 text-break">{asso.nom}</h2>
-                            <div>
-                                {membreData.is_membre && <Badge bg="success" className="me-1">membre</Badge>}
-                                {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
-                            </div>
-                        </Col>
-                        {membreData.autorise ? (
-                            <Col xs md="auto" className="order-3 order-md-3 text-end">
-                                <DropdownEditer list={[
-                                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
-                                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
-                                ]} />
-                            </Col>
-                        ) : (
-                            <Col xs className="d-md-none order-3"></Col>
-                        )}
-                    </Row>
-                </Card.Body>
-            </Card>
-
-            <Nav variant="tabs" className="mb-3" activeKey={activeKey}>
-                {tabs.map((elt, ind) =>
-                    <Nav.Item key={ind}>
-                        <Nav.Link as={Link} eventKey={elt.key} to={`/assos/get/${id}/${elt.key}`}>
-                            {elt.titre}
-                        </Nav.Link>
-                    </Nav.Item>
-                )}
-            </Nav>
-
-            <Routes>
-                {tabs.map((elt, ind) => (
-                    <Route key={elt.key} index={ind === 0}
-                        path={ind === 0 ? undefined : elt.key} element={elt.element}
-                    />
-                ))}
-            </Routes>
         </Container>
     );
 }

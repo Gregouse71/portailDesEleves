@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Select from "react-select";
 import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, selectionnerFillots, changerCo, selectionnerMarrains } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
-import DropdownEditer from "../../elements/DropdownEditer";
 import { verifierPermission } from "../../../api/api_global";
 import { useProtected } from "../../../Protected";
+import OngletTemplate from "../../templates/OngletTemplate";
+import Chargement from "../../elements/Chargement";
+import Autocomplete from "../../elements/Autocompletion";
 
 export default function TabInfo({ id, autoriseAModifier }) {
     const { userData } = useProtected();
@@ -35,8 +37,12 @@ export default function TabInfo({ id, autoriseAModifier }) {
     const { data: allUsers = [] } = useQuery({
         queryKey: ["allUsers"],
         queryFn: () => chargerUtilisateurs(),
+        enabled: isGestion
     });
-    const options = allUsers.map(u => ({ value: u.id, label: u.nom_utilisateur }));
+    const options = useMemo(
+        () => { return allUsers.map(u => ({ value: u.id, label: u.nom + " " + u.prenom })) },
+        [allUsers]
+    );
 
     const copyToClipboard = (text) => {
         if (navigator.clipboard) {
@@ -67,9 +73,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
     });
 
     const mutationLignee = useMutation({
-        mutationFn: async (updatedInfos) => {
-            const { marrain } = updatedInfos;
-
+        mutationFn: async () => {
             await selectionnerMarrains(id, selectedP.map(f => f.value));
             await selectionnerFillots(id, selectedF.map(f => f.value));
         },
@@ -163,21 +167,10 @@ export default function TabInfo({ id, autoriseAModifier }) {
     };
 
     if (isPendingUser || !donneesUtilisateur) {
-        return <p>Chargement des informations...</p>
+        return <Chargement />
     }
 
-    return (<>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Informations</h2>
-            <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                {(autoriseAModifier || vpp) && <DropdownEditer list={[
-                    { can: autoriseAModifier, onClick: toggleGestion, name: "Modifier" },
-                    { can: vpp, onClick: toggleGestionLignee, name: "Modifier la lignée" },
-                ]}
-                />}
-            </div>
-        </div>
-
+    let contenu = <>
         <Row>
             <Col md={6}>
                 <InputGroup className="mb-3">
@@ -390,37 +383,66 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Form.Group as={Row} className="mb-3">
                         <Form.Label column sm="2">Marrain</Form.Label>
                         <Col sm="10">
-                            <Select
-                                isMulti
-                                options={options}
-                                value={selectedP}
-                                onChange={setSelectedP}
-                                isClearable
-                                classNamePrefix="react-select"
+                            {selectedP && selectedP.map((elt, ind) => (
+                                <Row key={ind} className="mb-2 align-items-center">
+                                    <Col>
+                                        {elt.label}
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Button
+                                            variant="danger"
+                                            onClick={() => setSelectedP(selectedP.filter((_, i) => i !== ind))}
+                                            >
+                                            <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            ))}
+                            <Autocomplete
+                                placeholder="Ajouter un marrain..."
+                                onSelect={(u) => setSelectedP([...selectedP, { value: u.id, label: u.nom + " " + u.prenom }])}
                             />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} className="mb-3">
                         <Form.Label column sm="2">Fillots</Form.Label>
                         <Col sm="10">
-                            <Select
-                                isMulti
-                                options={options}
-                                value={selectedF}
-                                onChange={setSelectedF}
-                                isClearable
-                                classNamePrefix="react-select"
+                            {selectedF && selectedF.map((elt, ind) => (
+                                <Row key={ind} className="mb-2 align-items-center">
+                                    <Col>
+                                        {elt.label}
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Button
+                                            variant="danger"
+                                            onClick={() => setSelectedF(selectedF.filter((_, i) => i !== ind))}
+                                            >
+                                            <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            ))}
+                            <Autocomplete
+                                placeholder="Ajouter un fillot..."
+                                onSelect={(u) => setSelectedF([...selectedF, { value: u.id, label: u.nom + " " + u.prenom }])}
                             />
                         </Col>
                     </Form.Group>
                 </>}
 
                 <div className="d-flex gap-2 mt-3">
-                    <Button variant="success" onClick={() => {isGestion && mutation.mutate(userInfos); isGestionLignee && mutationLignee.mutate(userInfos)}}>Valider</Button>
-                    <Button variant="danger" onClick={() => {isGestion && handleCancel(); isGestionLignee && handleCancelLignee()}}>Annuler</Button>
+                    <Button variant="success" onClick={() => { isGestion && mutation.mutate(userInfos); isGestionLignee && mutationLignee.mutate() }}>Valider</Button>
+                    <Button variant="danger" onClick={() => { isGestion && handleCancel(); isGestionLignee && handleCancelLignee() }}>Annuler</Button>
                 </div>
             </Form>
-        }
-    </>
-    );
+        }</>
+
+    return <OngletTemplate
+        titre="Informations"
+        avecDropdown={autoriseAModifier} contenuDropdown={[
+            { can: autoriseAModifier, onClick: toggleGestion, name: "Modifier" },
+            { can: vpp, onClick: toggleGestionLignee, name: "Modifier la lignée" },
+        ]}
+        contenu={contenu}
+    />;
 }

@@ -1,23 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Container, Button, Alert, Table } from "react-bootstrap";
-import { useProtected } from "../../../../Protected";
+import { Container, Button } from "react-bootstrap";
 import { SOCKET_BASE_URL } from "../../../../api/base";
 import Leaderboard from "../../../elements/Leaderboard";
 import "../../../../assets/styles/echecs.css";
+import JeuxTemplate from "../../../templates/JeuxTemplate";
 
 export default function EchecsLobby() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { userData } = useProtected();
 
     const socketRef = useRef(null);
     const partieQuitteeId = useRef(location.state?.quitte_partie_id ?? null);
 
     const [defisData, setDefisData] = useState(null);
     const [eloData, setEloData] = useState(null);
-    const [erreur, setErreur] = useState(null);
     const [creationEnCours, setCreationEnCours] = useState(false);
     const [annulationEnCours, setAnnulationEnCours] = useState(false);
     const [acceptationEnCours, setAcceptationEnCours] = useState(null); // id du défi en cours d'acceptation
@@ -64,8 +62,7 @@ export default function EchecsLobby() {
             if (data?.partie_id) navigate(`/jeux/echecs/partie/${data.partie_id}`);
         });
 
-        socket.on("echecs_erreur", (data) => {
-            setErreur(data.erreur);
+        socket.on("echecs_erreur", () => {
             setCreationEnCours(false);
             setAnnulationEnCours(false);
             setAcceptationEnCours(null);
@@ -81,7 +78,6 @@ export default function EchecsLobby() {
 
     const creerDefi = (body) => {
         setCreationEnCours(true);
-        setErreur(null);
         socketRef.current?.emit("echecs_lobby_creer_defi", body);
     };
 
@@ -92,7 +88,6 @@ export default function EchecsLobby() {
 
     const accepterDefi = (id) => {
         setAcceptationEnCours(id);
-        setErreur(null);
         socketRef.current?.emit("echecs_lobby_accepter_defi", { defi_id: id });
     };
 
@@ -100,14 +95,10 @@ export default function EchecsLobby() {
 
     const { ouverts, recus, le_mien } = defisData;
 
-    return (
-        <Container className="echecs-lobby py-4">
-            <h1 className="mb-4">♟ Échecs</h1>
-
-            {erreur && <Alert variant="danger" onClose={() => setErreur(null)} dismissible>{erreur}</Alert>}
-
+    return <JeuxTemplate
+        titre="♟ Échecs"
+        contenu={
             <div className="row g-4">
-
                 {/* ── Colonne gauche : jeu ── */}
                 <div className="col-lg-7">
 
@@ -119,7 +110,7 @@ export default function EchecsLobby() {
                             {/* Défi ouvert ou annulation */}
                             {le_mien ? (
                                 <div className="d-flex align-items-center gap-2 flex-grow-1">
-                                    <span className="text-muted small">Défi ouvert en attente d'un adversaire…</span>
+                                    <span className="text-muted small">Défi ouvert en attente d&apos;un adversaire…</span>
                                     <Button variant="outline-danger" size="sm"
                                         onClick={() => annulerDefi(le_mien.id)}
                                         disabled={annulationEnCours}>
@@ -138,7 +129,7 @@ export default function EchecsLobby() {
                             <Button variant="outline-secondary" size="lg"
                                 disabled={creationEnCours}
                                 onClick={() => creerDefi({ mode: "ia", niveau_ia: 10 })}>
-                                🤖 Jouer contre l'IA
+                                🤖 Jouer contre l&apos;IA
                             </Button>
 
                         </div>
@@ -225,8 +216,6 @@ export default function EchecsLobby() {
                         </>
                     )}
                 </div>
-
             </div>
-        </Container>
-    );
+        } />;
 }

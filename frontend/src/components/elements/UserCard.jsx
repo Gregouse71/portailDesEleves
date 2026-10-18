@@ -1,10 +1,10 @@
-import { Card, Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Card, Button, Form } from "react-bootstrap";
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { useNavigate } from "react-router-dom";
 
 export default function UserCard({
     user, isGestion, isModifying, additionnalText,
-    modifyingTooltipText, t1, f1, t2, f2, values, validate
+    t1, f1, t2, f2, values, validate
 }) {
     const navigate = useNavigate();
 
