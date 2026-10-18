@@ -5,7 +5,7 @@ import {
     obtenirCheminEntreUtilisateurs,
 } from '../../api/api_utilisateurs';
 import { useNavigate } from 'react-router-dom';
-import { Card, Tabs, Tab, Nav, Row, Col } from 'react-bootstrap';
+import { Card, Nav, Row, Col } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
 import '../../assets/styles/trombi.scss';
 import { useQuery } from '@tanstack/react-query';

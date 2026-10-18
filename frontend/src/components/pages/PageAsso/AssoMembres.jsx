@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ajouterMandat, chargerAsso, estUtilisateurDansAsso } from "../../../api/api_associations";
+import { ajouterMandat, chargerAsso } from "../../../api/api_associations";
 import { Card, Button, Form } from "react-bootstrap";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AssoMandat from "../../elements/AssoMandat";

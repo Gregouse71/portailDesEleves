@@ -6,7 +6,6 @@ import {
     obtenirEvenementsAsso,
     supprimerEvenement
 } from "../../../api/api_evenements";
-import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { Card, Button, Form, Row, Col, Spinner } from "react-bootstrap";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import DropdownEditer from "../../elements/DropdownEditer";

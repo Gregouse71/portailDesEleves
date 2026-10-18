@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { estUtilisateurDansAsso } from "../../../api/api_associations";
 import { ajouterContenuPublication, creerNouvellePublication, obtenirPublicationsAsso, supprimerPublication } from "../../../api/api_publications";
 import RichEditor from "../../elements/RichEditor";
 import OngletTemplate from '../../templates/OngletTemplate';
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
-import { useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import Post from "../../elements/Post";
 
 const tagOptions = [

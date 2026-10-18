@@ -17,7 +17,7 @@ export default function TabTemplate({
         </Nav >
         <Routes>
             {tabs.map(({ index, key, element }, ind) => <>
-                <Route key={ind} index={!!index} path={!!index ? undefined : key} element={element} />
+                <Route key={ind} index={!!index} path={index ? undefined : key} element={element} />
             </>)}
         </Routes>
     </>

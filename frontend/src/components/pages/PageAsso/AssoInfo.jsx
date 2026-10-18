@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { chargerAsso, estUtilisateurDansAsso, modifierDescriptionAsso } from "../../../api/api_associations";
+import { chargerAsso, modifierDescriptionAsso } from "../../../api/api_associations";
 import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
 import { Button } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import DropdownEditer from "../../elements/DropdownEditer";
 import OngletTemplate from "../../templates/OngletTemplate";
 
 function AssoInfo({ id, membreData }) {

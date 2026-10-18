@@ -1,4 +1,4 @@
-import { Button, Row, Col, Container } from "react-bootstrap";
+import { Button, Row, Col } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { nouvellePartie, partieEnCours, faireUnCoup, leaderboardJeu } from "../../../api/api_jeux";

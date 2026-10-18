@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { obtenirListeDesUtilisateurs } from '../../api/api_utilisateurs';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import UserCard from '../elements/UserCard';
-import { Container, Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Row, Col } from 'react-bootstrap';
 import '../../assets/styles/asso.scss';
 import { useQuery } from '@tanstack/react-query';
 import PageRandom from '../templates/PageRandom';
 
 export default function TrombiPromo() {
     const [cyclesSelectionnes, setCyclesSelectionnes] = useState(["ic", "ast", "ev", "vs", "isup"]); // Les cycles sont pré-cochés
-    const navigate = useNavigate();
 
     const cyclesDisponibles = ["ic", "ast", "ev", "vs", "isup"];
     const { promo } = useParams();
 
-    const { data: utilisateurs = [], isLoading } = useQuery({
+    const { data: utilisateurs = [] } = useQuery({
         queryKey: ['listePromo', promo, cyclesSelectionnes],
         queryFn: () => obtenirListeDesUtilisateurs(promo, cyclesSelectionnes),
     });

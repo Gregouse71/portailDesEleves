@@ -1,5 +1,4 @@
 import { Card, Form, Button, Row, Col, OverlayTrigger, Tooltip, Image } from "react-bootstrap";
-import Select from "react-select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ajouterMembre, chargerMandat, modifierMandat, modifierMembreAsso, retirerMembre, supprimerMandat } from "../../api/api_associations";
 import { UPLOAD_BASE_URL } from "../../api/base";
@@ -234,7 +233,7 @@ export default function AssoMandat({ id, asso, membreData }) {
                             additionnalText={user.admin &&
                                 <OverlayTrigger
                                     placement="top"
-                                    overlay={<Tooltip id={`tooltip-${user.id}`}>Les admins peuvent gérer les cotisations de l'association</Tooltip>}
+                                    overlay={<Tooltip id={`tooltip-${user.id}`}>Les admins peuvent gérer les cotisations de l&apos;association</Tooltip>}
                                 >
                                     <span> · </span>
                                 </OverlayTrigger>}

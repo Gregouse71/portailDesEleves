@@ -1,7 +1,7 @@
 import "../../../assets/styles/bibliotheque.scss";
 import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge, Alert } from "react-bootstrap";
+import { Button, Form, Modal, Tabs, Tab, ListGroup, Table, Badge } from "react-bootstrap";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
 
 import {
@@ -271,7 +271,7 @@ function OngletEmpruntRetour({ asso_id }) {
             <div className="biblio-selection-recap">
                 <span>Utilisateur : <strong>@{selectedUser.nom_utilisateur}</strong></span>
                 <Button variant="link" size="sm" onClick={changerUtilisateur}>
-                    Changer d'utilisateur
+                    Changer d&apos;utilisateur
                 </Button>
             </div>
 
@@ -340,7 +340,7 @@ function OngletEmpruntRetour({ asso_id }) {
                 </Button>
 
                 {emprunterMutation.isError && (
-                    <p className="text-danger mt-2">Une erreur est survenue pendant l'emprunt.</p>
+                    <p className="text-danger mt-2">Une erreur est survenue pendant l&apos;emprunt.</p>
                 )}
             </div>
 

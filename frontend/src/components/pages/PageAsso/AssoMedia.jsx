@@ -11,7 +11,7 @@ import OngletTemplate from "../../templates/OngletTemplate";
 /**
  * Media d'un seul mandat — similaire à AssoMandat pour les membres.
  */
-function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
+function MandatMedia({ mandat_id, asso_id, membreData }) {
     const queryClient = useQueryClient();
     const [isGestion, setIsGestion] = useState(false);
     const [editingMediaId, setEditingMediaId] = useState(null);
@@ -120,7 +120,6 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
     const photos = mandat.media || [];
     const mandatBanniere = mandat.banniere || null;
     const mandatLogo = mandat.logo || null;
-    const isActuel = mandat.actuel;
 
     return (
         <Card className="mb-4">
@@ -252,7 +251,6 @@ function MandatMedia({ mandat_id, asso_id, assoData, membreData }) {
                                                             type="text"
                                                             value={editingName}
                                                             onChange={(e) => setEditingName(e.target.value)}
-                                                            autoFocus
                                                         />
                                                     </Form.Group>
                                                     <Button size="sm" variant="success" onClick={() => handleSaveRename(elt.id)} className="mb-2 w-100">

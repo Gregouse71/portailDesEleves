@@ -4,7 +4,7 @@ import { useProtected } from '../../Protected';
 import TabInfo from './PageUtilisateur/Info';
 import TabAsso from './PageUtilisateur/Asso';
 import TabQuestions from './PageUtilisateur/Question';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import TabMedia from './PageUtilisateur/Media';
@@ -15,7 +15,6 @@ function PageUtilisateur() {
     const { userData } = useProtected();
     const { id } = useParams();
     const location = useLocation();
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const logoInputRef = useRef(null);

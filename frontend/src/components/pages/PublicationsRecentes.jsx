@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Container, Spinner } from 'react-bootstrap';
+import { Alert, Container } from 'react-bootstrap';
 import { obtenirPublicationsRecentes } from '../../api/api_publications';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import Post from '../elements/Post';

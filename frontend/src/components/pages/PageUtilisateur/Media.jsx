@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { obtenirPhotosUtilisateur, changerPhotoUtilisateur, changerBanniereUtilisateur, ajouterContenuUtilisateur, supprimerPhotoUtilisateur, ajouterLienVideoUtilisateur, renommerPhotoUtilisateur, obtenirDataUser } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Card, Form } from "react-bootstrap";
-import DropdownEditer from "../../elements/DropdownEditer";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import OngletTemplate from "../../templates/OngletTemplate";
 import Chargement from "../../elements/Chargement";
@@ -38,7 +37,7 @@ export default function TabMedia({ id, autoriseAModifier }) {
 
         if (file) {
             try {
-                const result = await ajouterContenuUtilisateur(id, file);
+                await ajouterContenuUtilisateur(id, file);
                 queryClient.invalidateQueries(['photosUtilisateur', id]);
             } catch (error) {
                 alert(`Erreur : ${error.message}`);
@@ -210,7 +209,6 @@ export default function TabMedia({ id, autoriseAModifier }) {
                                                 type="text"
                                                 value={editingName}
                                                 onChange={(e) => setEditingName(e.target.value)}
-                                                autoFocus
                                             />
                                         </Form.Group>
                                         <Button size="sm" variant="success" onClick={() => handleSaveRename(elt.id)} className="mb-2">

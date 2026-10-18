@@ -8,7 +8,7 @@ import AssoPosts from './PageAsso/AssoPosts';
 import AssoAudio from './PageAsso/AssoAudio';
 import AssoCotisations from './PageAsso/AssoCotisations';
 import AssoBiblio from './PageAsso/AssoBiblio';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Container, Badge } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
@@ -18,7 +18,6 @@ import TabTemplate from '../templates/TabTemplate';
 import HeaderTemplate from '../templates/HeaderTemplate';
 
 function Asso() {
-    const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
     const queryClient = useQueryClient();

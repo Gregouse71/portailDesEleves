@@ -3,8 +3,8 @@ import "../assets/styles/formulaire_connexion.scss"
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { seConnecter } from "../api/api_global";
-import { Container, Form, Button, Alert, Card, Spinner } from "react-bootstrap";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Container, Form, Button, Alert, Card } from "react-bootstrap";
+import { useQueryClient } from "@tanstack/react-query";
 
 const VP_GEEK_EMAIL = "vianney.decroux@etu.minesparis.psl.eu";
 const PORTAL_TITLE = "Portail des élèves";

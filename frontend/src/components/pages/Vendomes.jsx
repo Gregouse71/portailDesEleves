@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Container, Spinner, Alert } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
 import { getPublicationsByTag } from '../../api/api_publications';
 import PostCard from '../elements/PostCard';
 import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
@@ -22,7 +22,7 @@ function Vendomes() {
         queryFn: () => getPublicationsByTag("Vendôme", page, perPage, query),
         placeholderData: (previousData) => previousData,
     });
-    const { publications, count, totalPages } = data;
+    const { publications, totalPages } = data;
 
     if (isError) {
         return (

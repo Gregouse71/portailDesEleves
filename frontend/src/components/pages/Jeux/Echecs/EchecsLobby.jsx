@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Button } from "react-bootstrap";
-import { useProtected } from "../../../../Protected";
 import { SOCKET_BASE_URL } from "../../../../api/base";
 import Leaderboard from "../../../elements/Leaderboard";
 import "../../../../assets/styles/echecs.css";
@@ -17,7 +16,6 @@ export default function EchecsLobby() {
 
     const [defisData, setDefisData] = useState(null);
     const [eloData, setEloData] = useState(null);
-    const [erreur, setErreur] = useState(null);
     const [creationEnCours, setCreationEnCours] = useState(false);
     const [annulationEnCours, setAnnulationEnCours] = useState(false);
     const [acceptationEnCours, setAcceptationEnCours] = useState(null); // id du défi en cours d'acceptation
@@ -64,8 +62,7 @@ export default function EchecsLobby() {
             if (data?.partie_id) navigate(`/jeux/echecs/partie/${data.partie_id}`);
         });
 
-        socket.on("echecs_erreur", (data) => {
-            setErreur(data.erreur);
+        socket.on("echecs_erreur", () => {
             setCreationEnCours(false);
             setAnnulationEnCours(false);
             setAcceptationEnCours(null);
@@ -81,7 +78,6 @@ export default function EchecsLobby() {
 
     const creerDefi = (body) => {
         setCreationEnCours(true);
-        setErreur(null);
         socketRef.current?.emit("echecs_lobby_creer_defi", body);
     };
 
@@ -92,7 +88,6 @@ export default function EchecsLobby() {
 
     const accepterDefi = (id) => {
         setAcceptationEnCours(id);
-        setErreur(null);
         socketRef.current?.emit("echecs_lobby_accepter_defi", { defi_id: id });
     };
 

@@ -4,7 +4,6 @@ import Select from "react-select";
 import { Link } from "react-router-dom";
 import { chargerUtilisateurs, modifierInfos, obtenirDataUser, selectionnerFillots, changerCo, selectionnerMarrains } from "../../../api/api_utilisateurs";
 import { Row, Col, Button, Form, InputGroup } from "react-bootstrap";
-import DropdownEditer from "../../elements/DropdownEditer";
 import { verifierPermission } from "../../../api/api_global";
 import { useProtected } from "../../../Protected";
 import OngletTemplate from "../../templates/OngletTemplate";
