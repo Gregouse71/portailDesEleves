@@ -1,28 +1,6 @@
-:root {
-    --trombinoscope-border-radius: 8px;
-    --trombinoscope-padding: 10px;
-    --trombinoscope-margin: 5px 0;
-    --trombinoscope-font-size: 18px;
-    --trombinoscope-transition: 0.3s ease-in-out;
-    --trombinoscope-item-hover-scale: 1.05;
-    --trombinoscope-grid-gap: 15px;
-}
-
 .trombi-card {
-  cursor: pointer;
-  transition: transform var(--trombinoscope-transition), box-shadow var(--trombinoscope-transition);
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  border-radius: var(--trombinoscope-border-radius);
-  padding: var(--trombinoscope-padding);
-  margin: var(--trombinoscope-margin);
-
-  &:hover {
-    transform: scale(var(--trombinoscope-item-hover-scale));
-    box-shadow: var(--shadow-color);
-    background-color: var(--card-hover-bg);
-    color: var(--primary-color);
-  }
+  padding: 5px;
+  margin: 2px 0;
 }
 
 .genealogy-scroll {

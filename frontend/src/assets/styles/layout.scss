@@ -6,12 +6,32 @@ body {
   background-color: var(--background-color); // Use the theme variable directly
 }
 
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--primary-color);
+  }
+}
+
 /* Layout global */
 @import './themes';
 @import './bootstrap_overrides';
 @import './react_select';
 @import './grids';
 @import './links';
+@import './cards';
 
 .layout {
     display: flex;
@@ -61,17 +81,4 @@ body[data-theme] .text-muted {
 .card a:hover {
     color: var(--primary-color);
     text-decoration: underline;
-}
-
-
-/* Quill editor font size */
-.ql-snow .ql-picker.ql-size .ql-picker-label::before,
-.ql-snow .ql-snow .ql-picker.ql-size .ql-picker-item::before {
-  content: attr(data-value) !important;
-}
-
-/* Override for 'Normal' size display */
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="13px"]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"]::before {
-  content: 'Normal' !important;
 }

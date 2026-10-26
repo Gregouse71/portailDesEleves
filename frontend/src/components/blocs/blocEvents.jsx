@@ -1,4 +1,3 @@
-import "../../assets/styles/events.scss"
 import { Alert, Spinner } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
 import { getEvenementsMois } from '../../api/api_evenements';
@@ -52,7 +51,7 @@ export default function BlocEvents() {
         titre={<Link to="/assos/planning" className="text-decoration-none text-reset">Événements</Link>}
         contenu={
             Object.keys(eventsByDate).map((key) => (<div key={key}>
-                <div className="event-date">{key}</div>
+                <div className="text-muted small">{key}</div>
                 {eventsByDate[key].map((event, i) => (
                     <GetAssoInfo key={i} event={event} />)
                 )}

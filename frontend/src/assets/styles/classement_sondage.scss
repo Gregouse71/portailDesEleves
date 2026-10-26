@@ -1,24 +1,9 @@
-// Fichier SCSS pour ClassementSondage
-
-// Variables de couleur locales pour le thème clair
-$danger-color-light: #dc3545;
-
-// Variables de couleur locales pour le thème sombre
-$danger-color-dark: #c0392b;
-
-// Classe pour le fond "light" (Used in summary card)
 .classement-bg-light {
     background-color: var(--global-light-gray);
     box-shadow: 0 .125rem .25rem var(--shadow-color);
 }
 
-// Classes pour les couleurs de texte (Used in summary card)
 .classement-text-primary { color: var(--primary-color); }
 .classement-text-success { color: var(--success-color); }
-.classement-text-danger { color: $danger-color-light; }
+.classement-text-danger { color: var(--danger-color); }
 .classement-text-dark { color: var(--text-color); }
-
-// Styles pour le thème sombre
-[data-theme='dark'] {
-    .classement-text-danger { color: $danger-color-dark; }
-}

@@ -1,5 +1,3 @@
-import "../assets/styles/formulaire_connexion.scss"
-
 import { useMemo, useState } from "react";
 import { setNouveauMDP } from "../api/api_global";
 import { Container, Form, Button, Alert, ProgressBar, InputGroup, Card } from "react-bootstrap";

@@ -24,6 +24,9 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --success-color: #28a745;
   --success-text-color: #fff;
+  --danger-color: #dc3545;
+  --danger-color-hover: #b02a37;
+  --danger-text-color: #fff;
 }
 
 [data-theme='dark'] {
@@ -49,4 +52,7 @@
   --shadow-color: rgba(255, 255, 255, 0.1);
   --success-color: #218838;
   --success-text-color: #fff;
+  --danger-color: #e63946;
+  --danger-color-hover: #f05a67;
+  --danger-text-color: #fff;
 }

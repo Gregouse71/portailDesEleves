@@ -2,9 +2,6 @@
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
-// _bootstrap_overrides.scss
-// This file contains overrides for default Bootstrap components to make them theme-aware.
-
 // Table Overrides
 body[data-theme] .table > :not(caption) > * > * {
   background-color: var(--card-bg);
@@ -105,4 +102,30 @@ body[data-theme] .pagination .page-item.disabled .page-link {
     background-color: var(--card-bg);
     border-color: var(--card-border-color);
     color: var(--text-color-secondary);
+}
+
+// ListGroup Overrides
+body[data-theme] .list-group-item {
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  color: var(--text-color);
+
+  &.list-group-item-action:hover,
+  &:hover {
+    background-color: var(--card-hover-bg);
+    color: var(--text-color);
+  }
+
+  p {
+    color: var(--text-color);
+  }
+
+  .text-muted {
+    color: var(--text-color-secondary) !important;
+  }
+}
+
+// Form Controls
+.form-control::placeholder {
+  font-size: 0.9rem;
 }
