@@ -32,3 +32,17 @@
     padding: 0 !important;
   }
 }
+
+.left .bloc-global {
+  .bloc-header,
+  .card-header {
+    text-align: left !important;
+  }
+}
+
+.right .bloc-global {
+  .bloc-header,
+  .card-header {
+    text-align: right !important;
+  }
+}

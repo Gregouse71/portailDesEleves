@@ -1,9 +1,11 @@
 /* Styles généraux */
+html,
 body {
   margin: 0;
   padding: 0;
   font-family: var(--bs-body-font-family);
   background-color: var(--background-color); // Use the theme variable directly
+  overscroll-behavior-y: none;
 }
 
 /* Custom scrollbars */
@@ -44,11 +46,48 @@ body {
 .main-content-global {
     flex-grow: 1;
     padding-top: 1rem; // Add some space below the header
+    margin-bottom: 30px;
+
+    @media (min-width: 768px) {
+        .left,
+        .right {
+            flex: 0 0 20% !important;
+            max-width: 20% !important;
+            width: 20% !important;
+        }
+
+        .center {
+            flex: 0 0 60% !important;
+            max-width: 60% !important;
+            width: 60% !important;
+        }
+    }
 }
 
 // Custom styles for left and right columns if needed
 .left, .right {
     padding: 1rem;
+}
+
+// Top-level cards on Home page
+.home-container > .card {
+    border: none !important;
+    background-color: transparent !important;
+    margin-bottom: 10px;
+
+    > .card-body {
+        > .card-title,
+        > h2 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+
+            a {
+                text-decoration: none;
+            }
+        }
+    }
 }
 
 // Global Card theming

@@ -37,18 +37,19 @@ function Home() {
     });
 
     return (
-        <Container fluid>
-            <Card className="mb-3">
+        <Container fluid className="home-container">
+            <Card className="border-0 mb-3">
                 <Card.Body className='d-flex flex-column gap-3'>
-                    <Card.Title as="h2" className="text-end">
+                    <Card.Title as="h2" className="text-end d-flex justify-content-end align-items-baseline gap-3">
                         <Link to="/publications" className="text-decoration-none text-reset">Publications récentes</Link>
+                        <Link to="/publications" className="see-more-link">Voir plus</Link>
                     </Card.Title>
                     {(!isLoading && !isError) && data.publications.map(post_id => (
                         <Post key={post_id} postId={post_id} isGestion={false} />
                     ))}
                 </Card.Body>
             </Card>
-            <Card className="mb-3">
+            <Card className="border-0 mb-3">
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">Mailing-lists</Card.Title>
                     {mailingLists.map((list, index) => (
@@ -59,7 +60,7 @@ function Home() {
                 </Card.Body>
             </Card>
 
-            <Card className="mb-3">
+            <Card className="border-0 mb-3">
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">
                         <a href="https://www.calameo.com/read/008240352e3eed81bb7e1?authid=aMzxtHx9pHND">L&apos;abatage 2026</a> est disponible !
@@ -67,7 +68,7 @@ function Home() {
                 </Card.Body>
             </Card>
 
-            <Card>
+            <Card className="border-0">
                 <Card.Body>
                     <Card.Title as="h2" className="text-end">Contacts en cas de mal-être</Card.Title>
                     {contacts.map((contact, index) => (
