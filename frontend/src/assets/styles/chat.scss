@@ -1,7 +1,8 @@
 // Styles for the chat block.
 // The max-height is set to ensure the message display area is scrollable.
 #message-display {
-    max-height: 200px;
+    height: 45vh;
+    min-height: 280px;
     overflow-y: auto;
 }
 
@@ -10,13 +11,7 @@
 }
 
 body[data-theme] .chat-author-me {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-body[data-theme] .chat-author-other {
-    color: var(--text-color);
-    text-decoration: none;
+    color: var(--primary-color) !important;
 }
 
 .chat-input {

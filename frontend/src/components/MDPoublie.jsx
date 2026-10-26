@@ -20,7 +20,7 @@ export default function MDPoublie() {
     }
 
     return (
-        <Container className="connexion-main-container d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
+        <Container fluid className="connexion-main-container d-flex flex-column align-items-center justify-content-center min-vh-100 py-4">
             <Card className="shadow-lg p-4 mb-4 text-center" style={{ maxWidth: '400px', width: '100%' }}>
                 <Card.Body>
                     <h1 className="mb-4 fs-3 text-primary">
