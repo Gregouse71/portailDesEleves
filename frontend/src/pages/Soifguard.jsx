@@ -745,7 +745,7 @@ export default function SoifGuard() {
                     {(bieroPermission || bieroAdminPermission) && (
                         <Button
                             onClick={() => changeCategorie("biero")}
-                            variant={categorie === "biero" ? "warning" : "secondary"}
+                            variant={categorie === "biero" ? "danger" : "secondary"}
                         >
                             Biero
                         </Button>
