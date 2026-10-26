@@ -92,8 +92,8 @@ export default function BlocSondage() {
         contenu={<>
             {content}
             {sondage.hier && <>
-                <Card.Header as="h6" className="text-center">Sondage d&apos;hier</Card.Header>
-                <Card.Body>
+                <Card.Header as="h6" className="bloc-header text-end mt-3">Sondage d&apos;hier</Card.Header>
+                <Card.Body className="p-0">
                     <p className="h5 fw-bold">{sondage.hier.question}</p>
                     <div>
                         {(() => {

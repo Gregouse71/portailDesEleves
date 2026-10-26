@@ -1,4 +1,3 @@
-// src/components/blocs/BlocSondage.jsx
 import { Card } from 'react-bootstrap';
 
 export default function BlocTemplate({
@@ -8,12 +7,10 @@ export default function BlocTemplate({
 
     return (
         <Card className="bloc-global mb-3">
-            <Card.Header as="h5" className="text-center">{titre}</Card.Header>
+            <Card.Header as="h5" className="bloc-header text-end">{titre}</Card.Header>
             <Card.Body className='d-flex flex-column'>
                 {contenu}
             </Card.Body>
         </Card>
     );
-
-
 }
