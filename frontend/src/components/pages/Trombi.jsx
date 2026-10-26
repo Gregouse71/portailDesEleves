@@ -119,12 +119,12 @@ function Trombi() {
                         element: <>{listePromos === null ? (
                             <p>Chargement...</p>
                         ) : (
-                            <div className="cards-grid">
+                            <div className="avatars-grid">
                                 {listePromos.map((promo, index) => (
                                     <Card
                                         onClick={() => navigate(`/trombi/get/${promo}`)}
                                         key={index}
-                                        className="text-center trombi-card"
+                                        className="text-center trombi-card interactive-card"
                                     >
                                         <Card.Body>
                                             <Card.Title>{promo}</Card.Title>

@@ -1,4 +1,3 @@
-import "../assets/styles/formulaire_connexion.scss"
 import { useState } from "react";
 import { Link } from "react-router-dom"; // Import Link for navigation back to login
 import { resetMotDePasse } from "../api/api_global";

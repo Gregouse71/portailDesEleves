@@ -34,9 +34,8 @@ export default function PostCard({ post }) {
 
     return (
         <Card
-            className="h-100 text-center post-card"
+            className="h-100 text-center post-card interactive-card"
             onClick={handleCardClick}
-            style={{ cursor: 'pointer' }}
         >
             <Card.Img
                 variant="top"

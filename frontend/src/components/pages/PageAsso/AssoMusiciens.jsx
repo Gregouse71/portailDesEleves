@@ -6,7 +6,6 @@ import { Form, ListGroup, Image, Row, Col } from "react-bootstrap";
 import OngletTemplate from '../../templates/OngletTemplate';
 import { getMusiciens } from "../../../api/modules/api_musiciens";
 import { UPLOAD_BASE_URL } from "../../../api/base";
-import "../../../assets/styles/search.scss";
 
 /**
  * Normalise une chaîne de caractères (supprime les accents et met en minuscules).

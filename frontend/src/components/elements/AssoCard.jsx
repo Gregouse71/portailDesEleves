@@ -75,12 +75,12 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
             </Card.Body>
         </Card>
         : <Card
-            className="h-100 text-center"
+            className={`h-100 text-center ${isEditMode ? '' : 'interactive-card'}`}
             onClick={handleCardClick}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
             role="button"
             tabIndex={isEditMode ? -1 : 0}
-            style={{ cursor: isEditMode ? 'default' : 'pointer', position: 'relative' }}
+            style={{ position: 'relative' }}
         >
             {isEditMode && (
                 <Button
