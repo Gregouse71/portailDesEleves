@@ -29,7 +29,7 @@ export default function BlocAnniversaire() {
                         const promo = user[3];
                         const id = user[4];
                         return <p className="mb-0" key={id}><Link
-                            to={`/utilisateur/${id}`} className="user-link-text">
+                            to={`/utilisateur/${id}`} className="interactive-link">
                             {prenom} {nom} <em>{cycle}{promo}</em>
                         </Link></p>
                     })}

@@ -1,6 +1,3 @@
-import '../../../assets/styles/liste_assos.scss';
-import '../../../assets/styles/asso.scss';
-
 import { obtenirAssosUtilisateur, modifierOrdreAssos } from "../../../api/api_utilisateurs";
 import AssoCard from "../../elements/AssoCard";
 import { useQuery } from "@tanstack/react-query";
@@ -57,7 +54,7 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
         <OngletTemplate
             titre="Associations actuelles"
             contenu={
-                <div className="asso-grid">
+                <div className="cards-grid">
                     {actuel.map((asso, index) => (
                         <div
                             key={asso.mandat_id || `${asso.asso_id}-${index}`}
@@ -75,7 +72,7 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
         <OngletTemplate
             titre="Associations actuelles"
             contenu={
-                <div className="asso-grid">
+                <div className="cards-grid">
                     {ancien.map((asso, index) => (
                         <div
                             key={asso.mandat_id || `${asso.asso_id}-${index}`}

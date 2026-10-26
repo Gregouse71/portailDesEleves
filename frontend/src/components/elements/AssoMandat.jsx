@@ -211,7 +211,7 @@ export default function AssoMandat({ id, asso, membreData }) {
                         </Card.Body>
                     </Card>
                 )}
-                <div className="member-grid">
+                <div className="avatars-grid">
                     {[...mandat.membres].sort((a, b) => {
                         if (a.position === null) return 1;
                         if (b.position === null) return -1;

@@ -6,7 +6,6 @@ import {
 } from '../../api/api_utilisateurs';
 import { useNavigate } from 'react-router-dom';
 import { Card, Nav, Row, Col } from 'react-bootstrap';
-import '../../assets/styles/asso.scss';
 import '../../assets/styles/trombi.scss';
 import { useQuery } from '@tanstack/react-query';
 import Autocomplete from '../elements/Autocompletion';
@@ -120,7 +119,7 @@ function Trombi() {
                         element: <>{listePromos === null ? (
                             <p>Chargement...</p>
                         ) : (
-                            <div className="member-grid">
+                            <div className="cards-grid">
                                 {listePromos.map((promo, index) => (
                                     <Card
                                         onClick={() => navigate(`/trombi/get/${promo}`)}

@@ -1,5 +1,4 @@
 import { Dropdown } from "react-bootstrap";
-import '../../assets/styles/dropdownedit.scss'
 
 
 export default function DropdownEditer({ list }) {
