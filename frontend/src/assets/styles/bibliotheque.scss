@@ -25,7 +25,7 @@
 
 /* ONGLETS EMPRUNT / RETOUR / GESTION */
 .biblio-container .biblio-tabs {
-  border-bottom: 2px solid #ddd;
+  border-bottom: 2px solid var(--card-border-color);
   flex-wrap: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
@@ -84,10 +84,11 @@
 
   .biblio-container table tr {
     margin-bottom: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--card-border-color);
     border-radius: 8px;
     padding: 6px 10px;
-    background: #fff;
+    background: var(--card-bg);
+    color: var(--text-color);
   }
 
   .biblio-container table td {
@@ -96,7 +97,7 @@
     align-items: center;
     padding: 6px 0;
     border: none;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--card-border-color);
     text-align: right;
   }
 
@@ -115,7 +116,7 @@
 
   .biblio-container table td::before {
     font-weight: bold;
-    color: #555;
+    color: var(--text-color-secondary);
     text-align: left;
   }
 
@@ -147,23 +148,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--card-border-color);
   border-radius: 8px;
-  background-color: #e0f7fa;
-  transition: background 0.3s ease-in-out;
+  background-color: var(--card-hover-bg);
+  color: var(--text-color);
   flex-wrap: wrap;
   gap: 8px;
 }
 
 /* LISTE DE LIVRES/EMPRUNTS SELECTIONNES */
-.biblio-container .biblio-selection-livres .list-group-item {
-  background-color: #f9f9f9;
-}
-
-.biblio-container .biblio-selection-livres .list-group-item:hover {
-  background-color: #e9ecef;
-}
-
 @media (max-width: 576px) {
   .biblio-container .biblio-selection-livres .list-group-item {
     flex-wrap: nowrap; 

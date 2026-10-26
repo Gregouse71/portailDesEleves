@@ -1,48 +1,20 @@
-/* Leaderboard Styles */
+.leaderboard-table {
+  font-size: 0.9rem;
 
-.leaderboard-container {
-  width: 100%;
-  max-width: 100%; /* Allow it to fill the column */
-  margin-top: 0; /* Remove top margin for side-by-side layout */
-}
-
-.leaderboard-card {
-  border: 1px solid var(--card-border-color); /* Simpler border */
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: none; /* Remove heavy shadow */
-}
-
-.leaderboard-header {
-  background-color: var(--card-header-bg); /* Use theme header bg instead of primary */
-  color: var(--text-color);
-  font-weight: bold;
-  text-align: center;
-  padding: 0.75rem; /* Reduced padding */
-  font-size: 1.1rem;
-  border-bottom: 1px solid var(--card-border-color);
-}
-
-.leaderboard-body {
-  display: table;
-  table-layout: auto;
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.leaderboard-list-item {
-  display: table-row;
-  border-bottom: 1px solid var(--card-border-color);
-  transition: background-color 0.2s;
-  background-color: var(--card-bg);
-  color: var(--text-color);
-
-  &:last-child {
-    border-bottom: none;
+  .leaderboard-rank-cell,
+  .leaderboard-score {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+    padding: 0.35rem 0.5rem;
   }
 
-  &:hover {
-    background-color: var(--card-hover-bg);
+  .leaderboard-user-info {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.35rem 0.5rem;
   }
 }
 
@@ -50,45 +22,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px; /* Smaller rank circle */
+  width: 24px;
   height: 24px;
   border-radius: 50%;
   font-weight: bold;
   font-size: 0.8rem;
   margin: 0 auto;
-  
+
   &.rank-1 { background-color: #FFD700; color: #fff; }
   &.rank-2 { background-color: #C0C0C0; color: #fff; }
   &.rank-3 { background-color: #CD7F32; color: #fff; }
-  &.rank-other { background-color: var(--secondary-color); color: #0f0f0f; }
-}
-
-
-
-.leaderboard-user-info, .leaderboard-rank-cell, .leaderboard-score {
-  display: table-cell;
-  vertical-align: middle;
-  padding: 0.25rem 0.25rem;
-  text-align: center;
-}
-
-.leaderboard-rank-cell, .leaderboard-score {
-  width: 1%;
-  white-space: nowrap;
-}
-
-.leaderboard-user-info {
-  text-align: left;
-  width: auto;
-  max-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.leaderboard-separator {
-    .leaderboard-rank {
-        background: transparent;
-        color: var(--bs-secondary, #888);
-    }
+  &.rank-other { background-color: var(--secondary-color); color: var(--global-white); }
+  &.rank-separator { background: transparent; color: var(--secondary-color); }
 }
