@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Form } from 'react-bootstrap';
 import AssoCard from '../elements/AssoCard';
 import { useQuery } from '@tanstack/react-query';
-import '../../assets/styles/asso.scss';
 import { useProtected } from '../../Protected';
 import { useState } from 'react';
 import DropdownEditer from '../elements/DropdownEditer';
@@ -66,7 +65,7 @@ export default function ListeAssos() {
                 </div>
             </div>
 
-            <div className="asso-grid">
+            <div className="cards-grid">
                 {sortedAssos.filter(p => p.nom.localeContains(query, "fr", { sensitivity: "base" })).map((asso) => (
                     <AssoCard
                         key={asso.id}

@@ -3,7 +3,6 @@ import { obtenirListeDesUtilisateurs } from '../../api/api_utilisateurs';
 import { useParams } from 'react-router-dom';
 import UserCard from '../elements/UserCard';
 import { Form, Row, Col } from 'react-bootstrap';
-import '../../assets/styles/asso.scss';
 import { useQuery } from '@tanstack/react-query';
 import PageRandom from '../templates/PageRandom';
 
@@ -48,7 +47,7 @@ export default function TrombiPromo() {
             </Form>
 
             {cyclesSelectionnes.length > 0 ? (
-                <div className="member-grid">
+                <div className="avatars-grid">
                     {utilisateurs.map(user => (
                         <UserCard user={user} key={user.id} isGestion={false} isModifying={false} />
                     ))}

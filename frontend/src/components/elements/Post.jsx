@@ -340,7 +340,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                         <div className="d-flex justify-content-between align-items-center">
                             <Card.Title className="mb-0 d-flex align-items-center">
                                 <GetAssoInfo />
-                                <Link to={`/assos/get/${post.association.id}/posts`} className="post-title-link">
+                                <Link to={`/assos/get/${post.association.id}/posts`} className="interactive-link">
                                     {post.titre}
                                 </Link>
                             </Card.Title>

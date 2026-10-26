@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Container, Alert } from 'react-bootstrap';
 import { getPublicationsByTag } from '../../api/api_publications';
 import PostCard from '../elements/PostCard';
-import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import PageRandom from '../templates/PageRandom';
 
 function Palums() {
@@ -25,21 +24,21 @@ function Palums() {
     titre="Palums"
     sousTitre="Retrouvez ici toutes les Palums"
     isLoading={isLoading}
-    contenu={<>
+    contenu={!isLoading && <>
       <h2>1A</h2>
-      <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
+      <div className="cards-grid">
         {data.publications.filter(p => p.titre.includes("1")).map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
       <h2>2A</h2>
-      <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
+      <div className="cards-grid">
         {data.publications.filter(p => p.titre.includes("2")).map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
       <h2>3A</h2>
-      <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
+      <div className="cards-grid">
         {data.publications.filter(p => p.titre.includes("3")).map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
