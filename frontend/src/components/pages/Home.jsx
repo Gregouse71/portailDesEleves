@@ -37,20 +37,21 @@ function Home() {
     });
 
     return (
-        <Container fluid>
-            <Card className="mb-3">
-                <Card.Body className='d-flex flex-column gap-3'>
-                    <Card.Title as="h2" className="text-end">
-                        <Link to="/publications" className="text-decoration-none text-reset">Publications récentes</Link>
+        <Container fluid className="home-container">
+            <Card className="border-0 mb-3">
+                <Card.Body className='d-flex flex-column gap-1'>
+                    <Card.Title as="h2" className="d-flex align-items-baseline justify-content-between gap-3">
+                        Publications récentes
+                        <Link to="/publications" className="see-more-link">Voir plus</Link>
                     </Card.Title>
                     {(!isLoading && !isError) && data.publications.map(post_id => (
                         <Post key={post_id} postId={post_id} isGestion={false} />
                     ))}
                 </Card.Body>
             </Card>
-            <Card className="mb-3">
+            <Card className="border-0 mb-3">
                 <Card.Body>
-                    <Card.Title as="h2" className="text-end">Mailing-lists</Card.Title>
+                    <Card.Title as="h2">Mailing-lists</Card.Title>
                     {mailingLists.map((list, index) => (
                         <div key={index} className="text-end small text-wrap mb-2">
                             {list.name} : <a href={`mailto:${list.email}`}>{list.email}</a>
@@ -59,17 +60,17 @@ function Home() {
                 </Card.Body>
             </Card>
 
-            <Card className="mb-3">
+            <Card className="border-0 mb-3">
                 <Card.Body>
-                    <Card.Title as="h2" className="text-end">
+                    <Card.Title as="h2" c>
                         <a href="https://www.calameo.com/read/008240352e3eed81bb7e1?authid=aMzxtHx9pHND">L&apos;abatage 2026</a> est disponible !
                     </Card.Title>
                 </Card.Body>
             </Card>
 
-            <Card>
+            <Card className="border-0">
                 <Card.Body>
-                    <Card.Title as="h2" className="text-end">Contacts en cas de mal-être</Card.Title>
+                    <Card.Title as="h2">Contacts en cas de mal-être</Card.Title>
                     {contacts.map((contact, index) => (
                         <div key={index} className="text-end small text-wrap mb-2">
                             {contact.name} : {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
@@ -77,7 +78,7 @@ function Home() {
                             {contact.website && <> / <a href={contact.website} target="_blank" rel="noopener noreferrer">{contact.website}</a></>}
                         </div>
                     ))}
-                    <h3 className="text-end">Contacts des VP Soutien :</h3>
+                    <h3 >Contacts des VP Soutien :</h3>
                     {vpSoutien.map((vp, index) => (
                         <div key={index} className="text-end small text-wrap mb-2">
                             {vp.name} : <a href={`mailto:${vp.email}`}>{vp.email}</a> / <a href={`tel:${vp.phone}`}>{vp.phone}</a>

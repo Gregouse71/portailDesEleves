@@ -175,7 +175,7 @@ export default function BlocChat() {
         <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="rounded-lg chat-message">
           <span className="text-muted">{formatTime(msg.time)}</span>{" "}
           <Link
-            className={msg.author_id === userData.id ? "chat-author-me" : "chat-author-other"}
+            className={"interactive-link " + (msg.author_id === userData.id && "chat-author-me")}
             to={`/utilisateur/${msg.author_id}`}
           >
             {msg.author}

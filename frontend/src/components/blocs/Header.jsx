@@ -20,7 +20,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
     const handleMouseLeave = () => {
         timeout.current = setTimeout(() => {
             setShow(false);
-        }, 150);
+        }, 50);
     };
 
     return <>
@@ -33,7 +33,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <NavDropdown.Divider key={i} />;
-                    case "navigate": return <NavDropdown.Item key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</NavDropdown.Item>;
+                    case "navigate": return <NavDropdown.Item key={i} onClick={() => { navigate(target); setExpanded(false) }}>{title}</NavDropdown.Item>;
                     case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
                     case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
                     case "custom": return target;
@@ -48,7 +48,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <hr key={i} className="my-2 text-muted" />;
-                    case "navigate": return <Nav.Link key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</Nav.Link>;
+                    case "navigate": return <Nav.Link key={i} onClick={() => { navigate(target); setExpanded(false) }}>{title}</Nav.Link>;
                     case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
                     case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
                     case "custom": return target;
@@ -111,21 +111,8 @@ export default function Header() {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                        <Dropdown title="Menu" setExpanded={setExpanded}
+                        <Dropdown title="Liens externes" setExpanded={setExpanded}
                             list={[
-                                ["navigate", "/", "Accueil"],
-                                ["navigate", "/assos", "Associations"],
-                                ["navigate", "/assos/planning", "Planning associatif"],
-                                ["navigate", "/trombi", "Trombinoscope"],
-                                ["navigate", "/publications", "Publications récentes"],
-                                ["navigate", "/vendomes", "Vendômes"],
-                                ["navigate", "/palums", "Palums"],
-                                ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
-                                    [["navigate", "/soifguard", "Soifguard"]] : [],
-                                ["divider"],
-                                ["navigate", "/jeux/2048", "2048"],
-                                ["navigate", "/jeux/echecs", "Échecs"],
-                                ["divider"],
                                 // On va essayer de pas spoil les 1A avec nos histoire de baptême
                                 // ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
                                 ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
@@ -135,7 +122,27 @@ export default function Header() {
                                 ["link", "https://mines-paris.org/", "Portail des Alumni"],
                             ]}
                         />
-
+                        <Dropdown title="Jeux" setExpanded={setExpanded}
+                            list={[
+                                ["navigate", "/jeux/2048", "2048"],
+                                ["navigate", "/jeux/echecs", "Échecs"],
+                            ]}
+                        />
+                        <Dropdown title="Services" setExpanded={setExpanded}
+                            list={[
+                                ["navigate", "/", "Accueil"],
+                                ["navigate", "/assos", "Associations"],
+                                ["navigate", "/assos/planning", "Planning associatif"],
+                                ["navigate", "/trombi", "Trombinoscope"],
+                                ["navigate", "/publications", "Publications récentes"],
+                                ["navigate", "/vendomes", "Vendômes"],
+                                ["navigate", "/palums", "Palums"],
+                                ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
+                                    [
+                                        ["divider"], ["navigate", "/soifguard", "Soifguard"]
+                                    ] : [],
+                            ]}
+                        />
                         <div className="d-none d-md-block flex-grow-1"></div>
 
                         <Form className="d-flex form-navbar" onSubmit={handleSearchSubmit}>
