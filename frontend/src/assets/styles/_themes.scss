@@ -1,4 +1,7 @@
 :root {
+  --bs-body-font-family: 'Arial', system-ui, -apple-system, sans-serif;
+  font-size: 0.95rem;
+
   --background-color: #FFFFFF;
   --text-color: #333333;
   --header-bg: #1b1f23;
@@ -21,7 +24,6 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --success-color: #28a745;
   --success-text-color: #fff;
-  font-size: 0.95rem;
 }
 
 [data-theme='dark'] {
