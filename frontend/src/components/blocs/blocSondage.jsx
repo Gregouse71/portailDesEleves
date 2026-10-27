@@ -50,7 +50,7 @@ export default function BlocSondage() {
             content = (
                 <>
                     <p className="h3 fw-bold">{sondage.question}</p>
-                    <div>
+                    <div className="mb-2">
                         {(() => {
                             const totalVotes = sondage.votes.reduce((sum, v) => sum + v, 0);
                             return sondage.reponses.map((reponse, index) => {

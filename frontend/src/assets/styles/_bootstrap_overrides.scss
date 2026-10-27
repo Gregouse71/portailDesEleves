@@ -17,18 +17,55 @@ body[data-theme] .table-hover > tbody > tr:hover > * {
 
 // Dropdown Overrides
 body[data-theme] .dropdown-menu {
+  --bs-dropdown-bg: var(--card-bg);
+  --bs-dropdown-color: var(--text-color);
+  --bs-dropdown-border-color: var(--card-border-color);
+  --bs-dropdown-link-color: var(--text-color);
+  --bs-dropdown-link-hover-color: var(--text-color);
+  --bs-dropdown-link-hover-bg: var(--card-hover-bg);
+  --bs-dropdown-link-active-color: var(--global-white);
+  --bs-dropdown-link-active-bg: var(--primary-color);
+  --bs-dropdown-link-disabled-color: var(--text-color-secondary);
+
   background-color: var(--card-bg);
   border-color: var(--card-border-color);
+  border-width: 3px;
   color: var(--text-color);
 }
 
-body[data-theme] .dropdown-item {
+body[data-theme] .dropdown-item,
+body[data-theme] .dropdown-divider {
   color: var(--text-color);
-}
+  background-color: transparent;
 
-body[data-theme] .dropdown-item:hover {
-  background-color: var(--card-hover-bg);
-  color: var(--text-color);
+  &:hover,
+  &:focus {
+    background-color: var(--card-hover-bg);
+    color: var(--text-color);
+  }
+
+  &:focus:not(:focus-visible) {
+    background-color: transparent;
+    color: var(--text-color);
+  }
+
+  &:focus-visible {
+    background-color: var(--card-hover-bg);
+    color: var(--text-color);
+    outline: none;
+  }
+
+  &:active,
+  &.active {
+    background-color: var(--primary-color);
+    color: var(--global-white);
+  }
+
+  &.disabled,
+  &:disabled {
+    color: var(--text-color-secondary);
+    background-color: transparent;
+  }
 }
 
 .no-caret.dropdown-toggle::after {
@@ -36,10 +73,10 @@ body[data-theme] .dropdown-item:hover {
 }
 
 // Fix for icons within specific button variants
-body[data-theme] .btn-outline-light .theme-icon {
-    filter: var(--icon-filter-color-inverted); // White icon
+body[data-theme] .theme-icon {
+    filter: var(--icon-filter-color); // White icon
 }
-body[data-theme] .btn-outline-light:hover .theme-icon {
+body[data-theme] .theme-icon:hover {
     filter: var(--icon-color-filter); // Black icon on hover
 }
 
@@ -126,6 +163,26 @@ body[data-theme] .list-group-item {
 }
 
 // Form Controls
+body[data-theme] .form-control,
+body[data-theme] .form-select {
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  color: var(--text-color);
+
+  &:focus {
+    background-color: var(--card-bg);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem var(--shadow-color);
+  }
+
+  option {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+  }
+}
+
 .form-control::placeholder {
   font-size: 0.9rem;
+  color: var(--text-color-secondary);
 }

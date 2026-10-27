@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
+import Mines from "../../assets/icons/mines.svg?react";
 
 const Dropdown = ({ title, list, end, setExpanded }) => {
     const navigate = useNavigate();
@@ -107,7 +108,11 @@ export default function Header() {
     return (
         <Navbar expand="md" sticky="top" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
-                <Navbar.Brand style={{ cursor: "pointer" }} onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
+                <Navbar.Brand
+                    style={{ cursor: "pointer" }}
+                    onClick={() => { navigate("/"); setExpanded(false); }}>
+                    Le portail des élèves <Mines className="" style={{ width: "2.5rem", height: "1.5rem" }} />
+                </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">

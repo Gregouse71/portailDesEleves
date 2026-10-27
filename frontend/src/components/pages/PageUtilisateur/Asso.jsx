@@ -52,7 +52,8 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
 
     return <>
         <OngletTemplate
-            titre="Associations actuelles"
+            titre="Association"
+            avecTooltip={true} tooltipContent="Cliquez-glissez les associations pour les réordonner"
             contenu={
                 <div className="cards-grid">
                     {actuel.map((asso, index) => (

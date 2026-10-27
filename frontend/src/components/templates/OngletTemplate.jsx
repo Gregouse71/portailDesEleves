@@ -1,4 +1,4 @@
-import { Button } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import DropdownEditer from "../elements/DropdownEditer";
 import Chargement from "../elements/Chargement";
 
@@ -6,6 +6,7 @@ export default function OngletTemplate({
     titre,
     isLoading,
     contenu,
+    avecTooltip, tooltipContent,
     avecDropdown, contenuDropdown,
     avecBouton, onButonClick
 }) {
@@ -23,6 +24,15 @@ export default function OngletTemplate({
             <h2>{titre}</h2>
             {avecDropdown && <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
                 <DropdownEditer list={contenuDropdown} />
+            </div>}
+            {avecTooltip && <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
+                <OverlayTrigger
+                    placement="top"
+                    trigger={['hover', 'click', 'focus']}
+                    overlay={<Tooltip>{tooltipContent}</Tooltip>}
+                >
+                    <img src="/assets/icons/info.svg" alt="info" className="theme-icon" />
+                </OverlayTrigger>
             </div>}
             {avecBouton && <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
                 <Button
