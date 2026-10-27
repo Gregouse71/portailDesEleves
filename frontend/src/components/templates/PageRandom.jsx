@@ -2,6 +2,7 @@ import { Container, Alert, Form, Button } from 'react-bootstrap';
 import RenderPagination from '../elements/RenderPagination'
 import Chargement from '../elements/Chargement';
 import { useNavigate } from 'react-router-dom';
+import DropdownEditer from '../elements/DropdownEditer';
 
 export default function PageRandom({
     titre,
@@ -10,13 +11,14 @@ export default function PageRandom({
     isLoading,
     avecPagination = false, paramsPag = {},
     avecNbPP = false, paramsNbPP = {},
+    avecDrop = false, paramsDrop = {},
     avecRequete = false, paramsReq = {},
     avecBoutonRetour = false, destRetour
 }) {
     const navigate = useNavigate();
 
     if (isLoading) {
-        return <Container className="py-4">
+        return <Container className="page-random-header page-random py-4">
             {avecBoutonRetour && <Button variant="outline-secondary" onClick={() => navigate(destRetour)} className="mb-3">
                 Retour
             </Button>}
@@ -27,11 +29,11 @@ export default function PageRandom({
             <Chargement />
         </Container>;
     }
-    return <Container className="py-4">
+    return <Container className="page-random py-4">
         {avecBoutonRetour && <Button variant="outline-secondary" onClick={() => navigate(destRetour)} className="mb-3">
             Retour
         </Button>}
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 gap-3">
+        <div className="page-random-header d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 gap-3">
             <div className="text-center text-md-start">
                 <h1 className="mb-0">{titre}</h1>
                 <p className="text-muted mb-0">{sousTitre}</p>
@@ -53,6 +55,7 @@ export default function PageRandom({
                     <option value="120">120</option>
                 </Form.Select>
             }
+            {avecDrop && <DropdownEditer list={paramsDrop} />}
         </div>
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
             {avecRequete &&

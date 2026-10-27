@@ -1,0 +1,14 @@
+.page-random {
+  padding: 0.2rem 1.5rem;
+
+  .page-random-header {
+    padding: 0.2rem 1rem;
+
+    h1 {
+      border-bottom: 3px solid var(--primary-color) !important;
+      padding: 0 0 0.2rem 0;
+      color: var(--text-color);
+      font-weight: 600;
+    }
+  }
+}

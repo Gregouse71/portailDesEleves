@@ -396,13 +396,13 @@ export default function PermissionsManager() {
                                 editUser.permissions.map((p, idx) => (
                                     <Badge bg="secondary" className="me-2 mb-2 p-2 fs-6" key={idx}>
                                         {p.permission}
-                                        <span 
+                                        <button 
                                             style={{ cursor: "pointer", marginLeft: "8px", fontWeight: "bold" }} 
                                             onClick={() => deletePermMutation.mutate(p.id)} onKeyDown={() => deletePermMutation.mutate(p.id)}
                                             title="Supprimer"
                                         >
                                             &times;
-                                        </span>
+                                        </button>
                                     </Badge>
                                 ))
                             ) : (

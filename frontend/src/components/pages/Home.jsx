@@ -41,7 +41,7 @@ function Home() {
             <Card className="border-0 mb-3">
                 <Card.Body className='d-flex flex-column gap-3'>
                     <Card.Title as="h2" className="text-end d-flex justify-content-end align-items-baseline gap-3">
-                        <Link to="/publications" className="text-decoration-none text-reset">Publications récentes</Link>
+                        Publications récentes
                         <Link to="/publications" className="see-more-link">Voir plus</Link>
                     </Card.Title>
                     {(!isLoading && !isError) && data.publications.map(post_id => (

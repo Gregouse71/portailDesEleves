@@ -1,11 +1,10 @@
 import { chargerListeAssos } from '../../api/api_associations';
 import { useNavigate } from 'react-router-dom';
-import { Container, Form } from 'react-bootstrap';
 import AssoCard from '../elements/AssoCard';
 import { useQuery } from '@tanstack/react-query';
 import { useProtected } from '../../Protected';
 import { useState } from 'react';
-import DropdownEditer from '../elements/DropdownEditer';
+import PageRandom from '../templates/PageRandom';
 
 String.prototype.localeContains = function (sub) {
     if (sub === "") return true;
@@ -35,47 +34,23 @@ export default function ListeAssos() {
         return b.ordre_importance - a.ordre_importance;
     });
 
-    return (
-        <Container className="py-4">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h1>Associations</h1>
-                <div className="ms-auto d-flex align-items-center gap-2 flex-shrink-0 ps-3">
-                    {userData.is_superuser && <DropdownEditer list={[
-                        { can: true, onClick: () => setEditMode(!editMode), name: "Modifier" },
-                        { can: true, onClick: () => navigate("/assos/ajouter"), name: "Ajouter" },
-                    ]}
-                    />
-                    }
-                </div>
-            </div>
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 gap-3">
-                <p className="text-muted mb-0">Retrouve ici toutes les assos</p>
-                <div className="w-md-auto">
-                    <Form onSubmit={e => { e.preventDefault(); }} className="w-100">
-                        <Form.Group>
-                            <Form.Control
-                                type="text"
-                                name="query"
-                                placeholder="Rechercher"
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Form>
-                </div>
-            </div>
-
-            <div className="cards-grid">
-                {sortedAssos.filter(p => p.nom.localeContains(query, "fr", { sensitivity: "base" })).map((asso) => (
-                    <AssoCard
-                        key={asso.id}
-                        asso_id={asso.id}
-                        isEditMode={editMode}
-                        isEditingAsso={editingAssoId === asso.id}
-                        onEditAsso={setEditingAssoId}
-                    />
-                ))}
-            </div>
-        </Container>
-    );
+    return <PageRandom
+        titre="Associations"
+        sousTitre="Retrouve ici toutes les assos"
+        avecDrop={userData.is_superuser} paramsDrop={[
+            { can: true, onClick: () => setEditMode(!editMode), name: "Modifier" },
+            { can: true, onClick: () => navigate("/assos/ajouter"), name: "Ajouter" },
+        ]}
+        avecRequete={true} paramsReq={{ query, onChange: (e) => setQuery(e.target.value) }}
+        contenu={<div className="cards-grid">
+            {sortedAssos.filter(p => p.nom.localeContains(query, "fr", { sensitivity: "base" })).map((asso) => (
+                <AssoCard
+                    key={asso.id}
+                    asso_id={asso.id}
+                    isEditMode={editMode}
+                    isEditingAsso={editingAssoId === asso.id}
+                    onEditAsso={setEditingAssoId}
+                />
+            ))}
+        </div>} />;
 }

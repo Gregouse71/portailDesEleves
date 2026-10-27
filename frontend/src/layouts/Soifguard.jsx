@@ -385,7 +385,7 @@ function User({ user, isSelected, select, categorie, query, perms }) {
                 list={[
                     {
                         can: true, onClick: () => cotizMutation.mutate({ id: user.id, asso: categorie }),
-                        name:  estCotisantIci ? <>Ne cotise pas</> : <>Cotise</>
+                        name: estCotisantIci ? <>Ne cotise pas</> : <>Cotise</>
                     },
                     { can: perms, onClick: () => setIsCrediting(!isCrediting), name: "Créditer le compte" },
                 ]}
@@ -752,15 +752,16 @@ export default function SoifGuard() {
                     )}
                 </div>
             </div>
-            <Routes>
-                <Route index element={
-                    <Consommation categorie={categorie} reset={reset}
-                        perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)}
-                    />} />
-                <Route path="liste" element={categorie ? <Liste categorie={categorie} /> : <></>} />
-                <Route path="operations" element={categorie ? <Operations categorie={categorie} /> : <></>} />
-                <Route path="permissions" element={categorie ? <Permissions categorie={categorie} /> : <></>} />
-            </Routes>
+            {categorie &&
+                <Routes>
+                    <Route index element={
+                        <Consommation categorie={categorie} reset={reset}
+                            perms={(categorie === "octo" && octoAdminPermission) || (categorie === "biero" && bieroAdminPermission)}
+                        />} />
+                    <Route path="liste" element={categorie ? <Liste categorie={categorie} /> : <></>} />
+                    <Route path="operations" element={categorie ? <Operations categorie={categorie} /> : <></>} />
+                    <Route path="permissions" element={categorie ? <Permissions categorie={categorie} /> : <></>} />
+                </Routes>}
         </div>
     );
 }

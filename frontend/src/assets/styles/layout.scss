@@ -35,90 +35,107 @@ body {
 @import './links';
 @import './cards';
 @import './blocs';
+@import './pagesRandom';
 
 .layout {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--background-color);
-    color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .main-content-global {
-    flex-grow: 1;
-    padding-top: 1rem; // Add some space below the header
-    margin-bottom: 30px;
+  flex-grow: 1;
+  padding-top: 0.2rem;
+  margin-bottom: 30px;
 
-    @media (min-width: 768px) {
-        .left,
-        .right {
-            flex: 0 0 20% !important;
-            max-width: 20% !important;
-            width: 20% !important;
-        }
+  @media (min-width: 768px) {
 
-        .center {
-            flex: 0 0 60% !important;
-            max-width: 60% !important;
-            width: 60% !important;
-        }
+    .left,
+    .right {
+      flex: 0 0 18% !important;
+      max-width: 18% !important;
+      width: 18% !important;
     }
+
+    .center {
+      flex: 0 0 64% !important;
+      max-width: 64% !important;
+      width: 64% !important;
+    }
+  }
 }
 
 // Custom styles for left and right columns if needed
-.left, .right {
-    padding: 1rem;
+.left {
+  padding: 1rem 0.1rem 1rem 1rem;
+}
+
+.center {
+  padding: 1rem 0.1rem 1rem 0.1rem;
+}
+
+.right {
+  padding: 1rem 1rem 1rem 0.1rem;
 }
 
 // Top-level cards on Home page
-.home-container > .card {
-    border: none !important;
-    background-color: transparent !important;
-    margin-bottom: 10px;
+.home-container>.card {
+  border: none !important;
+  background-color: transparent !important;
+  margin-bottom: 10px;
 
-    > .card-body {
-        > .card-title,
-        > h2 {
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
+  >.card-body {
+    padding: 0 0.1rem;
 
-            a {
-                text-decoration: none;
-            }
-        }
+    >.card-title,
+    >h2 {
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+
+      a {
+        text-decoration: none;
+      }
     }
+  }
 }
 
 // Global Card theming
 body[data-theme] .card {
-    background-color: var(--card-bg);
-    border-color: var(--card-border-color);
-    color: var(--text-color); // Ensure text color is inherited or explicitly set
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  color: var(--text-color); // Ensure text color is inherited or explicitly set
 }
 
 body[data-theme] .card-header {
-    background-color: var(--card-header-bg);
-    color: var(--text-color);
+  background-color: var(--card-header-bg);
+  color: var(--text-color);
+}
+
+body[data-theme] h1,
+body[data-theme] h2 {
+  color: var(--text-color);
 }
 
 // Global icon theming
 .theme-icon {
-    filter: var(--icon-color-filter);
-    transition: transform 0.2s ease;
+  filter: var(--icon-color-filter);
 }
 
 // Override Bootstrap's text-muted
 body[data-theme] .text-muted {
-    color: var(--text-color-secondary) !important; /* Use !important to ensure override */
+  color: var(--text-color-secondary) !important;
+  /* Use !important to ensure override */
 }
 
 // Ensure links within cards also respect the theme or primary color
 .card a {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .card a:hover {
-    color: var(--primary-color);
-    text-decoration: underline;
+  color: var(--primary-color);
+  text-decoration: underline;
 }
