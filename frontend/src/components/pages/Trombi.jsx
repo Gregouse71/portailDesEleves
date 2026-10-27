@@ -115,7 +115,7 @@ function Trombi() {
                 activeKey={getActiveKey()}
                 tabs={[
                     {
-                        titre: "Trombis de promotions", path: `/trombi`, key: "promos", index: true,
+                        titre: "Trombis des promotions", path: `/trombi`, key: "promos", index: true,
                         element: <>{listePromos === null ? (
                             <p>Chargement...</p>
                         ) : (

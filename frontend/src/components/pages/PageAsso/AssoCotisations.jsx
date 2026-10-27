@@ -32,7 +32,7 @@ function Cotisant({ userId, onRemove }) {
                 {data.prenom} {data.nom} {data.cycle}{data.promotion}
             </div>
             <Button variant="danger" className="p-0" onClick={onRemove}>
-                X
+                &times;
             </Button>
         </ListGroup.Item>
     );
@@ -213,7 +213,7 @@ function CotisationCard({ isNew, id, association_id, canModify, cotisationData, 
                                         <Cotisant
                                             key={id}
                                             userId={id}
-                                            onRemove={() => removeMemberMutation.mutate(userId)}
+                                            onRemove={() => removeMemberMutation.mutate(id)}
                                         />
                                     ))}
                                 </ListGroup>

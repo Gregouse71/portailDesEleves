@@ -186,7 +186,7 @@ export default function EchecsPartie() {
     })();
 
     return (
-        <Container className="echecs-partie py-3">
+        <Container className="echecs-partie">
 
             {/* Barre joueurs avec ELO */}
             <div className="echecs-joueurs-bar mb-2">

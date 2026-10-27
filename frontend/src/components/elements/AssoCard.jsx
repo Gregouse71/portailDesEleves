@@ -75,7 +75,7 @@ export default function AssoCard({ asso_id, mandat, role, isEditMode, isEditingA
             </Card.Body>
         </Card>
         : <Card
-            className={`h-100 text-center ${isEditMode ? '' : 'interactive-card'}`}
+            className={`h-100 text-center footer-card ${isEditMode ? '' : 'interactive-card'}`}
             onClick={handleCardClick}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
             role="button"

@@ -23,12 +23,10 @@ export default function AssoMusiciens() {
     const [instrumentFilter, setInstrumentFilter] = useState("");
     const [sortBy, setSortBy] = useState("promo-desc");
 
-    const { data, isLoading, isError } = useQuery({
+    const { data: { musiciens } = { musiciens: [] }, isLoading, isError } = useQuery({
         queryKey: ["musiciens"],
         queryFn: () => getMusiciens(),
     });
-
-    const musiciens = data?.musiciens || [];
 
     // Filtrer et trier la liste des musiciens
     const processedMusiciens = useMemo(() => {

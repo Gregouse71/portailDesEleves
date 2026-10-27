@@ -5,7 +5,7 @@
   --selection:    rgba(20, 85, 30, 0.55);
   --coup-legal:   rgba(20, 85, 30, 0.40);
   --dernier:      rgba(155, 199, 0, 0.42);
-  --taille-case:  min(calc(90vw / 8), calc(55vh / 8));
+  --taille-case:  min(calc(100vw / 8), calc(65vh / 8));
 }
 
 /* ── Lobby ───────────────────────────────────────────────────────────────────*/
