@@ -8,6 +8,15 @@ import { useProtected } from '../../Protected';
 import { Link } from 'react-router-dom';
 import BlocTemplate from '../templates/BlocTemplate';
 
+// Au-delà de ce délai, on réaffiche l'en-tête même si c'est le même auteur
+const DELAI_GROUPE_MS = 5 * 60 * 1000;
+
+// Vrai si le message fait suite à un message du même auteur, envoyé récemment
+const estSuite = (msg, precedent) =>
+  !!precedent &&
+  precedent.author_id === msg.author_id &&
+  new Date(msg.time) - new Date(precedent.time) < DELAI_GROUPE_MS;
+
 export default function BlocChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -168,23 +177,46 @@ export default function BlocChat() {
     return date.toLocaleTimeString('fr-FR', { month: "numeric", day: "numeric", year: "2-digit", hour: '2-digit', minute: '2-digit' });
   }
 
+  const formatHeure = (timeStr) => {
+    if (!timeStr) return "";
+    return new Date(timeStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
   return <BlocTemplate
     titre="Chat"
     contenu={<><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
-      {messages.map((msg, idx) => (
-        <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="rounded-lg chat-message">
-          <div className="d-flex flex-row justify-content-between">
-            <b><Link
-              className={"interactive-link " + (msg.author_id === userData.id && "chat-author-me")}
-              to={`/utilisateur/${msg.author_id}`}
-            >
-              {msg.author}
-            </Link></b>
-            <span className="text-muted">{formatTime(msg.time)}</span>
+      {messages.map((msg, idx) => {
+        const suite = estSuite(msg, messages[idx - 1]);
+        return (
+          <div
+            ref={idx === 0 ? firstMessageRef : null}
+            key={msg.id || idx}
+            className={`chat-message ${suite ? "chat-message-suite" : ""}`}
+          >
+            {suite ? (
+              <div className="d-flex justify-content-between align-items-start">
+                <span>{msg.text}</span>
+                <span className="chat-heure-suite text-muted">{formatHeure(msg.time)}</span>
+              </div>
+            ) : (
+              <>
+                <div className="d-flex flex-row justify-content-between">
+                  <b>
+                    <Link
+                      className={`interactive-link ${msg.author_id === userData.id ? "chat-author-me" : ""}`}
+                      to={`/utilisateur/${msg.author_id}`}
+                    >
+                      {msg.author}
+                    </Link>
+                  </b>
+                  <span className="text-muted">{formatTime(msg.time)}</span>
+                </div>
+                <div>{msg.text}</div>
+              </>
+            )}
           </div>
-          <span>{msg.text}</span>
-        </div>
-      ))}
+        );
+      })}
     </div>
       <InputGroup >
         <Form.Control className="chat-input"

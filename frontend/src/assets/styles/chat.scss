@@ -9,6 +9,28 @@
 .chat-message {
     font-size: 0.8em;
     border-top: 1px solid var(--primary-color);
+    overflow-wrap: anywhere;
+    padding: 2px 4px;
+    transition: background-color 0.1s;
+}
+
+.chat-message:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 8%, transparent);
+}
+
+.chat-message-suite {
+    border-top: none;
+}
+
+.chat-heure-suite {
+    visibility: hidden;
+    flex-shrink: 0;
+    margin-left: 0px;
+    font-size: 0.85em;
+}
+
+.chat-message-suite:hover .chat-heure-suite {
+    visibility: visible;
 }
 
 body[data-theme] .chat-author-me {
