@@ -8,6 +8,7 @@
 
 .chat-message {
     font-size: 0.8em;
+    border-top: 1px solid var(--primary-color);
 }
 
 body[data-theme] .chat-author-me {

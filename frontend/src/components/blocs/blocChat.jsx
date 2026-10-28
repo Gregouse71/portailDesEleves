@@ -165,7 +165,7 @@ export default function BlocChat() {
   const formatTime = (timeStr) => {
     if (!timeStr) return "";
     const date = new Date(timeStr);
-    return date.toLocaleTimeString('fr-FR', { month: "numeric", day: "numeric", hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('fr-FR', { month: "numeric", day: "numeric", year: "2-digit", hour: '2-digit', minute: '2-digit' });
   }
 
   return <BlocTemplate
@@ -173,14 +173,15 @@ export default function BlocChat() {
     contenu={<><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
       {messages.map((msg, idx) => (
         <div ref={idx === 0 ? firstMessageRef : null} key={msg.id || idx} className="rounded-lg chat-message">
-          <span className="text-muted">{formatTime(msg.time)}</span>{" "}
-          <Link
-            className={"interactive-link " + (msg.author_id === userData.id && "chat-author-me")}
-            to={`/utilisateur/${msg.author_id}`}
-          >
-            {msg.author}
-          </Link>{" "}
-          :{" "}
+          <div className="d-flex flex-row justify-content-between">
+            <b><Link
+              className={"interactive-link " + (msg.author_id === userData.id && "chat-author-me")}
+              to={`/utilisateur/${msg.author_id}`}
+            >
+              {msg.author}
+            </Link></b>
+            <span className="text-muted">{formatTime(msg.time)}</span>
+          </div>
           <span>{msg.text}</span>
         </div>
       ))}
