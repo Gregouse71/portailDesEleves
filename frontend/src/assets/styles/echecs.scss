@@ -5,10 +5,22 @@
   --selection: rgba(20, 85, 30, 0.55);
   --coup-legal: rgba(20, 85, 30, 0.40);
   --dernier: rgba(155, 199, 0, 0.42);
-  --taille-case: min(calc(90vw / 8), calc(75vh / 8));
+  --taille-case: min(calc((100vw - 80px) / 8), calc(75vh / 8));
 }
 
 /* ── Lobby ───────────────────────────────────────────────────────────────────*/
+
+.echecs-lobby-container {
+  width: 100%;
+  max-width: 1600px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  text-align: center; 
+}
+
+.echecs-lobby-container .row {
+  text-align: left;
+}
 
 .echecs-lobby h1 {
   font-size: clamp(1.4rem, 4vw, 2rem);
@@ -134,7 +146,9 @@
 }
 
 .echecs-sidebar {
-  padding: 0 2rem;
+  padding: 0;
+  min-width: 200px;
+  margin-top: 2rem;
 }
 
 /* Barre joueurs */
@@ -240,24 +254,25 @@
 .echecs-plateau-wrapper {
   display: flex;
   align-items: flex-start;
-  gap: 3px;
+  gap: 4px;
   user-select: none;
 }
 
 .echecs-rangs {
   display: flex;
   flex-direction: column;
+  padding-top: 2px; 
 }
 
 .echecs-col-label {
   width: var(--taille-case);
-  padding: 1rem 0;
-
+  padding: 4px 0 0;
 }
 
 .echecs-rang-label {
-  padding: 0 1rem;
+  width: 16px;
   height: var(--taille-case);
+  padding: 0;
 }
 
 .echecs-rang-label,
@@ -265,7 +280,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.58rem;
+  font-size: 0.7rem;
   color: var(--text-color-secondary);
 }
 

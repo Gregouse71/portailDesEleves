@@ -187,17 +187,15 @@ export default function EchecsPartie() {
 
     return (
         <Container className="echecs-partie">
-            <div className="d-flex flex-row justify-content-center align-items-center flex-wrap">
-                <div className="justify-content-center">
-                    <Plateau
-                        plateau={partie.plateau}
-                        selection={selection}
-                        coupsLegaux={coupsLegaux}
-                        dernierCoup={partie.dernier_coup}
-                        maCouleur={maCouleur}
-                        onCaseClick={onCaseClick}
-                    />
-                </div>
+            <div className="d-flex flex-row justify-content-center align-items-start flex-wrap gap-4">
+                <Plateau
+                    plateau={partie.plateau}
+                    selection={selection}
+                    coupsLegaux={coupsLegaux}
+                    dernierCoup={partie.dernier_coup}
+                    maCouleur={maCouleur}
+                    onCaseClick={onCaseClick}
+                />
                 <div className="echecs-sidebar d-flex flex-column align-items-center">
                     {/* Barre joueurs avec ELO */}
                     <div className="echecs-joueurs-bar mb-2">
@@ -233,6 +231,7 @@ export default function EchecsPartie() {
                     {maCouleur && !estTerminee && (
                         <div className="d-flex gap-2 mt-2">
                             <Button
+                                className="flex-fill"
                                 variant="outline-danger" size="sm"
                                 onClick={onAbandonner}
                                 disabled={actionEnCours === "abandon"}
@@ -244,6 +243,7 @@ export default function EchecsPartie() {
                                 <>
                                     {partie.nulle_proposee_par && partie.nulle_proposee_par !== userData.id ? (
                                         <Button
+                                            className="flex-fill"
                                             variant="outline-success" size="sm"
                                             onClick={onAccepterNulle}
                                             disabled={actionEnCours === "accepterNulle"}
@@ -252,6 +252,7 @@ export default function EchecsPartie() {
                                         </Button>
                                     ) : (
                                         <Button
+                                            className="flex-fill"
                                             variant="outline-secondary" size="sm"
                                             onClick={onProposerNulle}
                                             disabled={actionEnCours === "nulle" || partie.nulle_proposee_par === userData.id}

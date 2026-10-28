@@ -470,15 +470,15 @@ function OngletGestion({ asso_id, peutGerer }) {
 
     return (
         <div className="biblio-tab-content biblio-tab-content-large">
-            <div className="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
-                <div className="d-flex gap-2 flex-wrap">
+            <div className="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                <div className="d-flex flex-column gap-2" style={{ width: "100%", maxWidth: "400px" }}>
                     <Form.Control
                         placeholder="Rechercher une série, un auteur..."
                         value={query}
                         onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-                        style={{ maxWidth: "400px" }}
                     />
                     <Form.Select
+                        size="sm"
                         value={genreFiltre}
                         onChange={(e) => { setGenreFiltre(e.target.value); setPage(1); }}
                         style={{ maxWidth: "220px" }}
@@ -490,8 +490,8 @@ function OngletGestion({ asso_id, peutGerer }) {
                     </Form.Select>
                 </div>
                 {peutGerer && (
-                    <div className="d-flex flex-column align-items-center align-items-md-end">
-                        <div className="d-flex gap-2 flex-wrap justify-content-center justify-content-md-end">
+                    <div className="d-flex flex-column align-items-start align-items-md-end">
+                        <div className="d-flex gap-2 flex-wrap justify-content-start justify-content-md-end">
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -501,16 +501,17 @@ function OngletGestion({ asso_id, peutGerer }) {
                             />
                             <Button
                                 variant="outline-secondary"
+                                size="sm"
                                 disabled={importMutation.isPending}
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 {importMutation.isPending ? "Import en cours..." : "Importer un fichier"}
                             </Button>
-                            <Button variant="success" onClick={() => setShowAjout(true)}>
+                            <Button variant="outline-success" size="sm" onClick={() => setShowAjout(true)}>
                                 + Ajouter un livre
                             </Button>
                         </div>
-                        <div className="text-muted small mt-1 text-center text-md-end">
+                        <div className="text-muted mt-1 text-start text-md-end" style={{ fontSize: "0.7rem" }}>
                             Colonnes attendues : Auteur, Edition, Série*, Tome, Genre, Référence, Etat
                         </div>
                     </div>
@@ -563,7 +564,7 @@ function OngletGestion({ asso_id, peutGerer }) {
                                 )}
                             </td>
                             {peutGerer && (
-                                <td className="text-center">
+                                <td className="text-center text-nowrap biblio-actions">
                                     <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setLivreAModifier(livre)}>
                                         <PencilSquare />
                                     </Button>
