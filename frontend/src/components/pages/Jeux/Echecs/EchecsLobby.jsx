@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Button } from "react-bootstrap";
 import { SOCKET_BASE_URL } from "../../../../api/base";
 import Leaderboard from "../../../elements/Leaderboard";
-import "../../../../assets/styles/echecs.css";
+import "../../../../assets/styles/echecs.scss";
 import JeuxTemplate from "../../../templates/JeuxTemplate";
 
 export default function EchecsLobby() {

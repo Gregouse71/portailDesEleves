@@ -6,7 +6,7 @@ import { Container, Alert, Button } from "react-bootstrap";
 import { useProtected } from "../../../../Protected";
 import { getPartie, getCoupsLegaux } from "../../../../api/api_echecs";
 import { SOCKET_BASE_URL } from "../../../../api/base";
-import "../../../../assets/styles/echecs.css";
+import "../../../../assets/styles/echecs.scss";
 
 const BASE = "https://lichess1.org/assets/piece/cburnett/";
 const IMG = {
@@ -187,80 +187,118 @@ export default function EchecsPartie() {
 
     return (
         <Container className="echecs-partie">
-
-            {/* Barre joueurs avec ELO */}
-            <div className="echecs-joueurs-bar mb-2">
-                <BadgeJoueur
-                    pseudo={partie.noir_pseudo}
-                    couleur="noir"
-                    actif={partie.trait === "noir" && !estTerminee}
-                    estIA={partie.mode === "ia"}
-                    elo={eloNoirAffiche}
-                />
-                <span className="echecs-vs">vs</span>
-                <BadgeJoueur
-                    pseudo={partie.blanc_pseudo}
-                    couleur="blanc"
-                    actif={partie.trait === "blanc" && !estTerminee}
-                    elo={eloBlancAffiche}
-                />
-            </div>
-
-            {/* Plateau */}
-            <Plateau
-                plateau={partie.plateau}
-                selection={selection}
-                coupsLegaux={coupsLegaux}
-                dernierCoup={partie.dernier_coup}
-                maCouleur={maCouleur}
-                onCaseClick={onCaseClick}
-            />
-
-            {maCouleur && !estTerminee && (
-                <div className="d-flex gap-2 mt-2">
-                    <Button
-                        variant="outline-danger" size="sm"
-                        onClick={onAbandonner}
-                        disabled={actionEnCours === "abandon"}
-                    >
-                        Abandonner
-                    </Button>
-
-                    {partie.mode === 'humain' && (
-                        <>
-                            {partie.nulle_proposee_par && partie.nulle_proposee_par !== userData.id ? (
-                                <Button
-                                    variant="outline-success" size="sm"
-                                    onClick={onAccepterNulle}
-                                    disabled={actionEnCours === "accepterNulle"}
-                                >
-                                    Accepter la nulle
-                                </Button>
-                            ) : (
-                                <Button
-                                    variant="outline-secondary" size="sm"
-                                    onClick={onProposerNulle}
-                                    disabled={actionEnCours === "nulle" || partie.nulle_proposee_par === userData.id}
-                                >
-                                    {partie.nulle_proposee_par === userData.id ? 'Nulle proposée…' : 'Proposer nulle'}
-                                </Button>
-                            )}
-                        </>
-                    )}
+            <div className="d-flex flex-row justify-content-center align-items-center flex-wrap">
+                <div className="justify-content-center">
+                    <Plateau
+                        plateau={partie.plateau}
+                        selection={selection}
+                        coupsLegaux={coupsLegaux}
+                        dernierCoup={partie.dernier_coup}
+                        maCouleur={maCouleur}
+                        onCaseClick={onCaseClick}
+                    />
                 </div>
-            )}
+                <div className="echecs-sidebar d-flex flex-column align-items-center">
+                    {/* Barre joueurs avec ELO */}
+                    <div className="echecs-joueurs-bar mb-2">
+                        <BadgeJoueur
+                            pseudo={partie.noir_pseudo}
+                            couleur="noir"
+                            actif={partie.trait === "noir" && !estTerminee}
+                            estIA={partie.mode === "ia"}
+                            elo={eloNoirAffiche}
+                        />
+                        <span className="echecs-vs">vs</span>
+                        <BadgeJoueur
+                            pseudo={partie.blanc_pseudo}
+                            couleur="blanc"
+                            actif={partie.trait === "blanc" && !estTerminee}
+                            elo={eloBlancAffiche}
+                        />
+                    </div>
 
-            {/* Messages sous le plateau */}
-            <div className="mt-2" style={{ width: '100%', maxWidth: 'calc(var(--taille-case, 60px) * 8 + 22px)' }}>
-                {partie.statut === "echec" && (
-                    <Alert variant="warning" className="py-1 px-2 mb-1 text-center small">⚠ Échec !</Alert>
-                )}
-                {!monTour && !estTerminee && maCouleur && (
-                    <Alert variant="secondary" className="py-1 px-2 mb-1 text-center small">En attente du coup adverse…</Alert>
-                )}
-                {erreur && (
-                    <Alert variant="danger" className="py-1 px-2 mb-1 text-center small">{erreur}</Alert>
-                )}
+                    {/* Messages sous le plateau */}
+                    <div className="mt-2" style={{ width: '100%', maxWidth: 'calc(var(--taille-case, 60px) * 8 + 22px)' }}>
+                        {partie.statut === "echec" && (
+                            <Alert variant="warning" className="py-1 px-2 mb-1 text-center small">⚠ Échec !</Alert>
+                        )}
+                        {!monTour && !estTerminee && maCouleur && (
+                            <Alert variant="secondary" className="py-1 px-2 mb-1 text-center small">En attente du coup adverse…</Alert>
+                        )}
+                        {erreur && (
+                            <Alert variant="danger" className="py-1 px-2 mb-1 text-center small">{erreur}</Alert>
+                        )}
+                    </div>
+
+                    {maCouleur && !estTerminee && (
+                        <div className="d-flex gap-2 mt-2">
+                            <Button
+                                variant="outline-danger" size="sm"
+                                onClick={onAbandonner}
+                                disabled={actionEnCours === "abandon"}
+                            >
+                                Abandonner
+                            </Button>
+
+                            {partie.mode === 'humain' && (
+                                <>
+                                    {partie.nulle_proposee_par && partie.nulle_proposee_par !== userData.id ? (
+                                        <Button
+                                            variant="outline-success" size="sm"
+                                            onClick={onAccepterNulle}
+                                            disabled={actionEnCours === "accepterNulle"}
+                                        >
+                                            Accepter la nulle
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="outline-secondary" size="sm"
+                                            onClick={onProposerNulle}
+                                            disabled={actionEnCours === "nulle" || partie.nulle_proposee_par === userData.id}
+                                        >
+                                            {partie.nulle_proposee_par === userData.id ? 'Nulle proposée…' : 'Proposer nulle'}
+                                        </Button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Game over */}
+                    {estTerminee && (
+                        <div className="text-center mt-1" style={{ width: '100%', maxWidth: 'calc(var(--taille-case, 52px) * 8 + 22px)' }}>
+                            <div className="py-1 px-3 mb-1" style={{
+                                background: 'rgba(var(--bs-success-rgb), 0.1)',
+                                border: '1px solid var(--bs-success)',
+                                borderRadius: 8,
+                                fontSize: '1rem'
+                            }}>
+                                {partie.statut === "mat"
+                                    ? (partie.gagnant === "blanc" ? "♔ Victoire des blancs !" : "♚ Victoire des noirs !")
+                                    : "Match nul"}
+                            </div>
+
+                            {partie.elo_variation && (() => {
+                                const variation = partie.elo_variation[String(userData.id)];
+                                if (!variation) return null;
+                                const diff = variation.apres - variation.avant;
+                                return (
+                                    <div className="mb-1" style={{ fontSize: '0.85rem' }}>
+                                        ELO : {variation.avant} → <strong>{variation.apres}</strong>
+                                        <span style={{ color: diff >= 0 ? 'green' : 'red', marginLeft: 4 }}>
+                                            ({diff >= 0 ? '+' : ''}{diff})
+                                        </span>
+                                    </div>
+                                );
+                            })()}
+
+                            <Button size="sm" variant="primary" onClick={() => navigate("/jeux/echecs", { state: { quitte_partie_id: partie.id } })}>
+                                Retour au lobby
+                            </Button>
+                        </div>
+                    )}
+
+                </div>
             </div>
 
             {/* Modal promotion */}
@@ -277,40 +315,6 @@ export default function EchecsPartie() {
                             ))}
                         </div>
                     </div>
-                </div>
-            )}
-
-            {/* Game over */}
-            {estTerminee && (
-                <div className="text-center mt-1" style={{ width: '100%', maxWidth: 'calc(var(--taille-case, 52px) * 8 + 22px)' }}>
-                    <div className="py-1 px-3 mb-1" style={{
-                        background: 'rgba(var(--bs-success-rgb), 0.1)',
-                        border: '1px solid var(--bs-success)',
-                        borderRadius: 8,
-                        fontSize: '1rem'
-                    }}>
-                        {partie.statut === "mat"
-                            ? (partie.gagnant === "blanc" ? "♔ Victoire des blancs !" : "♚ Victoire des noirs !")
-                            : "Match nul"}
-                    </div>
-
-                    {partie.elo_variation && (() => {
-                        const variation = partie.elo_variation[String(userData.id)];
-                        if (!variation) return null;
-                        const diff = variation.apres - variation.avant;
-                        return (
-                            <div className="mb-1" style={{ fontSize: '0.85rem' }}>
-                                ELO : {variation.avant} → <strong>{variation.apres}</strong>
-                                <span style={{ color: diff >= 0 ? 'green' : 'red', marginLeft: 4 }}>
-                                    ({diff >= 0 ? '+' : ''}{diff})
-                                </span>
-                            </div>
-                        );
-                    })()}
-
-                    <Button size="sm" variant="primary" onClick={() => navigate("/jeux/echecs", { state: { quitte_partie_id: partie.id } })}>
-                        Retour au lobby
-                    </Button>
                 </div>
             )}
 

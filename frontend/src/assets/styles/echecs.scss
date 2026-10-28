@@ -1,11 +1,11 @@
 .echecs-lobby,
 .echecs-partie {
-  --case-claire:  #f0d9b5;
-  --case-sombre:  #b58863;
-  --selection:    rgba(20, 85, 30, 0.55);
-  --coup-legal:   rgba(20, 85, 30, 0.40);
-  --dernier:      rgba(155, 199, 0, 0.42);
-  --taille-case:  min(calc(100vw / 8), calc(65vh / 8));
+  --case-claire: #f0d9b5;
+  --case-sombre: #b58863;
+  --selection: rgba(20, 85, 30, 0.55);
+  --coup-legal: rgba(20, 85, 30, 0.40);
+  --dernier: rgba(155, 199, 0, 0.42);
+  --taille-case: min(calc(90vw / 8), calc(75vh / 8));
 }
 
 /* ── Lobby ───────────────────────────────────────────────────────────────────*/
@@ -75,7 +75,9 @@
   background: var(--card-bg);
 }
 
-.echecs-defi-card:last-child { margin-bottom: 0; }
+.echecs-defi-card:last-child {
+  margin-bottom: 0;
+}
 
 .echecs-defi-card.mien {
   border-color: var(--primary-color);
@@ -125,25 +127,41 @@
 /* ── Page de partie ──────────────────────────────────────────────────────────*/
 
 .echecs-partie {
+  padding-top: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  background: var(--background-color);
+}
+
+.echecs-sidebar {
+  padding: 0 2rem;
 }
 
 /* Barre joueurs */
 .echecs-joueurs-bar {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 16px;
   background: var(--card-bg);
   border: 1px solid var(--card-border-color);
   border-radius: 10px;
-  padding: 8px 20px;
+  padding: 8px 10px;
   width: 100%;
-  max-width: calc(var(--taille-case) * 8 + 22px);
   justify-content: center;
+}
+
+@media (max-width: 762px) {
+  .echecs-joueurs-bar {
+    flex-direction: row;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .echecs-promo-btn {
+    width: 52px;
+    height: 52px;
+  }
 }
 
 .echecs-vs {
@@ -161,7 +179,9 @@
   color: var(--text-color);
 }
 
-.echecs-badge-joueur.actif { opacity: 1; }
+.echecs-badge-joueur.actif {
+  opacity: 1;
+}
 
 .echecs-elo-badge {
   font-size: 0.72rem;
@@ -179,8 +199,13 @@
   flex-shrink: 0;
 }
 
-.echecs-point-couleur.blanc { background: #f0d0a0; }
-.echecs-point-couleur.noir  { background: #1a1208; }
+.echecs-point-couleur.blanc {
+  background: #f0d0a0;
+}
+
+.echecs-point-couleur.noir {
+  background: #1a1208;
+}
 
 [data-theme='dark'] .echecs-point-couleur.noir {
   background: #888;
@@ -197,8 +222,17 @@
 }
 
 @keyframes echecs-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.3; transform: scale(0.7); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
 }
 
 /* ── Plateau ─────────────────────────────────────────────────────────────────*/
@@ -210,12 +244,24 @@
   user-select: none;
 }
 
-.echecs-rangs { display: flex; flex-direction: column; }
+.echecs-rangs {
+  display: flex;
+  flex-direction: column;
+}
+
+.echecs-col-label {
+  width: var(--taille-case);
+  padding: 1rem 0;
+
+}
+
+.echecs-rang-label {
+  padding: 0 1rem;
+  height: var(--taille-case);
+}
 
 .echecs-rang-label,
 .echecs-col-label {
-  width: var(--taille-case);
-  height: var(--taille-case);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,13 +269,18 @@
   color: var(--text-color-secondary);
 }
 
-.echecs-rang-label { width: 16px; }
-.echecs-cols { display: flex; }
+.echecs-rang-label {
+  width: 16px;
+}
+
+.echecs-cols {
+  display: flex;
+}
 
 .echecs-plateau {
   display: grid;
   grid-template-columns: repeat(8, var(--taille-case));
-  grid-template-rows:    repeat(8, var(--taille-case));
+  grid-template-rows: repeat(8, var(--taille-case));
   border: 2px solid var(--primary-color);
   border-radius: 2px;
   overflow: hidden;
@@ -247,11 +298,22 @@
   position: relative;
 }
 
-.echecs-case.claire { background: var(--case-claire); }
-.echecs-case.sombre { background: var(--case-sombre); }
-.echecs-case.selectionnee { background: var(--selection) !important; }
+.echecs-case.claire {
+  background: var(--case-claire);
+}
+
+.echecs-case.sombre {
+  background: var(--case-sombre);
+}
+
+.echecs-case.selectionnee {
+  background: var(--selection) !important;
+}
+
 .echecs-case.dernier-de,
-.echecs-case.dernier-vers  { background: var(--dernier) !important; }
+.echecs-case.dernier-vers {
+  background: var(--dernier) !important;
+}
 
 .echecs-case.coup-legal::after {
   content: '';
@@ -282,7 +344,9 @@
   display: block;
 }
 
-.echecs-case:hover .echecs-piece { transform: scale(1.08); }
+.echecs-case:hover .echecs-piece {
+  transform: scale(1.08);
+}
 
 /* ── Modal promotion ─────────────────────────────────────────────────────────*/
 
@@ -306,7 +370,11 @@
   color: var(--text-color);
 }
 
-.echecs-promo-choix { display: flex; gap: 10px; justify-content: center; }
+.echecs-promo-choix {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
 
 .echecs-promo-btn {
   width: 62px;
@@ -327,7 +395,11 @@
   transform: scale(1.08);
 }
 
-.echecs-promo-btn img { width: 100%; height: 100%; object-fit: contain; }
+.echecs-promo-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
 /* ── Fin de partie ───────────────────────────────────────────────────────────*/
 
@@ -341,13 +413,13 @@
 }
 
 @keyframes echecs-pop {
-  from { transform: scale(0.85); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
-}
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
 
-/* ── Responsive ──────────────────────────────────────────────────────────────*/
-
-@media (max-width: 480px) {
-  .echecs-joueurs-bar { padding: 6px 10px; gap: 8px; }
-  .echecs-promo-btn   { width: 52px; height: 52px; }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
