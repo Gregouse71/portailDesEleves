@@ -10,8 +10,7 @@
     font-size: 0.8em;
     border-top: 1px solid var(--primary-color);
     overflow-wrap: anywhere;
-    padding: 2px 4px;
-    transition: background-color 0.1s;
+    padding: 1px 4px 0;
 }
 
 .chat-message:hover {

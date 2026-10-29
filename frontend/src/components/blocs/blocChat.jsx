@@ -184,7 +184,7 @@ export default function BlocChat() {
 
   return <BlocTemplate
     titre="Chat"
-    contenu={<><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-3" onScroll={handleScroll}>
+    contenu={<><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-1" onScroll={handleScroll}>
       {messages.map((msg, idx) => {
         const suite = estSuite(msg, messages[idx - 1]);
         return (
