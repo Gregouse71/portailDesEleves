@@ -36,6 +36,6 @@ export default function PublicationsRecentes() {
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
         contenu={
             publications.map(post_id => (
-                <div className="mb-3" key={post_id} ><Post postId={post_id} isGestion={false} /></div>
+                <div key={post_id} ><Post postId={post_id} isGestion={false} /></div>
             ))} />;
 }
