@@ -1,6 +1,7 @@
 from math import exp, sqrt
 import numpy as np
 import redis
+from zoneinfo import ZoneInfo
 
 # importer les models grace a __init__.py de models
 from app.services import db
@@ -186,14 +187,15 @@ def sondage_dhier ():
     Renvoie le résultat du sondage d'hier
     ("question ?", ["reponse1", "reponse2"], [1, 96])
     """
-    sondage = Sondage.query.filter_by(date_publication=datetime.now(timezone.utc).date() - timedelta(days=1)).all()
+    hier = datetime.now(tz=ZoneInfo("Europe/Paris")).date() - (timedelta(days=2) if datetime.now(tz=ZoneInfo("Europe/Paris")).hour < 4 else timedelta(days=1))
+    print(hier)
+    sondage = Sondage.query.filter_by(date_publication=hier).first()
     if not sondage:
         return None
-    s = sondage[0]
     return {
-        "question": s.question,
-        "reponses": s.reponses,
-        "votes": _resultat_sondage(s.id)
+        "question": sondage.question,
+        "reponses": sondage.reponses,
+        "votes": _resultat_sondage(sondage.id)
     }
 
 def obtenir_sondage_du_jour_et_votes():

@@ -4,7 +4,7 @@ from app.services.services_sondages import sondage_suivant
 # A client to connect to Redis
 
 
-@scheduler.task("cron", id="task_sondage", day="*", hour="4")
+@scheduler.task("cron", id="task_sondage", day="*", hour="4", timezone="Europe/Paris")
 def task_sondage():
     """
     This task is called periodically to advance to the next poll.
