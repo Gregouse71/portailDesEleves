@@ -2,6 +2,12 @@ from app import db
 from datetime import datetime, time
 from app.models.models_associations import Association
 
+def _iso(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.isoformat() + "Z"   # naïf = UTC (événements ponctuels)
+    return dt.isoformat() 
 
 def est_valide_liste_de_jours(liste_jours):
     for jour in liste_jours:
@@ -158,8 +164,8 @@ class Evenement (db.Model):
             "lieu": self.lieu,
             "evenement_periodique": self.evenement_periodique,
             "evenement_masque": self.evenement_masque,
-            "date_de_debut": self.date_de_debut.isoformat() + "Z" if self.date_de_debut else None,
-            "date_de_fin": self.date_de_fin.isoformat() + "Z" if self.date_de_fin else None,
+            "date_de_debut": _iso(self.date_de_debut) if self.date_de_debut else None,
+            "date_de_fin": _iso(self.date_de_fin) if self.date_de_fin else None,
             "jours_de_la_semaine": self.jours_de_la_semaine,
             "heure_de_debut": self.heure_de_debut.strftime("%H:%M") if self.heure_de_debut else None,
             "heure_de_fin": self.heure_de_fin.strftime("%H:%M") if self.heure_de_fin else None,

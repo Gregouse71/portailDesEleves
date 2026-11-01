@@ -5,6 +5,9 @@ from sqlalchemy import desc
 from app.services import db
 from app.models.models_evenements import Evenement
 
+from zoneinfo import ZoneInfo
+PARIS = ZoneInfo("Europe/Paris")
+
 def get_events (id, page=1, per=20):
     """
     Renvoie la liste des événements de l'asso, par ordre de date et paginés
@@ -175,18 +178,23 @@ def _filtrer_par_prochains_jours(nb_jours: int):
 
                 # Définir la date de début spécifique
                 heure = evt.heure_de_debut if evt.heure_de_debut else time(0, 0)
-                evt_copy.date_de_debut = datetime.combine(current_date, heure)
+                evt_copy.date_de_debut = datetime.combine(current_date, heure, tzinfo=PARIS)
 
                 # Idem pour date de fin si nécessaire
                 if evt.heure_de_fin:
                     evt_copy.date_de_fin = datetime.combine(
-                        current_date, evt.heure_de_fin)
+                        current_date, evt.heure_de_fin, tzinfo=PARIS)
 
                 evenements_periodiques_etendus.append(evt_copy)
 
     # Combiner et trier par date
+    def _aware(dt):
+        if dt is None:
+            return datetime.max.replace(tzinfo=timezone.utc)
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
     tous_evenements = evenements + evenements_periodiques_etendus
-    tous_evenements.sort(key=lambda x: x.date_de_debut if x.date_de_debut else datetime.max)
+    tous_evenements.sort(key=lambda x: _aware(x.date_de_debut))
 
     return tous_evenements
 
