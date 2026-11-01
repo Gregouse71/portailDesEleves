@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { ajouterAsso } from '../../api/api_associations';  // Importation de la fonction ajouterAsso
 import { useNavigate } from "react-router-dom";
-import { Container, Form, Button, Alert } from "react-bootstrap";
-import RichEditor from "../elements/RichEditor";
+import { Container, Form, Button, Alert, Spinner } from "react-bootstrap";
 import { useQueryClient } from "@tanstack/react-query";
+
+const RichEditor = lazy(() => import("../elements/RichEditor"));
 
 function AjouterAssociation() {
     const navigate = useNavigate();
@@ -66,8 +67,10 @@ function AjouterAssociation() {
 
                 <Form.Group className="mb-3" controlId="formDescriptionAsso">
                     <Form.Label>Description</Form.Label>
-                    <RichEditor value={description}
-                        onChange={(value) => setDescription(value)} />
+                    <Suspense fallback={<div className="d-flex justify-content-center p-3"><Spinner animation="border" size="sm" /></div>}>
+                        <RichEditor value={description}
+                            onChange={(value) => setDescription(value)} />
+                    </Suspense>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formTypeAsso">
