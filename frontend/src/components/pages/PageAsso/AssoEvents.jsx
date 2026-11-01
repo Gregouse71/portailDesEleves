@@ -16,13 +16,11 @@ const PER_PAGE = 20;
 const formatEventDate = (event) => {
     if (event.evenement_periodique) {
         const jours = event.jours_de_la_semaine.map(day => day + "s").join(', ');
-        const formatTimeFromUTC = (timeStr) => {
-            if (!timeStr) return '';
-            const [hours, minutes] = timeStr.split(':');
-            const date = new Date();
-            date.setUTCHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-            return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        };
+        if (event.evenement_periodique) {
+            const jours = event.jours_de_la_semaine.map(day => day + "s").join(', ');
+            const formatTime = (timeStr) => timeStr ? timeStr.slice(0, 5) : '';
+            return `Tous les ${jours} de ${formatTime(event.heure_de_debut)} à ${formatTime(event.heure_de_fin)}`;
+        }
         const debutHeure = formatTimeFromUTC(event.heure_de_debut);
         const finHeure = formatTimeFromUTC(event.heure_de_fin);
         return `Tous les ${jours} de ${debutHeure} à ${finHeure}`;
@@ -124,7 +122,11 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                 const m = String(date.getMinutes()).padStart(2, '0');
                 return `${h}:${m}`;
             };
-            setModifierEventTempsPeriodique({ jours_de_la_semaine, heure_de_debut: toLocalInput(heure_de_debut), heure_de_fin: toLocalInput(heure_de_fin) })
+            setModifierEventTempsPeriodique({
+                jours_de_la_semaine,
+                heure_de_debut: heure_de_debut?.slice(0, 5) ?? '',
+                heure_de_fin: heure_de_fin?.slice(0, 5) ?? '',
+            });
         } else {
             const toLocalDateTimeInput = (isoStr) => {
                 if (!isoStr) return '';
@@ -155,19 +157,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                 if (newEvent.date_de_fin) {
                     newEvent.date_de_fin = new Date(newEvent.date_de_fin).toISOString();
                 }
-            } else {
-                const toUTCInput = (timeStr) => {
-                    if (!timeStr) return '';
-                    const [hours, minutes] = timeStr.split(':');
-                    const date = new Date();
-                    date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-                    const h = String(date.getUTCHours()).padStart(2, '0');
-                    const m = String(date.getUTCMinutes()).padStart(2, '0');
-                    return `${h}:${m}`;
-                };
-                newEvent.heure_de_debut = toUTCInput(newEvent.heure_de_debut);
-                newEvent.heure_de_fin = toUTCInput(newEvent.heure_de_fin);
-            }
+            } 
 
             if (isNew) await creerNouvelEvenement(newEvent, asso_id);
             else await modifierEvenement(newEvent, event.id_association, event.id);
