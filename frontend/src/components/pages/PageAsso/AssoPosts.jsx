@@ -1,11 +1,12 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, lazy, Suspense } from "react";
 import { ajouterContenuPublication, creerNouvellePublication, obtenirPublicationsAsso, supprimerPublication } from "../../../api/api_publications";
-import RichEditor from "../../elements/RichEditor";
 import OngletTemplate from '../../templates/OngletTemplate';
 import { Card, Button, Form, Row, Col, Image, InputGroup, Spinner } from "react-bootstrap";
 import Select from 'react-select';
 import { useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import Post from "../../elements/Post";
+
+const RichEditor = lazy(() => import("../../elements/RichEditor"));
 
 const tagOptions = [
     { value: 'Vendôme', label: 'Vendôme' },
@@ -227,7 +228,9 @@ function AssoPosts({ asso_id, membreData }) {
                         <Form>
                             <Form.Group className="mb-3">
                                 <Form.Label>Description</Form.Label>
-                                <RichEditor value={newPost.contenu} onChange={handleSetNewPostContent} />
+                                <Suspense fallback={<div className="d-flex justify-content-center p-3"><Spinner animation="border" size="sm" /></div>}>
+                                    <RichEditor value={newPost.contenu} onChange={handleSetNewPostContent} />
+                                </Suspense>
                             </Form.Group>
                             <Row>
                                 <Col md={6}>

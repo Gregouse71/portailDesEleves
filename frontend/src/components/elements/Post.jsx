@@ -2,15 +2,17 @@ import { Card, Col, Row, Image, Button, Form, Spinner, InputGroup } from "react-
 import Select from 'react-select';
 import { UPLOAD_BASE_URL } from "../../api/base";
 import { useProtected } from "../../Protected";
-import RichEditor, { RichTextDisplay } from "./RichEditor";
+import RichTextDisplay from "./RichTextDisplay";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ajouterContenuPublication, modifierPublication, obtenirPublication, modifierLikePost, creerNouveauCommentaire, modifierCommentaire, supprimerCommentaire, modifierLikeComment } from "../../api/api_publications";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { chargerAsso } from "../../api/api_associations";
 import DropdownEditer from "./DropdownEditer";
 import '../../assets/styles/post.scss';
 import { obtenirAssosUtilisateur } from "../../api/api_utilisateurs";
+
+const RichEditor = lazy(() => import("./RichEditor"));
 
 import Heart from "../../assets/icons/heart.svg?react";
 import HeartPlain from "../../assets/icons/heart_plain.svg?react";
@@ -448,11 +450,13 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                     </Row>
                     <Form.Group className="mb-3">
                         <Form.Label>Description</Form.Label>
-                        <RichEditor value={modifyPost.contenu}
-                            onChange={(value) => setModifyPost(prevState => ({
-                                ...prevState,
-                                contenu: value,
-                            }))} />
+                        <Suspense fallback={<div className="d-flex justify-content-center p-3"><Spinner animation="border" size="sm" /></div>}>
+                            <RichEditor value={modifyPost.contenu}
+                                onChange={(value) => setModifyPost(prevState => ({
+                                    ...prevState,
+                                    contenu: value,
+                                }))} />
+                        </Suspense>
                     </Form.Group>
                     <Row>
                         <Col md={6}>

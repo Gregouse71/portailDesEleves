@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { chargerAsso, modifierDescriptionAsso } from "../../../api/api_associations";
-import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
-import { Button } from "react-bootstrap";
+import RichTextDisplay from '../../elements/RichTextDisplay';
+import { Button, Spinner } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import OngletTemplate from "../../templates/OngletTemplate";
+
+const RichEditor = lazy(() => import('../../elements/RichEditor'));
 
 function AssoInfo({ id, membreData }) {
     const queryClient = useQueryClient();
@@ -44,7 +46,9 @@ function AssoInfo({ id, membreData }) {
                 </div>}
                 {/* Modification de description */}
                 {isEdition && <>
-                    <RichEditor value={description} onChange={setDescription} />
+                    <Suspense fallback={<div className="d-flex justify-content-center p-3"><Spinner animation="border" size="sm" /></div>}>
+                        <RichEditor value={description} onChange={setDescription} />
+                    </Suspense>
                     <div className="d-flex gap-2 mt-3">
                         <Button variant="success" onClick={mutation.mutate}>
                             <img src="/assets/icons/check-mark.svg" alt="Valider" />

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import RichEditor, { RichTextDisplay } from '../../elements/RichEditor';
-import { Badge, Button, Card, Col, Form, Image, Row } from "react-bootstrap";
+import { useState, lazy, Suspense } from "react";
+import RichTextDisplay from '../../elements/RichTextDisplay';
+import { Badge, Button, Card, Col, Form, Image, Row, Spinner } from "react-bootstrap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useProtected } from "../../../Protected";
 import { creerNouvelleElection, modifierElection, obtenirElection, obtenirElectionsAsso, resultatsElection, supprimerElection, voterElection, uploadElectionChoiceImage } from "../../../api/modules/api_elections";
@@ -9,6 +9,8 @@ import { obtenirListeDesPromos } from "../../../api/api_utilisateurs";
 import { UPLOAD_BASE_URL } from "../../../api/base";
 import ConfirmationModal from "../../elements/ConfirmationModal";
 import OngletTemplate from "../../templates/OngletTemplate";
+
+const RichEditor = lazy(() => import('../../elements/RichEditor'));
 
 const format_date = (s) => s ? new Date(s).toLocaleString("fr-FR") : "Non précisé"
 
@@ -195,8 +197,10 @@ function Election({ isNew, id, canModify, asso_id, stopCreating }) {
                         <Col><Form.Control name="nom" value={modifyingElection.nom}
                             onChange={(e) => setModifyingElection({ ...modifyingElection, nom: e.target.value })} /></Col>
                     </Form.Group>
-                    <RichEditor value={modifyingElection.description}
-                        onChange={(e) => setModifyingElection({ ...modifyingElection, description: e })} />
+                    <Suspense fallback={<div className="d-flex justify-content-center p-3"><Spinner animation="border" size="sm" /></div>}>
+                        <RichEditor value={modifyingElection.description}
+                            onChange={(e) => setModifyingElection({ ...modifyingElection, description: e })} />
+                    </Suspense>
                     <Form.Group className="mb-3">
                         <Form.Check type="checkbox" label="Visible des utilisateurs" name='visible'
                             checked={modifyingElection.visible}

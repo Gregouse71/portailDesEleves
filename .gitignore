@@ -16,3 +16,5 @@ config.py
 config.docker.py
 upload
 mysql
+
+stats.html
