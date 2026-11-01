@@ -116,23 +116,6 @@ export default function Header() {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                        <Dropdown title="Liens externes" setExpanded={setExpanded}
-                            list={[
-                                // On va essayer de pas spoil les 1A avec nos histoire de baptême
-                                // ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
-                                ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
-                                ["link", "https://moodle.psl.eu/", "Moodle"],
-                                ["link", "https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing", "Sheet des stages"],
-                                ["link", "https://eleves.rezal-mdm.com/upload/associations/bde/Procédure de réservation des véhicules des Mines-e2e3d411-5eca-49a0-92f6-9fe14648c115.pdf", "Réservation véhicule des Mines"],
-                                ["link", "https://mines-paris.org/", "Portail des Alumni"],
-                            ]}
-                        />
-                        <Dropdown title="Jeux" setExpanded={setExpanded}
-                            list={[
-                                ["navigate", "/jeux/2048", "2048"],
-                                ["navigate", "/jeux/echecs", "Échecs"],
-                            ]}
-                        />
                         <Dropdown title="Services" setExpanded={setExpanded}
                             list={[
                                 ["navigate", "/", "Accueil"],
@@ -148,6 +131,24 @@ export default function Header() {
                                     ] : [],
                             ]}
                         />
+                        <Dropdown title="Jeux" setExpanded={setExpanded}
+                            list={[
+                                ["navigate", "/jeux/2048", "2048"],
+                                ["navigate", "/jeux/echecs", "Échecs"],
+                            ]}
+                        />
+                        <Dropdown title="Liens externes" setExpanded={setExpanded}
+                            list={[
+                                // On va essayer de pas spoil les 1A avec nos histoire de baptême
+                                // ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
+                                ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
+                                ["link", "https://moodle.psl.eu/", "Moodle"],
+                                ["link", "https://docs.google.com/spreadsheets/d/1ajgPhZc1xKjB0WZGNqucb5h47aMxdxAfbpOEtxj0Uis/edit?usp=sharing", "Sheet des stages"],
+                                ["link", "https://eleves.rezal-mdm.com/upload/associations/bde/Procédure de réservation des véhicules des Mines-e2e3d411-5eca-49a0-92f6-9fe14648c115.pdf", "Réservation véhicule des Mines"],
+                                ["link", "https://mines-paris.org/", "Portail des Alumni"],
+                            ]}
+                        />
+                        
                         <div className="d-none d-md-block flex-grow-1"></div>
 
                         <Form className="d-flex form-navbar" onSubmit={handleSearchSubmit}>
