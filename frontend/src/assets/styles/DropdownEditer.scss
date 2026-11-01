@@ -1,0 +1,15 @@
+.dropdown-editer-menu {
+    min-width: 7rem;
+    font-size: 0.9rem;
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0rem 0;
+
+    .dropdown-item {
+        padding: 0.3rem 0.8rem;
+    }
+
+    .dropdown-divider {
+        margin: 0rem 0;
+    }
+}
