@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SwaggerUI from "swagger-ui-react";
 import 'swagger-ui-react/swagger-ui.css';
+import '../../assets/styles/cle_api.scss';
 import { Card, Table, Button, Form, Alert, Badge, Container } from "react-bootstrap";
 import { listerCles, creerCle, revoquerCle, obtenirSwagger } from "../../api/api_cles";
 
@@ -79,7 +80,7 @@ export default function CleApi() {
                             <code className="ms-2 user-select-all">{valeurCreee}</code>
                         </p>
                         <Button size="sm" onClick={copier}>Copier</Button>
-                        <Button size="sm" variant="outline-secondary" className="ms-2"
+                        <Button size="sm" variant="outline-success" className="ms-2"
                             onClick={() => setValeurCreee(null)}>J&apos;ai copié ma clé</Button>
                     </Alert>
                 )}

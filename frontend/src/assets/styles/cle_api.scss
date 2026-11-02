@@ -1,0 +1,12 @@
+// Swagger UI n'a pas de thème sombre : en thème sombre, ses couleurs sont inversées
+// (le hue-rotate rend aux couleurs leur teinte d'origine).
+[data-theme='dark'] .swagger-ui {
+    filter: invert(88%) hue-rotate(180deg);
+}
+
+// Les pastilles (méthode HTTP, version) sont inversées une seconde fois pour garder
+// leur texte blanc sur fond coloré.
+[data-theme='dark'] .swagger-ui .opblock-summary-method,
+[data-theme='dark'] .swagger-ui .info .title small {
+    filter: invert(100%) hue-rotate(180deg);
+}
