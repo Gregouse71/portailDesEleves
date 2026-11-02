@@ -97,7 +97,8 @@ export default function CleApi() {
                     Une clé personnelle permet aux outils des élèves (equipaps, Pain de Mine...)
                     de récupérer la base élèves depuis le portail : identifiant, login, prénom,
                     nom, email, promotion. La clé est affichée <b>une seule fois</b> à la création,
-                    garde-la précieusement, et révoque-la si elle fuit.
+                    garde-la précieusement, et révoque-la si elle fuit. Un outil l&apos;envoie
+                    dans l&apos;en-tête <code>X-API-Key</code>.
                 </div>
 
                 {!eligible && (

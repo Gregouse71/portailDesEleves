@@ -1,9 +1,12 @@
-// Le bandeau du bouton « Authorize » est prévu pour accueillir aussi le choix du serveur,
-// absent ici : sans son fond ni son ombre, il ne reste que le bouton.
-.swagger-ui .scheme-container {
-    background: none;
-    box-shadow: none;
-    margin: 0;
+// Sur cette page, l'élève est connecté : « Try it out » passe par sa session.
+// Le bouton « Authorize » (coller une clé) et les cadenas des routes n'y servent pas.
+.swagger-ui .scheme-container,
+.swagger-ui .authorization__btn {
+    display: none;
+}
+
+// Sans retrait latéral, la doc s'aligne sur la carte des clés
+.swagger-ui .wrapper {
     padding: 0;
 }
 
@@ -13,9 +16,10 @@
     filter: invert(88%) hue-rotate(180deg);
 }
 
-// Les pastilles (méthode HTTP, version) sont inversées une seconde fois pour garder
-// leur texte blanc sur fond coloré.
+// Les pastilles (méthode HTTP, version) et les blocs de code, déjà sombres, sont inversés
+// une seconde fois pour garder leur texte clair sur fond foncé.
 [data-theme='dark'] .swagger-ui .opblock-summary-method,
-[data-theme='dark'] .swagger-ui .info .title small {
+[data-theme='dark'] .swagger-ui .info .title small,
+[data-theme='dark'] .swagger-ui pre {
     filter: invert(100%) hue-rotate(180deg);
 }
