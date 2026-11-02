@@ -91,6 +91,15 @@ class TestCreationEtGestion:
         assert r.status_code == 404
         assert CleAPI.query.first().revoked is False
 
+    def test_cle_revoquee_disparait_de_la_liste(self, app, db_cles):
+        _, _un_a, deux_a = db_cles
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        data = _creer_cle(client)
+        r = client.post('/api/cles/revoquer', json={'id': data['cle']['id']})
+        assert r.status_code == 200
+        assert client.get('/api/cles/liste').get_json()["cles"] == []
+        assert CleAPI.query.first().revoked is True
+
     def test_sans_cle_refuse(self, app, db_cles):
         client = app.test_client()
         r = client.get('/api/users/prochains_anniv')

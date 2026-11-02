@@ -17,8 +17,8 @@ MAX_CLES_ACTIVES = 3
 @controllers_cles.get('/liste')
 @login_required
 def lister_cles_api():
-    """Renvoie la liste des clés d'api de l'utilisateur"""
-    cles = CleAPI.query.filter_by(utilisateur_id=current_user.id).order_by(CleAPI.revoked.asc(), CleAPI.created_at.desc()).all()
+    """Renvoie la liste des clés d'api de l'utilisateur, sans les clés révoquées"""
+    cles = CleAPI.query.filter_by(utilisateur_id=current_user.id, revoked=False).order_by(CleAPI.created_at.desc()).all()
     return jsonify({
         "cles": [c.to_dict() for c in cles],
         "eligible_api": has_permission(current_user, "cle_api"),
