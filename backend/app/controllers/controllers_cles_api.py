@@ -9,8 +9,8 @@ from app.models.models_cles_api import CleAPI, generer_cle
 from app.services.services_cles_api import revoquer_cle
 from app.utils.decorators import superutilisateur_required
 
-# Gestion des clés API personnelles (session portail). La brique annuaire elle-même
-# vit dans controllers_annuaire (auth par X-API-Key, pas par session).
+# Gestion des clés API personnelles (session portail). Les routes qui acceptent
+# une clé (X-API-Key) sont marquées @cle_api_autorisee, comme /api/users/annuaire.
 controllers_cles = Blueprint('controllers_cles', __name__)
 
 MAX_CLES_ACTIVES = 3

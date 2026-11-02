@@ -101,7 +101,7 @@ class TestCreationEtGestion:
         r = client.post('/api/cles/revoquer', json={'id': data['cle']['id']})
         assert r.status_code == 200
         cles = client.get('/api/cles/liste').get_json()["cles"]
-        assert [c["revoked"] for c in cles] == [True]
+        assert [(c["revoked"], c["active"]) for c in cles] == [(True, False)]
 
     def test_cles_expirees_hors_maximum(self, app, db_cles):
         db_init, _un_a, deux_a = db_cles
@@ -112,6 +112,8 @@ class TestCreationEtGestion:
         db_init.session.commit()
         client = _client_bearer(app, deux_a.nom_utilisateur)
         _creer_cle(client)
+        cles = client.get('/api/cles/liste').get_json()["cles"]
+        assert sorted(c["active"] for c in cles) == [False, False, False, True]
 
     def test_sans_cle_refuse(self, app, db_cles):
         client = app.test_client()

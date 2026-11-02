@@ -48,11 +48,8 @@ export default function CleApi() {
     const cles = donneesCles?.cles ?? [];
     const eligible = donneesCles?.eligible_api ?? false;
 
-    // Une clé expirée ne marche plus : elle rejoint les révoquées
-    const maintenant = new Date();
-    const estActive = (cle) => !cle.revoked && new Date(cle.expires_on) > maintenant;
-    const actives = cles.filter(estActive);
-    const anciennes = cles.filter((cle) => !estActive(cle));
+    const actives = cles.filter((cle) => cle.active);
+    const anciennes = cles.filter((cle) => !cle.active);
 
     const tableau = (liste, vide, finDeLigne) => <Table responsive striped hover>
         <thead>
@@ -96,7 +93,7 @@ export default function CleApi() {
                 <div className="mb-2">
                     Une clé personnelle permet aux outils des élèves (equipaps, Pain de Mine...)
                     de récupérer la base élèves depuis le portail : identifiant, login, prénom,
-                    nom, email, promotion. La clé est affichée <b>une seule fois</b> à la création,
+                    nom, email, promotion, cycle et photo. La clé est affichée <b>une seule fois</b> à la création,
                     garde-la précieusement, et révoque-la si elle fuit. Un outil l&apos;envoie
                     dans l&apos;en-tête <code>X-API-Key</code>.
                 </div>

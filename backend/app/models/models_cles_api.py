@@ -35,6 +35,8 @@ class CleAPI(db.Model):
             "use_count": self.use_count,
             "revoked": self.revoked,
             "expires_on": self.expires_on.isoformat() if self.expires_on else None,
+            # Même règle que utiliser_cle : une clé expirée n'est plus active
+            "active": not self.revoked and self.expires_on is not None and self.expires_on > datetime.now(tz=None),
         }
 
 
