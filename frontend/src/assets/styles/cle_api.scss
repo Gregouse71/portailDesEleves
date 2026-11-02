@@ -1,3 +1,12 @@
+// Le bandeau du bouton « Authorize » est prévu pour accueillir aussi le choix du serveur,
+// absent ici : sans son fond ni son ombre, il ne reste que le bouton.
+.swagger-ui .scheme-container {
+    background: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
 // Swagger UI n'a pas de thème sombre : en thème sombre, ses couleurs sont inversées
 // (le hue-rotate rend aux couleurs leur teinte d'origine).
 [data-theme='dark'] .swagger-ui {
