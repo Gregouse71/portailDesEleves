@@ -54,7 +54,7 @@ export default function CleApi() {
     };
 
     return <Container className="py-4">
-        <h1 className="mb-3">Accès à l'API</h1>
+        <h1 className="mb-3">Accès à l&apos;API</h1>
         <Card className="mb-3">
             <Card.Header>Mes clé API</Card.Header>
             <Card.Body>
@@ -67,7 +67,7 @@ export default function CleApi() {
 
                 {!eligible && (
                     <Alert variant="info" className="mb-0">
-                        La création de clés d'API nécessite l'autorisation du VP Geek. Tu ne possède pas encore cette autorisation.
+                        La création de clés d&apos;API nécessite l&apos;autorisation du VP Geek. Tu ne possède pas encore cette autorisation.
                     </Alert>
                 )}
 

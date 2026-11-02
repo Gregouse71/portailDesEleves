@@ -25,7 +25,7 @@ class TestUtilisateurs:
 
 p = 26
 class TestAnniversaires:
-    """Endpoint /api/annuaire/anniversaires?du=MM-JJ&au=MM-JJ."""
+    """Endpoint /api/users/prochains_anniv?debut=AAAA-MM-JJ&fin=AAAA-MM-JJ."""
 
     @pytest.fixture()
     def db_anniv(self, app, db_with_users):
@@ -70,6 +70,6 @@ class TestAnniversaires:
 
     def test_anciens_exclus_par_defaut(self, app, client_factory_user, db_anniv):
         with client_factory_user() as client:
-            r = client.get('/api/users/prochains_anniv?du=2026-05-02&au=2026-05-08')
+            r = client.get('/api/users/prochains_anniv?debut=2026-05-02&fin=2026-05-08')
             assert r.status_code == 200
             assert len(r.get_json()) == 0
