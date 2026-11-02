@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from app.models import Utilisateur
@@ -73,6 +75,7 @@ class TestCreationEtGestion:
         assert cle.revoked is False
         assert cle.hash != data["valeur"]          # jamais la valeur en clair
         assert cle.utilisateur_id == deux_a.id
+        assert data["cle"]["expires_on"] is not None
 
     def test_maximum_trois_cles_actives(self, app, db_cles):
         _, _un_a, deux_a = db_cles
@@ -91,14 +94,24 @@ class TestCreationEtGestion:
         assert r.status_code == 404
         assert CleAPI.query.first().revoked is False
 
-    def test_cle_revoquee_disparait_de_la_liste(self, app, db_cles):
+    def test_revocation_garde_l_historique(self, app, db_cles):
         _, _un_a, deux_a = db_cles
         client = _client_bearer(app, deux_a.nom_utilisateur)
         data = _creer_cle(client)
         r = client.post('/api/cles/revoquer', json={'id': data['cle']['id']})
         assert r.status_code == 200
-        assert client.get('/api/cles/liste').get_json()["cles"] == []
-        assert CleAPI.query.first().revoked is True
+        cles = client.get('/api/cles/liste').get_json()["cles"]
+        assert [c["revoked"] for c in cles] == [True]
+
+    def test_cles_expirees_hors_maximum(self, app, db_cles):
+        db_init, _un_a, deux_a = db_cles
+        for _ in range(3):
+            _valeur, empreinte = generer_cle()
+            db_init.session.add(CleAPI(utilisateur=deux_a, nom="ancienne", hash=empreinte,
+                                       expires_on=datetime(2020, 1, 1)))
+        db_init.session.commit()
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        _creer_cle(client)
 
     def test_sans_cle_refuse(self, app, db_cles):
         client = app.test_client()

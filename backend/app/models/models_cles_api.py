@@ -34,6 +34,7 @@ class CleAPI(db.Model):
             "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None,
             "use_count": self.use_count,
             "revoked": self.revoked,
+            "expires_on": self.expires_on.isoformat() if self.expires_on else None,
         }
 
 

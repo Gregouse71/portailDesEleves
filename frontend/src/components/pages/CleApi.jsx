@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SwaggerUI from "swagger-ui-react";
 import 'swagger-ui-react/swagger-ui.css';
 import '../../assets/styles/cle_api.scss';
-import { Card, Table, Button, Form, Alert, Badge, Container } from "react-bootstrap";
+import { Card, Table, Button, Form, Alert, Badge, Container, Tabs, Tab } from "react-bootstrap";
 import { listerCles, creerCle, revoquerCle, obtenirSwagger } from "../../api/api_cles";
 
 // Page d'infirmation sur l'API et les clés d'api
@@ -47,6 +47,40 @@ export default function CleApi() {
 
     const cles = donneesCles?.cles ?? [];
     const eligible = donneesCles?.eligible_api ?? false;
+
+    // Une clé expirée ne marche plus : elle rejoint les révoquées
+    const maintenant = new Date();
+    const estActive = (cle) => !cle.revoked && new Date(cle.expires_on) > maintenant;
+    const actives = cles.filter(estActive);
+    const anciennes = cles.filter((cle) => !estActive(cle));
+
+    const tableau = (liste, vide, finDeLigne) => <Table responsive striped hover>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Créée le</th>
+                <th>Dernière utilisation</th>
+                <th>Appels</th>
+                <th>Expire le</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {liste.map((cle) => (
+                <tr key={cle.id}>
+                    <td>{cle.nom}</td>
+                    <td>{cle.created_at?.slice(0, 10)}</td>
+                    <td>{cle.last_used_at?.slice(0, 10) ?? "jamais"}</td>
+                    <td>{cle.use_count ?? 0}</td>
+                    <td>{cle.expires_on?.slice(0, 10)}</td>
+                    <td>{finDeLigne(cle)}</td>
+                </tr>
+            ))}
+            {liste.length === 0 && (
+                <tr><td colSpan={6} className="text-center text-muted">{vide}</td></tr>
+            )}
+        </tbody>
+    </Table>;
 
     const copier = async () => {
         try {
@@ -104,45 +138,22 @@ export default function CleApi() {
                             {creation.isPending ? "Création..." : "Créer une clé"}
                         </Button>
                     </Form>
-                    <Table responsive striped hover>
-                        <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Créée le</th>
-                                <th>Dernière utilisation</th>
-                                <th>Appels</th>
-                                <th>Statut</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cles.map((cle) => (
-                                <tr key={cle.id} className={cle.revoked ? "text-muted" : ""}>
-                                    <td>{cle.nom}</td>
-                                    <td>{cle.created_at?.slice(0, 10)}</td>
-                                    <td>{cle.last_used_at?.slice(0, 10) ?? "jamais"}</td>
-                                    <td>{cle.use_count ?? 0}</td>
-                                    <td>
-                                        {cle.revoked
-                                            ? <Badge bg="secondary">révoquée</Badge>
-                                            : <Badge bg="success">active</Badge>}
-                                    </td>
-                                    <td>
-                                        {!cle.revoked && (
-                                            <Button size="sm" variant="outline-danger"
-                                                disabled={revocation.isPending}
-                                                onClick={() => revocation.mutate(cle.id)}>
-                                                Révoquer
-                                            </Button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {cles.length === 0 && (
-                                <tr><td colSpan={6} className="text-center text-muted">Aucune clé pour l&apos;instant.</td></tr>
+                    <Tabs defaultActiveKey="actives" className="mb-3">
+                        <Tab eventKey="actives" title={`Clés actives (${actives.length})`}>
+                            {tableau(actives, "Aucune clé active.", (cle) =>
+                                <Button size="sm" variant="outline-danger"
+                                    disabled={revocation.isPending}
+                                    onClick={() => revocation.mutate(cle.id)}>
+                                    Révoquer
+                                </Button>
                             )}
-                        </tbody>
-                    </Table>
+                        </Tab>
+                        <Tab eventKey="anciennes" title={`Révoquées et expirées (${anciennes.length})`}>
+                            {tableau(anciennes, "Aucune clé révoquée ou expirée.", (cle) =>
+                                <Badge bg="secondary">{cle.revoked ? "révoquée" : "expirée"}</Badge>
+                            )}
+                        </Tab>
+                    </Tabs>
                 </>}
             </Card.Body>
         </Card>

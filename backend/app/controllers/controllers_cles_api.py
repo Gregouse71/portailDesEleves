@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
@@ -17,8 +19,8 @@ MAX_CLES_ACTIVES = 3
 @controllers_cles.get('/liste')
 @login_required
 def lister_cles_api():
-    """Renvoie la liste des clés d'api de l'utilisateur, sans les clés révoquées"""
-    cles = CleAPI.query.filter_by(utilisateur_id=current_user.id, revoked=False).order_by(CleAPI.created_at.desc()).all()
+    """Renvoie la liste des clés d'api de l'utilisateur"""
+    cles = CleAPI.query.filter_by(utilisateur_id=current_user.id).order_by(CleAPI.revoked.asc(), CleAPI.created_at.desc()).all()
     return jsonify({
         "cles": [c.to_dict() for c in cles],
         "eligible_api": has_permission(current_user, "cle_api"),
@@ -31,7 +33,9 @@ def creer_cle_api():
     """Crée une clé d'api pour l'utilisateur l'utilisateur"""
     if not has_permission(current_user, "cle_api"):
         return jsonify({"message": "Les clés API sont disponibles à partir de la 2A."}), 403
-    actives = CleAPI.query.filter_by(utilisateur_id=current_user.id, revoked=False).count()
+    # Une clé expirée ne marche plus : elle ne compte pas parmi les clés actives
+    actives = CleAPI.query.filter_by(utilisateur_id=current_user.id, revoked=False)\
+        .filter(CleAPI.expires_on > datetime.now(tz=None)).count()
     if actives >= MAX_CLES_ACTIVES:
         return jsonify({"message": f"Tu as déjà {MAX_CLES_ACTIVES} clés actives. Révoque-en une d'abord."}), 400
 
