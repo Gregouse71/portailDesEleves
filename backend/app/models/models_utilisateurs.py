@@ -332,6 +332,19 @@ class Utilisateur(db.Model, UserMixin) :
             "cycle": self.cycle
         }
 
+    def to_annuaire_dict(self):
+        """Champs de l'annuaire, accessibles avec une clé d'api"""
+        return {
+            "id": self.id,
+            "nom_utilisateur": self.nom_utilisateur,
+            "prenom": self.prenom,
+            "nom": self.nom,
+            "email": self.email,
+            "promotion": self.promotion,
+            "cycle": self.cycle,
+            "photo": self.get_photo_file()
+        }
+
     def get_photo_file(self):
         if self.photo_id is None:
             return 'utilisateurs/Logo.png'

@@ -180,6 +180,29 @@ def prochains_anniv(debut=None, fin=None):
     return ret
 
 
+def annuaire(page: int, par_page: int, promo=None, cycle=None, depuis_id=None) -> dict:
+    """
+    Renvoie une page de l'annuaire : les utilisateurs ayant une promotion, triés par id
+    *promo*, *cycle* et *depuis_id* (id strictement supérieur) filtrent la liste
+    """
+    query = Utilisateur.query.filter(Utilisateur.promotion.isnot(None))
+    if promo:
+        query = query.filter(Utilisateur.promotion == promo)
+    if cycle:
+        query = query.filter(Utilisateur.cycle == cycle)
+    if depuis_id:
+        query = query.filter(Utilisateur.id > depuis_id)
+
+    pagination = query.order_by(Utilisateur.id).paginate(page=page, per_page=par_page, error_out=False)
+    return {
+        "items": [u.to_annuaire_dict() for u in pagination.items],
+        "total": pagination.total,
+        "page": page,
+        "pages": max(1, pagination.pages),
+        "per_page": par_page,
+    }
+
+
 def get_user_media(user_id):
     files = ElementMedia.query.filter_by(utilisateur_id=user_id, cache=False)
     return [f.to_dict() for f in files]

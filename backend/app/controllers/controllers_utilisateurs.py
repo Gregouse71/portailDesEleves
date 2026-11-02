@@ -5,10 +5,10 @@ from datetime import date
 import csv
 import io
 
-from app import db
+from app import db, limiter
 from app.utils.verification_format import valider_questions_du_portail
 from app.utils.decorators import superutilisateur_required, a_permission, hors_mode_parrainage, cle_api_autorisee
-from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, add_utilisateur, set_user_photo, set_user_banniere, get_user_media, get_utilisateur, obtenir_famille, obtenir_chemin
+from app.services.services_utilisateurs import supprimer_co, ajouter_co, changer_co, prochains_anniv, annuaire, add_utilisateur, set_user_photo, set_user_banniere, get_user_media, get_utilisateur, obtenir_famille, obtenir_chemin
 from app.services.services_media import upload_media, delete_media
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_associations import AssociationMembre, AssociationMandat
@@ -513,6 +513,63 @@ def route_get_anniv():
         return jsonify(ret), 200
     except Exception as e:
         return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
+
+
+@controllers_utilisateurs.route('/annuaire', methods=['GET'])
+@cle_api_autorisee
+@login_required
+@limiter.limit("60/minute")
+def route_annuaire():
+    """
+    Renvoie l'annuaire des élèves, page par page
+    ---
+    summary: "Récupère l'annuaire des élèves"
+    description: >
+      Renvoie les utilisateurs ayant une promotion, triés par identifiant,
+      avec leurs seuls champs d'annuaire : id, nom d'utilisateur, prénom, nom,
+      email, promotion, cycle et photo.
+    tags:
+      - "Utilisateurs"
+    parameters:
+      - name: "page"
+        in: "query"
+        required: false
+        description: "Numéro de la page. Par défaut : 1."
+        schema:
+          type: "integer"
+      - name: "per_page"
+        in: "query"
+        required: false
+        description: "Nombre d'élèves par page, 1000 au plus. Par défaut : 500."
+        schema:
+          type: "integer"
+      - name: "promo"
+        in: "query"
+        required: false
+        description: "Ne renvoie que cette promotion."
+        schema:
+          type: "string"
+      - name: "cycle"
+        in: "query"
+        required: false
+        description: "Ne renvoie que ce cycle (ic, ast, vs, ev, isup)."
+        schema:
+          type: "string"
+      - name: "depuis_id"
+        in: "query"
+        required: false
+        description: "Ne renvoie que les utilisateurs d'identifiant supérieur."
+        schema:
+          type: "integer"
+    responses:
+      200:
+        description: "Une page de l'annuaire : items, total, page, pages, per_page."
+    """
+    data = request.args
+    page = max(1, data.get("page", 1, type=int))
+    par_page = min(1000, max(1, data.get("per_page", 500, type=int)))
+    ret = annuaire(page, par_page, promo=data.get("promo"), cycle=data.get("cycle"), depuis_id=data.get("depuis_id", type=int))
+    return jsonify(ret), 200
 
 
 @controllers_utilisateurs.route('/add_utilisateur', methods=['POST'])
