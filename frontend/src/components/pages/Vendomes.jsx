@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Container, Alert } from 'react-bootstrap';
 import { getPublicationsByTag } from '../../api/api_publications';
 import PostCard from '../elements/PostCard';
-import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import { useState } from 'react';
 import PageRandom from '../templates/PageRandom';
 
@@ -42,7 +41,7 @@ function Vendomes() {
         avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); } }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
         contenu={
-            <div className="asso-grid"> {/* Reusing the asso-grid class for styling */}
+            <div className="cards-grid">
                 {publications.filter(p => p.fichier_joint).map((post, index) => {
                     if (publications.length === index + 1) {
                         return <div key={post.id}><PostCard post={post} /></div>

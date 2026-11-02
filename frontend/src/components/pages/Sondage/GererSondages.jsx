@@ -63,12 +63,11 @@ function SondageCard({ sondage }) {
                 ))}
             </ListGroup>
         </Card.Body>
-        <Card.Footer>
+        <Card.Footer className="d-flex justify-content-around">
             <Button
                 variant="success"
                 onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: false })}
                 disabled={mutate_validation.isLoading}
-                className="w-100 mb-2"
             >
                 Valider
             </Button>
@@ -76,7 +75,6 @@ function SondageCard({ sondage }) {
                 variant="danger"
                 onClick={() => mutate_validation.mutate({ id_sondage: sondage.id, del: true })}
                 disabled={mutate_validation.isLoading}
-                className="w-100"
             >
                 Supprimer
             </Button>

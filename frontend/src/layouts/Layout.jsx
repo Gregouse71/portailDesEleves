@@ -52,15 +52,15 @@ export function Layout() {
             <Header />
             <Container fluid className="main-content-global">
                 <Row>
-                    <Col md={2} className="left order-2 order-md-1">
+                    <Col xs={12} md className="left order-2 order-md-1">
                         <BlocEvents />
                         <BlocSondage />
                         <BlocSoldes />
                     </Col>
-                    <Col md={8} className="order-1 order-md-2">
+                    <Col xs={12} md className="center order-1 order-md-2">
                         <Outlet />
                     </Col>
-                    <Col md={2} className="right order-3 order-md-3">
+                    <Col xs={12} md className="right order-3 order-md-3">
                         <BlocChat />
                         <BlocAnniversaire />
                     </Col>

@@ -1,0 +1,13 @@
+.interactive-card {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--card-hover-bg);
+  }
+}
+
+.footer-card {
+  .card-footer {
+    background: var(--global-light-gray);
+  }
+}

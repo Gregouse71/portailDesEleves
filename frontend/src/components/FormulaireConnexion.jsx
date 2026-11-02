@@ -1,5 +1,3 @@
-import "../assets/styles/formulaire_connexion.scss"
-
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { seConnecter } from "../api/api_global";
@@ -40,7 +38,7 @@ export default function FormulaireConnexion() {
     }
 
     return (
-        <Container className="connexion-main-container d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
+        <Container fluid className="connexion-main-container d-flex flex-column align-items-center justify-content-center min-vh-100 py-4">
             <Card className="shadow-lg p-4 mb-4" style={{ maxWidth: '450px', width: '100%' }}>
                 <Card.Body>
                     <>

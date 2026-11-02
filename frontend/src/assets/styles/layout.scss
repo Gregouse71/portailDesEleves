@@ -1,75 +1,141 @@
 /* Styles généraux */
+html,
 body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: var(--bs-body-font-family);
   background-color: var(--background-color); // Use the theme variable directly
+  overscroll-behavior-y: none;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--primary-color);
+  }
 }
 
 /* Layout global */
 @import './themes';
 @import './bootstrap_overrides';
 @import './react_select';
+@import './grids';
+@import './links';
+@import './cards';
+@import './blocs';
+@import './pagesRandom';
 
 .layout {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--background-color);
-    color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .main-content-global {
-    flex-grow: 1;
-    padding-top: 1rem; // Add some space below the header
+  flex-grow: 1;
+  padding-top: 0.2rem;
+  margin-bottom: 30px;
+
+  @media (min-width: 768px) {
+
+    .left,
+    .right {
+      flex: 0 0 18% !important;
+      max-width: 18% !important;
+      width: 18% !important;
+    }
+
+    .center {
+      flex: 0 0 64% !important;
+      max-width: 64% !important;
+      width: 64% !important;
+    }
+  }
 }
 
 // Custom styles for left and right columns if needed
-.left, .right {
-    padding: 1rem;
+.left {
+  padding: 1rem 0.1rem 1rem 1rem;
+}
+
+.center {
+  padding: 1rem 0.1rem 1rem 0.1rem;
+}
+
+.right {
+  padding: 1rem 1rem 1rem 0.1rem;
+}
+
+// Top-level cards on Home page
+.home-container>.card {
+  border: none !important;
+  background-color: transparent !important;
+  margin-bottom: 10px;
+
+  >.card-body {
+    padding: 0 0.1rem;
+
+    >.card-title,
+    >h2 {
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+
+      a {
+        text-decoration: none;
+      }
+    }
+  }
 }
 
 // Global Card theming
 body[data-theme] .card {
-    background-color: var(--card-bg);
-    border-color: var(--card-border-color);
-    color: var(--text-color); // Ensure text color is inherited or explicitly set
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  color: var(--text-color); // Ensure text color is inherited or explicitly set
 }
 
 body[data-theme] .card-header {
-    background-color: var(--card-header-bg);
-    color: var(--text-color);
+  background-color: var(--card-header-bg);
+  color: var(--text-color);
+}
+
+body[data-theme] h1,
+body[data-theme] h2 {
+  color: var(--text-color);
 }
 
 // Global icon theming
 .theme-icon {
-    filter: var(--icon-color-filter);
-    transition: transform 0.2s ease;
+  filter: var(--icon-color-filter);
 }
 
 // Override Bootstrap's text-muted
 body[data-theme] .text-muted {
-    color: var(--text-color-secondary) !important; /* Use !important to ensure override */
+  color: var(--text-color-secondary) !important;
+  /* Use !important to ensure override */
 }
 
 // Ensure links within cards also respect the theme or primary color
 .card a {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .card a:hover {
-    color: var(--primary-color);
-    text-decoration: underline;
-}
-
-
-/* Quill editor font size */
-.ql-snow .ql-picker.ql-size .ql-picker-label::before,
-.ql-snow .ql-snow .ql-picker.ql-size .ql-picker-item::before {
-  content: attr(data-value) !important;
-}
-
-/* Override for 'Normal' size display */
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="13px"]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"]::before {
-  content: 'Normal' !important;
+  color: var(--primary-color);
+  text-decoration: underline;
 }

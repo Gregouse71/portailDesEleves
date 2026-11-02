@@ -1,17 +1,11 @@
-// Styles for the Post component
-
 $tag-color-light: #16a085; // A vibrant green/teal
 $tag-color-dark: #8e44ad; // A vibrant purple
 
-.post-title-link,
-.post-title-link:visited,
-.post-title-link:active {
-    color: var(--text-color) !important;
-    text-decoration: none;
-
-    &:hover {
-        color: var(--primary-color) !important;
+.post-container {
+    &>.card-body {
+        padding-bottom: 0;
     }
+
 }
 
 .post-tag-badge {
@@ -29,25 +23,7 @@ $tag-color-dark: #8e44ad; // A vibrant purple
     overflow-y: auto;
     overflow-x: hidden;
     margin-bottom: 1rem;
-    padding-right: 5px; // Space for scrollbar if needed
-
-    /* Custom scrollbar for better appearance */
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: var(--secondary-color);
-        border-radius: 3px;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-color);
-    }
+    padding-right: 5px;
 }
 
 .post {
@@ -56,4 +32,16 @@ $tag-color-dark: #8e44ad; // A vibrant purple
 
 .comments {
     max-height: 200px;
+}
+
+.comment-content-container {
+    border: none;
+    border-top: solid 1px var(--card-border-color);
+    text-align: right;
+    padding: 0.1rem;
+    border-radius: 0;
+
+    .card-body {
+        padding: 0.1rem;
+    }
 }

@@ -6,7 +6,6 @@ import { Form, ListGroup, Image, Row, Col } from "react-bootstrap";
 import OngletTemplate from '../../templates/OngletTemplate';
 import { getMusiciens } from "../../../api/modules/api_musiciens";
 import { UPLOAD_BASE_URL } from "../../../api/base";
-import "../../../assets/styles/search.scss";
 
 /**
  * Normalise une chaîne de caractères (supprime les accents et met en minuscules).
@@ -24,12 +23,10 @@ export default function AssoMusiciens() {
     const [instrumentFilter, setInstrumentFilter] = useState("");
     const [sortBy, setSortBy] = useState("promo-desc");
 
-    const { data, isLoading, isError } = useQuery({
+    const { data: { musiciens } = { musiciens: [] }, isLoading, isError } = useQuery({
         queryKey: ["musiciens"],
         queryFn: () => getMusiciens(),
     });
-
-    const musiciens = data?.musiciens || [];
 
     // Filtrer et trier la liste des musiciens
     const processedMusiciens = useMemo(() => {

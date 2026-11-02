@@ -6,7 +6,6 @@ import {
 } from '../../api/api_utilisateurs';
 import { useNavigate } from 'react-router-dom';
 import { Card, Nav, Row, Col } from 'react-bootstrap';
-import '../../assets/styles/asso.scss';
 import '../../assets/styles/trombi.scss';
 import { useQuery } from '@tanstack/react-query';
 import Autocomplete from '../elements/Autocompletion';
@@ -116,16 +115,16 @@ function Trombi() {
                 activeKey={getActiveKey()}
                 tabs={[
                     {
-                        titre: "Trombis de promotions", path: `/trombi`, key: "promos", index: true,
+                        titre: "Trombis des promotions", path: `/trombi`, key: "promos", index: true,
                         element: <>{listePromos === null ? (
                             <p>Chargement...</p>
                         ) : (
-                            <div className="member-grid">
+                            <div className="avatars-grid">
                                 {listePromos.map((promo, index) => (
                                     <Card
                                         onClick={() => navigate(`/trombi/get/${promo}`)}
                                         key={index}
-                                        className="text-center trombi-card"
+                                        className="text-center trombi-card interactive-card"
                                     >
                                         <Card.Body>
                                             <Card.Title>{promo}</Card.Title>

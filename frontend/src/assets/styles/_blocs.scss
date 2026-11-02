@@ -1,0 +1,43 @@
+.bloc-global {
+  border: none !important;
+  border-radius: 12px !important;
+  background-color: var(--card-bg) !important;
+  box-shadow: 0 2px 10px var(--shadow-color) !important;
+  padding: 0.85rem 1rem !important;
+
+  .bloc-header,
+  .card-header {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid var(--primary-color) !important;
+    text-align: right;
+    padding: 0;
+    margin-bottom: 0.75rem;
+    border-radius: 0 !important;
+    color: var(--text-color);
+    font-weight: 600;
+  }
+
+  .card-body {
+    padding: 0 !important;
+  }
+
+  .card-footer {
+    background: transparent;
+    padding: 0.5rem 0.2rem 0;
+  }
+}
+
+.left .bloc-global {
+  .bloc-header,
+  .card-header {
+    text-align: left !important;
+  }
+}
+
+.right .bloc-global {
+  .bloc-header,
+  .card-header {
+    text-align: right !important;
+  }
+}

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import '../../assets/styles/rich_editor.scss';
-import DOMPurify from 'dompurify';
+import RichTextDisplay from './RichTextDisplay';
 
 // 1. Setup Style Attributor & Whitelist
 // We must register this BEFORE the component renders
@@ -101,15 +101,5 @@ const RichEditor = ({ value, onChange }) => {
     );
 };
 
-export const RichTextDisplay = ({ content }) => {
-    const sanitizedContent = DOMPurify.sanitize(content);
-    return (
-        <div
-            className='ql-editor'
-            style={{ padding: 0, overflow: 'hidden' }}
-            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-        />
-    );
-};
-
+export { RichTextDisplay };
 export default RichEditor;

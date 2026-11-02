@@ -50,7 +50,7 @@ export default function BlocSondage() {
             content = (
                 <>
                     <p className="h3 fw-bold">{sondage.question}</p>
-                    <div>
+                    <div className="mb-2">
                         {(() => {
                             const totalVotes = sondage.votes.reduce((sum, v) => sum + v, 0);
                             return sondage.reponses.map((reponse, index) => {
@@ -92,8 +92,8 @@ export default function BlocSondage() {
         contenu={<>
             {content}
             {sondage.hier && <>
-                <Card.Header as="h6" className="text-center">Sondage d&apos;hier</Card.Header>
-                <Card.Body>
+                <Card.Header as="h6" className="bloc-header mt-3">Sondage d&apos;hier</Card.Header>
+                <Card.Body className="p-0">
                     <p className="h5 fw-bold">{sondage.hier.question}</p>
                     <div>
                         {(() => {

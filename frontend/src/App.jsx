@@ -6,11 +6,11 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Spinner } from "react-bootstrap";
 import { ProtectedRoute } from "./Protected";
 import { Layout, LayoutProvider } from "./layouts/Layout";
-import PublicationsRecentes from "./components/pages/PublicationsRecentes";
 
 // Lazy imports
-const Soifguard = lazy(() => import("./pages/Soifguard"));
-const Admin = lazy(() => import("./pages/Admin"));
+const PublicationsRecentes = lazy(() => import("./components/pages/PublicationsRecentes"));
+const Soifguard = lazy(() => import("./layouts/Soifguard"));
+const Admin = lazy(() => import("./layouts/Admin"));
 const ListeAssos = lazy(() => import("./components/pages/AssoListe"));
 const Home = lazy(() => import("./components/pages/Home"));
 const Asso = lazy(() => import("./components/pages/PageAsso"));

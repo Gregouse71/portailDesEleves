@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
+import Mines from "../../assets/icons/mines.svg?react";
 
 const Dropdown = ({ title, list, end, setExpanded }) => {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
     const handleMouseLeave = () => {
         timeout.current = setTimeout(() => {
             setShow(false);
-        }, 150);
+        }, 50);
     };
 
     return <>
@@ -33,7 +34,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <NavDropdown.Divider key={i} />;
-                    case "navigate": return <NavDropdown.Item key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</NavDropdown.Item>;
+                    case "navigate": return <NavDropdown.Item key={i} onClick={() => { navigate(target); setExpanded(false) }}>{title}</NavDropdown.Item>;
                     case "link": return <NavDropdown.Item key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</NavDropdown.Item>;
                     case "onClick": return <NavDropdown.Item key={i} onClick={target}>{title}</NavDropdown.Item>;
                     case "custom": return target;
@@ -48,7 +49,7 @@ const Dropdown = ({ title, list, end, setExpanded }) => {
                 const [type, target, title] = elt;
                 switch (type) {
                     case "divider": return <hr key={i} className="my-2 text-muted" />;
-                    case "navigate": return <Nav.Link key={i} onClick={() => {navigate(target); setExpanded(false)}}>{title}</Nav.Link>;
+                    case "navigate": return <Nav.Link key={i} onClick={() => { navigate(target); setExpanded(false) }}>{title}</Nav.Link>;
                     case "link": return <Nav.Link key={i} href={target} target="_blank" rel="noopener noreferrer">{title}</Nav.Link>;
                     case "onClick": return <Nav.Link key={i} onClick={target}>{title}</Nav.Link>;
                     case "custom": return target;
@@ -107,11 +108,15 @@ export default function Header() {
     return (
         <Navbar expand="md" sticky="top" expanded={expanded} onToggle={() => setExpanded(!expanded)} className="global-header-header navbar-dark">
             <Container fluid>
-                <Navbar.Brand style={{ cursor: "pointer" }} onClick={() => { navigate("/"); setExpanded(false); }}>Le portail des élèves</Navbar.Brand>
+                <Navbar.Brand
+                    style={{ cursor: "pointer" }}
+                    onClick={() => { navigate("/"); setExpanded(false); }}>
+                    Le portail des élèves <Mines className="" style={{ width: "2.5rem", height: "1.5rem" }} />
+                </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="w-100 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                        <Dropdown title="Menu" setExpanded={setExpanded}
+                        <Dropdown title="Services" setExpanded={setExpanded}
                             list={[
                                 ["navigate", "/", "Accueil"],
                                 ["navigate", "/assos", "Associations"],
@@ -121,11 +126,19 @@ export default function Header() {
                                 ["navigate", "/vendomes", "Vendômes"],
                                 ["navigate", "/palums", "Palums"],
                                 ... (octoPermission || octoAdminPermission || bieroPermission || bieroAdminPermission) ?
-                                    [["navigate", "/soifguard", "Soifguard"]] : [],
-                                ["divider"],
+                                    [
+                                        ["divider"], ["navigate", "/soifguard", "Soifguard"]
+                                    ] : [],
+                            ]}
+                        />
+                        <Dropdown title="Jeux" setExpanded={setExpanded}
+                            list={[
                                 ["navigate", "/jeux/2048", "2048"],
                                 ["navigate", "/jeux/echecs", "Échecs"],
-                                ["divider"],
+                            ]}
+                        />
+                        <Dropdown title="Liens externes" setExpanded={setExpanded}
+                            list={[
                                 // On va essayer de pas spoil les 1A avec nos histoire de baptême
                                 // ["link", "https://discord.gg/3MtV8cgTRu/", "Serveur Discord de dev"],
                                 ["link", "https://oasis.minesparis.psl.eu/", "Oasis"],
@@ -135,7 +148,7 @@ export default function Header() {
                                 ["link", "https://mines-paris.org/", "Portail des Alumni"],
                             ]}
                         />
-
+                        
                         <div className="d-none d-md-block flex-grow-1"></div>
 
                         <Form className="d-flex form-navbar" onSubmit={handleSearchSubmit}>

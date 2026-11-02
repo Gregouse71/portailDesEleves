@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Container } from 'react-bootstrap';
 import { obtenirPublicationsRecentes } from '../../api/api_publications';
-import '../../assets/styles/asso.scss'; // Reusing the asso.scss for grid layout
 import Post from '../elements/Post';
 import { useState } from 'react';
 import PageRandom from '../templates/PageRandom';
@@ -37,6 +36,6 @@ export default function PublicationsRecentes() {
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
         contenu={
             publications.map(post_id => (
-                <div className="mb-3" key={post_id} ><Post postId={post_id} isGestion={false} /></div>
+                <div key={post_id} ><Post postId={post_id} isGestion={false} /></div>
             ))} />;
 }

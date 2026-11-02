@@ -4,6 +4,12 @@
     background-color: var(--card-bg) !important;
     border-color: var(--card-border-color) !important;
     color: var(--text-color) !important;
+
+    &--is-focused {
+        background-color: var(--card-bg) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 1px var(--primary-color) !important;
+    }
 }
 
 .react-select__menu {

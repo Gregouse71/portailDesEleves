@@ -40,8 +40,8 @@ export default function BlocSoldes() {
                         Octo : {formatter.format(userData.solde_octo)}
                     </span>
                 </Col>
-                <Col className="d-flex justify-content-end">
-                    <Button as={Link} to={URL_OCTO} variant="primary" size='sm'>€</Button>
+                <Col className="d-flex justify-content-end align-items-center">
+                    <Link to={URL_OCTO} className="see-more-link">Remboursez,</Link>
                 </Col>
             </Row>
             <Row>
@@ -50,12 +50,9 @@ export default function BlocSoldes() {
                         Biéro : {formatter.format(userData.solde_biero)}
                     </span>
                 </Col>
-                <Col className="d-flex justify-content-end">
-                    <Button as={Link} to={URL_BIERO} variant="primary" size='sm'>€</Button>
+                <Col className="d-flex justify-content-end align-items-center">
+                    <Link to={URL_BIERO} className="see-more-link">alcooliques</Link>
                 </Col>
             </Row>
-
         </>} />;
-
-
 }

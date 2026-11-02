@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Button } from "react-bootstrap";
 import { SOCKET_BASE_URL } from "../../../../api/base";
 import Leaderboard from "../../../elements/Leaderboard";
-import "../../../../assets/styles/echecs.css";
+import "../../../../assets/styles/echecs.scss";
 import JeuxTemplate from "../../../templates/JeuxTemplate";
 
 export default function EchecsLobby() {
@@ -97,10 +97,12 @@ export default function EchecsLobby() {
 
     return <JeuxTemplate
         titre="♟ Échecs"
+        classeContainer="echecs-lobby-container"
+        fluid
         contenu={
             <div className="row g-4">
                 {/* ── Colonne gauche : jeu ── */}
-                <div className="col-lg-7">
+                <div className="col-lg-6">
 
                     {/* Boutons de lancement */}
                     <div className="echecs-section mb-3">
@@ -176,7 +178,7 @@ export default function EchecsLobby() {
                 </div>
 
                 {/* ── Colonne droite : classement ELO ── */}
-                <div className="col-lg-5">
+                <div className="col-lg-6">
                     {!eloData ? (
                         <Leaderboard title="🏆 Classement ELO" isLoading />
                     ) : (
@@ -187,7 +189,7 @@ export default function EchecsLobby() {
                                 data={eloData.top10.map((e) => ({ ...e, id: e.utilisateur_id }))}
                                 format={[
                                     { nom: "ELO", scoreKey: "rating", formatScore: (s) => <strong>{s}</strong> },
-                                    { nom: "Parties Jouées", scoreKey: "nb_parties", formatScore: (s) => s },
+                                    { nom: "Parties", scoreKey: "nb_parties", formatScore: (s) => s },
                                 ]}
                                 titleRow
                             />
