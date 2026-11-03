@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN echo "export const _BASE_URL = ''" > src/api/base_url.js
 RUN npm run build
 
 FROM nginx:alpine

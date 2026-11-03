@@ -1,5 +1,6 @@
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required
 from flask_socketio import SocketIO
@@ -22,11 +23,19 @@ login_manager = LoginManager()
 limiter = Limiter(get_remote_address)
 # Gestionnaire des tâches périodiques
 scheduler = APScheduler()
+# Active CORS pour toutes les routes de l'application
+cors = CORS(
+    origins=Config.CORS_ORIGINS,
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization", "X-API-KEY"],
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    expose_headers=["Content-Disposition"],
+)
 
 # Permet de gérer les websocket, pour le chat, les échecs...
 socketio = SocketIO(
     async_mode='gevent' if os.name != 'nt' else None,
-    cors_allowed_origins="*",
+    cors_allowed_origins=Config.CORS_ORIGINS,
     message_queue=Config.REDIS_URL
 )
 

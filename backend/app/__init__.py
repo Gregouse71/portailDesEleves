@@ -14,7 +14,7 @@ from flask_cors import CORS # permet d'accepter les requetes provenant de n'impo
 from werkzeug.middleware.proxy_fix import ProxyFix
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
 
-from .extensions import db, limiter, login_manager, socketio, scheduler, swagger, require_oauth, authorization
+from .extensions import db, limiter, login_manager, socketio, scheduler, cors, swagger, require_oauth, authorization
 from app.services.services_cles_api import utiliser_cle
 
 import os
@@ -27,10 +27,6 @@ def create_app(config: Config):
     # Chargement de la configuration
     app.config.from_object(config)
 
-    # Active CORS pour toutes les routes de l'application
-    CORS(app, origins="*", supports_credentials=True, expose_headers=["Content-Disposition"])
-
-
     # Initialisation des extensions avec l'application
     if not app.config.get("TESTING"):
         limiter.init_app(app)
@@ -38,6 +34,7 @@ def create_app(config: Config):
     login_manager.init_app(app)
     socketio.init_app(app)
     scheduler.init_app(app)
+    cors.init_app(app)
     # session.init_app(app)
     # Trust more proxy headers for better URL detection (proto, host, etc.)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)

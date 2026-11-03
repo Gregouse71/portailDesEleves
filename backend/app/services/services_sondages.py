@@ -188,7 +188,6 @@ def sondage_dhier ():
     ("question ?", ["reponse1", "reponse2"], [1, 96])
     """
     hier = datetime.now(tz=ZoneInfo("Europe/Paris")).date() - (timedelta(days=2) if datetime.now(tz=ZoneInfo("Europe/Paris")).hour < 4 else timedelta(days=1))
-    print(hier)
     sondage = Sondage.query.filter_by(date_publication=hier).first()
     if not sondage:
         return None
