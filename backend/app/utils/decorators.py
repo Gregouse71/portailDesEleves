@@ -121,3 +121,10 @@ def hors_mode_parrainage(f):
         else:
             return jsonify({"message": "Mode parrainage activé"}), 403
     return decorated_function
+
+def cle_api_autorisee(f):
+    """
+    Permet l'utilisation de cette route avec une clé d'API
+    """
+    f._allow_api_key = True
+    return f
