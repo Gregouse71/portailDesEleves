@@ -15,6 +15,12 @@ Par les choix qui ont été fait lors du début du développement, certaines tec
 
 Afin de permettre à tous les élèves de d'accéder à d'autres sites avec leur identifiant du portail, l'api permet d'utiliser le protocole OAuth pour se connecter directement avec le portail. Pour ajouter un service utilisant OAuth, il suffit d'éxecuter le fichier `annexes/scripts/add_oauth_database.py` après avoir modifier les paramètres de façon adéquate pour le site que vous souhaitez ajouter.
 
+### C - Utilisation de l'API
+
+Pour augmenter l'utilité du backend du site, certaines routes sont accessibles après authentification par clés d'API. Ainsi, elles peuvent être appelée dans des sites web créés par d'autres élèves, sans nécessiter d'utiliser de jeton de session pour l'authentification. Ce jeton pourrait en effet fuiter (courant pour les clés d'authentification utilisées dans du code), et compromettre les données disponibles sur le portail.
+
+Les administrateurs peuvent donner à un élève l'autorisation de créer des clés d'API. 3 trois clés peuvent être actives en simultané pour un élève afin de limiter les abus d'utilisation, et elles ont une durée de vie de 1 an pour limiter dans le temps les dégats causés par une fuite non détectée.
+
 ## II. Administration
 
 Pour réduire les dépenses et mettre à profit le matériel du Rézal, le nouveau portail est hébergé sur une machine virtuelle du Rézal. C'est la même chose qu'avant, sauf que ça coûte rien et le service client est assuré par quelqu'un qui se trouve dans le même bâtiment.

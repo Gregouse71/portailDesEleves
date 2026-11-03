@@ -1,7 +1,7 @@
 # importer les models grace a __init__.py de models
 from flask_login import current_user
 
-from app.services import db
+from app import db
 from app.models.models_associations import Association, AssociationMandat, AssociationMembre
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_media import ElementMedia

@@ -1,0 +1,223 @@
+from datetime import datetime
+
+import pytest
+
+from app.models import Utilisateur
+from app.models.models_cles_api import CleAPI, generer_cle
+from app.models.models_divers import Permission
+from app.services.services_login import has_permission
+
+# Tests de la brique API annuaire : clés personnelles (gate 2A+), endpoint
+# /api/users/annuaire (X-API-Key), champ strict, pagination, audit.
+
+
+@pytest.fixture()
+def db_cles(app, db_initialized):
+    """Un 1A (promo courante) et un 2A (promo - 1), indépendants du calendrier."""
+    un_a = Utilisateur(nom_utilisateur="22unA", prenom="Une", nom="Premiereannee",
+                       promotion=22, email="unA@exemple.com", cycle="ic",
+                       mot_de_passe_en_clair="1234")
+    deux_a = Utilisateur(nom_utilisateur="21deuxA", prenom="Deux", nom="Deuxiemeannee",
+                         promotion=21, email="deuxA@exemple.com", cycle="ic",
+                         mot_de_passe_en_clair="1234")
+    perm = Permission(deux_a, "cle_api")
+
+    db_initialized.session.add_all([un_a, deux_a, perm])
+    db_initialized.session.commit()
+    yield db_initialized, un_a, deux_a
+    db_initialized.session.remove()
+
+
+def _client_bearer(app, username):
+    client = app.test_client()
+    r = client.post('/api/login/connexion', json={'username': username, 'password': '1234'})
+    assert r.status_code == 200
+    return client
+
+
+def _creer_cle(client, nom="test"):
+    r = client.post('/api/cles/creer', json={'nom': nom})
+    assert r.status_code == 201
+    return r.get_json()
+
+
+class TestGateDeuxA:
+
+    def test_permission_api(self, app, db_cles):
+        _, un_a, deux_a = db_cles
+        assert has_permission(deux_a, "cle_api")
+        assert not has_permission(un_a, "cle_api")
+
+    def test_1a_ne_peut_pas_creer(self, app, db_cles):
+        _, un_a, _deux_a = db_cles
+        client = _client_bearer(app, un_a.nom_utilisateur)
+        r = client.post('/api/cles/creer', json={'nom': 'interdite'})
+        assert r.status_code == 403
+        assert CleAPI.query.count() == 0
+
+    def test_liste_indique_eligibilite(self, app, db_cles):
+        _, un_a, _deux_a = db_cles
+        client = _client_bearer(app, un_a.nom_utilisateur)
+        r = client.get('/api/cles/liste')
+        assert r.status_code == 200
+        assert r.get_json()["eligible_api"] is False
+
+
+class TestCreationEtGestion:
+
+    def test_creation_2a(self, app, db_cles):
+        _, _un_a, deux_a = db_cles
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        data = _creer_cle(client, "equipaps prod")
+        assert data["valeur"].startswith("pak_")
+        cle = CleAPI.query.filter_by(id=data["cle"]["id"]).first()
+        assert cle.nom == "equipaps prod"
+        assert cle.revoked is False
+        assert cle.hash != data["valeur"]          # jamais la valeur en clair
+        assert cle.utilisateur_id == deux_a.id
+        assert data["cle"]["expires_on"] is not None
+
+    def test_maximum_trois_cles_actives(self, app, db_cles):
+        _, _un_a, deux_a = db_cles
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        for _ in range(3):
+            _creer_cle(client)
+        r = client.post('/api/cles/creer', json={'nom': 'trop'})
+        assert r.status_code == 400
+
+    def test_revocation_d_un_autre_refusee(self, app, db_cles):
+        _, un_a, deux_a = db_cles
+        client_2a = _client_bearer(app, deux_a.nom_utilisateur)
+        data = _creer_cle(client_2a)
+        client_1a = _client_bearer(app, un_a.nom_utilisateur)
+        r = client_1a.post(f"/api/cles/revoquer/{data['cle']['id']}")
+        assert r.status_code == 404
+        assert CleAPI.query.first().revoked is False
+
+    def test_revocation_garde_l_historique(self, app, db_cles):
+        _, _un_a, deux_a = db_cles
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        data = _creer_cle(client)
+        r = client.post('/api/cles/revoquer', json={'id': data['cle']['id']})
+        assert r.status_code == 200
+        cles = client.get('/api/cles/liste').get_json()["cles"]
+        assert [(c["revoked"], c["active"]) for c in cles] == [(True, False)]
+
+    def test_cles_expirees_hors_maximum(self, app, db_cles):
+        db_init, _un_a, deux_a = db_cles
+        for _ in range(3):
+            _valeur, empreinte = generer_cle()
+            db_init.session.add(CleAPI(utilisateur=deux_a, nom="ancienne", hash=empreinte,
+                                       expires_on=datetime(2020, 1, 1)))
+        db_init.session.commit()
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        _creer_cle(client)
+        cles = client.get('/api/cles/liste').get_json()["cles"]
+        assert sorted(c["active"] for c in cles) == [False, False, False, True]
+
+    def test_sans_cle_refuse(self, app, db_cles):
+        client = app.test_client()
+        r = client.get('/api/users/prochains_anniv')
+        assert r.status_code == 401
+
+    def test_mauvaise_cle_refusee(self, app, db_cles):
+        client = app.test_client()
+        r = client.get('/api/users/prochains_anniv', headers={"X-API-Key": "pak_fausse"})
+        assert r.status_code == 401
+
+    def test_audit_utilisation(self, app, db_cles):
+        db_init, _un_a, deux_a = db_cles
+
+        valeur, empreinte = generer_cle()
+        cle = CleAPI(utilisateur=deux_a, nom="Cle test", hash=empreinte)
+        db_init.session.add(cle)
+        db_init.session.commit()
+
+        cle1 = CleAPI.query.filter_by(id=cle.id).first()
+        assert cle1.use_count == 0
+
+        client = app.test_client()
+        client.get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+
+        cle2 = CleAPI.query.filter_by(id=cle.id).first()
+        assert cle2.use_count == 1
+        assert cle2.last_used_at is not None
+
+    def test_cle_revoquee_refusee(self, app, db_cles):
+        db_init, _, deux_a = db_cles
+
+        valeur, empreinte = generer_cle()
+        cle = CleAPI(utilisateur=deux_a, nom="Cle test", hash=empreinte, revoked=True)
+        db_init.session.add(cle)
+        db_init.session.commit()
+
+        client = app.test_client()
+        r = client.get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        assert r.status_code == 401
+
+    def test_cle_route_interdite_refusee(self, app, db_cles):
+        db_init, _, deux_a = db_cles
+
+        valeur, empreinte = generer_cle()
+        cle = CleAPI(utilisateur=deux_a, nom="Cle test", hash=empreinte)
+        db_init.session.add(cle)
+        db_init.session.commit()
+
+        client = app.test_client()
+        r = client.post('/api/cles/creer', headers={"X-API-Key": valeur})
+        assert r.status_code == 401
+
+    def test_cle_d_un_jeune_refusee(self, app, db_cles):
+        db_init, un_a, _ = db_cles
+
+        valeur, empreinte = generer_cle()
+        cle = CleAPI(utilisateur=un_a, nom="Cle test", hash=empreinte)
+        db_init.session.add(cle)
+        db_init.session.commit()
+
+        r = app.test_client().get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        assert r.status_code == 401
+
+
+def _cle_en_base(db_init, utilisateur):
+    valeur, empreinte = generer_cle()
+    db_init.session.add(CleAPI(utilisateur=utilisateur, nom="Cle test", hash=empreinte))
+    db_init.session.commit()
+    return valeur
+
+
+class TestAnnuaire:
+
+    def test_sans_cle_refuse(self, app, db_cles):
+        r = app.test_client().get('/api/users/annuaire')
+        assert r.status_code == 401
+
+    def test_cle_sans_permission_refusee(self, app, db_cles):
+        db_init, un_a, _ = db_cles
+        valeur = _cle_en_base(db_init, un_a)
+        r = app.test_client().get('/api/users/annuaire', headers={"X-API-Key": valeur})
+        assert r.status_code == 401
+
+    def test_champs_stricts(self, app, db_cles):
+        db_init, _, deux_a = db_cles
+        valeur = _cle_en_base(db_init, deux_a)
+        r = app.test_client().get('/api/users/annuaire', headers={"X-API-Key": valeur})
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["total"] == 2
+        assert {u["nom_utilisateur"] for u in data["items"]} == {"22unA", "21deuxA"}
+        assert set(data["items"][0]) == {"id", "nom_utilisateur", "prenom", "nom", "email",
+                                         "promotion", "cycle", "photo"}
+
+    def test_pagination_et_filtres(self, app, db_cles):
+        db_init, un_a, deux_a = db_cles
+        valeur = _cle_en_base(db_init, deux_a)
+        client = app.test_client()
+        r = client.get('/api/users/annuaire?per_page=1&page=2', headers={"X-API-Key": valeur})
+        data = r.get_json()
+        assert (data["pages"], data["page"], len(data["items"])) == (2, 2, 1)
+        assert data["items"][0]["id"] == max(un_a.id, deux_a.id)
+        r = client.get('/api/users/annuaire?promo=21', headers={"X-API-Key": valeur})
+        assert [u["nom_utilisateur"] for u in r.get_json()["items"]] == ["21deuxA"]
+        r = client.get(f'/api/users/annuaire?depuis_id={min(un_a.id, deux_a.id)}', headers={"X-API-Key": valeur})
+        assert [u["id"] for u in r.get_json()["items"]] == [max(un_a.id, deux_a.id)]

@@ -1,4 +1,4 @@
-from app.services import db
+from app import db
 from app.services.services_global import get_global_var, set_global_var
 from app.models import Utilisateur, ConsoSoifguard, Permission
 from app.models.models_soifguard import OperationSoifguard

@@ -8,6 +8,7 @@ import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
 import Mines from "../../assets/icons/mines.svg?react";
+import { listerCles } from '../../api/api_cles';
 
 const Dropdown = ({ title, list, end, setExpanded }) => {
     const navigate = useNavigate();
@@ -84,6 +85,10 @@ export default function Header() {
     const { data: bieroAdminPermission = false } = useQuery({
         queryKey: ['permAdminBiero'],
         queryFn: () => verifierPermission({}, "admin_biero", userData.id),
+    });
+    const { data: { eligible_api } = { eligible_api: false } } = useQuery({
+        queryKey: ['cles'],
+        queryFn: () => listerCles({}),
     });
 
     const handleSearchSubmit = (e) => {
@@ -164,6 +169,7 @@ export default function Header() {
                         <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true} setExpanded={setExpanded}
                             list={[
                                 ["navigate", `/utilisateur/${userData.id}`, "Ma page"],
+                                ...eligible_api ? [["navigate", "/apidocs", "Clés d'API"]] : [],
                                 ...userData.is_superuser ? [["navigate", "/administration", "Administration"]] : [],
                                 ["onClick", handleLogout, "Déconnexion"],
                                 ["divider"],
