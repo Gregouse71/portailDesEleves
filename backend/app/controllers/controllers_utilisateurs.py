@@ -508,11 +508,7 @@ def route_get_anniv():
         fin = date.fromisoformat(data.get("fin")) if data.get("fin") is not None else None
     except ValueError:
         return jsonify({"message": "Format de date invalide : YYYY-MM-DD requis"}), 400
-    try:
-        ret = prochains_anniv(debut=debut, fin=fin)
-        return jsonify(ret), 200
-    except Exception as e:
-        return jsonify({"message": f"Erreur lors de l'obtention de la liste d'anniversaires' : {str(e)}"}), 500
+    return jsonify(prochains_anniv(debut=debut, fin=fin)), 200
 
 
 @controllers_utilisateurs.route('/annuaire', methods=['GET'])
