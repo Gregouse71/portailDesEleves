@@ -20,15 +20,15 @@ class CleAPI(db.Model):
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=False)
     utilisateur = db.relationship('Utilisateur', backref=db.backref('cles'))
 
-    nom = db.Column(db.String(100))            # libellé choisi par l'élève ("equipaps prod")
+    nom = db.Column(db.String(100), nullable=False)            # libellé choisi par l'élève ("equipaps prod")
     hash = db.Column(db.String(64), nullable=False, unique=True, index=True)  # sha256 hex
     # Pas utilisée pour l'instant
     portee = db.Column(db.String(256), nullable=False, default='annuaire:read')
-    created_at = db.Column(db.DateTime, default=_utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=_utcnow)
     last_used_at = db.Column(db.DateTime)
-    use_count = db.Column(db.Integer, default=0)
-    revoked = db.Column(db.Boolean, default=False)
-    expires_on = db.Column(db.DateTime, default=lambda: _utcnow() + timedelta(365))
+    use_count = db.Column(db.Integer, nullable=False, default=0)
+    revoked = db.Column(db.Boolean, nullable=False, default=False)
+    expires_on = db.Column(db.DateTime, nullable=False, default=lambda: _utcnow() + timedelta(365))
 
     # Valeur en clair : connue à la création seulement, jamais stockée
     valeur = None
@@ -53,11 +53,11 @@ class CleAPI(db.Model):
             "id": self.id,
             "nom": self.nom,
             "portee": self.portee,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": self.created_at.isoformat(),
             "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None,
             "use_count": self.use_count,
             "revoked": self.revoked,
-            "expires_on": self.expires_on.isoformat() if self.expires_on else None,
+            "expires_on": self.expires_on.isoformat(),
             "active": self.est_active(),
         }
 

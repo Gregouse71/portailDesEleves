@@ -86,7 +86,6 @@ class TestCreationEtGestion:
         assert cle.revoked is False
         assert cle.hash != data["valeur"]          # jamais la valeur en clair
         assert cle.utilisateur_id == deux_a.id
-        assert data["cle"]["expires_on"] is not None
 
     def test_nom_obligatoire(self, app, db_cles):
         _, _un_a, deux_a = db_cles

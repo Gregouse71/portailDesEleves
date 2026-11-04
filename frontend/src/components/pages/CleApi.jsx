@@ -66,10 +66,10 @@ export default function CleApi() {
             {liste.map((cle) => (
                 <tr key={cle.id}>
                     <td>{cle.nom}</td>
-                    <td>{cle.created_at?.slice(0, 10)}</td>
+                    <td>{cle.created_at.slice(0, 10)}</td>
                     <td>{cle.last_used_at?.slice(0, 10) ?? "jamais"}</td>
-                    <td>{cle.use_count ?? 0}</td>
-                    <td>{cle.expires_on?.slice(0, 10)}</td>
+                    <td>{cle.use_count}</td>
+                    <td>{cle.expires_on.slice(0, 10)}</td>
                     <td>{finDeLigne(cle)}</td>
                 </tr>
             ))}
