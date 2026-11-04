@@ -8,6 +8,11 @@ def _utcnow():
     return datetime.now(timezone.utc)
 
 
+def _utc(dt):
+    """La base rend les dates sans fuseau : elles sont en UTC."""
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
 class CleAPI(db.Model):
     __tablename__ = 'cles_api'
 
@@ -25,6 +30,11 @@ class CleAPI(db.Model):
     revoked = db.Column(db.Boolean, default=False)
     expires_on = db.Column(db.DateTime, default=lambda: _utcnow() + timedelta(365))
 
+    def est_active(self):
+        """Une clé sert tant qu'elle n'est ni révoquée ni expirée. Seule règle de validité d'une clé :
+        utiliser_cle, /creer et to_dict la lisent."""
+        return not self.revoked and _utc(self.expires_on) > _utcnow()
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -35,8 +45,7 @@ class CleAPI(db.Model):
             "use_count": self.use_count,
             "revoked": self.revoked,
             "expires_on": self.expires_on.isoformat() if self.expires_on else None,
-            # Même règle que utiliser_cle : une clé expirée n'est plus active
-            "active": not self.revoked and self.expires_on is not None and self.expires_on > datetime.now(tz=None),
+            "active": self.est_active(),
         }
 
 

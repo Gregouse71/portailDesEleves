@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
@@ -34,9 +32,7 @@ def creer_cle_api():
     if not has_permission(current_user, "cle_api"):
         return jsonify({"message": "Les clés API sont disponibles à partir de la 2A."}), 403
     # Une clé expirée ne marche plus : elle ne compte pas parmi les clés actives
-    actives = CleAPI.query.filter_by(utilisateur_id=current_user.id, revoked=False)\
-        .filter(CleAPI.expires_on > datetime.now(tz=None)).count()
-    if actives >= MAX_CLES_ACTIVES:
+    if sum(cle.est_active() for cle in current_user.cles) >= MAX_CLES_ACTIVES:
         return jsonify({"message": f"Tu as déjà {MAX_CLES_ACTIVES} clés actives. Révoque-en une d'abord."}), 400
 
     data = request.get_json()

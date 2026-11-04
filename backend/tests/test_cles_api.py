@@ -1,4 +1,5 @@
-from datetime import datetime
+import time
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -26,6 +27,16 @@ def db_cles(app, db_initialized):
     db_initialized.session.commit()
     yield db_initialized, un_a, deux_a
     db_initialized.session.remove()
+
+
+@pytest.fixture()
+def heure_de_paris(monkeypatch):
+    """Heure locale de Paris, en avance sur l'UTC stocké en base."""
+    monkeypatch.setenv("TZ", "Europe/Paris")
+    time.tzset()
+    yield
+    monkeypatch.undo()
+    time.tzset()
 
 
 def _client_bearer(app, username):
@@ -114,6 +125,16 @@ class TestCreationEtGestion:
         _creer_cle(client)
         cles = client.get('/api/cles/liste').get_json()["cles"]
         assert sorted(c["active"] for c in cles) == [False, False, False, True]
+
+    def test_expiration_comparee_en_utc(self, app, db_cles, heure_de_paris):
+        db_init, _un_a, deux_a = db_cles
+        valeur, empreinte = generer_cle()
+        db_init.session.add(CleAPI(utilisateur=deux_a, nom="encore valable", hash=empreinte,
+                                   expires_on=datetime.now(timezone.utc) + timedelta(minutes=30)))
+        db_init.session.commit()
+
+        r = app.test_client().get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        assert r.status_code == 200
 
     def test_sans_cle_refuse(self, app, db_cles):
         client = app.test_client()
