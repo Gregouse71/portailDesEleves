@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from app.models import Utilisateur
-from app.models.models_cles_api import CleAPI, generer_cle
+from app.models.models_cles_api import CleAPI
 from app.models.models_divers import Permission
 from app.services.services_login import has_permission
 
@@ -88,6 +88,14 @@ class TestCreationEtGestion:
         assert cle.utilisateur_id == deux_a.id
         assert data["cle"]["expires_on"] is not None
 
+    def test_nom_obligatoire(self, app, db_cles):
+        _, _un_a, deux_a = db_cles
+        client = _client_bearer(app, deux_a.nom_utilisateur)
+        for nom in (None, "   ", "x" * 101):
+            r = client.post('/api/cles/creer', json={'nom': nom})
+            assert r.status_code == 400, nom
+        assert CleAPI.query.count() == 0
+
     def test_maximum_trois_cles_actives(self, app, db_cles):
         _, _un_a, deux_a = db_cles
         client = _client_bearer(app, deux_a.nom_utilisateur)
@@ -117,9 +125,9 @@ class TestCreationEtGestion:
     def test_cles_expirees_hors_maximum(self, app, db_cles):
         db_init, _un_a, deux_a = db_cles
         for _ in range(3):
-            _valeur, empreinte = generer_cle()
-            db_init.session.add(CleAPI(utilisateur=deux_a, nom="ancienne", hash=empreinte,
-                                       expires_on=datetime(2020, 1, 1)))
+            cle = CleAPI(deux_a, "ancienne")
+            cle.expires_on = datetime(2020, 1, 1)
+            db_init.session.add(cle)
         db_init.session.commit()
         client = _client_bearer(app, deux_a.nom_utilisateur)
         _creer_cle(client)
@@ -128,12 +136,12 @@ class TestCreationEtGestion:
 
     def test_expiration_comparee_en_utc(self, app, db_cles, heure_de_paris):
         db_init, _un_a, deux_a = db_cles
-        valeur, empreinte = generer_cle()
-        db_init.session.add(CleAPI(utilisateur=deux_a, nom="encore valable", hash=empreinte,
-                                   expires_on=datetime.now(timezone.utc) + timedelta(minutes=30)))
+        cle = CleAPI(deux_a, "encore valable")
+        cle.expires_on = datetime.now(timezone.utc) + timedelta(minutes=30)
+        db_init.session.add(cle)
         db_init.session.commit()
 
-        r = app.test_client().get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        r = app.test_client().get('/api/users/prochains_anniv', headers={"X-API-Key": cle.valeur})
         assert r.status_code == 200
 
     def test_sans_cle_refuse(self, app, db_cles):
@@ -149,8 +157,7 @@ class TestCreationEtGestion:
     def test_audit_utilisation(self, app, db_cles):
         db_init, _un_a, deux_a = db_cles
 
-        valeur, empreinte = generer_cle()
-        cle = CleAPI(utilisateur=deux_a, nom="Cle test", hash=empreinte)
+        cle = CleAPI(deux_a, "Cle test")
         db_init.session.add(cle)
         db_init.session.commit()
 
@@ -158,7 +165,7 @@ class TestCreationEtGestion:
         assert cle1.use_count == 0
 
         client = app.test_client()
-        client.get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        client.get('/api/users/prochains_anniv', headers={"X-API-Key": cle.valeur})
 
         cle2 = CleAPI.query.filter_by(id=cle.id).first()
         assert cle2.use_count == 1
@@ -167,44 +174,42 @@ class TestCreationEtGestion:
     def test_cle_revoquee_refusee(self, app, db_cles):
         db_init, _, deux_a = db_cles
 
-        valeur, empreinte = generer_cle()
-        cle = CleAPI(utilisateur=deux_a, nom="Cle test", hash=empreinte, revoked=True)
+        cle = CleAPI(deux_a, "Cle test")
+        cle.revoked = True
         db_init.session.add(cle)
         db_init.session.commit()
 
         client = app.test_client()
-        r = client.get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        r = client.get('/api/users/prochains_anniv', headers={"X-API-Key": cle.valeur})
         assert r.status_code == 401
 
     def test_cle_route_interdite_refusee(self, app, db_cles):
         db_init, _, deux_a = db_cles
 
-        valeur, empreinte = generer_cle()
-        cle = CleAPI(utilisateur=deux_a, nom="Cle test", hash=empreinte)
+        cle = CleAPI(deux_a, "Cle test")
         db_init.session.add(cle)
         db_init.session.commit()
 
         client = app.test_client()
-        r = client.post('/api/cles/creer', headers={"X-API-Key": valeur})
+        r = client.post('/api/cles/creer', headers={"X-API-Key": cle.valeur})
         assert r.status_code == 401
 
     def test_cle_d_un_jeune_refusee(self, app, db_cles):
         db_init, un_a, _ = db_cles
 
-        valeur, empreinte = generer_cle()
-        cle = CleAPI(utilisateur=un_a, nom="Cle test", hash=empreinte)
+        cle = CleAPI(un_a, "Cle test")
         db_init.session.add(cle)
         db_init.session.commit()
 
-        r = app.test_client().get('/api/users/prochains_anniv', headers={"X-API-Key": valeur})
+        r = app.test_client().get('/api/users/prochains_anniv', headers={"X-API-Key": cle.valeur})
         assert r.status_code == 401
 
 
 def _cle_en_base(db_init, utilisateur):
-    valeur, empreinte = generer_cle()
-    db_init.session.add(CleAPI(utilisateur=utilisateur, nom="Cle test", hash=empreinte))
+    cle = CleAPI(utilisateur, "Cle test")
+    db_init.session.add(cle)
     db_init.session.commit()
-    return valeur
+    return cle.valeur
 
 
 class TestAnnuaire:

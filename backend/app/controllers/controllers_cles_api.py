@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from app import db
 from app.services.services_login import has_permission
-from app.models.models_cles_api import CleAPI, generer_cle
+from app.models.models_cles_api import CleAPI
 from app.services.services_cles_api import revoquer_cle
 from app.utils.decorators import superutilisateur_required
 
@@ -36,15 +36,14 @@ def creer_cle_api():
         return jsonify({"message": f"Tu as déjà {MAX_CLES_ACTIVES} clés actives. Révoque-en une d'abord."}), 400
 
     data = request.get_json()
-    nom = data.get("nom")
-    if nom is None:
-        return jsonify({"message": "La clé doit avoir un nom."}), 400
-    valeur, empreinte = generer_cle()
-    cle = CleAPI(utilisateur_id=current_user.id, nom=nom.strip()[:100], hash=empreinte)
+    try:
+        cle = CleAPI(current_user, data.get("nom"))
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
     db.session.add(cle)
     db.session.commit()
     # La valeur en clair n'est affichée QUE cette fois-ci.
-    return jsonify({"cle": cle.to_dict(), "valeur": valeur}), 201
+    return jsonify({"cle": cle.to_dict(), "valeur": cle.valeur}), 201
 
 
 @controllers_cles.post('/revoquer')

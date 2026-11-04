@@ -129,9 +129,10 @@ export default function CleApi() {
                             placeholder="Nom de la clé"
                             value={nouveauNom}
                             onChange={(e) => setNouveauNom(e.target.value)}
+                            maxLength={100}
                             className="flex-grow-1"
                         />
-                        <Button type="submit" disabled={creation.isPending}
+                        <Button type="submit" disabled={creation.isPending || !nouveauNom.trim()}
                             className="text-nowrap">
                             {creation.isPending ? "Création..." : "Créer une clé"}
                         </Button>

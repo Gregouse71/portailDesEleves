@@ -30,6 +30,19 @@ class CleAPI(db.Model):
     revoked = db.Column(db.Boolean, default=False)
     expires_on = db.Column(db.DateTime, default=lambda: _utcnow() + timedelta(365))
 
+    # Valeur en clair : connue à la création seulement, jamais stockée
+    valeur = None
+
+    def __init__(self, utilisateur, nom):
+        """Crée une clé "pak_..." pour l'utilisateur. La valeur en clair reste dans self.valeur, le temps
+        de la montrer une fois : seule son empreinte est stockée."""
+        if not isinstance(nom, str) or not 1 <= len(nom.strip()) <= 100:
+            raise ValueError("La clé doit avoir un nom de 1 à 100 caractères.")
+        self.utilisateur = utilisateur
+        self.nom = nom.strip()
+        self.valeur = "pak_" + secrets.token_urlsafe(32)
+        self.hash = hash_cle(self.valeur)
+
     def est_active(self):
         """Une clé sert tant qu'elle n'est ni révoquée ni expirée. Seule règle de validité d'une clé :
         utiliser_cle, /creer et to_dict la lisent."""
@@ -47,12 +60,6 @@ class CleAPI(db.Model):
             "expires_on": self.expires_on.isoformat() if self.expires_on else None,
             "active": self.est_active(),
         }
-
-
-# Génère une clé "pak_..." : renvoie (valeur_en_clair, sha256_hex).
-def generer_cle():
-    valeur = "pak_" + secrets.token_urlsafe(32)
-    return valeur, hash_cle(valeur)
 
 
 def hash_cle(valeur):
