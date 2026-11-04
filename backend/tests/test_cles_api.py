@@ -7,8 +7,8 @@ from app.models import Utilisateur
 from app.models.models_cles_api import CleAPI
 from app.services.services_login import has_permission
 
-# Tests de la brique API annuaire : clés personnelles (gate 2A+), endpoint
-# /api/users/annuaire (X-API-Key), champ strict, pagination, audit.
+# Tests des clés d'API personnelles : permission cle_api, création, révocation,
+# authentification par X-API-Key, audit d'utilisation.
 
 
 @pytest.fixture()
@@ -34,14 +34,14 @@ def _creer_cle(client, nom="test"):
     return r.get_json()
 
 
-class TestGateDeuxA:
+class TestPermissionCleApi:
 
     def test_permission_api(self, app, db_cles):
         _, un_a, deux_a = db_cles
         assert has_permission(deux_a, "cle_api")
         assert not has_permission(un_a, "cle_api")
 
-    def test_1a_ne_peut_pas_creer(self, app, db_cles):
+    def test_sans_permission_ne_peut_pas_creer(self, app, db_cles):
         _, un_a, _deux_a = db_cles
         client = _client_bearer(app, un_a.nom_utilisateur)
         r = client.post('/api/cles/creer', json={'nom': 'interdite'})
@@ -58,7 +58,7 @@ class TestGateDeuxA:
 
 class TestCreationEtGestion:
 
-    def test_creation_2a(self, app, db_cles):
+    def test_creation(self, app, db_cles):
         _, _un_a, deux_a = db_cles
         client = _client_bearer(app, deux_a.nom_utilisateur)
         data = _creer_cle(client, "equipaps prod")
@@ -189,7 +189,7 @@ class TestCreationEtGestion:
         r = client.post('/api/cles/creer', headers={"X-API-Key": cle.valeur})
         assert r.status_code == 401
 
-    def test_cle_d_un_jeune_refusee(self, app, db_cles):
+    def test_cle_sans_permission_refusee(self, app, db_cles):
         db_init, un_a, _ = db_cles
 
         cle = CleAPI(un_a, "Cle test")

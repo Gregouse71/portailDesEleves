@@ -171,7 +171,7 @@ def client_factory_vp_sondaj(client_factory):
 
 @pytest.fixture()
 def db_cles(app, db_initialized):
-    """Un 1A (promo courante) et un 2A (promo - 1), indépendants du calendrier."""
+    """Deux élèves, dont un seul a la permission cle_api."""
     un_a = Utilisateur(nom_utilisateur="22unA", prenom="Une", nom="Premiereannee",
                        promotion=22, email="unA@exemple.com", cycle="ic",
                        mot_de_passe_en_clair="1234")

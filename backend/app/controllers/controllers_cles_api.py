@@ -30,7 +30,7 @@ def lister_cles_api():
 def creer_cle_api():
     """Crée une clé d'api pour l'utilisateur l'utilisateur"""
     if not has_permission(current_user, "cle_api"):
-        return jsonify({"message": "Les clés API sont disponibles à partir de la 2A."}), 403
+        return jsonify({"message": "Tu n'as pas la permission de créer des clés d'API."}), 403
     # Une clé expirée ne marche plus : elle ne compte pas parmi les clés actives
     if sum(cle.est_active() for cle in current_user.cles) >= MAX_CLES_ACTIVES:
         return jsonify({"message": f"Tu as déjà {MAX_CLES_ACTIVES} clés actives. Révoque-en une d'abord."}), 400

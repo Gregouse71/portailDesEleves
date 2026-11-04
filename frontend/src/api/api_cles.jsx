@@ -2,7 +2,7 @@ import { API_BASE_URL, createApiDelete, createApiGet, createApiPost } from "./ba
 
 const CLES_BASE_URL = `${API_BASE_URL}/cles`;
 
-/** Liste SES clés + son éligibilité (2A+ ou non) */
+/** Liste SES clés + son droit d'en créer (permission cle_api) */
 export const listerCles = createApiGet(`${CLES_BASE_URL}/liste`);
 
 /** Crée une clé : la valeur en clair n'est retournée qu'une seule fois */
