@@ -2,6 +2,7 @@ import pytest
 
 from app import create_app, db, scheduler
 from app.models import Utilisateur, Sondage, GlobalVariable
+from app.models.models_divers import Permission
 from config import Config
 
 @pytest.fixture()
@@ -167,3 +168,19 @@ def client_factory_vp_sondaj(client_factory):
         assert response.status_code == 200
         return vp_sondaj
     return _create_client_vp_sondaj
+
+@pytest.fixture()
+def db_cles(app, db_initialized):
+    """Un 1A (promo courante) et un 2A (promo - 1), indépendants du calendrier."""
+    un_a = Utilisateur(nom_utilisateur="22unA", prenom="Une", nom="Premiereannee",
+                       promotion=22, email="unA@exemple.com", cycle="ic",
+                       mot_de_passe_en_clair="1234")
+    deux_a = Utilisateur(nom_utilisateur="21deuxA", prenom="Deux", nom="Deuxiemeannee",
+                         promotion=21, email="deuxA@exemple.com", cycle="ic",
+                         mot_de_passe_en_clair="1234")
+    perm = Permission(deux_a, "cle_api")
+
+    db_initialized.session.add_all([un_a, deux_a, perm])
+    db_initialized.session.commit()
+    yield db_initialized, un_a, deux_a
+    db_initialized.session.remove()

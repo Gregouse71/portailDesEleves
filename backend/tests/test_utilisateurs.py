@@ -1,5 +1,6 @@
 import pytest
 
+from app.models.models_cles_api import CleAPI
 from app.models.models_utilisateurs import Utilisateur
 
 infos = {
@@ -73,3 +74,47 @@ class TestAnniversaires:
             r = client.get('/api/users/prochains_anniv?debut=2026-05-02&fin=2026-05-08')
             assert r.status_code == 200
             assert len(r.get_json()) == 0
+
+
+def _cle_en_base(db_init, utilisateur):
+    cle = CleAPI(utilisateur, "Cle test")
+    db_init.session.add(cle)
+    db_init.session.commit()
+    return cle.valeur
+
+
+class TestAnnuaire:
+
+    def test_sans_cle_refuse(self, app, db_cles):
+        r = app.test_client().get('/api/users/annuaire')
+        assert r.status_code == 401
+
+    def test_cle_sans_permission_refusee(self, app, db_cles):
+        db_init, un_a, _ = db_cles
+        valeur = _cle_en_base(db_init, un_a)
+        r = app.test_client().get('/api/users/annuaire', headers={"X-API-Key": valeur})
+        assert r.status_code == 401
+
+    def test_champs_stricts(self, app, db_cles):
+        db_init, _, deux_a = db_cles
+        valeur = _cle_en_base(db_init, deux_a)
+        r = app.test_client().get('/api/users/annuaire', headers={"X-API-Key": valeur})
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["total"] == 2
+        assert {u["nom_utilisateur"] for u in data["items"]} == {"22unA", "21deuxA"}
+        assert set(data["items"][0]) == {"id", "nom_utilisateur", "prenom", "nom", "email",
+                                         "promotion", "cycle", "photo"}
+
+    def test_pagination_et_filtres(self, app, db_cles):
+        db_init, un_a, deux_a = db_cles
+        valeur = _cle_en_base(db_init, deux_a)
+        client = app.test_client()
+        r = client.get('/api/users/annuaire?per_page=1&page=2', headers={"X-API-Key": valeur})
+        data = r.get_json()
+        assert (data["pages"], data["page"], len(data["items"])) == (2, 2, 1)
+        assert data["items"][0]["id"] == max(un_a.id, deux_a.id)
+        r = client.get('/api/users/annuaire?promo=21', headers={"X-API-Key": valeur})
+        assert [u["nom_utilisateur"] for u in r.get_json()["items"]] == ["21deuxA"]
+        r = client.get(f'/api/users/annuaire?depuis_id={min(un_a.id, deux_a.id)}', headers={"X-API-Key": valeur})
+        assert [u["id"] for u in r.get_json()["items"]] == [max(un_a.id, deux_a.id)]
