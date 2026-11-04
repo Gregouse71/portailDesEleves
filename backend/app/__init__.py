@@ -18,6 +18,9 @@ from .extensions import db, limiter, login_manager, socketio, scheduler, cors, s
 from app.services.services_cles_api import utiliser_cle
 
 import os
+# Authlib refuse l'OAuth sur une requête qu'il voit en HTTP. Le HTTPS s'arrête au
+# reverse proxy, qui transmet au backend en HTTP (config.example.py) : cette
+# variable lève ce refus.
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
