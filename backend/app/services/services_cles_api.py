@@ -17,14 +17,20 @@ def utiliser_cle(valeur):
             return cle_api.utilisateur
 
 
-def revoquer_cle(id, valeur, user_id):
-    if id is not None:
-        cle = CleAPI.query.filter_by(id=id, utilisateur_id=user_id).first()
-    else:
-        cle = CleAPI.query.filter_by(hash=hash_cle(valeur), utilisateur_id=user_id).first()
+def revoquer_cle(id, user_id):
+    """Révoque la clé `id` de l'utilisateur `user_id`. L'id suffit à désigner une clé : sa valeur n'est
+    jamais demandée. Renvoie None si la clé n'est pas à lui."""
+    cle = CleAPI.query.filter_by(id=id, utilisateur_id=user_id).first()
 
     if cle is not None:
         cle.revoked = True
         db.session.commit()
 
     return cle
+
+
+def revoquer_cles_utilisateur(user_id):
+    """Révoque toutes les clés de l'utilisateur `user_id`"""
+    for cle in CleAPI.query.filter_by(utilisateur_id=user_id, revoked=False).all():
+        cle.revoked = True
+    db.session.commit()

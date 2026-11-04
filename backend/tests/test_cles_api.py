@@ -108,7 +108,7 @@ class TestCreationEtGestion:
         client_2a = _client_bearer(app, deux_a.nom_utilisateur)
         data = _creer_cle(client_2a)
         client_1a = _client_bearer(app, un_a.nom_utilisateur)
-        r = client_1a.post(f"/api/cles/revoquer/{data['cle']['id']}")
+        r = client_1a.delete(f"/api/cles/revoquer/{data['cle']['id']}")
         assert r.status_code == 404
         assert CleAPI.query.first().revoked is False
 
@@ -116,10 +116,24 @@ class TestCreationEtGestion:
         _, _un_a, deux_a = db_cles
         client = _client_bearer(app, deux_a.nom_utilisateur)
         data = _creer_cle(client)
-        r = client.post('/api/cles/revoquer', json={'id': data['cle']['id']})
+        r = client.delete(f"/api/cles/revoquer/{data['cle']['id']}")
         assert r.status_code == 200
         cles = client.get('/api/cles/liste').get_json()["cles"]
         assert [(c["revoked"], c["active"]) for c in cles] == [(True, False)]
+
+    def test_superutilisateur_revoque_toutes_les_cles(self, app, db_cles):
+        db_init, _un_a, deux_a = db_cles
+        admin = Utilisateur(nom_utilisateur="admin", prenom="Admin", nom="Nom", promotion=23,
+                            email="admin@example.com", cycle="de", mot_de_passe_en_clair="1234")
+        admin.est_superutilisateur = True
+        db_init.session.add_all([admin, CleAPI(deux_a, "une"), CleAPI(deux_a, "deux")])
+        db_init.session.commit()
+        r = _client_bearer(app, deux_a.nom_utilisateur).delete(f"/api/cles/revoquer_tout/{deux_a.id}")
+        assert r.status_code == 403
+        client = _client_bearer(app, admin.nom_utilisateur)
+        r = client.delete(f"/api/cles/revoquer_tout/{deux_a.id}")
+        assert r.status_code == 200
+        assert [c.revoked for c in CleAPI.query.all()] == [True, True]
 
     def test_cles_expirees_hors_maximum(self, app, db_cles):
         db_init, _un_a, deux_a = db_cles

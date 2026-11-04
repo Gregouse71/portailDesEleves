@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from app import db
 from app.services.services_login import has_permission
 from app.models.models_cles_api import CleAPI
-from app.services.services_cles_api import revoquer_cle
+from app.services.services_cles_api import revoquer_cle, revoquer_cles_utilisateur
 from app.utils.decorators import superutilisateur_required
 
 # Gestion des clés API personnelles (session portail). Les routes qui acceptent
@@ -46,15 +46,12 @@ def creer_cle_api():
     return jsonify({"cle": cle.to_dict(), "valeur": cle.valeur}), 201
 
 
-@controllers_cles.post('/revoquer')
+@controllers_cles.delete('/revoquer/<int:id>')
 @login_required
-def revoquer_cle_api():
-    """Révoque la clé d'api de l'utilisateur"""
-    data = request.json
-    id = data.get("id")
-    valeur = data.get("valeur")
-
-    cle = revoquer_cle(id, valeur, current_user.id)
+def revoquer_cle_api(id):
+    """Révoque une clé de l'utilisateur, désignée par son id seul : sa valeur n'est jamais demandée.
+    Une clé révoquée reste dans l'historique."""
+    cle = revoquer_cle(id, current_user.id)
 
     if cle is None:
         return jsonify({"message": "Clé introuvable."}), 404
@@ -62,18 +59,10 @@ def revoquer_cle_api():
     return jsonify({"cle": cle.to_dict()}), 200
 
 
-@controllers_cles.get('/revoquer_tout')
+@controllers_cles.delete('/revoquer_tout/<int:utilisateur_id>')
 @login_required
 @superutilisateur_required
-def revoquer_cle_utilisateur():
-    """Révoque toutes les clés d'api de l'utilisateur"""
-    user_id = request.args.get("id")
-    if user_id is None:
-        return jsonify({"message": "Aucun ID d'utilisateur reçu"}), 400
-
-    actives = CleAPI.query.filter_by(utilisateur_id=user_id, revoked=False).all()
-    for cle in actives:
-        cle.revoked = True
-    db.session.commit()
-
-    return jsonify({"message": "Clés supprimées avec succès"}), 200
+def revoquer_cle_utilisateur(utilisateur_id):
+    """Révoque toutes les clés d'api d'un utilisateur"""
+    revoquer_cles_utilisateur(utilisateur_id)
+    return jsonify({"message": "Clés révoquées avec succès"}), 200

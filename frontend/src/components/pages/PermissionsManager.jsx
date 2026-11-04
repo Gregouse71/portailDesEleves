@@ -38,7 +38,7 @@ function UserRow({ user, onEdit }) {
                 <DropdownEditer list={[
                     { can: true, onClick: () => onEdit(user), name: <><PencilSquare className="me-1" />Éditer</> },
                     "divider",
-                    { can: true, onClick: () => revoquerToutesCle({ id: user.id }), name: "Révoquer les clé d'API" },
+                    { can: true, onClick: () => revoquerToutesCle(user.id), name: "Révoquer les clé d'API" },
                 ]}
                 />
             </td>
