@@ -18,10 +18,12 @@ from .extensions import db, limiter, login_manager, socketio, scheduler, cors, s
 from app.services.services_cles_api import utiliser_cle
 
 import os
-# Authlib refuse l'OAuth sur une requête qu'il voit en HTTP. Le HTTPS s'arrête au
-# reverse proxy, qui transmet au backend en HTTP (config.example.py) : cette
-# variable lève ce refus.
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
+# Authlib refuse l'OAuth sur une requête qu'il voit en HTTP.
+# Cette variable permet de tester en local sans HTTPS.
+if Config.AUTHLIB_INSECURE_TRANSPORT:
+    os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
+else:
+    os.environ.pop('AUTHLIB_INSECURE_TRANSPORT', None)
 
 
 def create_app(config: Config):
@@ -40,7 +42,7 @@ def create_app(config: Config):
     cors.init_app(app)
     # session.init_app(app)
     # Trust more proxy headers for better URL detection (proto, host, etc.)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
     from .models import Utilisateur  # Importer la classe Utilisateur
 
