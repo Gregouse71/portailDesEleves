@@ -1,14 +1,26 @@
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 import redis
 
 from app import db
-from app.models import JeuxPartie
+from app.models import JeuxPartie, Utilisateur
 
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 def leaderboard(jeu: str):
-    top = JeuxPartie.query.filter_by(jeu=jeu, terminee=True).order_by(desc(JeuxPartie.score)).limit(10)
-    return [{"nom": f"{p.utilisateur.prenom} {p.utilisateur.nom}", "id": p.utilisateur.id, "score": p.score} for p in top]
+    top = (
+        db.session.query(
+            Utilisateur,
+            func.max(JeuxPartie.score).label("score")
+        )
+        .join(JeuxPartie.utilisateur)
+        .filter(JeuxPartie.jeu == jeu, JeuxPartie.terminee == True)
+        .group_by(Utilisateur.id)
+        .order_by(desc("score"))
+        .limit(10)
+        .all()
+    )
+
+    return [{"nom": f"{u.prenom} {u.nom}", "id": u.id, "score": score} for u, score in top]
 
 def new_game(jeu, user):
     """

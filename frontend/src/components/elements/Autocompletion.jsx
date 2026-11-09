@@ -35,10 +35,10 @@ function libelleUtilisateur(u) {
 /**
  * Champ d'autocomplétion basé sur POST /users/search (searchUsers).
  */
-function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale = '', longueurMin = 2 }) {
+function Autocomplete({ onSelect, filter=() => true, placeholder, valeurInitiale = '', longueurMin = 2, estSelectionInitial = false }) {
     const [texte, setTexte] = useState(valeurInitiale);
     const [ouvert, setOuvert] = useState(false);
-    const [estSelection, setEstSelection] = useState(false); 
+    const [estSelection, setEstSelection] = useState(estSelectionInitial); 
     const conteneurRef = useRef(null);
     const texteDebounced = useDebounce(texte);
 

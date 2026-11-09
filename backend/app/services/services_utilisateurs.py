@@ -203,7 +203,7 @@ def obtenir_famille(utilisateur: Utilisateur) -> dict:
     Construit l'arbre généalogique complet (ascendants + descendants) d'un utilisateur. 
     Renvoie :
     {
-        "noeuds": [{"id", "nom_utilisateur", "promotion"}, ...],
+        "noeuds": [{"id", "nom_utilisateur", "promotion", "nom complet"}, ...],
         "liens":  [{"source": marrain_id, "cible": fillot_id, "type": "marrainage"}, ...]
     }
     """
@@ -217,6 +217,7 @@ def obtenir_famille(utilisateur: Utilisateur) -> dict:
             "id": u.id,
             "nom_utilisateur": u.nom_utilisateur,
             "promotion": int(u.promotion),
+            "nom_complet": u.prenom + " " + u.nom
         }
  
     ajouter_noeud(utilisateur)
@@ -304,6 +305,7 @@ def obtenir_chemin(utilisateur1: Utilisateur, utilisateur2: Utilisateur) -> dict
             "id": utilisateur1.id,
             "nom_utilisateur": utilisateur1.nom_utilisateur,
             "promotion": int(utilisateur1.promotion),
+            "nom_complet": utilisateur1.prenom + " " + utilisateur1.nom
         }], "liens": []}
  
     graphe = _construire_graphe_combine()
@@ -459,7 +461,10 @@ def obtenir_chemin(utilisateur1: Utilisateur, utilisateur2: Utilisateur) -> dict
         explorer_fillots(utilisateur)
  
     noeuds = [
-        {"id": u.id, "nom_utilisateur": u.nom_utilisateur, "promotion": int(u.promotion)}
+        {
+            "id": u.id, "nom_utilisateur": u.nom_utilisateur,
+            "promotion": int(u.promotion),
+            "nom_complet": u.prenom + " " + u.nom}
         for u in noeuds_par_id.values()
     ]
  

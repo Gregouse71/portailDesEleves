@@ -111,7 +111,7 @@ def sondage_suivant():
     # On gré un sémaphore avec pour nom lock_key, qui reste valide 300 secondes après sa création,
     # et qui ne bloque pas le thread qui essaie de le créer :
     # Si on essaie de l'acquérir et qu'on ne peut pas, la fonction s'arrête
-    lock = redis.lock.Lock(redis_client, lock_key, timeout=300, blocking=False)
+    lock = redis.lock.Lock(redis_client, lock_key, timeout=900, blocking=False)
     if not lock.acquire():
         print("Could not acquire lock for task_sondage, another worker is already running it.")
         return

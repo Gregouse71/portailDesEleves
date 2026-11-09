@@ -48,6 +48,19 @@ export default function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Pas de rebond quand on arrive en haut de la page, mais rafraichissement
+  // sur mobile quand le scroll commence en haut
+  useEffect(() => {
+    const handleTouchStart = () => {
+      const atTop = window.scrollY <= 0;
+      document.documentElement.style.overscrollBehaviorY = atTop ? 'auto' : 'none';
+      document.body.style.overscrollBehaviorY = atTop ? 'auto' : 'none';
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    return () => window.removeEventListener('touchstart', handleTouchStart);
+  }, []);
+
   return (
     <LayoutProvider theme={theme} setTheme={setTheme}>
       <Suspense fallback={<div className="d-flex justify-content-center mt-5"><Spinner animation="border" variant="primary" /></div>}>
