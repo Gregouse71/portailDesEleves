@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 :root {
   --bs-body-font-family: 'Arial', system-ui, -apple-system, sans-serif;
   font-size: 0.95rem;
@@ -55,4 +56,38 @@
   --danger-color: #e63946;
   --danger-color-hover: #f05a67;
   --danger-text-color: #fff;
+}
+[data-theme='matrix'] {
+  --background-color: #0b100d;
+  --text-color: #e8f5ea;
+  --header-bg: #080d09;
+  --header-text: #e8f5ea;
+  --primary-color: #4ade80;
+  --primary-color-hover: #86efac;
+  --secondary-color: #a9bcae;
+  --button-secondary-bg: #536b59;
+  --button-primary-bg: #4ade80;
+  --icon-filter-color: brightness(0) invert(1);
+  --icon-filter-color-inverted: brightness(0);
+  --text-color-secondary: #a9bcae;
+  --card-bg: #152019;
+  --card-hover-bg: #1c3022;
+  --card-border-color: #345640;
+  --card-header-bg: rgba(74, 222, 128, 0.06);
+  --global-white: #0b100d;
+  --global-light-gray: #1c3022;
+  --global-dark-gray: #d0e5d4;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --success-color: #28a745;
+  --success-text-color: #ffffff;
+  --danger-color: #dc3545;
+  --danger-color-hover: #b02a37;
+  --danger-text-color: #ffffff;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+
 }
