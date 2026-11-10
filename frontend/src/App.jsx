@@ -35,19 +35,30 @@ const EchecsPartie = lazy(() => import("./components/pages/Jeux/Echecs/EchecsPar
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
+    // Matrix theme start and end dates
+    const matrixStart = new Date('2026-11-30T00:00:00');
+    const matrixEnd = new Date('2026-12-15T23:59:59');
+    const now = new Date();
+
+    if (now >= matrixStart && now <= matrixEnd) {
+      return 'matrix';
+    }
+
     const storedTheme = localStorage.getItem('theme');
-    //if (storedTheme) {
-      //return storedTheme;
-    //}
+    if (storedTheme === 'light' || storedTheme === 'dark') {
+      return storedTheme;
+    }
     // If no theme is stored, check for system preference
-    //const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    //return prefersDark ? 'dark' : 'light';
-    return 'matrix';
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  
   });
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    if (theme !== 'matrix') {
+      localStorage.setItem('theme', theme);
+    }
   }, [theme]);
 
   return (
