@@ -6,6 +6,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Spinner } from "react-bootstrap";
 import { ProtectedRoute } from "./Protected";
 import { Layout, LayoutProvider } from "./layouts/Layout";
+import MatrixRain from "./components/MatrixRain";
 
 // Lazy imports
 const PublicationsRecentes = lazy(() => import("./pages/Home/PublicationsRecentes"));
@@ -64,6 +65,8 @@ export default function App() {
   }, []);
 
   return (
+    <>
+    {theme === 'matrix' && <MatrixRain />}
     <LayoutProvider theme={theme} setTheme={setTheme}>
       <Suspense fallback={<div className="d-flex justify-content-center mt-5"><Spinner animation="border" variant="primary" /></div>}>
         <Routes>
@@ -110,5 +113,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </LayoutProvider>
+    </>
   );
 }

@@ -91,3 +91,21 @@
   text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 
 }
+
+/* Pluie de code en arrière-plan */
+body[data-theme='matrix'] .matrix-rain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* Contenu du site au-dessus de la pluie */
+body[data-theme='matrix'] #root {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
