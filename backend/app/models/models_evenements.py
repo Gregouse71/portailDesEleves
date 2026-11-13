@@ -21,7 +21,8 @@ class Evenement (db.Model):
     # ID de l'évènement
     id = db.Column(db.Integer, primary_key=True)
     # ID de l'association organisatrice
-    id_association = db.Column(db.Integer, nullable=True)
+    id_association = db.Column(db.Integer, db.ForeignKey('associations_association.id'), nullable=True)
+    association = db.relationship('Association', back_populates='evenements')
     nom_association = db.Column(db.String(1000), nullable=False)
     # elements ajoutés à la création de l'évènement - Modifiables par les membres de l'association
     nom = db.Column(db.String(1000), nullable=False)

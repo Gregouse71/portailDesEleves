@@ -7,6 +7,7 @@ class Livre(db.Model):
     __tablename__ = "bibliotheque_livres"
     id = db.Column(db.Integer, primary_key=True)
     asso_id = db.Column(db.Integer, db.ForeignKey("associations_association.id"), nullable=False, index=True)
+    association = db.relationship("Association", backref=db.backref("livres", lazy="dynamic"))
 
     auteur = db.Column(db.String(500))
     edition = db.Column(db.String(255))
