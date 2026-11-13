@@ -1,4 +1,6 @@
-import { SOIFGUARD_BASE_URL, createApiPost, createApiDelete, createApiPut, createApiGet } from "./base";
+import { API_BASE_URL, createApiPost, createApiDelete, createApiPut, createApiGet } from "./base";
+
+const SOIFGUARD_BASE_URL = `${API_BASE_URL}/soifguard`;
 
 /** Fait l'encaissement pour une des assos
  * args :
