@@ -8,30 +8,30 @@ import { ProtectedRoute } from "./Protected";
 import { Layout, LayoutProvider } from "./layouts/Layout";
 
 // Lazy imports
-const PublicationsRecentes = lazy(() => import("./components/pages/PublicationsRecentes"));
-const Soifguard = lazy(() => import("./layouts/Soifguard"));
-const Admin = lazy(() => import("./layouts/Admin"));
-const ListeAssos = lazy(() => import("./components/pages/AssoListe"));
-const Home = lazy(() => import("./components/pages/Home"));
-const Asso = lazy(() => import("./components/pages/PageAsso"));
-const Trombi = lazy(() => import("./components/pages/Trombi"));
-const TrombiPromo = lazy(() => import("./components/pages/TrombiPromo"));
-const PlanningAsso = lazy(() => import("./components/pages/PlanningAsso"));
-const ProposerSondage = lazy(() => import("./components/pages/Sondage/ProposerSondage"));
-const GererSondages = lazy(() => import("./components/pages/Sondage/GererSondages"));
-const HistoriqueSondages = lazy(() => import("./components/pages/Sondage/HistoriqueSondages"));
-const PageUtilisateur = lazy(() => import("./components/pages/PageUtilisateur"));
-const AjouterAssociation = lazy(() => import("./components/pages/AssoAjouter"));
-const FormulaireConnexion = lazy(() => import("./components/FormulaireConnexion"));
-const Search = lazy(() => import("./components/pages/Search"));
-const ClassementSondage = lazy(() => import("./components/pages/Sondage/ClassementSondage"));
-const Vendomes = lazy(() => import("./components/pages/Vendomes"));
-const Palums = lazy(() => import("./components/pages/Palums"));
-const NouveauMDP = lazy(() => import("./components/NouveauMDP"));
-const MDPoublie = lazy(() => import("./components/MDPoublie"));
-const Jeux2048 = lazy(() => import("./components/pages/Jeux/2048"));
-const EchecsLobby  = lazy(() => import("./components/pages/Jeux/Echecs/EchecsLobby"));
-const EchecsPartie = lazy(() => import("./components/pages/Jeux/Echecs/EchecsPartie"));
+const PublicationsRecentes = lazy(() => import("./pages/Home/PublicationsRecentes"));
+const Soifguard = lazy(() => import("./pages/Soifguard/Soifguard"));
+const Admin = lazy(() => import("./pages/Admin/Admin"));
+const ListeAssos = lazy(() => import("./pages/PageAsso/AssoListe"));
+const Home = lazy(() => import("./pages/Home/Home"));
+const Asso = lazy(() => import("./pages/PageAsso/PageAsso"));
+const Trombi = lazy(() => import("./pages/Trombi/Trombi"));
+const TrombiPromo = lazy(() => import("./pages/Trombi/TrombiPromo"));
+const PlanningAsso = lazy(() => import("./pages/Home/PlanningAsso"));
+const ProposerSondage = lazy(() => import("./pages/Sondage/ProposerSondage"));
+const HistoriqueSondages = lazy(() => import("./pages/Sondage/HistoriqueSondages"));
+const GererSondages = lazy(() => import("./pages/Sondage/GererSondages"));
+const PageUtilisateur = lazy(() => import("./pages/PageUtilisateur/PageUtilisateur"));
+const AjouterAssociation = lazy(() => import("./pages/PageAsso/AssoAjouter"));
+const FormulaireConnexion = lazy(() => import("./pages/Auth/FormulaireConnexion"));
+const Search = lazy(() => import("./pages/Home/Search"));
+const ClassementSondage = lazy(() => import("./pages/Sondage/ClassementSondage"));
+const Vendomes = lazy(() => import("./pages/Home/Vendomes"));
+const Palums = lazy(() => import("./pages/Home/Palums"));
+const NouveauMDP = lazy(() => import("./pages/Auth/NouveauMDP"));
+const MDPoublie = lazy(() => import("./pages/Auth/MDPoublie"));
+const Jeux2048 = lazy(() => import("./pages/Jeux/2048"));
+const EchecsLobby = lazy(() => import("./pages/Jeux/Echecs/EchecsLobby"));
+const EchecsPartie = lazy(() => import("./pages/Jeux/Echecs/EchecsPartie"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {

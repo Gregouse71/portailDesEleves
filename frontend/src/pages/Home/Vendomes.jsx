@@ -1,0 +1,54 @@
+import { useQuery } from '@tanstack/react-query';
+import { Container, Alert } from 'react-bootstrap';
+import { getPublicationsByTag } from '../../api/api_publications';
+import PostCard from '../../components/elements/PostCard';
+import { useState } from 'react';
+import PageRandom from '../../components/templates/PageRandom';
+
+function Vendomes() {
+    const [page, setPage] = useState(1);
+    const [query, setQuery] = useState("");
+    const [perPage, setPerPage] = useState(() => {
+        const storedPer = localStorage.getItem('vendomesPerPage');
+        if (storedPer) {
+            return storedPer;
+        }
+        return 30;
+    });
+
+    const { data = { publications: [], count: 0 }, isLoading, isError } = useQuery({
+        queryKey: ['vendomes', perPage, page, query],
+        queryFn: () => getPublicationsByTag("Vendôme", page, perPage, query),
+        placeholderData: (previousData) => previousData,
+    });
+    const { publications, totalPages } = data;
+
+    if (isError) {
+        return (
+            <Container className="py-4">
+                <Alert variant="danger">
+                    Erreur lors du chargement des publications.
+                </Alert>
+            </Container>
+        );
+    }
+
+    return <PageRandom
+        titre="Vendômes"
+        sousTitre="Retrouvez ici tous les Vendômes"
+        isLoading={isLoading}
+        avecPagination={true} paramsPag={{ totalPages, setPage, page }}
+        avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); }, onClear: () => setQuery("") }}
+        avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
+        contenu={
+            <div className="cards-grid">
+                {publications.filter(p => p.fichier_joint).map((post, index) => {
+                    if (publications.length === index + 1) {
+                        return <div key={post.id}><PostCard post={post} /></div>
+                    }
+                    return <div key={post.id}><PostCard post={post} /></div>
+                })}
+            </div>} />;
+}
+
+export default Vendomes;
