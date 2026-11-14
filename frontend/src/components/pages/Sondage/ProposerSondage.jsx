@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { requeteProposerSondage } from './../../../api/api_sondages';  // Importation de la fonction proposerSondage
 import { useNavigate } from "react-router-dom";
-import { Container, Form, Button, InputGroup, Alert } from "react-bootstrap";
+import { Form, Button, InputGroup, Alert } from "react-bootstrap";
+import PageRandom from '../../templates/PageRandom';
 
 function ProposerSondage() {
   const navigate = useNavigate();
@@ -55,9 +56,9 @@ function ProposerSondage() {
     setReponses(updatedReponses);
   };
 
-  return (
-    <Container className="mt-4">
-      <h1>Proposer un sondage</h1>
+  return <PageRandom
+    titre="Proposer un sondage"
+    contenu={<>
       <Form onSubmit={handleSubmit} className="mt-3">
         <Form.Group className="mb-3">
           <Form.Label>Question</Form.Label>
@@ -108,9 +109,8 @@ function ProposerSondage() {
       <Button variant="secondary" onClick={() => navigate("/")}>
         Retour
       </Button>
-    </Container>
-
-  );
+    </>}
+  />;
 }
 
 export default ProposerSondage;

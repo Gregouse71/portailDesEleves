@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Container, Row, Col, Card, Button, Collapse } from "react-bootstrap";
+import { Row, Col, Card, Button, Collapse } from "react-bootstrap";
 import { obtenirScoresSondages } from "../../../api/api_sondages";
 import { useQuery } from "@tanstack/react-query";
 import 'katex/dist/katex.min.css';
@@ -7,6 +7,7 @@ import { BlockMath } from 'react-katex';
 import { useProtected } from "../../../Protected";
 import '../../../assets/styles/classement_sondage.scss';
 import Leaderboard from "../../elements/Leaderboard";
+import PageRandom from '../../templates/PageRandom';
 
 const RECENT_FORMULA = 'S_r = 100\\sum_{i=1}^N V_i \\exp\\left(-\\frac{\\text{age}}{14 \\text{jours}}\\right) \\quad \\quad \\text{où } V_i = \\begin{cases} 1 \\quad \\text{si le vote est gagnant}\\\\ -1 \\quad \\text{sinon} \\end{cases}';
 const GLOBAL_FORMULA = 'S_g = \\frac{100}{1 + \\frac{z_\\alpha^2}{N}} \\left[\\hat X + \\frac{z_\\alpha^2}{2N} - z_\\alpha\\sqrt{\\frac{\\hat X(1-\\hat X) + \\frac{z_\\alpha^2}{4N}}{N}}\\right] \\text{où } \\begin{cases}\\hat{X} = \\frac{1}{N} \\sum_{i \\in {\\text{gagants}} \\;\\text{ou}\\; i \\in {\\text{perdants}}} V_i\\\\z_\\alpha = 1.96\\end{cases}';
@@ -49,10 +50,10 @@ export default function ClassementSondage() {
         return items;
     }, [max_votes, contexte_votes]);
 
-    return (
-        <Container className="mt-4">
-            <h1 className="mb-4 text-left">Classement des Sondages</h1>
-
+    return <PageRandom
+        titre="Classement des Sondages"
+        isLoading={isLoading}
+        contenu={<>
             <Card className="mb-3 p-3 classement-bg-light">
                 <Card.Title>Mes Scores Actuels</Card.Title>
 
@@ -166,6 +167,6 @@ export default function ClassementSondage() {
                         isLoading={isLoading} />
                 </Col>
             </Row>
-        </Container>
-    );
+        </>}
+    />;
 }
