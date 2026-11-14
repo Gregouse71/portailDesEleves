@@ -1,17 +1,11 @@
-import { API_BASE_URL, handleResponse } from "./base";
+import { API_BASE_URL, createApiGet } from "./base";
 
-export async function obtenirPlusDeMessages(last_sent) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/chat/more/${last_sent}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    })
-    return handleResponse(res);
-  } catch (erreur) {
-    console.error("Erreur réseau :", erreur)
-    throw erreur;
-  }
-}
+const CHAT_BASE_URL = `${API_BASE_URL}/chat`;
+
+/**
+ * Récupère les messages du chat antérieurs à une date donnée.
+ * @param {string|number} last_sent - Timestamp ou date du dernier message chargé (ou 0 pour les plus récents)
+ * @returns {Promise<Array<object>>} Liste des messages
+ */
+export const obtenirPlusDeMessages = (last_sent) =>
+    createApiGet(`${CHAT_BASE_URL}/more`)({}, last_sent);

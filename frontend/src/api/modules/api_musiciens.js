@@ -1,5 +1,3 @@
-// frontend/src/api/modules/api_musiciens.jsx
-
 import { API_BASE_URL, createApiGet } from "../base";
 
 const MUSICIENS_BASE_URL = `${API_BASE_URL}/musiciens`;
@@ -12,4 +10,3 @@ const MUSICIENS_BASE_URL = `${API_BASE_URL}/musiciens`;
 export const getMusiciens = (params = {}) => {
     return createApiGet(MUSICIENS_BASE_URL)(params);
 };
-

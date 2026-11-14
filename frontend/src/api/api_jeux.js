@@ -2,29 +2,27 @@ import { API_BASE_URL, createApiGet, createApiPost, createApiPut } from "./base"
 
 const JEUX_BASE_URL = `${API_BASE_URL}/jeux`;
 
-/** Nouvelle partie
- * args :
- *  - data : json contenant un champ *jeu*
- * 
- * renvoie :
- *  la partie créée
+/**
+ * Crée une nouvelle partie d'un mini-jeu.
+ * @param {{ jeu: string }} data - Objet contenant le nom du jeu
+ * @returns {Promise<object>} La partie créée
  */
-export const nouvellePartie = createApiPost(`${JEUX_BASE_URL}/partie`)
+export const nouvellePartie = createApiPost(`${JEUX_BASE_URL}/partie`);
 
-/** Nouvelle partie
- * args :
- *  - data : json contenant un champ *jeu*
+/**
+ * Récupère la partie en cours de l'utilisateur connecté pour un jeu donné.
+ * @param {{ jeu: string }} data - Paramètres de requête contenant le nom du jeu
  */
-export const partieEnCours = createApiGet(`${JEUX_BASE_URL}/partie`)
+export const partieEnCours = createApiGet(`${JEUX_BASE_URL}/partie`);
 
-/** Faire un coup
- * args :
- *  - data : json contenant le coup à faire
+/**
+ * Joue un coup dans la partie en cours.
+ * @param {object} data - Données du coup à effectuer
  */
-export const faireUnCoup = createApiPut(`${JEUX_BASE_URL}/partie`)
+export const faireUnCoup = createApiPut(`${JEUX_BASE_URL}/partie`);
 
-/** Leaderboard
- * args :
- *  - jeu : le nom du jeu
+/**
+ * Récupère le classement général d'un mini-jeu.
+ * @param {{ jeu: string }} data - Paramètres de requête contenant le nom du jeu
  */
-export const leaderboardJeu = createApiGet(`${JEUX_BASE_URL}/leaderboard`)
+export const leaderboardJeu = createApiGet(`${JEUX_BASE_URL}/leaderboard`);

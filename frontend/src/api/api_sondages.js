@@ -1,85 +1,57 @@
-import { API_BASE_URL } from "./base";
+import { API_BASE_URL, createApiGet, createApiPost } from "./base";
 
-export async function obtenirSondageDuJour() {
-  const res = await fetch(`${API_BASE_URL}/sondages/sondage_du_jour`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data; // au format JSON 
-}
+const SONDAGES_BASE_URL = `${API_BASE_URL}/sondages`;
 
-export async function obtenirSondagesEnAttente() {
-  const res = await fetch(`${API_BASE_URL}/sondages/obtenir_sondages_en_attente`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data; // au format JSON 
-}
+/**
+ * Récupère le sondage du jour (question, réponses, votes) ainsi que le résultat du sondage d'hier.
+ */
+export const obtenirSondageDuJour = () =>
+    createApiGet(`${SONDAGES_BASE_URL}/sondage_du_jour`)();
 
-export async function validerSondage(id_sondage) {
-  await fetch(`${API_BASE_URL}/sondages/route_valider_sondage/${id_sondage}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include"
-  });
-}
+/**
+ * Récupère la liste des sondages en attente de validation et le nombre de sondages à venir.
+ * @returns {Promise<{ sondages: Array<object>, a_venir: number }>}
+ */
+export const obtenirSondagesEnAttente = () =>
+    createApiGet(`${SONDAGES_BASE_URL}/obtenir_sondages_en_attente`)();
 
-export async function supprimerSondage(id_sondage) {
-  await fetch(`${API_BASE_URL}/sondages/route_supprimer_sondage/${id_sondage}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include"
-  });
-}
+/**
+ * Valide un sondage proposé en attente (réservé au VP Sondaj).
+ * @param {number} id_sondage - ID du sondage à valider
+ */
+export const validerSondage = (id_sondage) =>
+    createApiPost(`${SONDAGES_BASE_URL}/route_valider_sondage`)({}, id_sondage);
 
-export async function sondageSuivant() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/sondages/sondage_suivant`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include"
-    });
+/**
+ * Supprime un sondage proposé en attente (réservé au VP Sondaj).
+ * @param {number} id_sondage - ID du sondage à supprimer
+ */
+export const supprimerSondage = (id_sondage) =>
+    createApiPost(`${SONDAGES_BASE_URL}/route_supprimer_sondage`)({}, id_sondage);
 
-    if (!response.ok) { // Si la réponse n'est pas 200, c'est une erreur
-      const errorData = await response.json();
-      console.error("Erreur :", errorData.message);
-      // Afficher l'erreur dans l'interface utilisateur si nécessaire
-      alert(`Erreur : ${errorData.message}`);
-    }
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    // Afficher l'erreur dans l'interface utilisateur si nécessaire
-    alert(`Erreur réseau : ${error.message}`);
-  }
-}
+/**
+ * Passe immédiatement au sondage suivant (réservé au VP Sondaj).
+ */
+export const sondageSuivant = () =>
+    createApiPost(`${SONDAGES_BASE_URL}/sondage_suivant`)({});
 
-export async function voterSondage(id_vote) {
-  await fetch(`${API_BASE_URL}/sondages/voter_sondage/${id_vote}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include"
-  });
-}
+/**
+ * Enregistre le vote de l'utilisateur connecté pour le sondage du jour.
+ * @param {number} id_vote - Indice de la réponse choisie
+ */
+export const voterSondage = (id_vote) =>
+    createApiPost(`${SONDAGES_BASE_URL}/voter_sondage`)({}, id_vote);
 
-export async function requeteProposerSondage(question, reponses) {
-  const res = await fetch(`${API_BASE_URL}/sondages/proposer_sondage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // Si tu utilises des cookies de session
-    body: JSON.stringify({ question, reponses })
-  });
-
-  const data = await res.json(); // Récupère la réponse JSON de l'API
-  return data;
-}
-
-export async function obtenirScoresSondages() {
-  const res = await fetch(`${API_BASE_URL}/sondages/scores`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data; // au format JSON 
-}
+/**
+ * Soumet une proposition de nouveau sondage.
+ * @param {string} question - Intitulé de la question
+ * @param {Array<string>} reponses - Liste de 2 à 4 réponses possibles
+ * @returns {Promise<{ etat: boolean, message: string }>}
+ */
+export const requeteProposerSondage = async (question, reponses) => {
+    const data = await createApiPost(`${SONDAGES_BASE_URL}/proposer_sondage`)({ question, reponses });
+    return data || { etat: false, message: "Erreur lors de la création du sondage." };
+};
 
 export async function obtenirHistoriqueSondages({ page = 1, parPage = 10, dateDebut, dateFin, q } = {}) {
   const params = new URLSearchParams({ page, par_page: parPage });
@@ -94,3 +66,9 @@ export async function obtenirHistoriqueSondages({ page = 1, parPage = 10, dateDe
   }
   return res.json();
 }
+
+/**
+ * Récupère les classements et statistiques des sondages.
+ */
+export const obtenirScoresSondages = () =>
+    createApiGet(`${SONDAGES_BASE_URL}/scores`)();

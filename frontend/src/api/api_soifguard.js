@@ -1,102 +1,102 @@
-import { API_BASE_URL, createApiPost, createApiDelete, createApiPut, createApiGet } from "./base";
+import { SOIFGUARD_BASE_URL, createApiPost, createApiDelete, createApiPut, createApiGet } from "./base";
 
-const SOIFGUARD_BASE_URL = `${API_BASE_URL}/soifguard`;
-
-/** Fait l'encaissement pour une des assos
- * args :
- *  - data : { id_utilisateur, somme }
- *  - asso : "octo" ou "biero"
+/**
+ * Encaisse une consommation pour un utilisateur auprès d'Octo ou du Biero.
+ * @param {{ id_utilisateur: number, id_conso: number }} data
+ * @param {"octo"|"biero"} asso - Association concernée
  */
-export const encaisserAsso = createApiPost(`${SOIFGUARD_BASE_URL}/encaisser`)
+export const encaisserAsso = createApiPost(`${SOIFGUARD_BASE_URL}/encaisser`);
 
-/** Ajoute de l'argent sur un compte
- * args :
- *  - data : { id_utilisateur, somme }
- *  - asso : "octo" ou "biero"
+/**
+ * Crédite le solde d'un utilisateur pour Octo ou le Biero.
+ * @param {{ id_utilisateur: number, somme: number|string }} data
+ * @param {"octo"|"biero"} asso - Association concernée
  */
-export const crediterAsso = createApiPost(`${SOIFGUARD_BASE_URL}/crediter`)
+export const crediterAsso = createApiPost(`${SOIFGUARD_BASE_URL}/crediter`);
 
-/** Ajoute de l'argent sur un compte
- * args :
- *  - data : { maximum }
- *  - asso : "octo" ou "biero"
+/**
+ * Fixe le plafond de dette maximale autorisée pour Octo ou le Biero.
+ * @param {{ maximum: number }} data
+ * @param {"octo"|"biero"} asso - Association concernée
  */
-export const fixerDetteMax = createApiPost(`${SOIFGUARD_BASE_URL}/fixer_negatif_maximum`)
+export const fixerDetteMax = createApiPost(`${SOIFGUARD_BASE_URL}/fixer_negatif_maximum`);
 
-/** Creation d'une consommation
- * args :
- *  - data : { nom_conso, prix, prix_cotisant, asso : "octo" ou "biero" }
+/**
+ * Crée une nouvelle consommation (boisson/article) dans Soifguard.
+ * @param {{ nom_conso: string, prix: number, prix_cotisant: number|null, asso: "octo"|"biero" }} data
  */
-export const ajouterConso = createApiPost(`${SOIFGUARD_BASE_URL}/conso`)
+export const ajouterConso = createApiPost(`${SOIFGUARD_BASE_URL}/conso`);
 
-/** Suppression d'une consommation
- * args :
- *  - id : id a supprimer
+/**
+ * Supprime une consommation de Soifguard.
+ * @param {number} id - ID de la consommation à supprimer
  */
-export const supprimerConso = createApiDelete(`${SOIFGUARD_BASE_URL}/conso`)
+export const supprimerConso = createApiDelete(`${SOIFGUARD_BASE_URL}/conso`);
 
-/** Modification d'une consommation
- * args :
- *  - data : { nom_conso, prix, prix_cotisant }
- *  - id : id de la conso
+/**
+ * Modifie les informations ou tarifs d'une consommation existante.
+ * @param {{ nom_conso: string, prix: number, prix_cotisant: number|null }} data
+ * @param {number} id - ID de la consommation
  */
-export const modifierConso = createApiPut(`${SOIFGUARD_BASE_URL}/conso`)
+export const modifierConso = createApiPut(`${SOIFGUARD_BASE_URL}/conso`);
 
-/** Recupere la liste des consos
+/**
+ * Récupère la liste des consommations disponibles pour Octo et Biero.
  */
-export const getListeConsos = createApiGet(`${SOIFGUARD_BASE_URL}/liste_consos`)
+export const getListeConsos = createApiGet(`${SOIFGUARD_BASE_URL}/liste_consos`);
 
-/** Modification de la cotiz
- * args :
- *  - data : { asso }
- *  - id : id de l'utilisateur
+/**
+ * Bascule le statut de cotisant d'un utilisateur pour Octo ou le Biero.
+ * @param {{ asso: "octo"|"biero" }} data
+ * @param {number} id - ID de l'utilisateur
  */
-export const toggleCotisation = createApiPut(`${SOIFGUARD_BASE_URL}/toggle_cotisation`)
+export const toggleCotisation = createApiPut(`${SOIFGUARD_BASE_URL}/toggle_cotisation`);
 
-export async function obtenirDetteMaxi(asso) {
-  const res = await fetch(`${SOIFGUARD_BASE_URL}/get_negatif_max/${asso}`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data;
-}
-
-/** Liste des dernières opérations
- * args :
- *  - data : { asso : "octo" ou "biero", offset, limit }
+/**
+ * Récupère le plafond de dette maximale autorisée pour une association ("octo" ou "biero").
+ * @param {"octo"|"biero"} asso - Association concernée
  */
-export const listeOperations = createApiPost(`${SOIFGUARD_BASE_URL}/operations`)
+export const obtenirDetteMaxi = (asso) =>
+    createApiGet(`${SOIFGUARD_BASE_URL}/get_negatif_max`)({}, asso);
 
+/**
+ * Récupère la liste paginée des dernières opérations Soifguard.
+ * @param {{ asso: "octo"|"biero", page?: number, per?: number, query?: string }} data
+ */
+export const listeOperations = createApiPost(`${SOIFGUARD_BASE_URL}/operations`);
 
-/** Récupère la liste des permissions, avec pagination
- * args :
- *  - { per_page, page, query, asso }
+/**
+ * Récupère la liste paginée des permissions Soifguard.
+ * @param {{ per_page?: number, page?: number, query?: string, asso: "octo"|"biero" }} params
  */
 export const getPermissionsSoifguard = createApiGet(`${SOIFGUARD_BASE_URL}/permissions`);
 
-/** Supprime la permission
- * args :
- *  - id : id de la perm à supprimer
+/**
+ * Supprime une permission Soifguard.
+ * @param {number} id - ID de la permission à supprimer
  */
 export const deletePermissionsSoifguard = createApiDelete(`${SOIFGUARD_BASE_URL}/permissions`);
 
-/** Supprime la permission
- * args :
- *  - { user_id, permission }
+/**
+ * Ajoute une permission Soifguard à un utilisateur.
+ * @param {{ user_id: number, permission: string }} data
  */
 export const addPermissionsSoifguard = createApiPost(`${SOIFGUARD_BASE_URL}/permissions`);
 
-/** Cherche les utilisateurs pour les denières opérations
- * @param \{ limit = 10, categorie } : nombre d'utilisateurs à renvoyer
+/**
+ * Récupère les derniers utilisateurs ayant effectué une opération Soifguard.
+ * @param {{ limit?: number, asso: "octo"|"biero" }} params
  */
 export const derniersUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/derniers`);
 
-/** Cherche la liste des utliisateurs selon les critères de filtre
- * @param \{ page, perPage, query }
+/**
+ * Récupère la liste paginée et triée des utilisateurs et leurs soldes Soifguard.
+ * @param {{ page?: number, perPage?: number, asso: "octo"|"biero", query?: string, orderBy?: string, orderAsc?: boolean }} params
  */
 export const listeUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/liste`);
 
-/** Exporte la liste des utilisateurs au format CSV
- * @param \{ asso, query, orderBy, orderAsc }
+/**
+ * Exporte la liste des soldes utilisateurs au format CSV.
+ * @param {{ asso: "octo"|"biero", query?: string, orderBy?: string, orderAsc?: boolean }} params
  */
 export const exportListeUtilisateurs = createApiGet(`${SOIFGUARD_BASE_URL}/liste/export`, true);

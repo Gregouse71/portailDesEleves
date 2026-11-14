@@ -1,322 +1,232 @@
-import { API_BASE_URL, createApiDelete, createApiGet, createApiPatch, createApiPost, createApiPut, handleResponse } from "./base";
+import {
+    API_BASE_URL,
+    createApiDelete,
+    createApiGet,
+    createApiPatch,
+    createApiPost,
+    createApiPostFormData,
+    createApiPut,
+} from "./base";
 
 const ASSOCIATIONS_BASE_URL = `${API_BASE_URL}/associations`;
 
-/** Obtenir les photos d'une asso
- * args :
- *  - user_id : id de l'utilisateur
- * 
- * renvoie :
- *  - la liste des photos de l'asso
+/**
+ * Obtient la liste des médias d'une association.
+ * @param {object} data - Paramètres de requête (vide `{}`)
+ * @param {number} asso_id - ID de l'association
  */
-export const obtenirPhotosAsso = createApiGet(`${ASSOCIATIONS_BASE_URL}/content`)
+export const obtenirPhotosAsso = createApiGet(`${ASSOCIATIONS_BASE_URL}/content`);
 
-/** Supprimer un media
- * 
+/**
+ * Supprime un média d'une association.
+ * @param {number} association_id - ID de l'association
+ * @param {number} media_id - ID du média à supprimer
  */
-export const supprimerPhotoAsso = createApiDelete(`${ASSOCIATIONS_BASE_URL}/content`)
+export const supprimerPhotoAsso = createApiDelete(`${ASSOCIATIONS_BASE_URL}/content`);
 
-/** Renommer un media
- * 
+/**
+ * Renomme un média d'une association.
+ * @param {{ name: string }} data - Nouveau nom du média
+ * @param {number} association_id - ID de l'association
+ * @param {number} mandat_id - ID du mandat
+ * @param {number} media_id - ID du média
  */
-export const renommerPhotoAsso = createApiPut(`${ASSOCIATIONS_BASE_URL}/content`)
+export const renommerPhotoAsso = createApiPut(`${ASSOCIATIONS_BASE_URL}/content`);
 
-/** Charge le mandat
- * args :
- * - id : l'id du mandat
+/**
+ * Charge les détails d'un mandat (membres, médias, logo, bannière).
+ * @param {object} data - Paramètres de requête (vide `{}`)
+ * @param {number} mandat_id - ID du mandat
  */
-export const chargerMandat = createApiGet(`${ASSOCIATIONS_BASE_URL}/mandat`)
+export const chargerMandat = createApiGet(`${ASSOCIATIONS_BASE_URL}/mandat`);
 
-/** Ajoute un lien vidéo aux medias de l'utilisateur
- * 
- * args :
- * - { url } : l'url du lien
- * - association_id: l'id de l'asso
- * - mandat_id: l'id du mandat
+/**
+ * Ajoute un lien vidéo externe aux médias d'un mandat d'association.
+ * @param {{ url: string }} data - URL de la vidéo
+ * @param {number} association_id - ID de l'association
+ * @param {number} mandat_id - ID du mandat
  */
-export const ajouterLienVideoAsso = createApiPost(`${ASSOCIATIONS_BASE_URL}/add_content`)
+export const ajouterLienVideoAsso = createApiPost(`${ASSOCIATIONS_BASE_URL}/add_content`);
 
+/**
+ * Crée une nouvelle association.
+ * @param {string} nom - Nom de l'association
+ * @param {string} description - Description HTML de l'association
+ * @param {string} type_association - Type d'association (ex: "Club BDE", "Asso Loi 1901")
+ * @param {number|string} ordre_importance - Ordre d'affichage
+ * @param {boolean} a_cacher_aux_nouveaux - Si l'association doit être masquée aux élèves non baptisés
+ * @returns {Promise<{ success: boolean, message?: string }>}
+ */
+export const ajouterAsso = async (nom, description, type_association, ordre_importance, a_cacher_aux_nouveaux) => {
+    try {
+        const data = await createApiPost(`${ASSOCIATIONS_BASE_URL}/route_creer_asso`)({
+            nom,
+            description,
+            type_association,
+            ordre_importance,
+            a_cacher_aux_nouveaux,
+        });
+        if (!data) {
+            return { success: false, message: "Erreur lors de l'ajout de l'association" };
+        }
+        return { success: true, message: data.message };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+};
 
-export async function ajouterAsso(nom, description, type_association, ordre_importance, a_cacher_aux_nouveaux) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/associations/route_creer_asso`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
+/**
+ * Modifie la description d'une association.
+ * @param {number} asso_id - ID de l'association
+ * @param {string} new_desc - Nouvelle description HTML
+ */
+export const modifierDescriptionAsso = (asso_id, new_desc) =>
+    createApiPatch(`${ASSOCIATIONS_BASE_URL}/${asso_id}/editer_description`)({ new_desc });
+
+/**
+ * Modifie l'ordre d'importance (priorité d'affichage) d'une association.
+ * @param {number} asso_id - ID de l'association
+ * @param {number} ordre_importance - Nouvel ordre d'importance
+ */
+export const modifierOrdreImportanceAsso = (asso_id, ordre_importance) =>
+    createApiPatch(`${ASSOCIATIONS_BASE_URL}/${asso_id}/modifier_ordre_importance`)({ ordre_importance });
+
+/**
+ * Modifie le nom d'une association.
+ * @param {number} asso_id - ID de l'association
+ * @param {string} nom - Nouveau nom
+ */
+export const modifierNomAsso = (asso_id, nom) =>
+    createApiPatch(`${ASSOCIATIONS_BASE_URL}/${asso_id}/modifier_nom`)({ nom });
+
+/**
+ * Ajoute un utilisateur comme membre d'un mandat d'association.
+ * @param {number} associationId - ID de l'association
+ * @param {number} mandatId - ID du mandat
+ * @param {number} membreId - ID de l'utilisateur à ajouter
+ */
+export const ajouterMembre = (associationId, mandatId, membreId) =>
+    createApiPost(`${ASSOCIATIONS_BASE_URL}/${associationId}/ajouter_membre/${mandatId}/${membreId}`)({});
+
+/**
+ * Crée un nouveau mandat pour une association.
+ * @param {number} associationId - ID de l'association
+ * @param {string} nom - Nom du mandat
+ * @param {number} position - Position d'affichage du mandat
+ */
+export const ajouterMandat = (associationId, nom, position) =>
+    createApiPost(`${ASSOCIATIONS_BASE_URL}/${associationId}/ajouter_mandat/${nom}`)({ position });
+
+/**
+ * Modifie les informations d'un mandat d'association.
+ * @param {number} associationId - ID de l'association
+ * @param {number} mandatId - ID du mandat
+ * @param {string} nom - Nouveau nom du mandat
+ * @param {number} pos - Nouvelle position d'affichage
+ * @param {boolean} actuel - Indique s'il s'agit du mandat actuel
+ */
+export const modifierMandat = (associationId, mandatId, nom, pos, actuel) =>
+    createApiPatch(`${ASSOCIATIONS_BASE_URL}/${associationId}/modifier_mandat/${mandatId}`)({
         nom,
-        description,
-        type_association,
-        ordre_importance,
-        a_cacher_aux_nouveaux,
-      }),
+        position: pos,
+        actuel,
     });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Erreur lors de l'ajout de l'association");
-    }
-    return { success: true, message: data.message };
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    return { success: false, message: error.message };
-  }
-}
 
-export async function modifierDescriptionAsso(asso_id, new_desc) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/editer_description`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ new_desc })
-    });
-    return handleResponse(res);
-  } catch (error) {
-    console.error("Erreur lors de la modification de la description : ", error);
-    throw error;
-  }
-}
-
-export async function modifierOrdreImportanceAsso(asso_id, ordre_importance) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_ordre_importance`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ ordre_importance })
-    });
-    return handleResponse(res);
-  } catch (error) {
-    console.error("Erreur lors de la modification de l'ordre d'importance : ", error);
-    throw error;
-  }
-}
-
-export async function modifierNomAsso(asso_id, nom) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_nom`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ nom })
-    });
-    return handleResponse(res);
-  } catch (error) {
-    console.error("Erreur lors de la modification du nom : ", error);
-    throw error;
-  }
-}
-
-export async function ajouterMembre(associationId, mandatId, membreId) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_membre/${mandatId}/${membreId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include"
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
-
-export async function ajouterMandat(associationId, nom, position) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/ajouter_mandat/${nom}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ position })
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
-
-export async function modifierMandat(associationId, mandatId, nom, pos, actuel) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/modifier_mandat/${mandatId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ "nom": nom, "position": pos, "actuel": actuel })
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
-
-export async function supprimerMandat(associationId, mandatId) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/supprimer_mandat/${mandatId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include"
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
-
-
-export async function retirerMembre(associationId, mandatId, membreId) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${associationId}/retirer_membre/${mandatId}/${membreId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include"
-    })
-    return handleResponse(res);
-  }
-  catch (error) {
-    console.error("Erreur réseau :", error);
-    throw error;
-  }
-}
-
-/** Modifie les paramètre du membre dans le mandat
- * - role : nouveau nom de role
- * - position : nouvelle position
+/**
+ * Supprime un mandat d'une association.
+ * @param {number} associationId - ID de l'association
+ * @param {number} mandatId - ID du mandat à supprimer
  */
-export const modifierMembreAsso = createApiPatch(`${ASSOCIATIONS_BASE_URL}/modifier_membre`)
+export const supprimerMandat = (associationId, mandatId) =>
+    createApiPost(`${ASSOCIATIONS_BASE_URL}/${associationId}/supprimer_mandat/${mandatId}`)({});
 
+/**
+ * Retire un membre d'un mandat d'association.
+ * @param {number} associationId - ID de l'association
+ * @param {number} mandatId - ID du mandat
+ * @param {number} membreId - ID de l'utilisateur à retirer
+ */
+export const retirerMembre = (associationId, mandatId, membreId) =>
+    createApiDelete(`${ASSOCIATIONS_BASE_URL}/${associationId}/retirer_membre/${mandatId}/${membreId}`)();
 
-export async function ajouterContenuAsso(associationId, mandatId, file) {
-  try {
+/**
+ * Modifie le rôle, la position ou le statut admin d'un membre dans un mandat.
+ * @param {{ role: string, position: number|string, admin: boolean }} data - Nouveaux paramètres du membre
+ * @param {number} association_id - ID de l'association
+ * @param {number} mandat_id - ID du mandat
+ * @param {number} membre_id - ID du membre
+ */
+export const modifierMembreAsso = createApiPatch(`${ASSOCIATIONS_BASE_URL}/modifier_membre`);
+
+/**
+ * Téléverse un fichier média (image) dans un mandat d'association.
+ * @param {number} associationId - ID de l'association
+ * @param {number} mandatId - ID du mandat
+ * @param {File} file - Fichier à téléverser
+ */
+export const ajouterContenuAsso = async (associationId, mandatId, file) => {
     const formData = new FormData();
     formData.append("file", file);
+    const data = await createApiPostFormData(`${ASSOCIATIONS_BASE_URL}/add_content`)(formData, associationId, mandatId);
+    return data
+        ? { success: true, message: data.message, fileName: data.file_name }
+        : { success: false, message: "Erreur lors du téléversement du fichier" };
+};
 
-    const response = await fetch(`${API_BASE_URL}/associations/add_content/${associationId}/${mandatId}`, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-      },
-      credentials: "include",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Erreur lors du téléversement du fichier");
-    }
-    return { success: true, message: data.message, fileName: data.file_name };
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    return { success: false, message: error.message };
-  }
-}
-
-export async function uploadLogoBanniereAsso(associationId, type, file, mandatId = null) {
-  try {
+/**
+ * Téléverse et définit directement un nouveau logo ou une nouvelle bannière pour une association (ou un mandat).
+ * @param {number} associationId - ID de l'association
+ * @param {"logo"|"banniere"} type - Type d'image à modifier
+ * @param {File} file - Fichier image
+ * @param {number|null} [mandatId=null] - ID du mandat cible (ou mandat actuel par défaut)
+ */
+export const uploadLogoBanniereAsso = async (associationId, type, file, mandatId = null) => {
     const formData = new FormData();
     formData.append("file", file);
+    const params = mandatId ? [type, mandatId] : [type];
+    const data = await createApiPostFormData(`${ASSOCIATIONS_BASE_URL}/${associationId}/upload_logo_banniere`)(formData, ...params);
+    return data
+        ? { success: true, message: data.message, fileName: data.file_name }
+        : { success: false, message: "Erreur lors du téléversement du fichier" };
+};
 
-    const url = mandatId
-      ? `${API_BASE_URL}/associations/${associationId}/upload_logo_banniere/${type}/${mandatId}`
-      : `${API_BASE_URL}/associations/${associationId}/upload_logo_banniere/${type}`;
+/**
+ * Change le logo ou la bannière d'un mandat à partir d'un média existant (ou 0 pour retirer).
+ * @param {number} asso_id - ID de l'association
+ * @param {"logo"|"banniere"} photo_type - Type d'image ("logo" ou "banniere")
+ * @param {number} mandat_id - ID du mandat
+ * @param {number} new_id - ID du média (ou 0 pour retirer)
+ */
+export const changerPhotoAsso = (asso_id, photo_type, mandat_id, new_id) =>
+    createApiPost(`${ASSOCIATIONS_BASE_URL}/${asso_id}/modifier_logo_banniere/${photo_type}/${mandat_id}/${new_id}`)({});
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-      },
-      credentials: "include",
-      body: formData,
-    });
+/**
+ * Vérifie les droits et l'appartenance de l'utilisateur connecté vis-à-vis d'une association.
+ * @param {number} asso_id - ID de l'association
+ * @returns {Promise<{ is_membre: boolean, autorise: boolean, is_actuel: boolean, user_mandats: number[], cotisant: boolean, admin: boolean }>}
+ */
+export const estUtilisateurDansAsso = (asso_id) =>
+    createApiGet(`${ASSOCIATIONS_BASE_URL}/route_est_membre_de_asso`)({}, asso_id);
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Erreur lors du téléversement du fichier");
-    }
-    return { success: true, message: data.message, fileName: data.file_name };
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-    return { success: false, message: error.message };
-  }
-}
+/**
+ * Charge les informations détaillées d'une association.
+ * @param {number} asso_id - ID de l'association
+ */
+export const chargerAsso = (asso_id) =>
+    createApiGet(`${ASSOCIATIONS_BASE_URL}`)({}, asso_id);
 
-export async function changerPhotoAsso(asso_id, photo_type, mandat_id, new_id) {
-  try {
-    await fetch(`${API_BASE_URL}/associations/${asso_id}/modifier_logo_banniere/${photo_type}/${mandat_id}/${new_id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-  } catch (error) {
-    console.error("Erreur lors du changement de photo :", error);
-    throw error;
-  }
-}
+/**
+ * Modifie les modules d'une asso
+ * @param {number} asso_id - ID de l'association
+ * @param {{ modules: list }} - Modules disponibles pour l'asso
+ */
+export const editerModulesAsso = (asso_id, modules) =>
+    createApiPatch(`${ASSOCIATIONS_BASE_URL}/${asso_id}/editer_modules`)({ modules });
 
-export async function estUtilisateurDansAsso(asso_id) {
-  // renvoie True aussi pour le superutilisateur
-  const res = await fetch(`${API_BASE_URL}/associations/route_est_membre_de_asso/${asso_id}`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data;
-}
 
-export async function chargerAsso(asso_id) {
-  const res = await fetch(`${API_BASE_URL}/associations/${asso_id}`,
-    { credentials: "include" }
-  );
-  const data = await res.json();
-  return data;
-}
-
-export async function chargerListeAssos() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/assos`,
-      { credentials: "include" }
-    );
-    return handleResponse(res);
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-  }
-}
-
-export async function editerModulesAsso(asso_id, modules) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/editer_modules`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ modules })
-    });
-    return handleResponse(res);
-  } catch (error) {
-    console.error("Erreur lors de la modification des modules : ", error);
-    throw error;
-  }
-}
+/**
+ * Charge la liste de toutes les associations visibles par l'utilisateur connecté.
+ * @returns {Promise<Array<{ id: number, ordre_importance: number, nom: string }>>}
+ */
+export const chargerListeAssos = () =>
+    createApiGet(`${ASSOCIATIONS_BASE_URL}/assos`)();
