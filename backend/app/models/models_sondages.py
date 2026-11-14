@@ -6,11 +6,10 @@ from datetime import date, datetime, timezone
 # LA LOGIQUE DES SONDAGES
 # 
 # Il y a quatre elements de la BDD qui gerent les sondages :
-# - la table 'sondages_en_attente' qui contient tous les sondages non publies : valides et en attente, leurs questions, leurs reponses, 
-# - la table 'anciens_sondages' qui contient tous les sondages parrus, leurs reponses et le vote par reponse
+# - la table 'sondages_sondage' qui contient tous les sondages (parrus, validés ou en attente), leurs reponses et le vote par reponse
 # - la variable globale 'id_sondage_du_jour' qui contient l'id dans 'sondage_en_attente' du sondage actuellement publie
-# - la table 'votes_sondage_du_jour' qui contient les id des utilisateurs votant et leur reponse au sondage du jour     
-# - la table *vote*, qui contient les votes aux sondages
+# - la colonne 'votes_sondage_du_jour' de la table 'utilisateurs_utilisateur' qui contient les id des utilisateurs votant et leur reponse au sondage du jour     
+# - la table *sondages_vote*, qui contient les votes aux sondages
 
 class Sondage(db.Model):
     """

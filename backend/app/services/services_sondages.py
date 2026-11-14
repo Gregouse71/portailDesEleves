@@ -9,7 +9,7 @@ from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import VoteSondage, Sondage
 from app.services.services_global import get_global_var, set_global_var
 from datetime import timedelta, datetime, timezone
-from sqlalchemy import func
+from sqlalchemy import func, or_, cast, String
 
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -296,3 +296,74 @@ def get_rang(nombre_votes):
     return db.session.query(func.count(Utilisateur.id)).filter(
         Utilisateur.nombre_votes > nombre_votes
     ).scalar() + 1
+
+
+def obtenir_historique_sondages(utilisateur_id: int, page: int = 1, par_page: int = 12, date_debut=None, date_fin=None, mot_cle: str | None = None):
+    """
+    Renvoie les anciens sondages (archivés, hors sondage du jour), du plus récent au plus ancien,
+    avec les résultats et le vote de l'utilisateur, de façon paginée.
+    Filtres optionnels : date_debut / date_fin (sur date_publication, inclusives) et mot_cle
+    (cherché dans la question et dans les réponses).
+    """
+    id_du_jour = get_global_var("id_sondage_du_jour")
+
+    query = Sondage.query.filter(Sondage.archive.is_(True))
+    if id_du_jour:
+        query = query.filter(Sondage.id != id_du_jour)
+
+    if date_debut:
+        query = query.filter(Sondage.date_publication >= date_debut)
+    if date_fin:
+        query = query.filter(Sondage.date_publication <= date_fin)
+
+    if mot_cle:
+        mot_cle = mot_cle.strip()
+        echappe = mot_cle.replace("\\", "\\\\").replace("%", r"\%").replace("_", r"\_")
+        motif = f"%{echappe}%"
+        query = query.filter(or_(
+            Sondage.question.ilike(motif, escape="\\"),
+            cast(Sondage.reponses, String).ilike(motif, escape="\\"),
+        ))
+
+    pagination = query.order_by(
+        Sondage.date_publication.desc(), Sondage.id.desc()
+    ).paginate(page=page, per_page=par_page, error_out=False)
+
+    ids = [s.id for s in pagination.items]
+    compteurs = {}
+    mes_votes = {}
+    if ids:
+        lignes = (
+            db.session.query(VoteSondage.sondage_id, VoteSondage.vote, func.count())
+            .filter(VoteSondage.sondage_id.in_(ids))
+            .group_by(VoteSondage.sondage_id, VoteSondage.vote)
+            .all()
+        )
+        for sondage_id, vote, nb in lignes:
+            compteurs.setdefault(sondage_id, {})[vote] = nb
+
+        # Le vote de l'utilisateur courant sur chacun de ces sondages
+        mes_votes = dict(
+            db.session.query(VoteSondage.sondage_id, VoteSondage.vote)
+            .filter(VoteSondage.utilisateur_id == utilisateur_id, VoteSondage.sondage_id.in_(ids))
+            .all()
+        )
+
+    sondages = []
+    for s in pagination.items:
+        par_option = compteurs.get(s.id, {})
+        sondages.append({
+            "id": s.id,
+            "question": s.question,
+            "reponses": s.reponses,
+            "votes": [par_option.get(i, 0) for i in range(len(s.reponses))],
+            "mon_vote": mes_votes.get(s.id),  # None si pas de vote
+            "date_publication": s.date_publication.isoformat() if s.date_publication else None,
+        })
+
+    return {
+        "sondages": sondages,
+        "page": pagination.page,
+        "pages": pagination.pages,
+        "total": pagination.total,
+    }

@@ -118,25 +118,40 @@ export default function BlocSondage() {
                     </div>
                 </Card.Body>
             </>}
-            <Card.Footer className="d-flex justify-content-between">
+            <Card.Footer className={vpSondaj ? "d-flex gap-1" : "d-flex justify-content-between"}>
                 <Button
                     variant="outline-secondary"
+                    className={vpSondaj ? "flex-fill px-0" : ""}
                     onClick={() => navigate("/sondage/proposer")}
                 >
-                    <img src="/assets/icons/plus.svg" alt="proposer un sondage" className="theme-icon" />
+                    <img src="/assets/icons/plus.svg" alt="proposer un sondage" className="theme-icon"
+                        style={vpSondaj ? { width: 20, height: 20 } : undefined} />
                 </Button>
                 <Button
                     variant="outline-secondary"
+                    className={vpSondaj ? "flex-fill px-0" : ""}
                     onClick={() => navigate("/sondage/classement")}
                 >
-                    <img src="/assets/icons/stats.svg" alt="classement" className="theme-icon" />
+                    <img src="/assets/icons/stats.svg" alt="classement" className="theme-icon"
+                        style={vpSondaj ? { width: 20, height: 20 } : undefined} />
+                </Button>
+                <Button
+                    variant="outline-secondary"
+                    className={vpSondaj ? "flex-fill px-0" : ""}
+                    onClick={() => navigate("/sondage/historique")}
+                >
+                    <img src="/assets/icons/history.svg" alt="historique" className="theme-icon"
+                        style={vpSondaj ? { width: 20, height: 20 } : undefined} />
                 </Button>
                 {vpSondaj && <Button
                     variant="outline-secondary"
+                    className={vpSondaj ? "flex-fill px-0" : ""}
                     onClick={() => navigate("/sondage/gerer")}
                 >
-                    <img src="/assets/icons/manage.svg" alt="gestion" className="theme-icon" />
-                </Button>}
+                    <img src="/assets/icons/manage.svg" alt="gestion" className="theme-icon"
+                        style={{ width: 20, height: 20 }} />
+                </Button>
+                }
             </Card.Footer>
         </>} />;
 

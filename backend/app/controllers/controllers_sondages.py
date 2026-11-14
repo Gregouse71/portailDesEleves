@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import func, desc, asc, case
+from datetime import date
 
 from app.utils.decorators import a_permission
-from app.services.services_sondages import obtenir_sondage_du_jour_et_votes, sondage_dhier, creer_vote_sondage_du_jour, ErreurSondage, valider_sondage, supprimer_sondage, proposer_sondage, sondage_suivant, obtenir_sondages_non_valide, get_rang
+from app.services.services_sondages import obtenir_sondage_du_jour_et_votes, sondage_dhier, creer_vote_sondage_du_jour, ErreurSondage, valider_sondage, supprimer_sondage, proposer_sondage, sondage_suivant, obtenir_sondages_non_valide, get_rang, obtenir_historique_sondages
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_sondages import Sondage
 
@@ -39,7 +40,7 @@ def route_sondage_du_jour():
     return jsonify(ret), 200
         
 
-# /!\ ajouter un decorateur pour verifier qu'il y a bien un sodage aujourd'hui   
+# /!\ ajouter un decorateur pour verifier qu'il y a bien un sondage aujourd'hui   
 @controllers_sondages.route('/voter_sondage/<int:vote>', methods=['POST'])
 @login_required
 def route_voter_sondage(vote:int):
@@ -178,3 +179,26 @@ def get_scores_sondages():
         "recent": [[u.to_dict() for u in top_recent], [u.to_dict() for u in top_recent_neg]],
         "global": [[u.to_dict(victoires=True) for u in top_global_con], [u.to_dict(defaites=True) for u in top_global_div]]
     }), 200
+
+
+@controllers_sondages.route("/historique", methods=["GET"])
+@login_required
+def route_historique_sondages():
+    """
+    Historique paginé des anciens sondages, avec filtres (dates, mot-clé).
+    Paramètres : page, par_page, date_debut, date_fin (YYYY-MM-DD), q
+    """
+    try:
+        page = max(request.args.get("page", 1, type=int), 1)
+        par_page = min(max(request.args.get("par_page", 10, type=int), 1), 50)
+        date_debut = date.fromisoformat(request.args["date_debut"]) if request.args.get("date_debut") else None
+        date_fin = date.fromisoformat(request.args["date_fin"]) if request.args.get("date_fin") else None
+    except ValueError:
+        return jsonify({"message": "Paramètres invalides (dates au format YYYY-MM-DD)."}), 400
+
+    mot_cle = request.args.get("q", "").strip() or None
+
+    try:
+        return jsonify(obtenir_historique_sondages(current_user.id, page, par_page, date_debut, date_fin, mot_cle)), 200
+    except Exception as e:
+        return jsonify({"message": f"Erreur lors du chargement de l'historique : {str(e)}"}), 500

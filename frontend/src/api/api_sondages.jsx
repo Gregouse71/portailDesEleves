@@ -80,3 +80,17 @@ export async function obtenirScoresSondages() {
   const data = await res.json();
   return data; // au format JSON 
 }
+
+export async function obtenirHistoriqueSondages({ page = 1, parPage = 10, dateDebut, dateFin, q } = {}) {
+  const params = new URLSearchParams({ page, par_page: parPage });
+  if (dateDebut) params.set("date_debut", dateDebut);
+  if (dateFin) params.set("date_fin", dateFin);
+  if (q) params.set("q", q);
+
+  const res = await fetch(`${API_BASE_URL}/sondages/historique?${params}`, { credentials: "include" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur lors du chargement de l'historique");
+  }
+  return res.json();
+}
