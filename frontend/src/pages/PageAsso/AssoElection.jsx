@@ -284,12 +284,11 @@ export default function AssoElection({ asso_id }) {
         isLoading={isLoading}
         avecBouton={userData.is_superuser}
         onButonClick={() => setIsCreating(true)}
-        contenu={<>
-            {!isLoading && elections.length === 0 && <>
-                Aucune election à afficher.
-            </>}
-            {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}
-            {elections.map(id => <Election key={id} id={id} canModify={userData.is_superuser} isNew={false} asso_id={asso_id} />)}
+    >
+        {!isLoading && elections.length === 0 && <>
+            Aucune election à afficher.
         </>}
-    />;
+        {isCreating && <Election key="-1" canModify={userData.is_superuser} isNew={true} asso_id={asso_id} stopCreating={() => setIsCreating(false)} />}
+        {elections.map(id => <Election key={id} id={id} canModify={userData.is_superuser} isNew={false} asso_id={asso_id} />)}
+    </OngletTemplate>;
 }

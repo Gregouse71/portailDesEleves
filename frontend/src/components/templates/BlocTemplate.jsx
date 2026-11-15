@@ -2,14 +2,14 @@ import { Card } from 'react-bootstrap';
 
 export default function BlocTemplate({
     titre,
-    contenu
+    children
 }) {
 
     return (
         <Card className="bloc-global mb-4">
             <Card.Header as="h5" className="bloc-header">{titre}</Card.Header>
             <Card.Body className='d-flex flex-column'>
-                {contenu}
+                {children}
             </Card.Body>
         </Card>
     );

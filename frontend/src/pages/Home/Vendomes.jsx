@@ -40,7 +40,7 @@ function Vendomes() {
         avecPagination={true} paramsPag={{ totalPages, setPage, page }}
         avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); }, onClear: () => setQuery("") }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
-        contenu={
+    >
             <div className="cards-grid">
                 {publications.filter(p => p.fichier_joint).map((post, index) => {
                     if (publications.length === index + 1) {
@@ -48,7 +48,8 @@ function Vendomes() {
                     }
                     return <div key={post.id}><PostCard post={post} /></div>
                 })}
-            </div>} />;
+            </div>
+    </PageRandom>;
 }
 
 export default Vendomes;

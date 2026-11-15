@@ -184,7 +184,7 @@ export default function BlocChat() {
 
   return <BlocTemplate
     titre="Chat"
-    contenu={<><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-1" onScroll={handleScroll}>
+  ><div ref={messageDisplayRef} id="message-display" className="overflow-auto mb-1" onScroll={handleScroll}>
       {messages.map((msg, idx) => {
         const suite = estSuite(msg, messages[idx - 1]);
         return (
@@ -218,15 +218,14 @@ export default function BlocChat() {
         );
       })}
     </div>
-      <InputGroup >
-        <Form.Control className="chat-input"
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Parle moi !!!"
-        />
-      </InputGroup>
-    </>
-    } />;
+    <InputGroup >
+      <Form.Control className="chat-input"
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        placeholder="Parle moi !!!"
+      />
+    </InputGroup>
+  </BlocTemplate>;
 }

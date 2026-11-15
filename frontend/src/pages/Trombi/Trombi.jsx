@@ -154,7 +154,8 @@ function Trombi() {
         titre="Trombinoscopes"
         sousTitre="Retrouvez ici tous les trombinoscopes"
         isLoading={isLoading}
-        contenu={<TabTemplate
+    >
+        <TabTemplate
             activeKey={getActiveKey()}
             tabs={[
                 {
@@ -193,7 +194,8 @@ function Trombi() {
                     </>
                 },
             ]}
-        />} />;
+        />
+    </PageRandom>;
 }
 
 export default Trombi;

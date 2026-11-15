@@ -104,7 +104,7 @@ function GererSondages() {
         titre="Gestion des sondages en attente"
         sousTitre={`Sondages à venir : ${data.a_venir}`}
         isLoading={isLoading}
-        contenu={<>
+    >
             <div className="mb-4">
                 <Button variant="primary" onClick={() => suivantEtReload()} className="mt-3">Passer au sondage suivant</Button>
                 <Button variant="secondary" onClick={() => navigate("/")} className="mt-3 ms-2">Retour</Button>
@@ -124,8 +124,8 @@ function GererSondages() {
                     ))}
                 </Row>
             )}
-        </>}
-    />;
+
+    </PageRandom>;
 }
 
 export default GererSondages;

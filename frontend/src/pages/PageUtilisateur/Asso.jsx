@@ -100,13 +100,15 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
             titre="Associations"
             avecTooltip={true}
             tooltipContent="Cliquez-glissez les associations pour les réordonner"
-            contenu={renderList(actuel, setActuel, 'actuel')}
-        />
+        >
+            {renderList(actuel, setActuel, 'actuel')}
+        </OngletTemplate >;
         <OngletTemplate
             titre="Associations passées"
             avecTooltip={true}
             tooltipContent="Cliquez-glissez les associations pour les réordonner"
-            contenu={renderList(ancien, setAncien, 'ancien')}
-        />
+        >
+            {renderList(ancien, setAncien, 'ancien')}
+        </OngletTemplate >;
     </>;
 }

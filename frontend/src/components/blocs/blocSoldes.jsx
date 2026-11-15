@@ -17,7 +17,7 @@ export default function BlocSoldes() {
 
     return <BlocTemplate
         titre="Soldes éthylo-associatifs"
-        contenu={<>
+    >
             <Row className='mb-2'>
                 <Col className="d-flex align-items-center">
                     <Image
@@ -54,5 +54,5 @@ export default function BlocSoldes() {
                     <Link to={URL_BIERO} className="see-more-link">alcooliques</Link>
                 </Col>
             </Row>
-        </>} />;
+    </BlocTemplate>;
 }

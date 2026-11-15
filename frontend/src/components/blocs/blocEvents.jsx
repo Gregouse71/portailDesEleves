@@ -56,7 +56,7 @@ export default function BlocEvents() {
                 </Link>
             </span>
         }
-        contenu={<>
+    >
             {Object.keys(eventsByDate).length > 0 ? (
                 Object.keys(eventsByDate).map((key) => (
                     <div key={key} className="mb-2">
@@ -69,5 +69,5 @@ export default function BlocEvents() {
             ) : (
                 <p className="text-muted small mb-2">Aucun événement à venir.</p>
             )}
-        </>} />;
+    </BlocTemplate>;
 }

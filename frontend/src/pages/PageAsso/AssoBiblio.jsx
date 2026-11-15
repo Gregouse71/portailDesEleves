@@ -599,8 +599,9 @@ function OngletGestion({ asso_id, peutGerer }) {
 export default function Bibliotheque({ asso_id, membreData }) {
     const peutGerer = !!membreData?.autorise;
 
-    // Non autorise : uniquement la recherche/consultation
-    const contenu = !peutGerer ?
+    return <OngletTemplate
+        titre="Les livres au prêt"
+    >{!peutGerer ?
         <div className="biblio-container">
             <div className="biblio-content">
                 <OngletGestion asso_id={asso_id} peutGerer={false} />
@@ -618,10 +619,7 @@ export default function Bibliotheque({ asso_id, membreData }) {
                     </Tab>
                 </Tabs>
             </div>
-        </div>
+        </div>}
+    </OngletTemplate >;
 
-    return <OngletTemplate
-        titre="Les livres au prêt"
-        contenu={contenu}
-    />
 }

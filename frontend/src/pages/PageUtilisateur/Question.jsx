@@ -40,7 +40,7 @@ export default function TabQuestions({ id, autoriseAModifier }) {
         }
     });
 
-    if (isLoading) return <Chargement/>
+    if (isLoading) return <Chargement />
 
     const displayData = isGestion ? questionsReponses : questionData;
 
@@ -49,7 +49,8 @@ export default function TabQuestions({ id, autoriseAModifier }) {
         avecDropdown={autoriseAModifier} contenuDropdown={[
             { can: true, onClick: handleToggleGestion, name: "Modifier" },
         ]}
-        contenu={!isGestion ?
+    >
+        {!isGestion ?
             <div className="list-question">
                 {Object.keys(displayData).map(key => {
                     return (<div key={key}><strong>{key.slice(3)}</strong> {displayData[key]}</div>)
@@ -73,5 +74,5 @@ export default function TabQuestions({ id, autoriseAModifier }) {
                 </div>
             </Form>
         }
-    />;
+    </OngletTemplate>;
 }

@@ -267,7 +267,8 @@ function AssoAudio({ asso_id, membreData }) {
         titre="Audios"
         isLoading={isLoading}
         avecBouton={membreData.autorise} onButonClick={() => setShowAddAlbumForm(prev => !prev)}
-        contenu={<div>
+    >
+        <div>
             {showAddAlbumForm && <AddAlbumForm mutation={addAlbumMutation} onCancel={() => setShowAddAlbumForm(false)} />}
 
             <div className="d-flex flex-column gap-3">
@@ -276,8 +277,7 @@ function AssoAudio({ asso_id, membreData }) {
                 ))}
             </div>
         </div>
-        }
-    />
+    </OngletTemplate>;
 }
 
 export default AssoAudio;

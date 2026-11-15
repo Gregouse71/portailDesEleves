@@ -43,29 +43,29 @@ function AssoMembres({ asso_id, membreData }) {
         titre="Les membres"
         isLoading={isLoading}
         avecBouton={membreData.autorise} onButonClick={() => setIsAjoutMandat(!isAjoutMandat)}
-        contenu={<>
-            <div className="mb-3">
-                {isAjoutMandat && (
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>Ajouter un mandat</Card.Title>
-                            <div className="w-100 p-2">
-                                <Form.Group className="mb-2 text-start">
-                                    <Form.Label>Nom du mandat</Form.Label>
-                                    <Form.Control value={nomNouveauMandat} onChange={(e) => setNomNouveauMandat(e.target.value)} />
-                                </Form.Group>
-                                <Button variant="primary" onClick={() => handleNouveauMandat(nomNouveauMandat)} disabled={!nomNouveauMandat}>Ajouter</Button>
-                                <Button variant="secondary" onClick={() => setIsAjoutMandat(false)} className="ms-2">Annuler</Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                )}
-            </div>
+    >
+        <div className="mb-3">
+            {isAjoutMandat && (
+                <Card>
+                    <Card.Body>
+                        <Card.Title>Ajouter un mandat</Card.Title>
+                        <div className="w-100 p-2">
+                            <Form.Group className="mb-2 text-start">
+                                <Form.Label>Nom du mandat</Form.Label>
+                                <Form.Control value={nomNouveauMandat} onChange={(e) => setNomNouveauMandat(e.target.value)} />
+                            </Form.Group>
+                            <Button variant="primary" onClick={() => handleNouveauMandat(nomNouveauMandat)} disabled={!nomNouveauMandat}>Ajouter</Button>
+                            <Button variant="secondary" onClick={() => setIsAjoutMandat(false)} className="ms-2">Annuler</Button>
+                        </div>
+                    </Card.Body>
+                </Card>
+            )}
+        </div>
 
-            {sortedMandats.map((mandat, i) => (
-                <AssoMandat key={i} id={mandat.id} asso={asso} membreData={membreData} />
-            ))}
-        </>} />
+        {sortedMandats.map((mandat, i) => (
+            <AssoMandat key={i} id={mandat.id} asso={asso} membreData={membreData} />
+        ))}
+    </OngletTemplate>;
 }
 
 export default AssoMembres;

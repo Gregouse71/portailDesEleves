@@ -38,7 +38,7 @@ function AssoInfo({ id, membreData }) {
         avecDropdown={membreData.autorise} contenuDropdown={[
             { can: true, onClick: handleToggleEdition, name: "Modifier" },
         ]}
-        contenu={
+    >
             <div>
                 {/*  */}
                 {!isEdition && <div>
@@ -61,7 +61,7 @@ function AssoInfo({ id, membreData }) {
                     </div>
                 </>}
             </div>
-        } />;
+    </OngletTemplate>;
 }
 
 export default AssoInfo;

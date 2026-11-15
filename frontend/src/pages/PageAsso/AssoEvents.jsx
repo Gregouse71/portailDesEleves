@@ -157,7 +157,7 @@ function Event({ id, canModify = false, isNew, asso_id, setIsNewEvent }) {
                 if (newEvent.date_de_fin) {
                     newEvent.date_de_fin = new Date(newEvent.date_de_fin).toISOString();
                 }
-            } 
+            }
 
             if (isNew) await creerNouvelEvenement(newEvent, asso_id);
             else await modifierEvenement(newEvent, event.id_association, event.id);
@@ -332,7 +332,8 @@ export default function AssoEvents({ asso_id, membreData }) {
         titre="Les événements"
         isLoading={isLoading}
         avecBouton={membreData.autorise} onButonClick={() => setIsNewEvent(!isNewEvent)}
-        contenu={<div className="d-flex flex-column gap-3">
+    >
+        <div className="d-flex flex-column gap-3">
             {/* formulaire pour un nouvel événement */}
             {isNewEvent && <Event key={-1} asso_id={asso_id} setIsNewEvent={setIsNewEvent} isNew={true} />}
 
@@ -346,5 +347,5 @@ export default function AssoEvents({ asso_id, membreData }) {
 
             {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}
         </div>
-        } />
+    </OngletTemplate>;
 }

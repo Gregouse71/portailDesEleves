@@ -53,7 +53,7 @@ export default function ClassementSondage() {
     return <PageRandom
         titre="Classement des Sondages"
         isLoading={isLoading}
-        contenu={<>
+    >
             <Card className="mb-3 p-3 classement-bg-light">
                 <Card.Title>Mes Scores Actuels</Card.Title>
 
@@ -167,6 +167,5 @@ export default function ClassementSondage() {
                         isLoading={isLoading} />
                 </Col>
             </Row>
-        </>}
-    />;
+    </PageRandom>;
 }

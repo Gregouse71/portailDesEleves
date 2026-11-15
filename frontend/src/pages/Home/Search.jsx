@@ -19,7 +19,7 @@ export default function Search() {
         titre="Recherche"
         sousTitre={`Résultats de recherche pour "${query}"`}
         isLoading={isLoading}
-        contenu={
+    >
             <div className="search-results-container">
                 {searchResults.length > 0 ? (
                     <ListGroup>
@@ -38,6 +38,6 @@ export default function Search() {
                 ) : (
                     <p>No results found</p>
                 )}
-            </div>}
-    />;
+            </div>
+    </PageRandom>;
 }

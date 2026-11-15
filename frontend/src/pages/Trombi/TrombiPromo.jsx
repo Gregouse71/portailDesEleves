@@ -26,7 +26,7 @@ export default function TrombiPromo() {
     return <PageRandom
         titre={`Promotion ${promo}`}
         avecBoutonRetour destRetour={"/trombi"}
-        contenu={<>
+    >
             <Form className="mb-4">
                 <Row>
                     <Col>
@@ -55,5 +55,5 @@ export default function TrombiPromo() {
             ) : (
                 <p>Aucun cycle sélectionné.</p>
             )}
-        </>} />;
+    </PageRandom>;
 }

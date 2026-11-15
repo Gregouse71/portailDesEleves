@@ -34,8 +34,10 @@ export default function PublicationsRecentes() {
         avecPagination={true} paramsPag={{ totalPages, setPage, page }}
         avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); }, onClear: () => setQuery("") }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
-        contenu={
+    >
+        {
             publications.map(post_id => (
                 <div key={post_id} ><Post postId={post_id} isGestion={false} /></div>
-            ))} />;
+            ))}
+    </PageRandom>;
 }

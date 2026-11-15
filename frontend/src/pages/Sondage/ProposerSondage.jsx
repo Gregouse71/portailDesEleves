@@ -5,100 +5,106 @@ import { Form, Button, InputGroup, Alert } from "react-bootstrap";
 import PageRandom from '../../components/templates/PageRandom';
 
 function ProposerSondage() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  // États pour la question et les réponses
-  const [question, setQuestion] = useState("");
-  const [reponses, setReponses] = useState(["", ""]);
-  const [message, setMessage] = useState(""); // État pour le message de succès ou erreur
+    // États pour la question et les réponses
+    const [question, setQuestion] = useState("");
+    const [reponses, setReponses] = useState(["", ""]);
+    const [message, setMessage] = useState(""); // État pour le message de succès ou erreur
 
-  // Fonction pour gérer la soumission du formulaire
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    // Fonction pour gérer la soumission du formulaire
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    // Vérifie qu'il y a entre 2 et 4 réponses
-    if (reponses.length < 2 || reponses.length > 4) {
-      setMessage("Il faut entre 2 et 4 réponses.");
-      return;
-    }
+        // Vérifie qu'il y a entre 2 et 4 réponses
+        if (reponses.length < 2 || reponses.length > 4) {
+            setMessage("Il faut entre 2 et 4 réponses.");
+            return;
+        }
 
-    // Appel de la fonction proposerSondage du fichier api.js pour soumettre les données
-    const data = await requeteProposerSondage(question, reponses);
-    if (data.etat) {
-      setMessage("Sondage soumis avec succès!");
+        // Appel de la fonction proposerSondage du fichier api.js pour soumettre les données
+        const data = await requeteProposerSondage(question, reponses);
+        if (data.etat) {
+            setMessage("Sondage soumis avec succès!");
 
-      // Réinitialiser les champs du formulaire après soumission réussie
-      setQuestion("");
-      setReponses(["", ""]);
-    } else {
-      setMessage(data.message);
-    }
-  };
+            // Réinitialiser les champs du formulaire après soumission réussie
+            setQuestion("");
+            setReponses(["", ""]);
+        } else {
+            setMessage(data.message);
+        }
+    };
 
-  // Fonction pour ajouter une réponse
-  const addReponse = () => {
-    if (reponses.length < 4) {
-      setReponses([...reponses, ""]);
-    }
-  };
-  // Fonction pour supprimer une réponse
-  const removeReponse = (index) => {
-    if (reponses.length > 2) { // On peut seulement supprimer si il y a plus de 2 réponses
-      const updatedReponses = reponses.filter((_, i) => i !== index);
-      setReponses(updatedReponses);
-    }
-  };
+    // Fonction pour ajouter une réponse
+    const addReponse = () => {
+        if (reponses.length < 4) {
+            setReponses([...reponses, ""]);
+        }
+    };
+    // Fonction pour supprimer une réponse
+    const removeReponse = (index) => {
+        if (reponses.length > 2) { // On peut seulement supprimer si il y a plus de 2 réponses
+            const updatedReponses = reponses.filter((_, i) => i !== index);
+            setReponses(updatedReponses);
+        }
+    };
 
-  // Fonction pour modifier une réponse
-  const handleReponseChange = (index, value) => {
-    const updatedReponses = [...reponses];
-    updatedReponses[index] = value;
-    setReponses(updatedReponses);
-  };
+    // Fonction pour modifier une réponse
+    const handleReponseChange = (index, value) => {
+        const updatedReponses = [...reponses];
+        updatedReponses[index] = value;
+        setReponses(updatedReponses);
+    };
 
-  return <PageRandom
-    titre="Proposer un sondage"
-    contenu={<>
-      <Form onSubmit={handleSubmit} className="mt-3">
-        <Form.Group className="mb-3">
-          <Form.Label>Question</Form.Label>
-          <Form.Control
-            type="text"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            required
-          />
-        </Form.Group>
+    return <PageRandom
+        titre="Proposer un sondage"
+    >
+        <Form onSubmit={handleSubmit} className="mt-3">
+            <Form.Group className="mb-3">
+                <Form.Label>Question</Form.Label>
+                <Form.Control
+                    type="text"
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    required
+                />
+            </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Réponses</Form.Label>
-          {reponses.map((reponse, index) => (
-            <InputGroup className="mb-2" key={index}>
-              <Form.Control
-                type="text"
-                value={reponse}
-                onChange={(e) => handleReponseChange(index, e.target.value)}
-                required
-              />
-              {reponses.length > 2 && (
-                <Button variant="danger" onClick={() => removeReponse(index)}>
-                  <img src="/assets/icons/delete.svg" alt="Supprimer" />
-                </Button>
-              )}
-            </InputGroup>
-          ))}
-          {reponses.length < 4 && (
-            <Button variant="outline-secondary border d-flex gap-1 justify-content-center" onClick={addReponse}>
-              <img src="/assets/icons/plus.svg" alt="Ajouter" className="theme-icon" />
-              <span>Rajouter une option</span>
+            <Form.Group className="mb-3">
+                <Form.Label>Réponses</Form.Label>
+                {reponses.map((reponse, index) => (
+                    <InputGroup className="mb-2" key={index}>
+                        <Form.Control
+                            type="text"
+                            value={reponse}
+                            onChange={(e) => handleReponseChange(index, e.target.value)}
+                            required
+                        />
+                        {reponses.length > 2 && (
+                            <Button variant="danger" onClick={() => removeReponse(index)}>
+                                <img src="/assets/icons/delete.svg" alt="Supprimer" />
+                            </Button>
+                        )}
+                    </InputGroup>
+                ))}
+                {reponses.length < 4 && (
+                    <Button variant="outline-secondary border d-flex gap-1 justify-content-center" onClick={addReponse}>
+                        <img src="/assets/icons/plus.svg" alt="Ajouter" className="theme-icon" />
+                        <span>Rajouter une option</span>
+                    </Button>
+                )}
+            </Form.Group>
+
+            <Button variant="primary" type="submit" className="mb-3">
+                Soumettre
             </Button>
-          )}
-        </Form.Group>
+        </Form>
 
-        <Button variant="primary" type="submit" className="mb-3">
-          Soumettre
-        </Button>
-      </Form>
+        {message && (
+            <Alert variant={message.includes("succès") ? "success" : "danger"}>
+                {message}
+            </Alert>
+        )}
 
       {message && (
         <Alert variant={message.includes("succès") ? "success" : "danger"}>
@@ -109,8 +115,7 @@ function ProposerSondage() {
       <Button variant="secondary" onClick={() => navigate("/")}>
         Retour
       </Button>
-    </>}
-  />;
+    </PageRandom>;
 }
 
 export default ProposerSondage;

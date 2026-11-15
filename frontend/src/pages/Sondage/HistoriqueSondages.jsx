@@ -81,33 +81,32 @@ function HistoriqueSondages() {
         avecPagination={true} paramsPag={{ page, setPage, totalPages: data?.pages ?? 0 }}
         avecDates={true} paramsDates={{ dates, onClear: { debut: () => retirerDate("dateDebut"), fin: () => retirerDate("dateFin") }, handleSetDates }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
-        contenu={<>
-            {data && (
-                <div className="text-muted mb-2">
-                    {data.total} sondage{data.total > 1 ? "s" : ""}{" "}
-                    {isFetching && <Spinner size="sm" animation="border" />}
-                </div>
-            )}
+    >
+        {data && (
+            <div className="text-muted mb-2">
+                {data.total} sondage{data.total > 1 ? "s" : ""}{" "}
+                {isFetching && <Spinner size="sm" animation="border" />}
+            </div>
+        )}
 
-            {isError ? (
-                <Alert variant="danger">{error.message}</Alert>
-            ) : sondages.length === 0 ? (
-                <Card>
-                    <Card.Body>
-                        <Card.Text>Aucun sondage ne correspond à ta recherche.</Card.Text>
-                    </Card.Body>
-                </Card>
-            ) : (
-                <Row xs={1} sm={2} lg={3} xl={4} className="g-3 mb-4">
-                    {sondages.map((sondage) => (
-                        <Col key={sondage.id}>
-                            <SondageCard sondage={sondage} />
-                        </Col>
-                    ))}
-                </Row>
-            )}
-        </>}
-    />;
+        {isError ? (
+            <Alert variant="danger">{error.message}</Alert>
+        ) : sondages.length === 0 ? (
+            <Card>
+                <Card.Body>
+                    <Card.Text>Aucun sondage ne correspond à ta recherche.</Card.Text>
+                </Card.Body>
+            </Card>
+        ) : (
+            <Row xs={1} sm={2} lg={3} xl={4} className="g-3 mb-4">
+                {sondages.map((sondage) => (
+                    <Col key={sondage.id}>
+                        <SondageCard sondage={sondage} />
+                    </Col>
+                ))}
+            </Row>
+        )}
+    </PageRandom>;
 }
 
 export default HistoriqueSondages;

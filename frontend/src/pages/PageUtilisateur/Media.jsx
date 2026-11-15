@@ -115,9 +115,17 @@ export default function TabMedia({ id, autoriseAModifier }) {
         }
     })
 
-    if (isLoading) return <Chargement/>
+    if (isLoading) return <Chargement />
 
-    let contenu = <>
+
+    return <OngletTemplate
+        titre="Mes photos"
+        avecDropdown={autoriseAModifier} contenuDropdown={[
+            { can: true, onClick: toggleGestion, name: "Modifier" },
+            { can: true, onClick: ajouterPhoto, name: "Ajouter une photo" },
+            { can: true, onClick: handleAjouterVideo, name: "Ajouter un lien vidéo" },
+        ]}
+    >
         <input
             type="file"
             id="photo-upload"
@@ -232,14 +240,5 @@ export default function TabMedia({ id, autoriseAModifier }) {
                 );
             })}
         </Row>
-    </>
-
-    return <OngletTemplate
-        titre="Mes photos"
-        avecDropdown={autoriseAModifier} contenuDropdown={[
-            { can: true, onClick: toggleGestion, name: "Modifier" },
-            { can: true, onClick: ajouterPhoto, name: "Ajouter une photo" },
-            { can: true, onClick: handleAjouterVideo, name: "Ajouter un lien vidéo" },
-        ]}
-        contenu={contenu} />
+    </OngletTemplate>;
 }

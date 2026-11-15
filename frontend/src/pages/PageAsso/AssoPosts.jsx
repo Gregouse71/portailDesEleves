@@ -175,7 +175,7 @@ function AssoPosts({ asso_id, membreData }) {
         titre="Les publications"
         isLoading={isLoading}
         avecBouton={membreData.autorise} onButonClick={() => setIsNewPost(!isNewPost)}
-        contenu={
+    >
             <div className="d-flex flex-column gap-3">
 
                 {/* formulaire pour une nouvelle publication */}
@@ -290,8 +290,8 @@ function AssoPosts({ asso_id, membreData }) {
                 ))}
 
                 {isFetchingNextPage && <div className="text-center py-3"><Spinner animation="border" /></div>}
-            </div>}
-    />;
+            </div>
+    </OngletTemplate>;
 }
 
 export default AssoPosts;

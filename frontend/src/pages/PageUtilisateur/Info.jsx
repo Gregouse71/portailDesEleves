@@ -170,7 +170,14 @@ export default function TabInfo({ id, autoriseAModifier }) {
         return <Chargement />
     }
 
-    let contenu = <>
+
+    return <OngletTemplate
+        titre="Informations"
+        avecDropdown={autoriseAModifier} contenuDropdown={[
+            { can: autoriseAModifier, onClick: toggleGestion, name: "Modifier" },
+            { can: vpp, onClick: toggleGestionLignee, name: "Modifier la lignée" },
+        ]}
+    >
         <Row>
             <Col md={6}>
                 <InputGroup className="mb-3">
@@ -392,7 +399,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                                         <Button
                                             variant="danger"
                                             onClick={() => setSelectedP(selectedP.filter((_, i) => i !== ind))}
-                                            >
+                                        >
                                             <img src="/assets/icons/delete.svg" alt="Supprimer" />
                                         </Button>
                                     </Col>
@@ -416,7 +423,7 @@ export default function TabInfo({ id, autoriseAModifier }) {
                                         <Button
                                             variant="danger"
                                             onClick={() => setSelectedF(selectedF.filter((_, i) => i !== ind))}
-                                            >
+                                        >
                                             <img src="/assets/icons/delete.svg" alt="Supprimer" />
                                         </Button>
                                     </Col>
@@ -435,14 +442,6 @@ export default function TabInfo({ id, autoriseAModifier }) {
                     <Button variant="danger" onClick={() => { isGestion && handleCancel(); isGestionLignee && handleCancelLignee() }}>Annuler</Button>
                 </div>
             </Form>
-        }</>
-
-    return <OngletTemplate
-        titre="Informations"
-        avecDropdown={autoriseAModifier} contenuDropdown={[
-            { can: autoriseAModifier, onClick: toggleGestion, name: "Modifier" },
-            { can: vpp, onClick: toggleGestionLignee, name: "Modifier la lignée" },
-        ]}
-        contenu={contenu}
-    />;
+        }
+    </OngletTemplate >;
 }

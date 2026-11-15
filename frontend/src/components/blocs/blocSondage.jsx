@@ -89,7 +89,7 @@ export default function BlocSondage() {
 
     return <BlocTemplate
         titre="Sondage du jour"
-        contenu={<>
+        >
             {content}
             {sondage.hier && <>
                 <Card.Header as="h6" className="bloc-header mt-3">Sondage d&apos;hier</Card.Header>
@@ -153,7 +153,7 @@ export default function BlocSondage() {
                 </Button>
                 }
             </Card.Footer>
-        </>} />;
+    </BlocTemplate>;
 
 
 }

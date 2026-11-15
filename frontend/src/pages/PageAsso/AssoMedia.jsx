@@ -325,7 +325,8 @@ export default function AssosMedia({ asso_id, membreData }) {
     return <OngletTemplate
         titre="Les photos"
         isLoading={isLoading}
-        contenu={
+    >
+        {
             sortedMandats.map((mandat) => (
                 <MandatMedia
                     key={mandat.id}
@@ -334,6 +335,7 @@ export default function AssosMedia({ asso_id, membreData }) {
                     assoData={asso}
                     membreData={membreData}
                 />
-            ))} />;
-
+            ))
+        }
+    </OngletTemplate>;
 }

@@ -108,16 +108,17 @@ const PlanningAsso = () => {
     return <PageRandom
         titre="Événements à venir"
         sousTitre="Retrouvez ici toutes les événements qui arrivent dans les prochaines semaines"
-        contenu={<>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <Dropdown>
-                    <Dropdown.Toggle as="div">{choix[aAfficher].label}</Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        {choix.map((elt, ind) => <Dropdown.Item key={ind} onClick={() => setAAfficher(ind)}>{elt.label}</Dropdown.Item>)}
-                    </Dropdown.Menu>
-                </Dropdown>
-            </div>
-            <Tableau value={choix[aAfficher].value} /></>} />;
+    >
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            <Dropdown>
+                <Dropdown.Toggle as="div">{choix[aAfficher].label}</Dropdown.Toggle>
+                <Dropdown.Menu>
+                    {choix.map((elt, ind) => <Dropdown.Item key={ind} onClick={() => setAAfficher(ind)}>{elt.label}</Dropdown.Item>)}
+                </Dropdown.Menu>
+            </Dropdown>
+        </div>
+        <Tableau value={choix[aAfficher].value} />
+    </PageRandom>;
 };
 
 export default PlanningAsso;

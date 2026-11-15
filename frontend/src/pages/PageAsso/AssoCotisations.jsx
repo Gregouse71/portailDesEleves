@@ -243,7 +243,7 @@ export default function AssoCotisations({ asso_id, membreData }) {
         avecDropdown={canModify && !isCreating} contenuDropdown={[
             { can: true, onClick: () => setIsCreating(true), name: "Créer une cotisation" },
         ]}
-        contenu={<>
+    >
             {isCreating && (
                 <CotisationCard
                     isNew={true}
@@ -268,5 +268,5 @@ export default function AssoCotisations({ asso_id, membreData }) {
                     />
                 ))
             )}
-        </>} />;
+    </OngletTemplate>;
 }

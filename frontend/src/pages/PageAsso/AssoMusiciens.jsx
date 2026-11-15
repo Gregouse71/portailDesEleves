@@ -84,7 +84,15 @@ export default function AssoMusiciens() {
         });
     }, [musiciens, instrumentFilter, sortBy]);
 
-    const contenu =
+
+    return <OngletTemplate
+        titre={<>Musiciens{" "}
+            {!isLoading && !isError && (
+                <small className="text-muted fs-6 fw-normal">({processedMusiciens.length})</small>
+            )}</>
+        }
+        isLoading={isLoading}
+    >
         <div className="search-results-container px-0">
             <Row className="g-2 mb-3 align-items-center">
                 <Col xs={12} md={8}>
@@ -172,14 +180,5 @@ export default function AssoMusiciens() {
                 </ListGroup>
             )}
         </div>
-
-    return <OngletTemplate
-        titre={<>Musiciens{" "}
-            {!isLoading && !isError && (
-                <small className="text-muted fs-6 fw-normal">({processedMusiciens.length})</small>
-            )}</>
-        }
-        isLoading={isLoading}
-        contenu={contenu}
-    />;
+    </OngletTemplate>;
 }
