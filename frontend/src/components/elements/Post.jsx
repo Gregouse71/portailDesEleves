@@ -84,7 +84,7 @@ function Comment({ comment, userData, isMembreAsso, handleLike, handleDelete, on
                                     roundedCircle width={50} height={50} style={{ objectFit: 'cover' }}
                                 />
                             </Link>
-                            <p className="mb-0 text-break" align={"left"}>{comment.contenu}</p>
+                            <p className="mb-0 text-break" >{comment.contenu}</p>
                         </div>
                         <div className="d-flex align-items-center gap-2 flex-shrink-0">
                             <Button variant="outline-primary" size="sm" onClick={() => handleLike(comment.id)} className="d-flex align-items-center gap-1 p-1 px-2">
@@ -211,6 +211,22 @@ function CommentSection({ post, userData, showNewCommentForm, setShowNewCommentF
 }
 
 
+const GetAssoInfo = ({ post }) => {
+    const { data: asso, isLoading: isLoadingAsso } = useQuery({
+        queryKey: ['asso', post.association.id],
+        queryFn: () => chargerAsso(post.association.id),
+        enabled: !!post.association.id
+    });
+
+    if (isLoadingAsso) {
+        return <Spinner animation="border" size="sm" />;
+    }
+
+    return (<Link to={`/assos/get/${post.association.id}`}>
+        <Image src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '50px', height: '50px' }} />
+    </Link>);
+};
+
 export default function Post({ postId, removePost, tagOptions, autorisé }) {
     const [modifyPost, setModifyPost] = useState({
         "titre": "",
@@ -227,25 +243,19 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showNewCommentForm, setShowNewCommentForm] = useState(false);
 
-    const [post, setPost] = useState(null);
-
     const [modifyPreviewUrl, setModifyPreviewUrl] = useState(null);
     const [modifyPostFile, setModifyPostFile] = useState(null);
     const [modifyPostMiniatureFile, setModifyPostMiniatureFile] = useState(null);
-    const [modifyFileInputKey, setModifyFileInputKey] = useState(Date.now());
+    const [modifyFileInputKey, setModifyFileInputKey] = useState(0);
     const [shouldRemoveExistingAttachment, setShouldRemoveExistingAttachment] = useState(false);
 
     const { userData } = useProtected();
     const queryClient = useQueryClient();
-    const { data: postData, isLoading, isError } = useQuery({
+    const { data: post, isLoading, isError } = useQuery({
         queryKey: ['publications', postId],
         queryFn: () => obtenirPublication(postId),
         enabled: !!postId,
     });
-
-    useEffect(() => {
-        if (postData) { setPost(postData) }
-    }, [postData]);
 
     const clearModifyPost = () => {
         setModifyPost({
@@ -266,12 +276,12 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
         let fileForPreview = modifyPostMiniatureFile || modifyPostFile;
 
         if (!fileForPreview) {
-            setModifyPreviewUrl(null);
+            Promise.resolve().then(() => setModifyPreviewUrl(null));
             return;
         }
 
         const objectUrl = URL.createObjectURL(fileForPreview);
-        setModifyPreviewUrl(objectUrl);
+        Promise.resolve().then(() => setModifyPreviewUrl(objectUrl));
         return () => URL.revokeObjectURL(objectUrl);
 
     }, [modifyPostFile, modifyPostMiniatureFile]);
@@ -377,22 +387,6 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                 date_publication: date_publication ? new Date(new Date(date_publication).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""
             });
         }
-    };
-
-    const GetAssoInfo = () => {
-        const { data: asso, isLoading: isLoadingAsso } = useQuery({
-            queryKey: ['asso', post.association.id],
-            queryFn: () => chargerAsso(post.association.id),
-            enabled: !!post.association.id
-        });
-
-        if (isLoadingAsso) {
-            return <Spinner animation="border" size="sm" />;
-        }
-
-        return (<Link to={`/assos/get/${post.association.id}`}>
-            <Image src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '50px', height: '50px' }} />
-        </Link>);
     };
 
 
@@ -524,7 +518,7 @@ export default function Post({ postId, removePost, tagOptions, autorisé }) {
                     <div className="d-flex flex-column"><div style={{ flex: 1 }}>
                         <div className="d-flex justify-content-between align-items-center">
                             <Card.Title className="mb-0 d-flex align-items-center">
-                                <GetAssoInfo />
+                                <GetAssoInfo post={post} />
                                 <Link to={`/assos/get/${post.association.id}/posts`} className="interactive-link">
                                     {post.titre}
                                 </Link>

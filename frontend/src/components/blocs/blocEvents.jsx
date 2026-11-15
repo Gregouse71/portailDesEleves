@@ -6,6 +6,28 @@ import { UPLOAD_BASE_URL } from "../../api/base";
 import { Link } from "react-router-dom";
 import BlocTemplate from "../templates/BlocTemplate";
 
+const GetAssoInfo = ({ event }) => {
+    const { data: asso, isLoading, isError, error } = useQuery({
+        queryKey: ['asso', event.id_association],
+        queryFn: () => chargerAsso(event.id_association)
+    });
+
+    if (isLoading) {
+        return <Spinner animation="border" size="sm" />;
+    }
+
+    if (isError) {
+        return <Alert variant="danger">{error.message}</Alert>;
+    }
+
+    return (<>
+        <div>
+            <img src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
+            <Link className="interactive-link" to={`/assos/get/${event.id_association}/events`}>{event.nom}</Link>
+        </div>
+    </>);
+};
+
 export default function BlocEvents() {
     const { data: events = [], isLoading } = useQuery({
         queryKey: ['evenements', 'next_week'],
@@ -25,28 +47,6 @@ export default function BlocEvents() {
 
     const eventsByDate = Object.groupBy(events, ({ date_de_debut }) => formatDate(date_de_debut)) || [];
 
-    const GetAssoInfo = ({ event }) => {
-        const { data: asso, isLoading, isError, error } = useQuery({
-            queryKey: ['asso', event.id_association],
-            queryFn: () => chargerAsso(event.id_association)
-        });
-
-        if (isLoading) {
-            return <Spinner animation="border" size="sm" />;
-        }
-
-        if (isError) {
-            return <Alert variant="danger">{error.message}</Alert>;
-        }
-
-        return (<>
-            <div>
-                <img src={`${UPLOAD_BASE_URL}/${asso.img}`} alt={`logo de ${asso.nom}`} className="me-2 object-fit-cover" style={{ width: '20px', height: '20px' }} />
-                <Link className="interactive-link" to={`/assos/get/${event.id_association}/events`}>{event.nom}</Link>
-            </div>
-        </>);
-    };
-
     return <BlocTemplate
         titre={
             <span className="d-flex justify-content-between align-items-baseline">
@@ -57,17 +57,17 @@ export default function BlocEvents() {
             </span>
         }
     >
-            {Object.keys(eventsByDate).length > 0 ? (
-                Object.keys(eventsByDate).map((key) => (
-                    <div key={key} className="mb-2">
-                        <div className="text-muted small">{key}</div>
-                        {eventsByDate[key].map((event, i) => (
-                            <GetAssoInfo key={i} event={event} />
-                        ))}
-                    </div>
-                ))
-            ) : (
-                <p className="text-muted small mb-2">Aucun événement à venir.</p>
-            )}
+        {Object.keys(eventsByDate).length > 0 ? (
+            Object.keys(eventsByDate).map((key) => (
+                <div key={key} className="mb-2">
+                    <div className="text-muted small">{key}</div>
+                    {eventsByDate[key].map((event, i) => (
+                        <GetAssoInfo key={i} event={event} />
+                    ))}
+                </div>
+            ))
+        ) : (
+            <p className="text-muted small mb-2">Aucun événement à venir.</p>
+        )}
     </BlocTemplate>;
 }

@@ -374,7 +374,7 @@ function Plateau({ plateau, selection, coupsLegaux, dernierCoup, maCouleur, onCa
                         ].filter(Boolean).join(" ");
 
                         return (
-                            <div key={i} className={classes} onClick={() => onCaseClick(i)} onKeyDown={() => onCaseClick(i)}>
+                            <div key={i} className={classes} role="button" tabIndex={0} onClick={() => onCaseClick(i)} onKeyDown={() => onCaseClick(i)}>
                                 {piece && (
                                     <img className="echecs-piece" src={IMG[piece.piece]}
                                         alt={piece.piece} draggable={false} />

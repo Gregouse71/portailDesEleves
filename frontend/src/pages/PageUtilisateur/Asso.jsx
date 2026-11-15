@@ -15,14 +15,12 @@ export default function TabAsso({ id, autoriseAModifier }) {
     return <AssosDnd id={id} autoriseAModifier={autoriseAModifier} initActuel={assos.actuel} initAncien={assos.ancien} />;
 }
 
-function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
-    const [actuel, setActuel] = useState(initActuel);
-    const [ancien, setAncien] = useState(initAncien);
-    const [dragState, setDragState] = useState(null); // { type, from, over }
+function AssosList({ id, autoriseAModifier, list, setList, type }) {
+    const [dragState, setDragState] = useState(null); // { from, over }
     const dragIdxRef = useRef(null);
     const touchStartRef = useRef(null);
 
-    const reorder = async (list, setList, from, to) => {
+    const reorder = async (from, to) => {
         if (from === null || to === null || from === to) return;
         const next = [...list];
         const [moved] = next.splice(from, 1);
@@ -31,11 +29,11 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
         await modifierOrdreAssos(id, next.map((a, i) => ({ id: a.mandat_id, ordre: i })));
     };
 
-    const renderList = (list, setList, type) => (
+    return (
         <div className="cards-grid">
             {list.map((asso, index) => {
-                const isDragging = dragState?.type === type && dragState?.from === index;
-                const isOver = dragState?.type === type && dragState?.over === index && dragState?.from !== index;
+                const isDragging = dragState?.from === index;
+                const isOver = dragState?.over === index && dragState?.from !== index;
 
                 return (
                     <div
@@ -46,14 +44,14 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
                         onDragStart={() => { dragIdxRef.current = index; }}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => {
-                            reorder(list, setList, dragIdxRef.current, index);
+                            reorder(dragIdxRef.current, index);
                             dragIdxRef.current = null;
                         }}
                         onTouchStart={(e) => {
                             if (!autoriseAModifier) return;
                             const t = e.touches[0];
                             touchStartRef.current = { x: t.clientX, y: t.clientY, from: index };
-                            setDragState({ type, from: index, over: index });
+                            setDragState({ from: index, over: index });
                         }}
                         onTouchMove={(e) => {
                             if (!touchStartRef.current) return;
@@ -75,7 +73,7 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
                             e.preventDefault(); // Drag gesture: prevent click navigation
                             const target = document.elementFromPoint(t.clientX, t.clientY)?.closest(`[data-type="${type}"][data-idx]`);
                             if (target?.dataset?.idx !== undefined) {
-                                reorder(list, setList, from, Number(target.dataset.idx));
+                                reorder(from, Number(target.dataset.idx));
                             }
                         }}
                         style={{
@@ -94,6 +92,11 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
             })}
         </div>
     );
+}
+
+function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
+    const [actuel, setActuel] = useState(initActuel);
+    const [ancien, setAncien] = useState(initAncien);
 
     return <>
         <OngletTemplate
@@ -101,14 +104,15 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
             avecTooltip={true}
             tooltipContent="Cliquez-glissez les associations pour les réordonner"
         >
-            {renderList(actuel, setActuel, 'actuel')}
+            <AssosList id={id} autoriseAModifier={autoriseAModifier} list={actuel} setList={setActuel} type="actuel" />
         </OngletTemplate >;
+
         <OngletTemplate
             titre="Associations passées"
             avecTooltip={true}
             tooltipContent="Cliquez-glissez les associations pour les réordonner"
         >
-            {renderList(ancien, setAncien, 'ancien')}
+            <AssosList id={id} autoriseAModifier={autoriseAModifier} list={ancien} setList={setAncien} type="ancien" />
         </OngletTemplate >;
     </>;
 }

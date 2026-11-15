@@ -1,6 +1,6 @@
 import { useProtected } from '../../Protected';
 import { Link } from 'react-router-dom';
-import { Button, Row, Col, Image } from 'react-bootstrap';
+import { Row, Col, Image } from 'react-bootstrap';
 import BlocTemplate from '../templates/BlocTemplate';
 
 const URL_OCTO = "https://www.helloasso.com/associations/union-des-eleves-de-l-ecole-de-mines-paris/evenements/octo";

@@ -4,7 +4,7 @@ function RenderPagination({ totalPages, setPage, page, className = "d-flex justi
     if (totalPages <= 1) return <div className={className}>
         <Pagination className="mb-0">
             <Pagination.First disabled />
-            <Pagination.Item disb>1</Pagination.Item>
+            <Pagination.Item disabled>1</Pagination.Item>
             <Pagination.Last disabled />
         </Pagination>
     </div>;
