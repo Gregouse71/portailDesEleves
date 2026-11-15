@@ -41,7 +41,7 @@ export default function ListeAssos() {
             { can: true, onClick: () => setEditMode(!editMode), name: "Modifier" },
             { can: true, onClick: () => navigate("/assos/ajouter"), name: "Ajouter" },
         ]}
-        avecRequete={true} paramsReq={{ query, onChange: (e) => setQuery(e.target.value) }}
+        avecRequete={true} paramsReq={{ query, onChange: (e) => setQuery(e.target.value), onClear: () => setQuery("") }}
         contenu={<div className="cards-grid">
             {sortedAssos.filter(p => p.nom.localeContains(query, "fr", { sensitivity: "base" })).map((asso) => (
                 <AssoCard

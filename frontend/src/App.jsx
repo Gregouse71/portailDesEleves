@@ -19,6 +19,7 @@ const TrombiPromo = lazy(() => import("./components/pages/TrombiPromo"));
 const PlanningAsso = lazy(() => import("./components/pages/PlanningAsso"));
 const ProposerSondage = lazy(() => import("./components/pages/Sondage/ProposerSondage"));
 const GererSondages = lazy(() => import("./components/pages/Sondage/GererSondages"));
+const HistoriqueSondages = lazy(() => import("./components/pages/Sondage/HistoriqueSondages"));
 const PageUtilisateur = lazy(() => import("./components/pages/PageUtilisateur"));
 const AjouterAssociation = lazy(() => import("./components/pages/AssoAjouter"));
 const FormulaireConnexion = lazy(() => import("./components/FormulaireConnexion"));
@@ -85,6 +86,7 @@ export default function App() {
                 <Route path="classement" element={<ClassementSondage />} />
                 <Route path="proposer" element={<ProposerSondage />} />
                 <Route path="gerer" element={<GererSondages />} />
+                <Route path="historique" element={<HistoriqueSondages />} />
               </Route>
               <Route path="utilisateur">
                 <Route path=":id/*" element={<PageUtilisateur />} />

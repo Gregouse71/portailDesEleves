@@ -8,6 +8,7 @@ import ThemeSwitcher from '../elements/ThemeSwitcher';
 import { useProtected } from '../../Protected';
 import { useLayout } from '../../layouts/Layout';
 import Mines from "../../assets/icons/mines.svg?react";
+import ChampAvecCroix from '../elements/ChampAvecCroix';
 
 const Dropdown = ({ title, list, end, setExpanded }) => {
     const navigate = useNavigate();
@@ -152,13 +153,16 @@ export default function Header() {
                         <div className="d-none d-md-block flex-grow-1"></div>
 
                         <Form className="d-flex form-navbar" onSubmit={handleSearchSubmit}>
-                            <FormControl
-                                type="search"
-                                placeholder="Trouver un utilisateur"
-                                aria-label="Search"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                            <ChampAvecCroix valeur={searchQuery} onClear={() => setSearchQuery("")} >
+                                <FormControl
+                                    type="search"
+                                    placeholder="Trouver un utilisateur"
+                                    aria-label="Search"
+                                    className="rounded-end py-1"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </ChampAvecCroix>
                         </Form>
 
                         <Dropdown title={userData ? userData.nom_utilisateur : "Connexion..."} end={true} setExpanded={setExpanded}
