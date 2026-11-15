@@ -1,6 +1,6 @@
 import '../../assets/styles/asso.scss';
-import { useRef } from 'react';
-import { chargerAsso, estUtilisateurDansAsso, uploadLogoBanniereAsso } from '../../api/api_associations';
+import { useRef, useState } from 'react';
+import { chargerAsso, estUtilisateurDansAsso, uploadLogoBanniereAsso, editerModulesAsso } from '../../api/api_associations';
 import AssoInfo from './PageAsso/AssoInfo';
 import AssoMembres from './PageAsso/AssoMembres';
 import AssoEvents from './PageAsso/AssoEvents';
@@ -9,21 +9,42 @@ import AssoAudio from './PageAsso/AssoAudio';
 import AssoCotisations from './PageAsso/AssoCotisations';
 import AssoBiblio from './PageAsso/AssoBiblio';
 import { useLocation, useParams } from 'react-router-dom';
-import { Container, Badge } from 'react-bootstrap';
+import { Container, Badge, Modal, Button, Form } from 'react-bootstrap';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AssoElection from './PageAsso/AssoElection';
 import AssosMedia from './PageAsso/AssoMedia';
 import AssoMusiciens from './PageAsso/AssoMusiciens';
 import TabTemplate from '../templates/TabTemplate';
 import HeaderTemplate from '../templates/HeaderTemplate';
+import { useProtected } from '../../Protected';
+
+// Liste de tous les modules activables
+const TOUS_LES_MODULES = [
+    { nom: 'Info', label: 'Infos' },
+    { nom: 'Events', label: 'Événements' },
+    { nom: 'Membres', label: 'Membres' },
+    { nom: 'Posts', label: 'Publications' },
+    { nom: 'Media', label: 'Media' },
+    { nom: 'Elections', label: 'Élections' },
+    { nom: 'Audio', label: 'Audio' },
+    { nom: 'Biblio', label: 'Bibliothèque' },
+    { nom: 'Musiciens', label: 'Musiciens' },
+    { nom: 'Cotisations', label: 'Cotisations' },
+];
 
 function Asso() {
     const { id } = useParams();
     const location = useLocation();
     const queryClient = useQueryClient();
+    const { userData } = useProtected();
+    const estSuperUtilisateur = userData.is_superuser;
 
     const logoInputRef = useRef(null);
     const banniereInputRef = useRef(null);
+
+    const [showModulesModal, setShowModulesModal] = useState(false);
+    const [modulesSelectionnes, setModulesSelectionnes] = useState([]);
+    const [savingModules, setSavingModules] = useState(false);
 
     const { data: asso = null } = useQuery({
         queryKey: ['asso', id],
@@ -50,6 +71,30 @@ function Asso() {
             }
         }
         e.target.value = '';
+    };
+
+    const ouvrirModalModules = () => {
+        setModulesSelectionnes(asso?.modules ?? []);
+        setShowModulesModal(true);
+    };
+
+    const toggleModule = (nom) => {
+        setModulesSelectionnes(prev =>
+            prev.includes(nom) ? prev.filter(m => m !== nom) : [...prev, nom]
+        );
+    };
+
+    const handleSaveModules = async () => {
+        setSavingModules(true);
+        try {
+            await editerModulesAsso(id, modulesSelectionnes);
+            queryClient.invalidateQueries({ queryKey: ['asso', id] });
+            setShowModulesModal(false);
+        } catch (error) {
+            alert(`Erreur : ${error.message}`);
+        } finally {
+            setSavingModules(false);
+        }
     };
 
     if (asso === null || membreData.is_membre === null) return <p>Chargement...</p>;
@@ -117,10 +162,11 @@ function Asso() {
                         {membreData.cotisant && <Badge bg="primary" className="me-1">cotisant</Badge>}
                     </div>
                 }
-                avecDropdown={membreData.autorise}
+                avecDropdown={membreData.autorise || estSuperUtilisateur}
                 contenuDropdown={[
-                    { can: true, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
-                    { can: true, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                    { can: membreData.autorise, onClick: () => logoInputRef.current?.click(), name: "Changer le logo" },
+                    { can: membreData.autorise, onClick: () => banniereInputRef.current?.click(), name: "Changer la bannière" },
+                    { can: estSuperUtilisateur, onClick: ouvrirModalModules, name: "Modifier les modules" },
                 ]}
                 logoInputRef={logoInputRef}
                 banniereInputRef={banniereInputRef}
@@ -134,9 +180,36 @@ function Asso() {
                     tabs
                 }
             />
+
+            <Modal show={showModulesModal} onHide={() => setShowModulesModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Modifier les modules</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        {TOUS_LES_MODULES.map(({ nom, label }) => (
+                            <Form.Check
+                                key={nom}
+                                type="checkbox"
+                                id={`module-${nom}`}
+                                label={label}
+                                checked={modulesSelectionnes.includes(nom)}
+                                onChange={() => toggleModule(nom)}
+                            />
+                        ))}
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowModulesModal(false)}>
+                        Annuler
+                    </Button>
+                    <Button variant="primary" onClick={handleSaveModules} disabled={savingModules}>
+                        {savingModules ? 'Enregistrement...' : 'Enregistrer'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     );
 }
 
 export default Asso;
-

@@ -303,3 +303,20 @@ export async function chargerListeAssos() {
     console.error("Erreur réseau :", error);
   }
 }
+
+export async function editerModulesAsso(asso_id, modules) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/associations/${asso_id}/editer_modules`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ modules })
+    });
+    return handleResponse(res);
+  } catch (error) {
+    console.error("Erreur lors de la modification des modules : ", error);
+    throw error;
+  }
+}
