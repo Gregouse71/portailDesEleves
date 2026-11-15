@@ -190,7 +190,7 @@ def route_historique_sondages():
     """
     try:
         page = max(request.args.get("page", 1, type=int), 1)
-        par_page = min(max(request.args.get("par_page", 10, type=int), 1), 50)
+        par_page = min(max(request.args.get("par_page", 10, type=int), 1), 120)
         date_debut = date.fromisoformat(request.args["date_debut"]) if request.args.get("date_debut") else None
         date_fin = date.fromisoformat(request.args["date_fin"]) if request.args.get("date_fin") else None
     except ValueError:

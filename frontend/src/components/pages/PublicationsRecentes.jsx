@@ -32,7 +32,7 @@ export default function PublicationsRecentes() {
         sousTitre="Retrouvez ici les dernières publications associatives"
         isLoading={isLoading}
         avecPagination={true} paramsPag={{ totalPages, setPage, page }}
-        avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); } }}
+        avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); }, onClear: () => setQuery("") }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
         contenu={
             publications.map(post_id => (

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Row, Col, Spinner, Card, ProgressBar, Form, Alert, CloseButton, InputGroup } from "react-bootstrap";
+import { Row, Col, Spinner, Card, ProgressBar, Alert } from "react-bootstrap";
 import { obtenirHistoriqueSondages } from "../../../api/api_sondages";
 import PageRandom from '../../templates/PageRandom';
 
-const PAR_PAGE = 12;
 const DATES_VIDES = { dateDebut: "", dateFin: "" };
 
 function formatDate(dateString) {
@@ -44,29 +43,12 @@ function SondageCard({ sondage }) {
     );
 }
 
-// Libellé et champ sur la même ligne, avec une petite croix dans le champ si celui-ci est rempli
-function ChampAvecCroix({ label, valeur, onClear, decalage = "0.75rem", children }) {
-    return (
-        <InputGroup>
-            <InputGroup.Text>{label}</InputGroup.Text>
-            {children}
-            {valeur !== "" && (
-                <CloseButton
-                    onClick={onClear}
-                    aria-label={`Effacer : ${label}`}
-                    className="position-absolute top-50 translate-middle-y"
-                    style={{ right: decalage, fontSize: "0.7rem", zIndex: 6 }}
-                />
-            )}
-        </InputGroup>
-    );
-}
-
 function HistoriqueSondages() {
     const [recherche, setRecherche] = useState(""); // ce que tape l'utilisateur
     const [q, setQ] = useState("");                 // mot-clé appliqué (après délai)
     const [dates, setDates] = useState(DATES_VIDES);
     const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(30)
 
     // Applique le mot-clé 400 ms après la dernière frappe
     useEffect(() => {
@@ -85,8 +67,8 @@ function HistoriqueSondages() {
     const retirerDate = (name) => { setDates((prev) => ({ ...prev, [name]: "" })); setPage(1); };
 
     const { data, isLoading, isError, error, isFetching } = useQuery({
-        queryKey: ["historiqueSondages", page, q, dates.dateDebut, dates.dateFin],
-        queryFn: () => obtenirHistoriqueSondages({ page, parPage: PAR_PAGE, q, ...dates }),
+        queryKey: ["historiqueSondages", perPage, page, q, dates.dateDebut, dates.dateFin],
+        queryFn: () => obtenirHistoriqueSondages({ page, parPage: perPage, q, ...dates }),
         placeholderData: (previous) => previous, // garde l'ancienne page pendant le chargement
     });
 
@@ -95,37 +77,11 @@ function HistoriqueSondages() {
     return <PageRandom
         titre="Historique des sondages"
         isLoading={isLoading}
-        avecRequete paramsReq={{ query: recherche, onChange: (e) => setRecherche(e.target.value) }}
-        avecPagination paramsPag={{ page, setPage, totalPages: data?.pages ?? 0 }}
+        avecRequete={true} paramsReq={{ query: recherche, placeholder: "Question ou réponse...", onChange: (e) => setRecherche(e.target.value), onClear: () => setRecherche("") }}
+        avecPagination={true} paramsPag={{ page, setPage, totalPages: data?.pages ?? 0 }}
+        avecDates={true} paramsDates={{ dates, onClear: { debut: () => retirerDate("dateDebut"), fin: () => retirerDate("dateFin") }, handleSetDates }}
+        avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
         contenu={<>
-            <Row className="g-2 mb-3">
-                <Col xs={6} md={3}>
-                    {/* décalage plus grand : la croix se place à gauche de l'icône calendrier */}
-                    <ChampAvecCroix label="Du" valeur={dates.dateDebut} onClear={() => retirerDate("dateDebut")} decalage="2.5rem">
-                        <Form.Control
-                            type="date"
-                            className="rounded-end"
-                            name="dateDebut"
-                            value={dates.dateDebut}
-                            max={dates.dateFin || undefined}
-                            onChange={handleSetDates}
-                        />
-                    </ChampAvecCroix>
-                </Col>
-                <Col xs={6} md={3}>
-                    <ChampAvecCroix label="Au" valeur={dates.dateFin} onClear={() => retirerDate("dateFin")} decalage="2.5rem">
-                        <Form.Control
-                            type="date"
-                            className="rounded-end"
-                            name="dateFin"
-                            value={dates.dateFin}
-                            min={dates.dateDebut || undefined}
-                            onChange={handleSetDates}
-                        />
-                    </ChampAvecCroix>
-                </Col>
-            </Row>
-
             {data && (
                 <div className="text-muted mb-2">
                     {data.total} sondage{data.total > 1 ? "s" : ""}{" "}

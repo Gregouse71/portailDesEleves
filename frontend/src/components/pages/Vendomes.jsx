@@ -38,7 +38,7 @@ function Vendomes() {
         sousTitre="Retrouvez ici tous les Vendômes"
         isLoading={isLoading}
         avecPagination={true} paramsPag={{ totalPages, setPage, page }}
-        avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); } }}
+        avecRequete={true} paramsReq={{ query, onChange: (e) => { setQuery(e.target.value); setPage(1); }, onClear: () => setQuery("") }}
         avecNbPP={true} paramsNbPP={{ setPerPage, perPage }}
         contenu={
             <div className="cards-grid">

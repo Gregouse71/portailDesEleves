@@ -1,8 +1,9 @@
-import { Container, Alert, Form, Button } from 'react-bootstrap';
+import { Container, Alert, Form, Button, Row, Col } from 'react-bootstrap';
 import RenderPagination from '../elements/RenderPagination'
 import Chargement from '../elements/Chargement';
 import { useNavigate } from 'react-router-dom';
 import DropdownEditer from '../elements/DropdownEditer';
+import ChampAvecCroix from '../elements/ChampAvecCroix';
 
 export default function PageRandom({
     titre,
@@ -13,6 +14,7 @@ export default function PageRandom({
     avecNbPP = false, paramsNbPP = {},
     avecDrop = false, paramsDrop = {},
     avecRequete = false, paramsReq = {},
+    avecDates = false, paramsDates = {},
     avecBoutonRetour = false, destRetour
 }) {
     const navigate = useNavigate();
@@ -38,6 +40,7 @@ export default function PageRandom({
                 <h1 className="mb-0">{titre}</h1>
                 <p className="text-muted mb-0">{sousTitre}</p>
             </div>
+            <div className="flex-grow-1 vh-0"></div>
             {avecNbPP &&
                 <Form.Select
                     style={{ width: 'auto' }}
@@ -56,33 +59,57 @@ export default function PageRandom({
                 </Form.Select>
             }
             {avecDrop && <DropdownEditer list={paramsDrop} />}
-        </div>
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
-            {avecRequete &&
-                < div className="w-md-auto">
-                    <Form onSubmit={e => { e.preventDefault(); }} className="w-100">
-                        <Form.Group>
-                            <Form.Control
-                                type="text"
-                                name="query"
-                                placeholder="Rechercher"
-                                value={paramsReq.query}
-                                onChange={paramsReq.onChange}
-                            />
-                        </Form.Group>
-                    </Form>
-                </div>
-            }
             {avecPagination && <RenderPagination
-                className="d-flex mb-0"
                 totalPages={paramsPag.totalPages}
                 setPage={paramsPag.setPage}
                 page={paramsPag.page}
             />}
         </div>
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
+            {avecRequete &&
+                <div className="w-md-auto">
+                    <ChampAvecCroix label={paramsReq.label} valeur={paramsReq.query} onClear={paramsReq?.onClear} >
+                        <Form.Control
+                            type="text"
+                            name="query"
+                            className="rounded-end"
+                            placeholder={paramsReq?.placeholder ?? "Rechercher"}
+                            value={paramsReq.query}
+                            onChange={paramsReq.onChange}
+                        />
+                    </ChampAvecCroix>
+                </div>
+            }
+            {avecDates && <>
+                <div style={{ width: "30rem" }} className="d-flex flex-row justify-content-between gap-3">
+                    {/* décalage plus grand : la croix se place à gauche de l'icône calendrier */}
+                    <ChampAvecCroix label="Du" valeur={paramsDates.dates.dateDebut} onClear={paramsDates.onClear.debut} decalage="2.5rem">
+                        <Form.Control
+                            type="date"
+                            className="rounded-end"
+                            name="dateDebut"
+                            value={paramsDates.dates.dateDebut}
+                            max={paramsDates.dates.dateFin || undefined}
+                            onChange={paramsDates.handleSetDates}
+                        />
+                    </ChampAvecCroix>
+                    <ChampAvecCroix label="Au" valeur={paramsDates.dates.dateFin} onClear={paramsDates.onClear.fin} decalage="2.5rem">
+                        <Form.Control
+                            type="date"
+                            className="rounded-end"
+                            name="dateFin"
+                            value={paramsDates.dates.dateFin}
+                            min={paramsDates.dates.dateDebut || undefined}
+                            onChange={paramsDates.handleSetDates}
+                        />
+                    </ChampAvecCroix>
+                </div>
+            </>}
+        </div>
         {contenu}
-        {
-            avecPagination && <RenderPagination
+        {avecPagination &&
+            <RenderPagination
+                className="d-flex justify-content-center my-4"
                 totalPages={paramsPag.totalPages}
                 setPage={paramsPag.setPage}
                 page={paramsPag.page}
