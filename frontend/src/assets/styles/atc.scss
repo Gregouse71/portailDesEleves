@@ -39,6 +39,28 @@
     color: #000000;
 }
 
+.atc-quick-help-tab {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    background-color: var(--card-bg, #f8f9fa);
+    color: var(--text-color, #212529);
+    border: 1px solid var(--card-border-color, #dee2e6);
+    border-radius: 6px;
+    padding: 12px 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--hover-bg, rgba(128, 128, 128, 0.15));
+    }
+}
+
 .atc-quick-help {
     flex: 0 1 10%;
     min-width: 140px;
@@ -88,5 +110,31 @@
     code {
         font-family: "Courier New", Courier, monospace;
         font-weight: 600;
+    }
+}
+
+.atc-manpage {
+    font-size: 0.9rem;
+
+    h6 {
+        font-family: "Courier New", Courier, monospace;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 1rem;
+        margin-bottom: 0.4rem;
+    }
+
+    code,
+    pre {
+        font-family: "Courier New", Courier, monospace;
+        font-weight: 600;
+    }
+
+    pre {
+        background-color: rgba(0, 0, 0, 0.06);
+        padding: 6px 10px;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
     }
 }

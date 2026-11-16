@@ -38,7 +38,7 @@
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
 
-export const AUTHOR_STR = "ATC - by Ed James";
+export const AUTHOR_STR = "ATC - par Ed James";
 export const LOWFUEL = 15;
 export const MAXDIR = 8;
 export const INPUT_LINES = 3;
@@ -61,14 +61,14 @@ export const S_UNMARKED = 3;
 export const S_IGNORED = 4;
 
 export const DISPLACEMENT = [
-    { dx: 0, dy: -1 },  // 0: w (N, 0°)
+    { dx: 0, dy: -1 },  // 0: z (N, 0°)
     { dx: 1, dy: -1 },  // 1: e (NE, 45°)
     { dx: 1, dy: 0 },   // 2: d (E, 90°)
     { dx: 1, dy: 1 },   // 3: c (SE, 135°)
     { dx: 0, dy: 1 },   // 4: x (S, 180°)
-    { dx: -1, dy: 1 },  // 5: z (SW, 225°)
-    { dx: -1, dy: 0 },  // 6: a (W, 270°)
-    { dx: -1, dy: -1 }, // 7: q (NW, 315°)
+    { dx: -1, dy: 1 },  // 5: w (SO, 225°)
+    { dx: -1, dy: 0 },  // 6: q (O, 270°)
+    { dx: -1, dy: -1 }, // 7: a (NO, 315°)
 ];
 
 // Carte "default" de atc/games/default
@@ -177,7 +177,7 @@ export function tooClose(p1, p2, dist) {
 
 export function formatCommand(pp) {
     const fuelChar = pp.fuel < LOWFUEL ? "*" : " ";
-    const destChar = pp.dest_type === T_AIRPORT ? "A" : "E";
+    const destChar = pp.dest_type === T_AIRPORT ? "A" : "S";
     const prefix = `${planeName(pp)}${pp.altitude}${fuelChar}${destChar}${pp.dest_no}: `;
 
     let comm = "";
@@ -618,7 +618,7 @@ const STATES = [
         { token: "r", to_state: 6, str: " droite", func: "right" },
         { token: "L", to_state: 4, str: " gauche 90", func: "Left" },
         { token: "R", to_state: 4, str: " droite 90", func: "Right" },
-        { token: "t", to_state: 11, str: " vers", func: null },
+        { token: "v", to_state: 11, str: " vers", func: null },
         { token: "z", to_state: 4, str: " cap 0", func: "to_dir" },
         { token: "e", to_state: 4, str: " cap 45", func: "to_dir" },
         { token: "d", to_state: 4, str: " cap 90", func: "to_dir" },
@@ -627,7 +627,7 @@ const STATES = [
         { token: "w", to_state: 4, str: " cap 225", func: "to_dir" },
         { token: "q", to_state: 4, str: " cap 270", func: "to_dir" },
         { token: "a", to_state: 4, str: " cap 315", func: "to_dir" },
-        { token: HELPTOKEN, to_state: 12, str: " lrLRt<dir>", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " lrLRv<cap>", func: null },
     ],
     // state 3 : action altitude : choix de l'altitude
     [
@@ -663,7 +663,7 @@ const STATES = [
         { token: "q", to_state: 4, str: " 270", func: "rel_dir" },
         { token: "a", to_state: 4, str: " 315", func: "rel_dir" },
         { token: RETTOKEN, to_state: -1, str: "", func: null },
-        { token: HELPTOKEN, to_state: 12, str: " @a<dir><entrée>", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " @a<cap><entrée>", func: null },
     ],
     // state 7 : fin de la commande
     [
@@ -690,9 +690,9 @@ const STATES = [
     [
         { token: "b", to_state: 8, str: " balise #", func: "beacon" },
         { token: "*", to_state: 8, str: " balise #", func: "beacon" },
-        { token: "e", to_state: 8, str: " sortie #", func: "ex_it" },
+        { token: "s", to_state: 8, str: " sortie #", func: "ex_it" },
         { token: "a", to_state: 8, str: " aéroport #", func: "airport" },
-        { token: HELPTOKEN, to_state: 12, str: " b*ea", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " b*sa", func: null },
     ],
     // state 12 : aide : il faut revenir en arrière
     [

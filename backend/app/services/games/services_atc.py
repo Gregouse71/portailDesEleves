@@ -461,7 +461,7 @@ STATES = [
         {"token": "r", "to_state": 6, "func": "right"},
         {"token": "L", "to_state": 4, "func": "Left"},
         {"token": "R", "to_state": 4, "func": "Right"},
-        {"token": "t", "to_state": 11, "func": None},
+        {"token": "v", "to_state": 11, "func": None},
         {"token": "z", "to_state": 4, "func": "to_dir"},
         {"token": "e", "to_state": 4, "func": "to_dir"},
         {"token": "d", "to_state": 4, "func": "to_dir"},
@@ -524,7 +524,7 @@ STATES = [
     [
         {"token": "b", "to_state": 8, "func": "beacon"},
         {"token": "*", "to_state": 8, "func": "beacon"},
-        {"token": "e", "to_state": 8, "func": "ex_it"},
+        {"token": "s", "to_state": 8, "func": "ex_it"},
         {"token": "a", "to_state": 8, "func": "airport"},
     ],
     # state 12
