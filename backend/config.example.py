@@ -13,6 +13,12 @@ import json
 
 class Config:
     SECRET_KEY                  = 'une_cle_secrete_pour_developpement'  # générée avec `openssl rand -hex 32`
+    CORS_ORIGINS                = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://eleves.rezal-mdm.com",
+        "https://eleves.mines-paris.eu",
+    ]
     SQLALCHEMY_DATABASE_URI     = 'mysql+pymysql://root:1234@mariadb/portail'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Permet de stocker les caractères UTF dans les objets JSON
