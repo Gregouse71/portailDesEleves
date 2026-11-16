@@ -33,6 +33,7 @@ const MDPoublie = lazy(() => import("./pages/Auth/MDPoublie"));
 const Jeux2048 = lazy(() => import("./pages/Jeux/2048"));
 const EchecsLobby = lazy(() => import("./pages/Jeux/Echecs/EchecsLobby"));
 const EchecsPartie = lazy(() => import("./pages/Jeux/Echecs/EchecsPartie"));
+const CleApi = lazy(() => import("./pages/CleApi/CleApi"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -115,6 +116,7 @@ export default function App() {
               <Route path="vendomes" element={<Vendomes />} />
               <Route path="palums" element={<Palums />} />
               <Route path="publications" element={<PublicationsRecentes />} />
+              <Route path="apidocs" element={<CleApi />} />
             </Route>
             <Route path="soifguard/*" element={<Soifguard />}>
             </Route>
