@@ -116,6 +116,7 @@ def faire_un_coup(s: str, id: int, data: dict):
                 "valid": res["valid"],
                 "reason": res.get("reason"),
                 "verified_tick": res.get("tick", 0),
+                "commandes": data.get("commands", [])
             }
             db.session.add(partie)
             db.session.commit()

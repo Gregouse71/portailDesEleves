@@ -109,26 +109,16 @@ export const DEFAULT_SCREEN = {
 };
 
 /**
- * PRNG de type Mulberry 32 bits
- * Le pseudo-aléatoire permet la vérification de la partie a
+ * PRNG pur de type Mulberry 32 bits : renvoie `[val, nextRngState]`.
+ * Le pseudo-aléatoire sans état global évite toute désynchronisation en React StrictMode
+ * et garantit une parité exacte avec la vérification serveur.
  */
-function mulberry32(seed) {
-    let t = seed >>> 0; // force seed into uint32
-
-    const next = () => {
-        t = (t + 0x6D2B79F5) >>> 0; // advance internal state (uint32 wrap)
-
-        // Mix bits using xor-shifts and 32-bit multiplication.
-        let x = Math.imul(t ^ (t >>> 15), t | 1);
-        x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
-
-        // Convert uint32 to float in [0, 1).
-        return ((x ^ (x >>> 14)) >>> 0) / 2**32;
-    };
-
-    return next;
+function nextRandom(rngState) {
+    const t = (rngState + 0x6D2B79F5) >>> 0;
+    let x = Math.imul(t ^ (t >>> 15), t | 1);
+    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+    return [((x ^ (x >>> 14)) >>> 0) / 2**32, t];
 }
-let RNG = mulberry32(4); // https://xkcd.com/221/
 
 export function sgn(x) {
     return x < 0 ? -1 : x > 0 ? 1 : 0;
@@ -224,11 +214,17 @@ export function nextPlaneNo(air, ground, lastPlane) {
 export function addPlane(state, sp = DEFAULT_SCREEN) {
     const air = state.air.map((p) => ({ ...p }));
     const ground = state.ground.map((p) => ({ ...p }));
+    let rngState = (state.rng_state ?? 4) >>> 0;
+    const rng = () => {
+        let val;
+        [val, rngState] = nextRandom(rngState);
+        return val;
+    };
 
     const p = {
         status: S_MARKED,
         plane_no: 0,
-        plane_type: Math.floor(RNG() * 2),
+        plane_type: Math.floor(rng() * 2),
         orig_no: 0,
         orig_type: T_NODEST,
         dest_no: 0,
@@ -245,7 +241,7 @@ export function addPlane(state, sp = DEFAULT_SCREEN) {
     };
 
     const numStarts = sp.exit.length + sp.airport.length;
-    const rnd = Math.floor(RNG() * numStarts);
+    const rnd = Math.floor(rng() * numStarts);
 
     if (rnd < sp.exit.length) {
         p.dest_type = T_EXIT;
@@ -257,9 +253,9 @@ export function addPlane(state, sp = DEFAULT_SCREEN) {
 
     let placed = false;
     for (let i = 0; i < numStarts; i++) {
-        let rnd2 = Math.floor(RNG() * numStarts);
+        let rnd2 = Math.floor(rng() * numStarts);
         while (rnd2 === rnd) {
-            rnd2 = Math.floor(RNG() * numStarts);
+            rnd2 = Math.floor(rng() * numStarts);
         }
         if (rnd2 < sp.exit.length) {
             p.orig_type = T_EXIT;
@@ -282,32 +278,34 @@ export function addPlane(state, sp = DEFAULT_SCREEN) {
         break;
     }
 
-    if (!placed) return state;
+    if (!placed) return { ...state, rng_state: rngState };
 
     const pnum = nextPlaneNo(air, ground, state.last_plane);
-    if (pnum < 0) return state;
+    if (pnum < 0) return { ...state, rng_state: rngState };
     p.plane_no = pnum;
 
     if (p.orig_type === T_AIRPORT) {
         return {
             ...state,
+            rng_state: rngState,
             last_plane: pnum,
             ground: insertSortedByPlaneNo(ground, p),
         };
     }
     return {
         ...state,
+        rng_state: rngState,
         last_plane: pnum,
         air: insertSortedByPlaneNo(air, p),
     };
 }
 
 export function createInitialGame(sp = DEFAULT_SCREEN, seed = 4) {
-    RNG = mulberry32(seed);
     const base = {
         clck: 0,
         safe_planes: 0,
         last_plane: -1,
+        rng_state: seed >>> 0,
         air: [],
         ground: [],
         loser_msg: null,
@@ -510,7 +508,12 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
     };
 
     // 5. Apparition aléatoire d'un nouvel avion
-    if (Math.floor(RNG() * sp.newplane_time) === 0) {
+    const [spawnRnd, nextRngState] = nextRandom((nextState.rng_state ?? 4) >>> 0);
+    nextState = {
+        ...nextState,
+        rng_state: nextRngState,
+    };
+    if (Math.floor(spawnRnd * sp.newplane_time) === 0) {
         nextState = addPlane(nextState, sp);
     }
 
