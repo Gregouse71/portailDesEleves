@@ -140,6 +140,7 @@ export default function Header() {
                         <Dropdown title="Jeux" setExpanded={setExpanded}
                             list={[
                                 ["navigate", "/jeux/2048", "2048"],
+                                ["navigate", "/jeux/atc", "ATC"],
                                 ["navigate", "/jeux/echecs", "Échecs"],
                             ]}
                         />

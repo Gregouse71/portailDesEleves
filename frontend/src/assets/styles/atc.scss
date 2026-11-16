@@ -1,0 +1,40 @@
+.atc-terminal {
+    display: inline-block;
+    background-color: #000000;
+    color: #e6e6e6;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 15px;
+    line-height: 1.2;
+    padding: 12px 14px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    white-space: pre;
+    user-select: none;
+    outline: none;
+    overflow-x: auto;
+
+    &:focus {
+        border-color: #888;
+    }
+}
+
+.atc-standout {
+    background-color: #e6e6e6;
+    color: #000000;
+    font-weight: bold;
+}
+
+.atc-cursor {
+    display: inline-block;
+    background-color: #e6e6e6;
+    color: #000000;
+}
+
+.atc-consignes {
+    font-size: 0.9rem;
+
+    code {
+        font-family: "Courier New", Courier, monospace;
+        font-weight: 600;
+    }
+}

@@ -31,6 +31,7 @@ const Palums = lazy(() => import("./pages/Home/Palums"));
 const NouveauMDP = lazy(() => import("./pages/Auth/NouveauMDP"));
 const MDPoublie = lazy(() => import("./pages/Auth/MDPoublie"));
 const Jeux2048 = lazy(() => import("./pages/Jeux/2048"));
+const Atc = lazy(() => import("./pages/Jeux/Atc/Atc"));
 const EchecsLobby = lazy(() => import("./pages/Jeux/Echecs/EchecsLobby"));
 const EchecsPartie = lazy(() => import("./pages/Jeux/Echecs/EchecsPartie"));
 const CleApi = lazy(() => import("./pages/CleApi/CleApi"));
@@ -109,6 +110,7 @@ export default function App() {
               </Route>
               <Route path="jeux/*">
                 <Route path="2048" element={<Jeux2048 />} />
+                <Route path="atc" element={<Atc />} />
                 <Route path="echecs"  element={<EchecsLobby />} />
                 <Route path="echecs/partie/:partieId" element={<EchecsPartie />} />
               </Route>
