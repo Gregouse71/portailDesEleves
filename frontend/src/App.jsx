@@ -6,6 +6,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Spinner } from "react-bootstrap";
 import { ProtectedRoute } from "./Protected";
 import { Layout, LayoutProvider } from "./layouts/Layout";
+import MatrixRain from "./components/MatrixRain";
 
 // Lazy imports
 const PublicationsRecentes = lazy(() => import("./pages/Home/PublicationsRecentes"));
@@ -35,18 +36,30 @@ const EchecsPartie = lazy(() => import("./pages/Jeux/Echecs/EchecsPartie"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
+    // Matrix theme start and end dates
+    const matrixStart = new Date('2026-11-30T00:00:00');
+    const matrixEnd = new Date('2026-12-07T23:59:59');
+    const now = new Date();
+
+    if (now >= matrixStart && now <= matrixEnd) {
+      return 'matrix';
+    }
+
     const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
+    if (storedTheme === 'light' || storedTheme === 'dark') {
       return storedTheme;
     }
     // If no theme is stored, check for system preference
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return prefersDark ? 'dark' : 'light';
+  
   });
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    if (theme !== 'matrix') {
+      localStorage.setItem('theme', theme);
+    }
   }, [theme]);
 
   // Pas de rebond quand on arrive en haut de la page, mais rafraichissement
@@ -63,6 +76,8 @@ export default function App() {
   }, []);
 
   return (
+    <>
+    {theme === 'matrix' && <MatrixRain />}
     <LayoutProvider theme={theme} setTheme={setTheme}>
       <Suspense fallback={<div className="d-flex justify-content-center mt-5"><Spinner animation="border" variant="primary" /></div>}>
         <Routes>
@@ -109,5 +124,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </LayoutProvider>
+    </>
   );
 }
