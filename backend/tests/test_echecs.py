@@ -1,6 +1,6 @@
 import chess
-from app.models.models_echecs import EchecsDefi, EchecsPartie, EchecsElo
-from unittest.mock import patch, MagicMock
+from app.models.models_echecs import EchecsElo
+from unittest.mock import patch
 
 
 # Coup fictif retourné par le mock Stockfish à chaque appel de l'IA

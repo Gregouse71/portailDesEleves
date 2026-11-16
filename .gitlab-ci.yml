@@ -22,7 +22,6 @@ deploy-vm:
   stage: deploy
   image: alpine
   script:
-    - echo "export const _BASE_URL = 'https://eleves.rezal-mdm.com'" > frontend/src/api/base_url.js
     - /usr/bin/rsync -e 'ssh -p 2223' -atv --delete --exclude 'upload' --exclude '*__pycache__*' --exclude 'frontend/node_modules' --exclude '.git' . rezal@10.100.1.20:/
     - /usr/bin/ssh -p 2223 rezal@10.100.1.20 'update-site'
 
