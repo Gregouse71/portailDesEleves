@@ -3,7 +3,9 @@ import { Table, Form, Button, InputGroup, Badge, Modal, Row, Col } from "react-b
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addPermission, deletePermission, getPermissions, resetMotDePasse, generateResetLinkAdmin, setPasswordAdmin } from "../../api/api_global";
 import RenderPagination from "../../components/elements/RenderPagination";
+import DropdownEditer from "../../components/elements/DropdownEditer";
 import { modifierInfos } from "../../api/api_utilisateurs";
+import { revoquerToutesCle } from "../../api/api_cles";
 import { PencilSquare, Person, Envelope, Mortarboard, JournalBookmark, Droplet, Link45deg, Key } from "react-bootstrap-icons";
 
 const PER_PAGE = 15;
@@ -11,7 +13,7 @@ const PER_PAGE = 15;
 const PERMISSIONS = [
     "octo", "admin_octo",
     "biero", "admin_biero",
-    "vpp", "vp_sondaj"
+    "vpp", "vp_sondaj", "cle_api"
 ]
 
 function UserRow({ user, onEdit }) {
@@ -33,9 +35,12 @@ function UserRow({ user, onEdit }) {
                 ))}
             </td>
             <td className="text-center">
-                <Button variant="outline-primary" size="sm" onClick={() => onEdit(user)}>
-                    <PencilSquare className="me-1" /> Éditer
-                </Button>
+                <DropdownEditer list={[
+                    { can: true, onClick: () => onEdit(user), name: <><PencilSquare className="me-1" />Éditer</> },
+                    "divider",
+                    { can: true, onClick: () => revoquerToutesCle(user.id), name: "Révoquer les clés d'API" },
+                ]}
+                />
             </td>
         </tr>
     );
@@ -193,12 +198,12 @@ export default function PermissionsManager() {
     if (isError) return <div>Erreur lors du chargement des données.</div>;
 
     return (
-        <div>
+        <div className="overflow-visible">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <RenderPagination totalPages={totalPages} setPage={setPage} page={page} className="mb-0" />
             </div>
 
-            <Table striped bordered hover responsive className="shadow-sm">
+            <Table striped bordered hover className="shadow-sm">
                 <thead className="table-dark">
                     <tr>
                         <th style={{ width: '15%' }}>Nom d&apos;utilisateur</th>
@@ -208,7 +213,7 @@ export default function PermissionsManager() {
                         <th style={{ width: '15%' }}>Email</th>
                         <th style={{ width: '5%' }}>Baptisé</th>
                         <th style={{ width: '20%' }}>Permissions</th>
-                        <th className="text-center" style={{ width: '10%' }}>Action</th>
+                        <th className="text-center" style={{ width: '5%' }}>Action</th>
                     </tr>
                     <tr className="bg-light align-middle">
                         <th>

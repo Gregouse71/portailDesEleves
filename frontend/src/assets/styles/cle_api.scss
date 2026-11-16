@@ -1,0 +1,25 @@
+// Sur cette page, l'élève est connecté : « Try it out » passe par sa session.
+// Le bouton « Authorize » (coller une clé) et les cadenas des routes n'y servent pas.
+.swagger-ui .scheme-container,
+.swagger-ui .authorization__btn {
+    display: none;
+}
+
+// Sans retrait latéral, la doc s'aligne sur la carte des clés
+.swagger-ui .wrapper {
+    padding: 0;
+}
+
+// Swagger UI n'a pas de thème sombre : en thème sombre, ses couleurs sont inversées
+// (le hue-rotate rend aux couleurs leur teinte d'origine).
+[data-theme='dark'] .swagger-ui {
+    filter: invert(88%) hue-rotate(180deg);
+}
+
+// Les pastilles (méthode HTTP, version) et les blocs de code, déjà sombres, sont inversés
+// une seconde fois pour garder leur texte clair sur fond foncé.
+[data-theme='dark'] .swagger-ui .opblock-summary-method,
+[data-theme='dark'] .swagger-ui .info .title small,
+[data-theme='dark'] .swagger-ui pre {
+    filter: invert(100%) hue-rotate(180deg);
+}

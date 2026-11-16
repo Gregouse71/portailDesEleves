@@ -1,0 +1,38 @@
+from datetime import datetime, timezone
+
+from app.extensions import db
+from app.models.models_cles_api import CleAPI, hash_cle
+from app.services.services_login import has_permission
+
+
+def utiliser_cle(valeur):
+    """Renvoie l'utilisateur correspondant à la clé, et enregistre l'utilisation."""
+    if not valeur:
+        return None
+    cle_api = CleAPI.query.filter_by(hash=hash_cle(valeur)).first()
+    if cle_api is not None and cle_api.est_active():
+        cle_api.use_count = cle_api.use_count + 1
+        cle_api.last_used_at = datetime.now(tz=timezone.utc)
+        db.session.commit()
+        if has_permission(cle_api.utilisateur, "cle_api"):
+            return cle_api.utilisateur
+    return None
+
+
+def revoquer_cle(id, user_id):
+    """Révoque la clé `id` de l'utilisateur `user_id`. L'id suffit à désigner une clé : sa valeur n'est
+    jamais demandée. Renvoie None si la clé n'est pas à lui."""
+    cle = CleAPI.query.filter_by(id=id, utilisateur_id=user_id).first()
+
+    if cle is not None:
+        cle.revoked = True
+        db.session.commit()
+
+    return cle
+
+
+def revoquer_cles_utilisateur(user_id):
+    """Révoque toutes les clés de l'utilisateur `user_id`."""
+    for cle in CleAPI.query.filter_by(utilisateur_id=user_id, revoked=False).all():
+        cle.revoked = True
+    db.session.commit()

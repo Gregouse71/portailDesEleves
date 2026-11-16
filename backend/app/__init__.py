@@ -4,42 +4,25 @@ if Config.START_SCHEDULER:
 
 """
 Ce fichier crée et initialise l'application et les extensions. Il charge la configuration
-et enregistre les blueprints. 
+et enregistre les blueprints.
 
-Il est execute pour initialiser l'application. 
+Il est execute pour initialiser l'application.
 """
 
 from flask import Flask, send_from_directory
-from flask_cors import CORS # permet d'accepter les requetes provenant de n'importe quelle origine
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
-from flask_socketio import SocketIO
-from flask_apscheduler import APScheduler
 from werkzeug.middleware.proxy_fix import ProxyFix
-from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import create_query_client_func, create_save_token_func
 
+from .extensions import db, migrate, limiter, login_manager, socketio, scheduler, cors, swagger, require_oauth, authorization
+from app.services.services_cles_api import utiliser_cle
+
 import os
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-
-# Initialisation des extensions (sans encore les attacher à l'application)
-limiter = Limiter(get_remote_address)
-socketio = SocketIO(
-    async_mode='gevent' if os.name != 'nt' else None,
-    cors_allowed_origins="*",
-    message_queue=Config.REDIS_URL
-)
-db = SQLAlchemy()
-migrate = Migrate()
-login_manager = LoginManager()
-# session = Session()
-scheduler = APScheduler()
-authorization = AuthorizationServer()
-require_oauth = ResourceProtector()
+# Authlib refuse l'OAuth sur une requête qu'il voit en HTTP.
+# Cette variable permet de tester en local sans HTTPS.
+if Config.AUTHLIB_INSECURE_TRANSPORT:
+    os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
+else:
+    os.environ.pop('AUTHLIB_INSECURE_TRANSPORT', None)
 
 
 def create_app(config: Config):
@@ -47,10 +30,6 @@ def create_app(config: Config):
     app = Flask(__name__)
     # Chargement de la configuration
     app.config.from_object(config)
-
-    # Active CORS pour toutes les routes de l'application
-    CORS(app, origins="*", supports_credentials=True, expose_headers=["Content-Disposition"])
-
 
     # Initialisation des extensions avec l'application
     if not app.config.get("TESTING"):
@@ -60,22 +39,33 @@ def create_app(config: Config):
     login_manager.init_app(app)
     socketio.init_app(app)
     scheduler.init_app(app)
+    cors.init_app(app)
     # session.init_app(app)
     # Trust more proxy headers for better URL detection (proto, host, etc.)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
     from .models import Utilisateur  # Importer la classe Utilisateur
 
-    # Definir la fonction user_loader
+    # Definir la fonction user_loader, pour connexion classique
     @login_manager.user_loader
     def load_user(user_id):
         return Utilisateur.query.get(int(user_id))  # Charger l'utilisateur par ID
 
+    @login_manager.request_loader
+    def load_user_from_request(req):
+        view_func = app.view_functions.get(req.endpoint)
+        if not view_func or not getattr(view_func, '_allow_api_key', False):
+            return None
+        cle = req.headers.get("X-API-KEY")
+        return utiliser_cle(cle)
+
     # Importer et enregistrer le blueprint global API
     from app.controllers import api
     app.register_blueprint(api, url_prefix='/api')
-    
-    #permet d'avoir accès au fichier upload 
+    # Initialisation du swagger
+    swagger.init_app(app)
+
+    #permet d'avoir accès au fichier upload
     #ne pas supprimer
     UPLOAD_FOLDER = os.path.join(os.getcwd(), Config.UPLOAD_BASE_FOLDER)
     @app.route('/upload/<path:filename>')
