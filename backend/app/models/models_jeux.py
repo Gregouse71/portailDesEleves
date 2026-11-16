@@ -1,4 +1,7 @@
 import random
+import time
+from datetime import datetime, UTC
+
 from sqlalchemy.ext.mutable import MutableDict
 
 from app import db
@@ -9,15 +12,20 @@ class JeuxPartie(db.Model):
     # ID de la partie
     id = db.Column(db.Integer, primary_key=True)
 
+    # Type de jeu de la partie
     jeu = db.Column(db.String(100), nullable=False)
     terminee = db.Column(db.Boolean, nullable=False, default=False)
+
+    debut = db.Column(db.DateTime, nullable=False, default=datetime.now(UTC))
+    fin = db.Column(db.DateTime, nullable=True)
 
     utilisateur = db.relationship('Utilisateur', back_populates='parties')
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'))
 
     score = db.Column(db.Integer, nullable=False, default=0)
+    # Etat de la partie (plateau, score, tours...)
     etat = db.Column(MutableDict.as_mutable(db.JSON))
-    
+
     def __init__(self, utilisateur, jeu: str):
         if jeu not in ["2048"]:
             raise ValueError("Nom de jeu invalide")
@@ -25,6 +33,7 @@ class JeuxPartie(db.Model):
         self.terminee = False
         self.score = 0
         self.utilisateur = utilisateur
+        self.debut = datetime.now(UTC)
         if self.jeu == "2048":
             self.etat = {"plateau": [[0] * 4 for _ in range(4)]}
             self.add_random_tile()
