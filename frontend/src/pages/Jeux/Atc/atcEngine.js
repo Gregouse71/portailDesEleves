@@ -302,8 +302,8 @@ export function addPlane(state, sp = DEFAULT_SCREEN) {
     };
 }
 
-export function createInitialGame(sp = DEFAULT_SCREEN) {
-    RNG = mulberry32(4);
+export function createInitialGame(sp = DEFAULT_SCREEN, seed = 4) {
+    RNG = mulberry32(seed);
     const base = {
         clck: 0,
         safe_planes: 0,
@@ -1017,6 +1017,11 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
             };
         });
 
+    const executedCommand = nextStack
+        .slice(0, nextLevel - 1)
+        .map((item) => item.ch)
+        .join("");
+
     return {
         inputState: createInitialInputState(),
         gameState: {
@@ -1025,5 +1030,6 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
             ground: updatePlaneInList(gameState.ground),
         },
         forceUpdate: false,
+        executedCommand,
     };
 }

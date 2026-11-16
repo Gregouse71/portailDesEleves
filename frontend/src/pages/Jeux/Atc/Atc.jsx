@@ -11,8 +11,11 @@
  * Copy permission is hereby granted provided that this notice is
  * retained on all partial or complete copies.
  */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Card, Button, Table, Alert } from "react-bootstrap";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { nouvellePartie, faireUnCoup, leaderboardJeu } from "../../../api/api_jeux";
+import Leaderboard from "../../../components/elements/Leaderboard";
 import JeuxTemplate from "../../../components/templates/JeuxTemplate";
 import {
     PLANE_COLS,
@@ -137,13 +140,55 @@ const COMMANDES = [
 ];
 
 export default function Atc() {
+    const queryClient = useQueryClient();
     const [isMobile, setIsMobile] = useState(
         () => typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches
     );
-    const [gameState, setGameState] = useState(() => createInitialGame(DEFAULT_SCREEN));
+    const [gameState, setGameState] = useState(() => ({
+        clck: 0,
+        safe_planes: 0,
+        last_plane: -1,
+        air: [],
+        ground: [],
+        loser_msg: null,
+    }));
     const [inputState, setInputState] = useState(() => createInitialInputState());
+    const [gameStarted, setGameStarted] = useState(false);
+
+    const commandsRef = useRef([]);
+    const forcedUpdatesRef = useRef(0);
+    const submittedRef = useRef(false);
 
     const cleanRadar = useMemo(() => buildCleanRadarGrid(DEFAULT_SCREEN), []);
+
+    const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery({
+        queryKey: ["leaderboard", "atc"],
+        queryFn: () => leaderboardJeu({}, "atc"),
+    });
+
+    const submitScoreMutation = useMutation({
+        mutationFn: async (payload) => {
+            return await faireUnCoup(payload, "atc");
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["leaderboard", "atc"] });
+        },
+    });
+
+    const startNewGameMutation = useMutation({
+        mutationFn: async () => {
+            return await nouvellePartie({ jeu: "atc" });
+        },
+        onSuccess: (data) => {
+            const seed = data?.etat?.seed ?? 4;
+            commandsRef.current = [];
+            forcedUpdatesRef.current = 0;
+            submittedRef.current = false;
+            setGameState(createInitialGame(DEFAULT_SCREEN, seed));
+            setInputState(createInitialInputState());
+            setGameStarted(true);
+        },
+    });
 
     useEffect(() => {
         const mql = window.matchMedia("(max-width: 767.98px)");
@@ -152,46 +197,66 @@ export default function Atc() {
         return () => mql.removeEventListener("change", onChange);
     }, []);
 
+    // Envoyer le replay au serveur dès que la partie se termine
+    useEffect(() => {
+        if (gameStarted && gameState.loser_msg && !submittedRef.current) {
+            submittedRef.current = true;
+            submitScoreMutation.mutate({
+                ticks: gameState.clck,
+                forced_updates: forcedUpdatesRef.current,
+                commands: commandsRef.current,
+            });
+        }
+    }, [gameStarted, gameState.loser_msg, gameState.clck, submitScoreMutation]);
+
     const triggerUpdate = useCallback(() => {
         setGameState((prev) => stepUpdate(prev, DEFAULT_SCREEN));
     }, []);
 
-    // Timer périodique (désactivé sur mobile ou en fin de partie)
+    // Timer périodique (désactivé sur mobile, avant le début ou en fin de partie)
     useEffect(() => {
-        if (isMobile || gameState.loser_msg) return;
+        if (isMobile || !gameStarted || gameState.loser_msg) return;
         const timer = setInterval(() => {
             triggerUpdate();
         }, DEFAULT_SCREEN.update_secs * 1000);
         return () => clearInterval(timer);
-    }, [isMobile, gameState.clck, gameState.loser_msg, triggerUpdate]);
+    }, [isMobile, gameStarted, gameState.clck, gameState.loser_msg, triggerUpdate]);
 
     useEffect(() => {
-        if (isMobile) return;
+        if (isMobile || !gameStarted) return;
 
         const handleKeyDown = (e) => {
             if (e.ctrlKey || e.altKey || e.metaKey) return;
             if (e.target && ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
 
-            // En fin de partie, Espace relance une partie
+            // En fin de partie, Espace relance une partie via le serveur
             if (gameState.loser_msg) {
                 if (e.key === " ") {
                     e.preventDefault();
-                    setGameState(createInitialGame(DEFAULT_SCREEN));
-                    setInputState(createInitialInputState());
+                    startNewGameMutation.mutate();
                 }
                 return;
             }
 
             if (e.key === "Backspace" || e.key === "Enter" || e.key.length === 1) {
                 e.preventDefault();
-                const { inputState: nextInput, gameState: nextGame, forceUpdate } = handleInputKey(
-                    e.key,
-                    inputState,
-                    gameState,
-                    DEFAULT_SCREEN
-                );
+                const {
+                    inputState: nextInput,
+                    gameState: nextGame,
+                    forceUpdate,
+                    executedCommand,
+                } = handleInputKey(e.key, inputState, gameState, DEFAULT_SCREEN);
+
+                if (executedCommand) {
+                    commandsRef.current.push({
+                        clck: gameState.clck,
+                        keys: executedCommand,
+                    });
+                }
+
                 setInputState(nextInput);
                 if (forceUpdate) {
+                    forcedUpdatesRef.current += 1;
                     setGameState(stepUpdate(nextGame, DEFAULT_SCREEN));
                 } else {
                     setGameState(nextGame);
@@ -201,11 +266,10 @@ export default function Atc() {
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isMobile, gameState, inputState]);
+    }, [isMobile, gameStarted, gameState, inputState, startNewGameMutation]);
 
     const handleRestart = () => {
-        setGameState(createInitialGame(DEFAULT_SCREEN));
-        setInputState(createInitialInputState());
+        startNewGameMutation.mutate();
     };
 
     // Construction des 21 lignes de la fenêtre "planes" (à droite du radar, 20 colonnes)
@@ -346,7 +410,13 @@ export default function Atc() {
     const promptText = getInputPromptText(inputState);
 
     let inputLines;
-    if (gameState.loser_msg) {
+    if (!gameStarted) {
+        inputLines = [
+            "Cliquez sur « Commencer » pour lancer une partie.".slice(0, RADAR_COLS).padEnd(RADAR_COLS, " "),
+            "".padEnd(RADAR_COLS, " "),
+            "".padEnd(RADAR_COLS, " "),
+        ];
+    } else if (gameState.loser_msg) {
         inputLines = [
             gameState.loser_msg.slice(0, RADAR_COLS).padEnd(RADAR_COLS, " "),
             "".padEnd(RADAR_COLS, " "),
@@ -400,7 +470,7 @@ export default function Atc() {
                                     </div>
                                 ))}
                                 <div>
-                                    {gameState.loser_msg ? (
+                                    {!gameStarted || gameState.loser_msg ? (
                                         <span>{inputLines[0]}</span>
                                     ) : (
                                         <>
@@ -423,8 +493,13 @@ export default function Atc() {
                             </div>
 
                             <div className="mt-2">
-                                <Button variant="secondary" size="sm" onClick={handleRestart}>
-                                    Nouvelle partie
+                                <Button
+                                    variant={gameStarted ? "secondary" : "primary"}
+                                    size="sm"
+                                    onClick={handleRestart}
+                                    disabled={startNewGameMutation.isPending}
+                                >
+                                    {gameStarted ? "Nouvelle partie" : "Commencer"}
                                 </Button>
                             </div>
                         </div>
@@ -501,6 +576,14 @@ export default function Atc() {
                                 </ul>
                             </Card.Body>
                         </Card>
+                    </div>
+
+                    <div className="mt-3">
+                        <Leaderboard
+                            data={leaderboardData}
+                            title="Meilleurs contrôleurs"
+                            isLoading={isLoadingLeaderboard}
+                        />
                     </div>
                 </div>
             }

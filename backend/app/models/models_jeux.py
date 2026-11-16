@@ -42,7 +42,7 @@ class JeuxPartie(db.Model):
             self.etat = {
                 "seed": random.randint(1, 2**31 - 1),
                 "started_at": time.time(),
-                "update_sec": 4,
+                "update_sec": 5,
             }
 
     def to_dict(self):
