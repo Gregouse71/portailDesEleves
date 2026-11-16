@@ -49,23 +49,29 @@ body[data-theme] .chat-author-me {
     font-style: italic;
     color: inherit !important;
     text-decoration: none;
+    padding: 1px 3px;
+    border-radius: 4px;
 }
 
 .chat-mention:hover {
     text-decoration: underline;
 }
 
+body[data-theme] .chat-mention {
+    background-color: color-mix(in srgb, var(--secondary-color) 10%, transparent) !important;
+}
+
+body[data-theme="dark"] .chat-mention {
+    background-color: color-mix(in srgb, var(--secondary-color) 20%, transparent) !important;
+}
+
 // Quand c'est moi qui suis tagué
 body[data-theme] .chat-mention-me {
     background-color: color-mix(in srgb, var(--primary-color) 35%, transparent) !important;
-    padding: 1px 3px;
-    border-radius: 4px;
 }
 
 body[data-theme="dark"] .chat-mention-me {
     background-color: color-mix(in srgb, var(--primary-color) 90%, transparent) !important;
-    padding: 1px 3px;
-    border-radius: 4px;
 }
 
 // Liste de suggestions
