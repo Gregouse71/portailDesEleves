@@ -30,6 +30,48 @@
     color: #000000;
 }
 
+.atc-quick-help {
+    font-size: 0.85rem;
+
+    code {
+        font-family: "Courier New", Courier, monospace;
+        font-weight: 700;
+    }
+}
+
+.atc-compass-keys {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    max-width: 210px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.atc-compass-cell {
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 6px;
+    padding: 4px 6px;
+    background-color: var(--card-bg, #f8f9fa);
+    line-height: 1.15;
+
+    &.atc-compass-center {
+        opacity: 0.45;
+        border-style: dashed;
+    }
+
+    .atc-key {
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .atc-deg {
+        font-size: 0.72rem;
+        color: var(--text-muted, #6c757d);
+    }
+}
+
 .atc-consignes {
     font-size: 0.9rem;
 

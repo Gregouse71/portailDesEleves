@@ -27,7 +27,7 @@ class JeuxPartie(db.Model):
     etat = db.Column(MutableDict.as_mutable(db.JSON))
 
     def __init__(self, utilisateur, jeu: str):
-        if jeu not in ["2048"]:
+        if jeu not in ["2048", "atc"]:
             raise ValueError("Nom de jeu invalide")
         self.jeu = jeu
         self.terminee = False
@@ -38,6 +38,12 @@ class JeuxPartie(db.Model):
             self.etat = {"plateau": [[0] * 4 for _ in range(4)]}
             self.add_random_tile()
             self.add_random_tile()
+        elif self.jeu == "atc":
+            self.etat = {
+                "seed": random.randint(1, 2**31 - 1),
+                "started_at": time.time(),
+                "update_sec": 4,
+            }
 
     def to_dict(self):
         return {

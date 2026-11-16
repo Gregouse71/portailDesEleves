@@ -30,7 +30,7 @@ def new_game(jeu: str, user):
     Crée une partie au jeu demandé pour l'utilisateur demandé,
     les parties déjà en cours sont terminées
     """
-    if jeu in ["2048"]:
+    if jeu in ["2048", "atc"]:
         en_cours = JeuxPartie.query.filter_by(utilisateur_id=user.id, terminee=False, jeu=jeu)
         for g in en_cours:
             if jeu == "2048" and g.score > user.meilleur_score_2048:
@@ -77,6 +77,21 @@ def faire_un_coup(s: str, id: int, data: dict):
             db.session.add(partie)
             db.session.commit()
             return partie.to_dict()
+        elif partie.jeu == "atc" and s == partie.jeu:
+            res = verify_and_score_atc(partie.etat, data)
+            partie.terminee = True
+            partie.fin = datetime.now(UTC)
+            partie.score = res["score"] if res["valid"] else 0
+            partie.etat = {
+                **partie.etat,
+                "valid": res["valid"],
+                "reason": res.get("reason"),
+                "verified_tick": res.get("tick", 0),
+            }
+            db.session.add(partie)
+            db.session.commit()
+            return partie.to_dict()
+
     finally:
         try:
             lock.release()

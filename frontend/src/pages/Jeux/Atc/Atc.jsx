@@ -1,10 +1,23 @@
+/*!
+ * @license BSD-3-Clause
+ * Copyright (c) 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Ed James.
+ *
+ * Copyright (c) 1987 by Ed James, UC Berkeley.  All rights reserved.
+ *
+ * Copy permission is hereby granted provided that this notice is
+ * retained on all partial or complete copies.
+ */
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Row, Col, Card, Button } from "react-bootstrap";
+import { Card, Button, Table, Alert } from "react-bootstrap";
 import JeuxTemplate from "../../../components/templates/JeuxTemplate";
 import {
-    AUTHOR_STR,
     PLANE_COLS,
     S_MARKED,
+    T_AIRPORT,
     DEFAULT_SCREEN,
     planeName,
     formatCommand,
@@ -19,83 +32,142 @@ import "../../../assets/styles/atc.scss";
 
 const RADAR_COLS = DEFAULT_SCREEN.width * 2; // 60 colonnes
 
+// Couleurs distinctes pour chaque porte de sortie (E0..E7) et aéroport (A0..A1)
+const EXIT_COLORS = [
+    "#ff595e", // 0 : Rouge
+    "#ff924c", // 1 : Orange
+    "#ffca3a", // 2 : Jaune
+    "#8ac926", // 3 : Vert
+    "#2ec4b6", // 4 : Turquoise
+    "#4cc9f0", // 5 : Bleu ciel
+    "#c77dff", // 6 : Violet
+    "#ff70a6", // 7 : Rose
+];
+
+const AIRPORT_COLORS = [
+    "#a8dadc", // A0
+    "#ffd166", // A1
+];
+
+function getPlaneDestColor(pp) {
+    if (pp.dest_type === T_AIRPORT) {
+        return AIRPORT_COLORS[pp.dest_no % AIRPORT_COLORS.length];
+    }
+    return EXIT_COLORS[pp.dest_no % EXIT_COLORS.length];
+}
+
+const COMPASS_KEYS = [
+    { key: "a", arrow: "↖", deg: "315°" },
+    { key: "z", arrow: "↑", deg: "0°" },
+    { key: "e", arrow: "↗", deg: "45°" },
+    { key: "q", arrow: "←", deg: "270°" },
+    { key: "s", arrow: "•", deg: "centre", center: true },
+    { key: "d", arrow: "→", deg: "90°" },
+    { key: "w", arrow: "↙", deg: "225°" },
+    { key: "x", arrow: "↓", deg: "180°" },
+    { key: "c", arrow: "↘", deg: "135°" },
+];
+
+const QUICK_ACTIONS = [
+    { touche: "a [0-9]", action: "Altitude cible" },
+    { touche: "t [dir]", action: "Virer vers cap" },
+    { touche: "tt b/e/a #", action: <>Cap vers <b>b</b>alise, sorti<b>e</b>, <b>a</b>éroport</> },
+    { touche: "ab #", action: "Différer le virage/cercle à la balise" },
+    { touche: "m/u/i", action: "Marquer / Démarquer / Ignorer" },
+    { touche: "?", action: "Aide" },
+    { touche: "Entrée", action: "Tour suivant" },
+];
+
 const CONSIGNES = [
     {
         titre: <>Avions</>,
-        texte: <><code>A7</code> (majuscule = hélice, avance 1 tour sur 2), <code>b7</code> (minuscule = jet, avance à chaque tour). Le chiffre indique l&apos;altitude (en milliers de pieds).</>
+        texte: <><code>A7</code> (majuscule = hélice, avance 1 tour sur 2), <code>b7</code> (minuscule = jet, avance à chaque tour). Le chiffre indique l&apos;altitude (en milliers de pieds).</>,
     },
     {
         titre: <>Sorties (<code>0</code>–<code>7</code>)</>,
-        texte: <>les avions entrent à < strong > altitude 7</strong > et doivent sortir par leur porte de destination à < strong > altitude 9</strong ></>
+        texte: <>les avions entrent à <strong>altitude 7</strong> et doivent sortir par leur porte de destination à <strong>altitude 9</strong>.</>,
     },
     {
         titre: <>Aéroports (<code>^0</code>, <code>&gt;1</code>)</>,
-        texte: <>décollage en donnant une altitude & gt; 0. Atterrissage à < strong > altitude 0</strong > dans la direction de la piste(<code>^</code> = Nord, <code>&gt;</code> = Est).</>
+        texte: <>décollage en donnant une altitude &gt; 0. Atterrissage à <strong>altitude 0</strong> dans la direction de la piste (<code>^</code> = Nord, <code>&gt;</code> = Est).</>,
     },
     {
         titre: <>Balises (<code>*0</code>, <code>*1</code>)</>,
-        texte: <>points de repère pour différer un ordre.</>
+        texte: <>points de repère pour différer un ordre.</>,
     },
     {
         titre: <>Collision</>,
-        texte: <>fin de partie si deux avions sont simultanément à distance ≤ 1 en X, Y et altitude.</>
+        texte: <>fin de partie si deux avions sont simultanément à distance ≤ 1 en X, Y et altitude.</>,
     },
-]
+];
+
 const COMMANDES = [
     {
         titre: <><code>a[0-9]</code></>,
-        texte: <>changer d&apos;altitude (ex: <code>aa9</code> pour monter à 9000 ft, <code>ac2</code> / <code>ad2</code> pour +2000 / -2000 ft).</>
+        texte: <>changer d&apos;altitude (ex: <code>aa9</code> pour monter à 9000 ft, <code>ac2</code> / <code>ad2</code> pour +2000 / -2000 ft).</>,
     },
     {
         titre: <><code>t[zedcxwqa]</code></>,
-        texte: <>tourner vers une direction absolue < code > s</code > (<code>w</code> = 0° N, <code>e</code> = 45° NE, <code>d</code> = 90° E, <code>c</code> = 135° SE, <code>x</code> = 180° S, <code>w</code> = 225° SO, <code>q</code> = 270° O, <code>a</code> = 315° NO).</>
+        texte: <>tourner vers une direction absolue (<code>z</code> = 0° N, <code>e</code> = 45° NE, <code>d</code> = 90° E, <code>c</code> = 135° SE, <code>x</code> = 180° S, <code>w</code> = 225° SO, <code>q</code> = 270° O, <code>a</code> = 315° NO).</>,
     },
     {
         titre: <><code>tl</code> / <code>tr</code> (<code>tL</code> / <code>tR</code>)</>,
-        texte: <>tourner de 45° (90°) à gauche / droite.</>
+        texte: <>tourner de 45° (90°) à gauche / droite.</>,
     },
     {
         titre: <><code>ttb0</code> / <code>tte2</code></>,
-        texte: <>tourner vers une balise (<code>b</code>/<code>*</code>), une sortie (<code>e</code>) ou un aéroport (<code>a</code>).</>
+        texte: <>tourner vers une balise (<code>b</code>/<code>*</code>), une sortie (<code>e</code>) ou un aéroport (<code>a</code>).</>,
     },
     {
         titre: <><code>c</code></>,
-        texte: <>décrire un cercle.</>
+        texte: <>décrire un cercle.</>,
     },
     {
         titre: <><code>ab0</code> (à la fin d&apos;une commande de virage ou cercle)</>,
-        texte: <>différer l&apos;ordre au passage sur la balise.</>
+        texte: <>différer l&apos;ordre au passage sur la balise.</>,
     },
     {
-        titre: <><code>m</code></>,
-        texte: <>marquer (surbrillance), démarquer (réactivé à la prochaine balise) ou ignorer.</>
+        titre: <><code>m</code> / <code>u</code> / <code>i</code></>,
+        texte: <>marquer (surbrillance), démarquer (réactivé à la prochaine balise) ou ignorer.</>,
     },
     {
         titre: <><code>Entrée</code></>,
-        texte: <>avancer immédiatement d&apos;un tour.</>
+        texte: <>avancer immédiatement d&apos;un tour.</>,
     },
-]
+];
 
 export default function Atc() {
+    const [isMobile, setIsMobile] = useState(
+        () => typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches
+    );
     const [gameState, setGameState] = useState(() => createInitialGame(DEFAULT_SCREEN));
     const [inputState, setInputState] = useState(() => createInitialInputState());
 
     const cleanRadar = useMemo(() => buildCleanRadarGrid(DEFAULT_SCREEN), []);
 
+    useEffect(() => {
+        const mql = window.matchMedia("(max-width: 767.98px)");
+        const onChange = (e) => setIsMobile(e.matches);
+        mql.addEventListener("change", onChange);
+        return () => mql.removeEventListener("change", onChange);
+    }, []);
+
     const triggerUpdate = useCallback(() => {
         setGameState((prev) => stepUpdate(prev, DEFAULT_SCREEN));
     }, []);
 
-    // Timer périodique (update_secs = 5s par défaut, réinitialisé si update forcé avec Entrée)
+    // Timer périodique (désactivé sur mobile ou en fin de partie)
     useEffect(() => {
-        if (gameState.loser_msg) return;
+        if (isMobile || gameState.loser_msg) return;
         const timer = setInterval(() => {
             triggerUpdate();
         }, DEFAULT_SCREEN.update_secs * 1000);
         return () => clearInterval(timer);
-    }, [gameState.clck, gameState.loser_msg, triggerUpdate]);
+    }, [isMobile, gameState.clck, gameState.loser_msg, triggerUpdate]);
 
     useEffect(() => {
+        if (isMobile) return;
+
         const handleKeyDown = (e) => {
             if (e.ctrlKey || e.altKey || e.metaKey) return;
             if (e.target && ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
@@ -129,7 +201,7 @@ export default function Atc() {
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [gameState, inputState]);
+    }, [isMobile, gameState, inputState]);
 
     const handleRestart = () => {
         setGameState(createInitialGame(DEFAULT_SCREEN));
@@ -138,27 +210,36 @@ export default function Atc() {
 
     // Construction des 21 lignes de la fenêtre "planes" (à droite du radar, 20 colonnes)
     const planeLines = useMemo(() => {
-        const lines = Array(DEFAULT_SCREEN.height).fill("");
-        lines[0] = `Time: ${String(gameState.clck).padEnd(4, " ")} Safe: ${gameState.safe_planes}`;
-        lines[1] = "";
-        lines[2] = "pl dt  comm";
+        const lines = Array.from({ length: DEFAULT_SCREEN.height }, () => ({
+            text: "",
+            color: null,
+        }));
+        lines[0] = {
+            text: `Time: ${String(gameState.clck).padEnd(4, " ")} Safe: ${gameState.safe_planes}`,
+            color: null,
+        };
+        lines[1] = { text: "", color: null };
+        lines[2] = { text: "pl dt  comm", color: null };
 
         let row = 3;
         for (const pp of gameState.air) {
             if (row >= DEFAULT_SCREEN.height) break;
-            lines[row++] = formatCommand(pp);
+            lines[row++] = { text: formatCommand(pp), color: getPlaneDestColor(pp) };
         }
         if (row < DEFAULT_SCREEN.height) {
-            lines[row++] = "";
+            lines[row++] = { text: "", color: null };
         }
         for (const pp of gameState.ground) {
             if (row >= DEFAULT_SCREEN.height) break;
-            lines[row++] = formatCommand(pp);
+            lines[row++] = { text: formatCommand(pp), color: getPlaneDestColor(pp) };
         }
-        return lines.map((l) => l.slice(0, PLANE_COLS).padEnd(PLANE_COLS, " "));
+        return lines.map((l) => ({
+            text: l.text.slice(0, PLANE_COLS).padEnd(PLANE_COLS, " "),
+            color: l.color,
+        }));
     }, [gameState]);
 
-    // Construction des 21 lignes du radar avec les avions superposés
+    // Construction des 21 lignes du radar avec les sorties et avions colorés
     const radarRows = useMemo(() => {
         const planesByRow = new Map();
         for (const pp of gameState.air) {
@@ -166,60 +247,101 @@ export default function Atc() {
             planesByRow.get(pp.ypos).push(pp);
         }
 
+        const exitsByRow = new Map();
+        DEFAULT_SCREEN.exit.forEach((e, idx) => {
+            if (!exitsByRow.has(e.y)) exitsByRow.set(e.y, []);
+            exitsByRow.get(e.y).push({ x: e.x, color: EXIT_COLORS[idx % EXIT_COLORS.length] });
+        });
+
+        const airportsByRow = new Map();
+        DEFAULT_SCREEN.airport.forEach((a, idx) => {
+            if (!airportsByRow.has(a.y)) airportsByRow.set(a.y, []);
+            airportsByRow.get(a.y).push({ x: a.x, color: AIRPORT_COLORS[idx % AIRPORT_COLORS.length] });
+        });
+
         return cleanRadar.map((rowChars, y) => {
             const rowPlanes = planesByRow.get(y);
-            if (!rowPlanes || rowPlanes.length === 0) {
+            const rowExits = exitsByRow.get(y);
+            const rowAirports = airportsByRow.get(y);
+
+            if (!rowPlanes && !rowExits && !rowAirports) {
                 return <span key={`r-${y}`}>{rowChars.join("")}</span>;
             }
 
-            // Surcharger les cellules (xpos * 2, xpos * 2 + 1) pour chaque avion sur cette ligne
-            const cells = rowChars.map((ch) => ({ ch, standout: false }));
-            for (const pp of rowPlanes) {
-                const col = pp.xpos * 2;
-                const isMarked = pp.status === S_MARKED;
-                if (col >= 0 && col + 1 < RADAR_COLS) {
-                    cells[col] = { ch: planeName(pp), standout: isMarked };
-                    cells[col + 1] = { ch: String(pp.altitude), standout: isMarked };
+            const cells = rowChars.map((ch) => ({ ch, color: null, standout: false, bold: false }));
+
+            if (rowExits) {
+                for (const ex of rowExits) {
+                    const col = ex.x * 2;
+                    if (col >= 0 && col < RADAR_COLS) {
+                        cells[col] = { ...cells[col], color: ex.color, bold: true };
+                    }
                 }
             }
 
-            // Regrouper les segments consécutifs de même style
-            const segments = [];
-            let curStandout = cells[0].standout;
-            let curStr = "";
-            for (let x = 0; x < cells.length; x++) {
-                if (cells[x].standout === curStandout) {
-                    curStr += cells[x].ch;
-                } else {
-                    segments.push({ text: curStr, standout: curStandout });
-                    curStandout = cells[x].standout;
-                    curStr = cells[x].ch;
+            if (rowAirports) {
+                for (const ap of rowAirports) {
+                    const col = ap.x * 2;
+                    if (col >= 0 && col + 1 < RADAR_COLS) {
+                        cells[col] = { ...cells[col], color: ap.color, bold: true };
+                        cells[col + 1] = { ...cells[col + 1], color: ap.color, bold: true };
+                    }
                 }
             }
-            if (curStr) segments.push({ text: curStr, standout: curStandout });
+
+            if (rowPlanes) {
+                for (const pp of rowPlanes) {
+                    const col = pp.xpos * 2;
+                    const isMarked = pp.status === S_MARKED;
+                    const color = getPlaneDestColor(pp);
+                    if (col >= 0 && col + 1 < RADAR_COLS) {
+                        cells[col] = { ch: planeName(pp), color, standout: isMarked, bold: true };
+                        cells[col + 1] = { ch: String(pp.altitude), color, standout: isMarked, bold: true };
+                    }
+                }
+            }
+
+            const segments = [];
+            let cur = { color: cells[0].color, standout: cells[0].standout, bold: cells[0].bold };
+            let curStr = "";
+            for (let x = 0; x < cells.length; x++) {
+                const c = cells[x];
+                if (c.color === cur.color && c.standout === cur.standout && c.bold === cur.bold) {
+                    curStr += c.ch;
+                } else {
+                    segments.push({ text: curStr, ...cur });
+                    cur = { color: c.color, standout: c.standout, bold: c.bold };
+                    curStr = c.ch;
+                }
+            }
+            if (curStr) segments.push({ text: curStr, ...cur });
 
             return (
                 <span key={`r-${y}`}>
-                    {segments.map((seg, i) =>
-                        seg.standout ? (
-                            <span key={i} className="atc-standout">
+                    {segments.map((seg, i) => {
+                        if (!seg.color && !seg.standout && !seg.bold) {
+                            return <span key={i}>{seg.text}</span>;
+                        }
+                        const style = seg.standout
+                            ? {
+                                  backgroundColor: seg.color || "#e6e6e6",
+                                  color: "#000000",
+                                  fontWeight: "bold",
+                              }
+                            : {
+                                  color: seg.color || undefined,
+                                  fontWeight: seg.bold ? "bold" : undefined,
+                              };
+                        return (
+                            <span key={i} style={style}>
                                 {seg.text}
                             </span>
-                        ) : (
-                            <span key={i}>{seg.text}</span>
-                        )
-                    )}
+                        );
+                    })}
                 </span>
             );
         });
     }, [cleanRadar, gameState.air]);
-
-    // Construction des 3 lignes du bas (fenêtre "input" 60 cols + fenêtre "credit" 20 cols)
-    const creditLines = [
-        "*".repeat(PLANE_COLS - 1) + " ",
-        ` ${AUTHOR_STR}`.padEnd(PLANE_COLS, " "),
-        "*".repeat(PLANE_COLS - 1) + " ",
-    ];
 
     const promptText = getInputPromptText(inputState);
 
@@ -238,19 +360,43 @@ export default function Atc() {
         ];
     }
 
+    if (isMobile) {
+        return (
+            <JeuxTemplate
+                titre="ATC"
+                contenu={
+                    <Alert variant="warning" className="mt-3">
+                        <strong>Jeu non disponible sur mobile.</strong>
+                        <p className="mb-0 mt-1">
+                            ATC se joue intégralement au clavier dans un terminal 80×24. Connecte-toi depuis un ordinateur pour jouer.
+                        </p>
+                    </Alert>
+                }
+            />
+        );
+    }
+
     return (
         <JeuxTemplate
             titre="ATC"
             fluid={true}
             contenu={
                 <div>
-                    <div className="d-flex flex-xs-wrap flex-row justify-content-between align-items-top gap-2 mb-3">
-                        <div className="d-flex flex-column align-items-start flex-grow-1">
+                    <div className="d-flex flex-wrap flex-lg-nowrap justify-content-between align-items-center gap-3 mb-3">
+                        <div className="d-flex flex-column align-items-start">
                             <div className="atc-terminal">
                                 {radarRows.map((radarRow, y) => (
                                     <div key={`line-${y}`}>
                                         {radarRow}
-                                        {planeLines[y]}
+                                        <span
+                                            style={
+                                                planeLines[y].color
+                                                    ? { color: planeLines[y].color }
+                                                    : undefined
+                                            }
+                                        >
+                                            {planeLines[y].text}
+                                        </span>
                                     </div>
                                 ))}
                                 <div>
@@ -267,15 +413,12 @@ export default function Atc() {
                                             </span>
                                         </>
                                     )}
-                                    {/* <span>{creditLines[0]}</span> */}
                                 </div>
                                 <div>
                                     <span>{inputLines[1]}</span>
-                                    {/* <span>{creditLines[1]}</span> */}
                                 </div>
                                 <div>
                                     <span>{inputLines[2]}</span>
-                                    {/* <span>{creditLines[2]}</span> */}
                                 </div>
                             </div>
 
@@ -285,8 +428,51 @@ export default function Atc() {
                                 </Button>
                             </div>
                         </div>
-                        <div>
-                            Aides
+
+                        {/* Aides rapides sur la droite */}
+                        <div className="atc-quick-help flex-grow-1">
+                            <Card className="mb-3">
+                                <Card.Header className="fw-bold py-2">
+                                    Caps
+                                </Card.Header>
+                                <Card.Body className="py-2">
+                                    <div className="atc-compass-keys">
+                                        {COMPASS_KEYS.map((item) => (
+                                            <div
+                                                key={item.key}
+                                                className={`atc-compass-cell ${
+                                                    item.center ? "atc-compass-center" : ""
+                                                }`}
+                                            >
+                                                <div className="atc-key">
+                                                    {item.arrow} {item.key}
+                                                </div>
+                                                <div className="atc-deg">{item.deg}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card.Body>
+                            </Card>
+
+                            <Card>
+                                <Card.Header className="fw-bold py-2">
+                                    Commandes essentielles
+                                </Card.Header>
+                                <Card.Body className="p-0">
+                                    <Table size="sm" striped className="mb-0">
+                                        <tbody>
+                                            {QUICK_ACTIONS.map((row, idx) => (
+                                                <tr key={idx}>
+                                                    <td className="ps-2 text-nowrap">
+                                                        <code>{row.touche}</code>
+                                                    </td>
+                                                    <td className="pe-2">{row.action}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </Card.Body>
+                            </Card>
                         </div>
                     </div>
 
@@ -298,20 +484,20 @@ export default function Atc() {
                                     <strong>But :</strong> Guider les avions à travers l&apos;espace aérien sans collision ni panne de carburant.
                                 </p>
                                 <ul className="ps-3 mb-2">
-                                    {CONSIGNES.map((elt, ind) =>
+                                    {CONSIGNES.map((elt, ind) => (
                                         <li key={ind}>
                                             <strong>{elt.titre} :</strong> {elt.texte}
                                         </li>
-                                    )}
+                                    ))}
                                 </ul>
 
                                 <p className="mb-1 fw-bold">Commandes (commencent par la lettre de l&apos;avion) :</p>
                                 <ul className="ps-3 mb-2">
-                                    {COMMANDES.map((elt, ind) =>
+                                    {COMMANDES.map((elt, ind) => (
                                         <li key={ind}>
                                             {elt.titre} : {elt.texte}
                                         </li>
-                                    )}
+                                    ))}
                                 </ul>
                             </Card.Body>
                         </Card>

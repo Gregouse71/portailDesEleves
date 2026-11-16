@@ -125,7 +125,6 @@ function mulberry32(seed) {
         // Convert uint32 to float in [0, 1).
         return ((x ^ (x >>> 14)) >>> 0) / 2**32;
     };
-    const reset = () => { t = seed >>> 0 }
 
     return next;
 }
