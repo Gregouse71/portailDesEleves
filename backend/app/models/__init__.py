@@ -16,3 +16,4 @@ from app.models.models_soifguard import OperationSoifguard, ConsoSoifguard
 from app.models.modules.models_bibliotheque import Livre, EmpruntLivre
 from app.models.models_oauth import OAuth2Client, OAuth2Token, OAuth2AuthorizationCode, AuthorizationCodeGrant, OpenIDCode
 from app.models.models_media import ElementMedia
+from app.models.models_cles_api import CleAPI
