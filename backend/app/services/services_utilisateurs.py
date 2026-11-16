@@ -3,13 +3,13 @@ from app import db
 from app.models.models_utilisateurs import Utilisateur
 from app.models.models_media import ElementMedia
 
+from flask import abort
 from datetime import date, timedelta, datetime, timezone
 from itertools import groupby
 from sqlalchemy import func
 from collections import deque
 import secrets
 import string
-import os
 
 # Erreur levee si l'une de ces fonctions echoue
 class ErreurDeLienUtilisateurs(Exception):
@@ -131,16 +131,27 @@ def changer_marrain(marrain:Utilisateur, fillot:Utilisateur):
 
 # AUTRES
 
-def prochains_anniv():
+def prochains_anniv(debut=None, fin=None):
+    """
+    Détermine les anniversaires dans les 7 prochains jours.
+    Si *debut* est donné, les anniversaires sont ceux 7 jours après début.
+    Si *fin* est aussi donné, les anniversaires sont ceux entre *debut* et *fin*.
+    """
+    today = datetime.now(timezone.utc).date()
+
+    try:
+        deb = today if debut is None else debut
+        debut = date(year=2000, month=deb.month, day=deb.day)
+        fin = debut + timedelta(days=7) if fin is None else date(year=2000, month=fin.month, day=fin.day)
+    except ValueError:
+        abort(400)
+
     def must_display(d):
         if d is None:
             return False
-        today = datetime.now(timezone.utc).date()
         date1 = date(year=2000, month=d.month, day=d.day)
-        date2 = date(year=2000, month=today.month, day=today.day)
 
-        return (date2 <= date1 <= date2 + timedelta(days=7)
-                or date2 <= date1 + timedelta(days=365) <= date2 + timedelta(days=7))
+        return debut <= date1 <= fin if debut <= fin else (debut <= date1 or date1 <= fin)
 
     now = datetime.now(timezone.utc).date().replace(year=2000)
     def aux(user):
@@ -148,10 +159,10 @@ def prochains_anniv():
         Renvoie la distance entre la date de naissance de use et la date d'aujourd'hui
         sans prendre en compte l'année.
         """
-        temp = (user[0] - now).days
+        temp = (user[0] - debut).days
         if temp >= 0:
             return temp
-        return (user[0].replace(year=2001) - now).days
+        return (user[0].replace(year=2001) - debut).days
 
     # C'est horrible. Il faudrait vraiment que les promos soient des entiers
     max_promo = int(db.session.query(func.max(Utilisateur.promotion)).first()[0])
@@ -167,6 +178,29 @@ def prochains_anniv():
             key=aux)
     ret = [(k, list(map(lambda x: (x[1], x[2], x[3], x[4], x[5]), list(g)))) for k, g in groupby(ret, lambda x: x[0])]
     return ret
+
+
+def annuaire(page: int, par_page: int, promo=None, cycle=None, depuis_id=None) -> dict:
+    """
+    Renvoie une page de l'annuaire : les utilisateurs ayant une promotion, triés par id.
+    *promo*, *cycle* et *depuis_id* (id strictement supérieur) filtrent la liste.
+    """
+    query = Utilisateur.query.filter(Utilisateur.promotion.isnot(None))
+    if promo:
+        query = query.filter(Utilisateur.promotion == promo)
+    if cycle:
+        query = query.filter(Utilisateur.cycle == cycle)
+    if depuis_id:
+        query = query.filter(Utilisateur.id > depuis_id)
+
+    pagination = query.order_by(Utilisateur.id).paginate(page=page, per_page=par_page, error_out=False)
+    return {
+        "items": [u.to_annuaire_dict() for u in pagination.items],
+        "total": pagination.total,
+        "page": page,
+        "pages": max(1, pagination.pages),
+        "per_page": par_page,
+    }
 
 
 def get_user_media(user_id):
