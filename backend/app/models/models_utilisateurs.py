@@ -64,8 +64,8 @@ class Utilisateur(db.Model, UserMixin) :
     mot_de_passe = db.Column(db.String(255), nullable=False)
 
     # Modifiable par l'utilisateur
-    photo_id = db.Column(db.Integer, nullable=True) # l'id du media
-    banniere_id = db.Column(db.Integer, nullable=True) # l'id du media
+    photo_id = db.Column(db.Integer, db.ForeignKey('media_element.id', use_alter=True), nullable=True) # l'id du media
+    banniere_id = db.Column(db.Integer, db.ForeignKey('media_element.id', use_alter=True), nullable=True) # l'id du media
     email = db.Column(db.String(1000), nullable=False)
     date_de_naissance = db.Column(db.Date(), nullable=True)
     surnom = db.Column(db.String(1000), nullable=True)
@@ -128,7 +128,9 @@ class Utilisateur(db.Model, UserMixin) :
     score_global_con = db.Column(db.Float, nullable=False, default=0)
     score_global_div = db.Column(db.Float, nullable=False, default=0)
     votes = db.relationship('VoteSondage', back_populates='utilisateur')
-    media = db.relationship('ElementMedia', back_populates='utilisateur')
+    media = db.relationship('ElementMedia', back_populates='utilisateur', foreign_keys='ElementMedia.utilisateur_id')
+    photo_media = db.relationship('ElementMedia', foreign_keys=[photo_id], post_update=True)
+    banniere_media = db.relationship('ElementMedia', foreign_keys=[banniere_id], post_update=True)
     # Messages
     messages = db.relationship('Message', back_populates='utilisateur')
 

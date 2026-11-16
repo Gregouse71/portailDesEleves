@@ -17,12 +17,17 @@ class Association(db.Model):
     nom = db.Column(db.String(1000), nullable=False)
     nom_dossier = db.Column(db.String(1000), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    logo_id = db.Column(db.Integer, nullable=True)
-    banniere_id = db.Column(db.Integer, nullable=True)  # banniere de l'asso
+    logo_id = db.Column(db.Integer, db.ForeignKey('media_element.id', use_alter=True), nullable=True)
+    banniere_id = db.Column(db.Integer, db.ForeignKey('media_element.id', use_alter=True), nullable=True)  # banniere de l'asso
     a_cacher_aux_nouveaux = db.Column(db.Boolean, nullable=False)
+
+    logo_media = db.relationship('ElementMedia', foreign_keys=[logo_id], post_update=True)
+    banniere_media = db.relationship('ElementMedia', foreign_keys=[banniere_id], post_update=True)
 
     # Les publications de l'asso
     publications = db.relationship('Publication', back_populates='association')
+    # Les événements de l'asso
+    evenements = db.relationship('Evenement', back_populates='association')
     # Mandats de l'asso
     mandats = db.relationship('AssociationMandat', back_populates='association')
 
@@ -147,11 +152,13 @@ class AssociationMandat(db.Model):
     membres = db.relationship('AssociationMembre', back_populates='mandat')
 
     # Media du mandat
-    media = db.relationship('ElementMedia', back_populates='mandat')
+    media = db.relationship('ElementMedia', back_populates='mandat', foreign_keys='ElementMedia.mandat_id')
 
     # Logo et bannière du mandat
-    logo_id = db.Column(db.Integer, nullable=True)
-    banniere_id = db.Column(db.Integer, nullable=True)
+    logo_id = db.Column(db.Integer, db.ForeignKey('media_element.id', use_alter=True), nullable=True)
+    banniere_id = db.Column(db.Integer, db.ForeignKey('media_element.id', use_alter=True), nullable=True)
+    logo_media = db.relationship('ElementMedia', foreign_keys=[logo_id], post_update=True)
+    banniere_media = db.relationship('ElementMedia', foreign_keys=[banniere_id], post_update=True)
 
     def __init__(self, asso: Association, nom: str, position: int = 0, actuel: bool = False):
         self.nom = nom

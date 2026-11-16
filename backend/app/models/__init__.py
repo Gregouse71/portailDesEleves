@@ -5,7 +5,8 @@ from app.models.models_global import *
 from app.models.models_sondages import *
 from app.models.models_divers import *
 from app.models.models_chat import Message
-from app.models.modules.models_elections import Election, ElectionVote
+from app.models.models_evenements import Evenement
+from app.models.modules.models_elections import Election, ElectionVote, ElectionVoteChiffre
 from app.models.modules.models_cotisations import AssociationCotisation, AssociationCotisationUtilisateur
 from app.models.modules.models_audio import AssoAudio, AssoAlbum
 from app.models.models_jeux import JeuxPartie

@@ -26,7 +26,8 @@ class Sondage(db.Model):
     # reponses possibles
     reponses = db.Column(MutableList.as_mutable(db.JSON), nullable=False)
     # donnees du sondage
-    propose_par_user_id = db.Column(db.Integer, nullable=False)
+    propose_par_user_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=False)
+    propose_par = db.relationship('Utilisateur', backref='sondages_proposes', foreign_keys=[propose_par_user_id])
     autorise = db.Column(db.Boolean, nullable=False, default=False) # False : non autorise, True : en attente de publciation ou sondage du jour
     archive = db.Column(db.Boolean, nullable=False, default=False)
     date_proposition = db.Column(db.Date(), nullable=False)

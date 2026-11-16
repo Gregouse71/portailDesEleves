@@ -40,6 +40,7 @@ class AssoAudio(db.Model):
     association_id = db.Column(db.Integer, db.ForeignKey('associations_association.id'), nullable=False)
     album_id = db.Column(db.Integer, db.ForeignKey('associations_album.id'), nullable=False)
     
+    association = db.relationship('Association', backref=db.backref('audios', lazy='dynamic'))
     album = db.relationship('AssoAlbum', back_populates='audios')
 
     def __init__(self, nom, file_path, association_id, album_id, position=0):

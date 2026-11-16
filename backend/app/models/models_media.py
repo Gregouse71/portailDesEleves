@@ -10,9 +10,9 @@ class ElementMedia(db.Model):
 
     # A priori seul utilisateur _ou bien_ assocition est non nul
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs_utilisateur.id'), nullable=True)
-    utilisateur = db.relationship('Utilisateur', back_populates='media')
+    utilisateur = db.relationship('Utilisateur', back_populates='media', foreign_keys=[utilisateur_id])
     mandat_id = db.Column(db.Integer, db.ForeignKey('associations_mandat.id'), nullable=True)
-    mandat = db.relationship('AssociationMandat', back_populates='media')
+    mandat = db.relationship('AssociationMandat', back_populates='media', foreign_keys=[mandat_id])
 
     file_path = db.Column(db.String(1000), nullable=False)
     position = db.Column(db.Integer, nullable=False, default=0)

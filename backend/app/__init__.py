@@ -14,6 +14,7 @@ from flask_cors import CORS # permet d'accepter les requetes provenant de n'impo
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_apscheduler import APScheduler
@@ -33,6 +34,7 @@ socketio = SocketIO(
     message_queue=Config.REDIS_URL
 )
 db = SQLAlchemy()
+migrate = Migrate()
 login_manager = LoginManager()
 # session = Session()
 scheduler = APScheduler()
@@ -54,6 +56,7 @@ def create_app(config: Config):
     if not app.config.get("TESTING"):
         limiter.init_app(app)
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
     socketio.init_app(app)
     scheduler.init_app(app)

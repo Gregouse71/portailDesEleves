@@ -1,4 +1,4 @@
-import { Container, Alert, Form, Button, Row, Col } from 'react-bootstrap';
+import { Container, Alert, Form, Button } from 'react-bootstrap';
 import RenderPagination from '../elements/RenderPagination'
 import Chargement from '../elements/Chargement';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import ChampAvecCroix from '../elements/ChampAvecCroix';
 export default function PageRandom({
     titre,
     sousTitre,
-    contenu,
+    children,
     isLoading,
     avecPagination = false, paramsPag = {},
     avecNbPP = false, paramsNbPP = {},
@@ -106,10 +106,9 @@ export default function PageRandom({
                 </div>
             </>}
         </div>
-        {contenu}
-        {avecPagination &&
-            <RenderPagination
-                className="d-flex justify-content-center my-4"
+        {children}
+        {
+            avecPagination && <RenderPagination
                 totalPages={paramsPag.totalPages}
                 setPage={paramsPag.setPage}
                 page={paramsPag.page}

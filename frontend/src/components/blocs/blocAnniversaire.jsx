@@ -18,7 +18,8 @@ export default function BlocAnniversaire() {
 
     return <BlocTemplate
         titre="Anniversaires"
-        contenu={annivs.map(elt => {
+    >
+        {annivs.map(elt => {
             return (
                 <div key={elt[0]} className='text-end mb-1'>
                     <p className='mb-0 fw-bold border-bottom anniv-date-header'>{new Date(elt[0]).toLocaleString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}</p>
@@ -34,5 +35,6 @@ export default function BlocAnniversaire() {
                         </Link></p>
                     })}
                 </div>)
-        })} />;
+        })}
+    </BlocTemplate>;
 }

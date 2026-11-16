@@ -1,0 +1,266 @@
+import { Card, Form, Button, Row, Col, OverlayTrigger, Tooltip, Image } from "react-bootstrap";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ajouterMembre, chargerMandat, modifierMandat, modifierMembreAsso, retirerMembre, supprimerMandat } from "../../api/api_associations";
+import { UPLOAD_BASE_URL } from "../../api/base";
+import { useState } from "react";
+import UserCard from "../../components/elements/UserCard";
+import DropdownEditer from "../../components/elements/DropdownEditer";
+import ConfirmationModal from "../../components/elements/ConfirmationModal"
+import Autocomplete from "../../components/elements/Autocompletion";
+
+export default function AssoMandat({ id, asso, membreData }) {
+    const queryClient = useQueryClient();
+
+    const [deletingMandat, setDeletingMandat] = useState(false);
+    const [warningActuelModal, setWarningActuelModal] = useState(false);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingMandat, setEditingMandat] = useState();
+
+    const [idMembreModifier, setIdMembreModifier] = useState(null); // Id du membre à modifier
+    const [nouveauRole, setNouveauRole] = useState("");
+    const [nouvellePosition, setNouvellePosition] = useState("");
+    const [nouveauAdmin, setNouveauAdmin] = useState(false);
+
+    const [isAjoutMembre, setIsAjoutMembre] = useState(false);
+    const [idNouveauMembre, setIdNouveauMembre] = useState();
+
+    const { data: mandat, isLoading } = useQuery({
+        queryKey: ['mandatAsso', id],
+        queryFn: () => chargerMandat({}, id)
+    })
+
+    const isMembreOfThisMandat = Boolean(mandat && membreData.user_mandats && membreData.user_mandats.includes(mandat.id));
+    const canModifyThisMandat = Boolean(membreData.autorise || isMembreOfThisMandat);
+    const canChangeActuel = Boolean(membreData.autorise);
+
+    const handleDelMandat = async () => {
+        try {
+            await supprimerMandat(asso.id, mandat.id);
+            queryClient.invalidateQueries(['asso', asso.id]);
+        } catch (erreur) {
+            console.error(erreur);
+        }
+    }
+
+    const handleSaveMandat = async () => {
+        try {
+            await modifierMandat(asso.id, editingMandat.id, editingMandat.nom, editingMandat.position, editingMandat.actuel);
+            queryClient.invalidateQueries(['asso', asso.id]);
+            queryClient.invalidateQueries(['mandatAsso', id]);
+            queryClient.invalidateQueries(['membreData', asso.id]);
+            setIsEditing(false);
+            setEditingMandat(null);
+        } catch (error) {
+            console.error(error);
+            alert(error.message || "Erreur lors de la modification du mandat");
+        }
+    }
+
+    const handleActuelCheckboxChange = (e) => {
+        const checked = e.target.checked;
+        if (checked && !mandat.actuel) {
+            setWarningActuelModal(true);
+        } else {
+            setEditingMandat({ ...editingMandat, actuel: checked });
+        }
+    };
+
+    const handleModifierParametres = (userId, userRole, userPosition, userAdmin) => {
+        if (idMembreModifier === userId) {
+            setIdMembreModifier(null);
+        }
+        else {
+            setNouveauRole(userRole || "");
+            setNouvellePosition(userPosition?.toString() || "");
+            setIdMembreModifier(userId);
+            setNouveauAdmin(userAdmin)
+        }
+    }
+
+    const handleMembreChange = async (membreId) => {
+        const memberToModify = mandat.membres.find(u => u.id === membreId);
+        if (!memberToModify) return;
+
+        await modifierMembreAsso({ role: nouveauRole, position: nouvellePosition, admin: nouveauAdmin }, asso.id, mandat.id, membreId)
+        queryClient.invalidateQueries(['mandatAsso', id]);
+
+        setIdMembreModifier(null);
+    }
+
+    const handleRetirerMembre = async (membreId) => {
+        try {
+            await retirerMembre(asso.id, mandat.id, membreId);
+            queryClient.invalidateQueries(['mandatAsso', id]);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleAjoutMembre = async () => {
+        try {
+            await ajouterMembre(asso.id, mandat.id, idNouveauMembre);
+            setIsAjoutMembre(false);
+            queryClient.invalidateQueries(['mandatAsso', id]);
+        } catch (erreur) {
+            console.error(erreur);
+        }
+    }
+
+    if (isLoading) {
+        return <Card key={id} className="mb-4">
+            <Card.Header>
+            </Card.Header>
+        </Card>
+    }
+
+    const mandatBanniere = mandat.banniere || null;
+    const mandatLogo = mandat.logo || null;
+
+    return (
+        <Card key={mandat.id} className="mb-4">
+            {/* Bannière du mandat */}
+            <div
+                className="mandat-header-banner"
+                style={{
+                    backgroundImage: mandatBanniere ? `url(${UPLOAD_BASE_URL}/${mandatBanniere})` : 'none',
+                }}
+            />
+            <Card.Header><Row className="align-items-center flex-nowrap">
+                <Col xs="auto">
+                    <Image
+                        className="mandat-header-logo rounded-3"
+                        src={mandatLogo ? `${UPLOAD_BASE_URL}/${mandatLogo}` : '/assets/icons/group.svg'}
+                        alt={mandat.nom}
+                        rounded
+                    />
+                </Col>
+                <Col className="text-truncate">
+                    {isEditing ? (
+                        <Form className="w-100">
+                            <Row className="align-items-end">
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Nom</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={editingMandat.nom}
+                                            onChange={(e) => setEditingMandat({ ...editingMandat, nom: e.target.value })}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Priorité d&apos;affichage</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            value={editingMandat.position}
+                                            onChange={(e) => setEditingMandat({ ...editingMandat, position: parseInt(e.target.value) || 0 })}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col className="d-flex align-items-end pb-1">
+                                    <Form.Check
+                                        type="checkbox"
+                                        label="Mandat actuel"
+                                        checked={Boolean(editingMandat.actuel)}
+                                        disabled={!canChangeActuel}
+                                        title={!canChangeActuel ? "Seul un administrateur ou un membre du mandat actuel peut modifier ce statut" : ""}
+                                        onChange={handleActuelCheckboxChange}
+                                    />
+                                </Col>
+                            </Row>
+                        </Form>
+                    ) : (
+                        <Card.Title className="m-0">{mandat.nom}</Card.Title>
+                    )}
+                </Col>
+                <Col xs="auto" className="d-flex gap-2">
+                    {isEditing ?
+                        <>
+                            <Button variant="success" onClick={handleSaveMandat}>Valider</Button>
+                            <Button variant="secondary" onClick={() => { setEditingMandat(mandat); setIsEditing(false) }}>Annuler</Button>
+                        </>
+                        :
+                        canModifyThisMandat && <DropdownEditer list={[
+                            { can: true, onClick: () => { setEditingMandat(mandat); setIsEditing(true) }, name: "Modifier" },
+                            { can: true, onClick: () => setIsAjoutMembre(true), name: "Ajouter un membre" },
+                            ...(membreData.autorise ? [
+                                "divider",
+                                { can: true, onClick: () => setDeletingMandat(true), name: "Supprimer le mandat" },
+                            ] : []),
+                        ]}
+                        />
+                    }
+                </Col>
+            </Row></Card.Header>
+            <Card.Body>
+                {isAjoutMembre && (
+                    <Card className="mb-3">
+                        <Card.Body>
+                            <Card.Title>Ajouter un membre</Card.Title>
+                            <div className="d-flex justify-content-between">
+                                <Autocomplete
+                                    placeholder="Rechercher un utilisateur..."
+                                    onSelect={(user) => setIdNouveauMembre(user.id)}
+                                    filter={u => !mandat.membres.map(u => u.id).includes(u.id)}
+                                />
+                                <Button variant="primary" onClick={handleAjoutMembre} className="ms-2">Ajouter</Button>
+                            </div>
+
+                        </Card.Body>
+                    </Card>
+                )}
+                <div className="avatars-grid">
+                    {[...mandat.membres].sort((a, b) => {
+                        if (a.position === null) return 1;
+                        if (b.position === null) return -1;
+                        return b.position - a.position;
+                    }).map((user) => (
+                        <UserCard user={user} isGestion={isEditing} isModifying={idMembreModifier === user.id}
+                            key={user.id}
+                            f1={() => handleRetirerMembre(user.id)}
+                            t1="Supprimer ce membre"
+                            f2={() => { handleModifierParametres(user.id, user.role, user.position, user.admin) }}
+                            t2="Modifier les paramètres"
+                            values={[
+                                { label: "Rôle", value: nouveauRole, onChange: (e) => setNouveauRole(e.target.value) },
+                                { label: "Position", value: nouvellePosition, onChange: (e) => setNouvellePosition(e.target.value) },
+                                ...(membreData.admin ? [{ label: "Admin", value: nouveauAdmin, onChange: (e) => setNouveauAdmin(e.target.checked), type: "checkbox" }] : [])
+                            ]}
+                            validate={() => handleMembreChange(user.id)}
+                            modifyingSpecialColor={user.admin}
+                            additionnalText={user.admin &&
+                                <OverlayTrigger
+                                    placement="top"
+                                    overlay={<Tooltip id={`tooltip-${user.id}`}>Les admins peuvent gérer les cotisations de l&apos;association</Tooltip>}
+                                >
+                                    <span> · </span>
+                                </OverlayTrigger>}
+                        />
+                    ))}
+                </div>
+            </Card.Body>
+            <ConfirmationModal
+                show={deletingMandat}
+                onHide={() => setDeletingMandat(false)}
+                onConfirm={() => handleDelMandat(mandat.id)}
+                title="Suppression"
+                body={`Êtes-vous sûr de vouloir supprimer le mandat ${mandat.nom} ? Attention : tous les médias associés à ce mandat seront également supprimés.`}
+            />
+            <ConfirmationModal
+                show={warningActuelModal}
+                onHide={() => setWarningActuelModal(false)}
+                onConfirm={() => {
+                    setEditingMandat({ ...editingMandat, actuel: true });
+                }}
+                title="Attention - Changement de mandat actuel"
+                body={
+                    membreData.admin
+                        ? "Attention : en définissant ce mandat comme mandat actuel, les membres qui n'en font pas partie perdront le contrôle sur les autres mandats. En tant qu'administrateur, vous conserverez vos droits de gestion et pourrez modifier ce statut à tout moment. Êtes-vous sûr de vouloir continuer ?"
+                        : "Attention : si vous définissez ce mandat comme mandat actuel, vous perdrez le contrôle sur les autres mandats. Seul un administrateur ou un membre du nouveau mandat actuel pourra modifier ce statut. Êtes-vous sûr de vouloir continuer ?"
+                }
+            />
+        </Card>);
+}
+

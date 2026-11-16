@@ -5,7 +5,7 @@ import Chargement from "../elements/Chargement";
 export default function OngletTemplate({
     titre,
     isLoading,
-    contenu,
+    children,
     avecTooltip, tooltipContent,
     avecDropdown, contenuDropdown,
     avecBouton, onButonClick
@@ -43,6 +43,6 @@ export default function OngletTemplate({
                 </Button>
             </div>}
         </div>
-        {contenu}
+        {children}
     </>;
 }
