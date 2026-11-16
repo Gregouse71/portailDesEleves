@@ -182,9 +182,9 @@ export function formatCommand(pp) {
 
     let comm = "";
     if (pp.altitude === 0) {
-        comm += `Holding @ A${pp.orig_no}`;
+        comm += `Attente @ A${pp.orig_no}`;
     } else if (pp.new_dir >= MAXDIR || pp.new_dir < 0) {
-        comm += "Circle";
+        comm += "Cercle";
     } else if (pp.new_dir !== pp.dir) {
         comm += `${dirDeg(pp.new_dir)}`;
     }
@@ -349,7 +349,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                 clck,
                 air,
                 ground,
-                loser_msg: `Plane '${planeName(pp)}' ran out of fuel.`,
+                loser_msg: `L'avion '${planeName(pp)}' est à court de carburant.`,
             };
         }
 
@@ -394,7 +394,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                         clck,
                         air,
                         ground,
-                        loser_msg: `Plane '${planeName(pp)}' landed in the wrong direction.`,
+                        loser_msg: `L'avion '${planeName(pp)}' a atterri dans le mauvais sens.`,
                     };
                 }
                 pp.status = S_GONE;
@@ -411,7 +411,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                         clck,
                         air,
                         ground,
-                        loser_msg: `Plane '${planeName(pp)}' exited at the wrong altitude.`,
+                        loser_msg: `L'avion '${planeName(pp)}' est sorti à la mauvaise altitude.`,
                     };
                 }
                 pp.status = S_GONE;
@@ -425,7 +425,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                 clck,
                 air,
                 ground,
-                loser_msg: `Plane '${planeName(pp)}' exceded flight ceiling.`,
+                loser_msg: `L'avion '${planeName(pp)}' a dépassé le plafond de vol.`,
             };
         }
 
@@ -434,8 +434,8 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                 if (pp.xpos === sp.airport[i].x && pp.ypos === sp.airport[i].y) {
                     const msg =
                         pp.dest_type === T_AIRPORT
-                            ? `Plane '${planeName(pp)}' landed at the wrong airport.`
-                            : `Plane '${planeName(pp)}' landed instead of exited.`;
+                            ? `L'avion '${planeName(pp)}' a atterri sur le mauvais aéroport.`
+                            : `L'avion '${planeName(pp)}' a atterri au lieu de sortir.`;
                     return { ...state, clck, air, ground, loser_msg: msg };
                 }
             }
@@ -444,7 +444,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                 clck,
                 air,
                 ground,
-                loser_msg: `Plane '${planeName(pp)}' crashed on the ground.`,
+                loser_msg: `L'avion '${planeName(pp)}' s'est écrasé au sol.`,
             };
         }
 
@@ -458,8 +458,8 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                 if (pp.xpos === sp.exit[i].x && pp.ypos === sp.exit[i].y) {
                     const msg =
                         pp.dest_type === T_EXIT
-                            ? `Plane '${planeName(pp)}' exited via the wrong exit.`
-                            : `Plane '${planeName(pp)}' exited instead of landed.`;
+                            ? `L'avion '${planeName(pp)}' a emprunté la mauvaise sortie.`
+                            : `L'avion '${planeName(pp)}' est sorti au lieu d'atterrir.`;
                     return { ...state, clck, air, ground, loser_msg: msg };
                 }
             }
@@ -468,7 +468,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                 clck,
                 air,
                 ground,
-                loser_msg: `Plane '${planeName(pp)}' illegally left the flight arena.`,
+                loser_msg: `L'avion '${planeName(pp)}' a quitté illégalement la zone de vol.`,
             };
         }
     }
@@ -494,7 +494,7 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
                     safe_planes,
                     air,
                     ground,
-                    loser_msg: `Plane '${planeName(air[i])}' collided with plane '${planeName(air[j])}'.`,
+                    loser_msg: `L'avion '${planeName(air[i])}' est entré en collision avec l'avion '${planeName(air[j])}'.`,
                 };
             }
         }
@@ -598,62 +598,62 @@ const HELPTOKEN = "?";
 const STATES = [
     // state 0 : début de la commande : choix de l'avion ou aller au tick suivant
     [
-        { token: ALPHATOKEN, to_state: 1, str: "%c:", func: "setplane" },
+        { token: ALPHATOKEN, to_state: 1, str: "%c :", func: "setplane" },
         { token: RETTOKEN, to_state: -1, str: "", func: null },
-        { token: HELPTOKEN, to_state: 12, str: " choisir un avion : [a-z]", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " [a-z]<entrée>", func: null },
     ],
     // state 1 : choix de l'action à réaliser
     [
-        { token: "t", to_state: 2, str: " turn", func: "turn" },
-        { token: "a", to_state: 3, str: " altitude:", func: null },
-        { token: "c", to_state: 4, str: " circle", func: "circle" },
-        { token: "m", to_state: 7, str: " mark", func: "mark" },
-        { token: "u", to_state: 7, str: " unmark", func: "unmark" },
-        { token: "i", to_state: 7, str: " ignore", func: "ignore" },
+        { token: "t", to_state: 2, str: " tourner", func: "turn" },
+        { token: "a", to_state: 3, str: " altitude :", func: null },
+        { token: "c", to_state: 4, str: " cercle", func: "circle" },
+        { token: "m", to_state: 7, str: " marquer", func: "mark" },
+        { token: "u", to_state: 7, str: " démarquer", func: "unmark" },
+        { token: "i", to_state: 7, str: " ignorer", func: "ignore" },
         { token: HELPTOKEN, to_state: 12, str: " tacmui", func: null },
     ],
     // state 2 : action turn : direction
     [
-        { token: "l", to_state: 6, str: " left", func: "left" },
-        { token: "r", to_state: 6, str: " right", func: "right" },
-        { token: "L", to_state: 4, str: " left 90", func: "Left" },
-        { token: "R", to_state: 4, str: " right 90", func: "Right" },
-        { token: "t", to_state: 11, str: " towards", func: null },
-        { token: "z", to_state: 4, str: " to 0", func: "to_dir" },
-        { token: "e", to_state: 4, str: " to 45", func: "to_dir" },
-        { token: "d", to_state: 4, str: " to 90", func: "to_dir" },
-        { token: "c", to_state: 4, str: " to 135", func: "to_dir" },
-        { token: "x", to_state: 4, str: " to 180", func: "to_dir" },
-        { token: "w", to_state: 4, str: " to 225", func: "to_dir" },
-        { token: "q", to_state: 4, str: " to 270", func: "to_dir" },
-        { token: "a", to_state: 4, str: " to 315", func: "to_dir" },
+        { token: "l", to_state: 6, str: " gauche", func: "left" },
+        { token: "r", to_state: 6, str: " droite", func: "right" },
+        { token: "L", to_state: 4, str: " gauche 90", func: "Left" },
+        { token: "R", to_state: 4, str: " droite 90", func: "Right" },
+        { token: "t", to_state: 11, str: " vers", func: null },
+        { token: "z", to_state: 4, str: " cap 0", func: "to_dir" },
+        { token: "e", to_state: 4, str: " cap 45", func: "to_dir" },
+        { token: "d", to_state: 4, str: " cap 90", func: "to_dir" },
+        { token: "c", to_state: 4, str: " cap 135", func: "to_dir" },
+        { token: "x", to_state: 4, str: " cap 180", func: "to_dir" },
+        { token: "w", to_state: 4, str: " cap 225", func: "to_dir" },
+        { token: "q", to_state: 4, str: " cap 270", func: "to_dir" },
+        { token: "a", to_state: 4, str: " cap 315", func: "to_dir" },
         { token: HELPTOKEN, to_state: 12, str: " lrLRt<dir>", func: null },
     ],
     // state 3 : action altitude : choix de l'altitude
     [
-        { token: "+", to_state: 10, str: " climb", func: "climb" },
-        { token: "c", to_state: 10, str: " climb", func: "climb" },
-        { token: "-", to_state: 10, str: " descend", func: "descend" },
-        { token: "d", to_state: 10, str: " descend", func: "descend" },
-        { token: NUMTOKEN, to_state: 7, str: " %c000 feet", func: "setalt" },
+        { token: "+", to_state: 10, str: " monter", func: "climb" },
+        { token: "c", to_state: 10, str: " monter", func: "climb" },
+        { token: "-", to_state: 10, str: " descendre", func: "descend" },
+        { token: "d", to_state: 10, str: " descendre", func: "descend" },
+        { token: NUMTOKEN, to_state: 7, str: " %c000 pieds", func: "setalt" },
         { token: HELPTOKEN, to_state: 12, str: " +-cd[0-9]", func: null },
     ],
-    // state 4 : action turn / circle : lieu d'éxecution de l'action
+    // state 4 : action turn / circle : lieu d'exécution de l'action
     [
-        { token: "@", to_state: 9, str: " at", func: null },
-        { token: "a", to_state: 9, str: " at", func: null },
+        { token: "@", to_state: 9, str: " à", func: null },
+        { token: "a", to_state: 9, str: " à", func: null },
         { token: RETTOKEN, to_state: -1, str: "", func: null },
-        { token: HELPTOKEN, to_state: 12, str: " @a<ret>", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " @a<entrée>", func: null },
     ],
-    // state 5 : éxecution à une balise : choix de la balise
+    // state 5 : exécution à une balise : choix de la balise
     [
         { token: NUMTOKEN, to_state: 7, str: "%c", func: "delayb" },
         { token: HELPTOKEN, to_state: 12, str: " [0-9]", func: null },
     ],
-    // state 6 : turn left/right : choix de la direction ou du lieu d'execution
+    // state 6 : turn left/right : choix de la direction ou du lieu d'exécution
     [
-        { token: "@", to_state: 9, str: " at", func: null },
-        { token: "a", to_state: 9, str: " at", func: null },
+        { token: "@", to_state: 9, str: " à", func: null },
+        { token: "a", to_state: 9, str: " à", func: null },
         { token: "z", to_state: 4, str: " 0", func: "rel_dir" },
         { token: "e", to_state: 4, str: " 45", func: "rel_dir" },
         { token: "d", to_state: 4, str: " 90", func: "rel_dir" },
@@ -663,35 +663,35 @@ const STATES = [
         { token: "q", to_state: 4, str: " 270", func: "rel_dir" },
         { token: "a", to_state: 4, str: " 315", func: "rel_dir" },
         { token: RETTOKEN, to_state: -1, str: "", func: null },
-        { token: HELPTOKEN, to_state: 12, str: " @a<dir><ret>", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " @a<dir><entrée>", func: null },
     ],
     // state 7 : fin de la commande
     [
         { token: RETTOKEN, to_state: -1, str: "", func: null },
-        { token: HELPTOKEN, to_state: 12, str: " <ret>", func: null },
+        { token: HELPTOKEN, to_state: 12, str: " <entrée>", func: null },
     ],
     // state 8
     [
         { token: NUMTOKEN, to_state: 4, str: "%c", func: "benum" },
         { token: HELPTOKEN, to_state: 12, str: " [0-9]", func: null },
     ],
-    // state 9 : lieu d'éxecution de l'action : à une balise
+    // state 9 : lieu d'exécution de l'action : à une balise
     [
-        { token: "b", to_state: 5, str: " beacon #", func: null },
-        { token: "*", to_state: 5, str: " beacon #", func: null },
+        { token: "b", to_state: 5, str: " balise #", func: null },
+        { token: "*", to_state: 5, str: " balise #", func: null },
         { token: HELPTOKEN, to_state: 12, str: " b*", func: null },
     ],
     // state 10 : altitude à gagner / perdre
     [
-        { token: NUMTOKEN, to_state: 7, str: " %c000 ft", func: "setrelalt" },
+        { token: NUMTOKEN, to_state: 7, str: " %c000 pieds", func: "setrelalt" },
         { token: HELPTOKEN, to_state: 12, str: " [0-9]", func: null },
     ],
     // state 11 : turn : direction à prendre
     [
-        { token: "b", to_state: 8, str: " beacon #", func: "beacon" },
-        { token: "*", to_state: 8, str: " beacon #", func: "beacon" },
-        { token: "e", to_state: 8, str: " exit #", func: "ex_it" },
-        { token: "a", to_state: 8, str: " airport #", func: "airport" },
+        { token: "b", to_state: 8, str: " balise #", func: "beacon" },
+        { token: "*", to_state: 8, str: " balise #", func: "beacon" },
+        { token: "e", to_state: 8, str: " sortie #", func: "ex_it" },
+        { token: "a", to_state: 8, str: " aéroport #", func: "airport" },
         { token: HELPTOKEN, to_state: 12, str: " b*ea", func: null },
     ],
     // state 12 : aide : il faut revenir en arrière
@@ -831,15 +831,15 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
         switch (funcName) {
             case "setplane": {
                 const pp = findPlaneInState(gameState, planeNumber(ch));
-                if (!pp) return "Unknown Plane";
+                if (!pp) return "Avion inconnu";
                 p = { ...pp, delayd: false };
                 return null;
             }
             case "turn":
-                if (p.altitude === 0) return "Planes at airports may not change direction";
+                if (p.altitude === 0) return "Les avions au sol ne peuvent pas changer de direction";
                 return null;
             case "circle":
-                if (p.altitude === 0) return "Planes cannot circle on the ground";
+                if (p.altitude === 0) return "Les avions au sol ne peuvent pas faire de cercle";
                 p.new_dir = MAXDIR;
                 return null;
             case "left":
@@ -862,11 +862,11 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
                 return null;
             case "delayb": {
                 const bnum = ch.charCodeAt(0) - 48;
-                if (bnum >= sp.beacon.length) return "Unknown beacon";
+                if (bnum >= sp.beacon.length) return "Balise inconnue";
                 const xdiff = sgn(sp.beacon[bnum].x - p.xpos);
                 const ydiff = sgn(sp.beacon[bnum].y - p.ypos);
                 if (xdiff !== DISPLACEMENT[p.dir].dx || ydiff !== DISPLACEMENT[p.dir].dy) {
-                    return "Beacon is not in flight path";
+                    return "Balise en dehors de la trajectoire";
                 }
                 p.delayd = true;
                 p.delayd_no = bnum;
@@ -883,9 +883,9 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
                         dx = sp.airport[dest_no].x - sp.beacon[bnum].x;
                         dy = sp.airport[dest_no].y - sp.beacon[bnum].y;
                     }
-                    if (dx === 0 && dy === 0) return "Would already be there";
+                    if (dx === 0 && dy === 0) return "L'avion y serait déjà";
                     p.new_dir = dirFromDxDy(dx, dy);
-                    if (p.new_dir === p.dir) return "Already going in that direction";
+                    if (p.new_dir === p.dir) return "L'avion vole déjà dans cette direction";
                 }
                 return null;
             }
@@ -907,37 +907,37 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
             case "setalt": {
                 const alt = ch.charCodeAt(0) - 48;
                 if (p.altitude === alt && p.new_altitude === p.altitude) {
-                    return "Already at that altitude";
+                    return "Déjà à cette altitude";
                 }
                 p.new_altitude = alt;
                 return null;
             }
             case "setrelalt": {
                 const delta = ch.charCodeAt(0) - 48;
-                if (delta === 0) return "altitude not changed";
+                if (delta === 0) return "Altitude inchangée";
                 if (dir === D_UP) p.new_altitude = p.altitude + delta;
                 else if (dir === D_DOWN) p.new_altitude = p.altitude - delta;
-                if (p.new_altitude < 0) return "Altitude would be too low";
-                if (p.new_altitude > 9) return "Altitude would be too high";
+                if (p.new_altitude < 0) return "L'altitude serait trop faible";
+                if (p.new_altitude > 9) return "L'altitude serait trop élevée";
                 return null;
             }
             case "benum": {
                 const num = ch.charCodeAt(0) - 48;
                 dest_no = num;
                 if (dest_type === T_BEACON) {
-                    if (num >= sp.beacon.length) return "Unknown beacon";
+                    if (num >= sp.beacon.length) return "Balise inconnue";
                     p.new_dir = dirFromDxDy(
                         sp.beacon[num].x - p.xpos,
                         sp.beacon[num].y - p.ypos
                     );
                 } else if (dest_type === T_EXIT) {
-                    if (num >= sp.exit.length) return "Unknown exit";
+                    if (num >= sp.exit.length) return "Sortie inconnue";
                     p.new_dir = dirFromDxDy(
                         sp.exit[num].x - p.xpos,
                         sp.exit[num].y - p.ypos
                     );
                 } else if (dest_type === T_AIRPORT) {
-                    if (num >= sp.airport.length) return "Unknown airport";
+                    if (num >= sp.airport.length) return "Aéroport inconnu";
                     p.new_dir = dirFromDxDy(
                         sp.airport[num].x - p.xpos,
                         sp.airport[num].y - p.ypos
@@ -960,18 +960,18 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
                 return null;
             }
             case "mark":
-                if (p.altitude === 0) return "Cannot mark planes on the ground";
-                if (p.status === S_MARKED) return "Already marked";
+                if (p.altitude === 0) return "Impossible de marquer un avion au sol";
+                if (p.status === S_MARKED) return "Avion déjà marqué";
                 p.status = S_MARKED;
                 return null;
             case "unmark":
-                if (p.altitude === 0) return "Cannot unmark planes on the ground";
-                if (p.status === S_UNMARKED) return "Already unmarked";
+                if (p.altitude === 0) return "Impossible de démarquer un avion au sol";
+                if (p.status === S_UNMARKED) return "Avion déjà démarqué";
                 p.status = S_UNMARKED;
                 return null;
             case "ignore":
-                if (p.altitude === 0) return "Cannot ignore planes on the ground";
-                if (p.status === S_IGNORED) return "Already ignored";
+                if (p.altitude === 0) return "Impossible d'ignorer un avion au sol";
+                if (p.status === S_IGNORED) return "Avion déjà ignoré";
                 p.status = S_IGNORED;
                 return null;
             default:

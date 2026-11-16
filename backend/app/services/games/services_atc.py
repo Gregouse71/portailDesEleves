@@ -285,7 +285,7 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                 "clck": clck,
                 "air": air,
                 "ground": ground,
-                "loser_msg": f"Plane '{plane_name(pp)}' ran out of fuel.",
+                "loser_msg": f"L'avion '{plane_name(pp)}' est à court de carburant.",
             }
 
         pp["altitude"] += sgn(pp["new_altitude"] - pp["altitude"])
@@ -331,7 +331,7 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                         "clck": clck,
                         "air": air,
                         "ground": ground,
-                        "loser_msg": f"Plane '{plane_name(pp)}' landed in the wrong direction.",
+                        "loser_msg": f"L'avion '{plane_name(pp)}' a atterri dans le mauvais sens.",
                     }
                 pp["status"] = S_GONE
                 continue
@@ -346,7 +346,7 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                         "clck": clck,
                         "air": air,
                         "ground": ground,
-                        "loser_msg": f"Plane '{plane_name(pp)}' exited at the wrong altitude.",
+                        "loser_msg": f"L'avion '{plane_name(pp)}' est sorti à la mauvaise altitude.",
                     }
                 pp["status"] = S_GONE
                 continue
@@ -357,16 +357,16 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                 "clck": clck,
                 "air": air,
                 "ground": ground,
-                "loser_msg": f"Plane '{plane_name(pp)}' exceded flight ceiling.",
+                "loser_msg": f"L'avion '{plane_name(pp)}' a dépassé le plafond de vol.",
             }
 
         if pp["altitude"] <= 0:
             for i in range(len(sp["airport"])):
                 if pp["xpos"] == sp["airport"][i]["x"] and pp["ypos"] == sp["airport"][i]["y"]:
                     msg = (
-                        f"Plane '{plane_name(pp)}' landed at the wrong airport."
+                        f"L'avion '{plane_name(pp)}' a atterri sur le mauvais aéroport."
                         if pp["dest_type"] == T_AIRPORT
-                        else f"Plane '{plane_name(pp)}' landed instead of exited."
+                        else f"L'avion '{plane_name(pp)}' a atterri au lieu de sortir."
                     )
                     return {**state, "clck": clck, "air": air, "ground": ground, "loser_msg": msg}
             return {
@@ -374,7 +374,7 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                 "clck": clck,
                 "air": air,
                 "ground": ground,
-                "loser_msg": f"Plane '{plane_name(pp)}' crashed on the ground.",
+                "loser_msg": f"L'avion '{plane_name(pp)}' s'est écrasé au sol.",
             }
 
         if (
@@ -386,9 +386,9 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
             for i in range(len(sp["exit"])):
                 if pp["xpos"] == sp["exit"][i]["x"] and pp["ypos"] == sp["exit"][i]["y"]:
                     msg = (
-                        f"Plane '{plane_name(pp)}' exited via the wrong exit."
+                        f"L'avion '{plane_name(pp)}' a emprunté la mauvaise sortie."
                         if pp["dest_type"] == T_EXIT
-                        else f"Plane '{plane_name(pp)}' exited instead of landed."
+                        else f"L'avion '{plane_name(pp)}' est sorti au lieu d'atterrir."
                     )
                     return {**state, "clck": clck, "air": air, "ground": ground, "loser_msg": msg}
             return {
@@ -396,7 +396,7 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                 "clck": clck,
                 "air": air,
                 "ground": ground,
-                "loser_msg": f"Plane '{plane_name(pp)}' illegally left the flight arena.",
+                "loser_msg": f"L'avion '{plane_name(pp)}' a quitté illégalement la zone de vol.",
             }
 
     next_air = []
@@ -416,7 +416,7 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
                     "safe_planes": safe_planes,
                     "air": air,
                     "ground": ground,
-                    "loser_msg": f"Plane '{plane_name(air[i])}' collided with plane '{plane_name(air[j])}'.",
+                    "loser_msg": f"L'avion '{plane_name(air[i])}' est entré en collision avec l'avion '{plane_name(air[j])}'.",
                 }
 
     next_state = {

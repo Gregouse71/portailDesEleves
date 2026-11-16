@@ -10,6 +10,35 @@ from app.services.games.services_atc import verify_and_score_atc
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 def leaderboard(jeu: str):
+    if jeu == "atc":
+        parties = (
+            db.session.query(JeuxPartie, Utilisateur)
+            .join(JeuxPartie.utilisateur)
+            .filter(JeuxPartie.jeu == "atc", JeuxPartie.terminee == True)
+            .all()
+        )
+        best_by_user = {}
+        for partie, u in parties:
+            etat = partie.etat or {}
+            if not etat.get("valid"):
+                continue
+            ticks = int(etat.get("verified_tick", 0))
+            key = (partie.score, ticks)
+            prev = best_by_user.get(u.id)
+            if prev is None or key > (prev["score"], prev["ticks"]):
+                best_by_user[u.id] = {
+                    "nom": f"{u.prenom} {u.nom}",
+                    "id": u.id,
+                    "score": partie.score,
+                    "ticks": ticks,
+                }
+        ranked = sorted(
+            best_by_user.values(),
+            key=lambda item: (item["score"], item["ticks"]),
+            reverse=True,
+        )[:10]
+        return ranked
+
     top = (
         db.session.query(
             Utilisateur,

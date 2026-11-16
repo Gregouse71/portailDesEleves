@@ -12,7 +12,7 @@
  * retained on all partial or complete copies.
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Card, Button, Table, Alert } from "react-bootstrap";
+import { Card, Button, Table, Alert, Row, Col } from "react-bootstrap";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { nouvellePartie, faireUnCoup, leaderboardJeu } from "../../../api/api_jeux";
 import Leaderboard from "../../../components/elements/Leaderboard";
@@ -154,6 +154,7 @@ export default function Atc() {
     }));
     const [inputState, setInputState] = useState(() => createInitialInputState());
     const [gameStarted, setGameStarted] = useState(false);
+    const [showQuickHelp, setShowQuickHelp] = useState(true);
 
     const commandsRef = useRef([]);
     const forcedUpdatesRef = useRef(0);
@@ -272,6 +273,14 @@ export default function Atc() {
         startNewGameMutation.mutate();
     };
 
+    const handleFinishGame = () => {
+        if (!gameStarted || gameState.loser_msg) return;
+        setGameState((prev) => ({
+            ...prev,
+            loser_msg: "Partie terminée volontairement.",
+        }));
+    };
+
     // Construction des 21 lignes de la fenêtre "planes" (à droite du radar, 20 colonnes)
     const planeLines = useMemo(() => {
         const lines = Array.from({ length: DEFAULT_SCREEN.height }, () => ({
@@ -279,11 +288,11 @@ export default function Atc() {
             color: null,
         }));
         lines[0] = {
-            text: `Time: ${String(gameState.clck).padEnd(4, " ")} Safe: ${gameState.safe_planes}`,
+            text: `Tps : ${String(gameState.clck).padEnd(4, " ")} Sûrs : ${gameState.safe_planes}`,
             color: null,
         };
         lines[1] = { text: "", color: null };
-        lines[2] = { text: "pl dt  comm", color: null };
+        lines[2] = { text: "av dst consigne", color: null };
 
         let row = 3;
         for (const pp of gameState.air) {
@@ -388,14 +397,14 @@ export default function Atc() {
                         }
                         const style = seg.standout
                             ? {
-                                  backgroundColor: seg.color || "#e6e6e6",
-                                  color: "#000000",
-                                  fontWeight: "bold",
-                              }
+                                backgroundColor: seg.color || "#e6e6e6",
+                                color: "#000000",
+                                fontWeight: "bold",
+                            }
                             : {
-                                  color: seg.color || undefined,
-                                  fontWeight: seg.bold ? "bold" : undefined,
-                              };
+                                color: seg.color || undefined,
+                                fontWeight: seg.bold ? "bold" : undefined,
+                            };
                         return (
                             <span key={i} style={style}>
                                 {seg.text}
@@ -407,7 +416,7 @@ export default function Atc() {
         });
     }, [cleanRadar, gameState.air]);
 
-    const promptText = getInputPromptText(inputState);
+    const promptText = "> " + getInputPromptText(inputState);
 
     let inputLines;
     if (!gameStarted) {
@@ -420,7 +429,7 @@ export default function Atc() {
         inputLines = [
             gameState.loser_msg.slice(0, RADAR_COLS).padEnd(RADAR_COLS, " "),
             "".padEnd(RADAR_COLS, " "),
-            "Hit space for a new game...".padEnd(RADAR_COLS, " "),
+            "Appuyez sur Espace pour rejouer...".padEnd(RADAR_COLS, " "),
         ];
     } else {
         inputLines = [
@@ -438,7 +447,7 @@ export default function Atc() {
                     <Alert variant="warning" className="mt-3">
                         <strong>Jeu non disponible sur mobile.</strong>
                         <p className="mb-0 mt-1">
-                            ATC se joue intégralement au clavier dans un terminal 80×24. Connecte-toi depuis un ordinateur pour jouer.
+                            Ce jeu doit se jouer depuis un ordinateur.
                         </p>
                     </Alert>
                 }
@@ -448,12 +457,12 @@ export default function Atc() {
 
     return (
         <JeuxTemplate
-            titre="ATC"
+            titre="Contrôleur de l'air"
             fluid={true}
             contenu={
-                <div>
-                    <div className="d-flex flex-wrap flex-lg-nowrap justify-content-between align-items-center gap-3 mb-3">
-                        <div className="d-flex flex-column align-items-start">
+                <div className="w-100">
+                    <div className="d-flex flex-nowrap justify-content-between align-items-center gap-3 mb-3 w-100">
+                        <div className="atc-terminal-wrapper d-flex flex-column align-items-center">
                             <div className="atc-terminal">
                                 {radarRows.map((radarRow, y) => (
                                     <div key={`line-${y}`}>
@@ -492,7 +501,7 @@ export default function Atc() {
                                 </div>
                             </div>
 
-                            <div className="mt-2">
+                            <div className="mt-2 d-flex align-items-center gap-2">
                                 <Button
                                     variant={gameStarted ? "secondary" : "primary"}
                                     size="sm"
@@ -501,23 +510,29 @@ export default function Atc() {
                                 >
                                     {gameStarted ? "Nouvelle partie" : "Commencer"}
                                 </Button>
+                                {gameStarted && !gameState.loser_msg && (
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={handleFinishGame}
+                                    >
+                                        Terminer la partie
+                                    </Button>
+                                )}
                             </div>
                         </div>
-
-                        {/* Aides rapides sur la droite */}
-                        <div className="atc-quick-help flex-grow-1">
+                        <div className="atc-quick-help d-flex flex-column align-items-center">
                             <Card className="mb-3">
                                 <Card.Header className="fw-bold py-2">
                                     Caps
                                 </Card.Header>
-                                <Card.Body className="py-2">
+                                <Card.Body className="p-1">
                                     <div className="atc-compass-keys">
                                         {COMPASS_KEYS.map((item) => (
                                             <div
                                                 key={item.key}
-                                                className={`atc-compass-cell ${
-                                                    item.center ? "atc-compass-center" : ""
-                                                }`}
+                                                className={`atc-compass-cell ${item.center ? "atc-compass-center" : ""
+                                                    }`}
                                             >
                                                 <div className="atc-key">
                                                     {item.arrow} {item.key}
@@ -537,12 +552,10 @@ export default function Atc() {
                                     <Table size="sm" striped className="mb-0">
                                         <tbody>
                                             {QUICK_ACTIONS.map((row, idx) => (
-                                                <tr key={idx}>
-                                                    <td className="ps-2 text-nowrap">
-                                                        <code>{row.touche}</code>
-                                                    </td>
-                                                    <td className="pe-2">{row.action}</td>
-                                                </tr>
+                                                <tr key={idx}><td className="py-0">
+                                                    <code>{row.touche}</code><br />
+                                                    {row.action}
+                                                </td></tr>
                                             ))}
                                         </tbody>
                                     </Table>
@@ -550,41 +563,48 @@ export default function Atc() {
                             </Card>
                         </div>
                     </div>
+                    <Row>
+                        <Col sm={7}>
+                            <div className="atc-consignes">
+                                <Card>
+                                    <Card.Header className="fw-bold py-2">Consignes</Card.Header>
+                                    <Card.Body className="py-2">
+                                        <p className="mb-2">
+                                            <strong>But :</strong> Guider les avions à travers l&apos;espace aérien sans collision ni panne de carburant.
+                                        </p>
+                                        <ul className="ps-3 mb-2">
+                                            {CONSIGNES.map((elt, ind) => (
+                                                <li key={ind}>
+                                                    <strong>{elt.titre} :</strong> {elt.texte}
+                                                </li>
+                                            ))}
+                                        </ul>
 
-                    <div className="atc-consignes">
-                        <Card>
-                            <Card.Header className="fw-bold py-2">Consignes</Card.Header>
-                            <Card.Body className="py-2">
-                                <p className="mb-2">
-                                    <strong>But :</strong> Guider les avions à travers l&apos;espace aérien sans collision ni panne de carburant.
-                                </p>
-                                <ul className="ps-3 mb-2">
-                                    {CONSIGNES.map((elt, ind) => (
-                                        <li key={ind}>
-                                            <strong>{elt.titre} :</strong> {elt.texte}
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <p className="mb-1 fw-bold">Commandes (commencent par la lettre de l&apos;avion) :</p>
-                                <ul className="ps-3 mb-2">
-                                    {COMMANDES.map((elt, ind) => (
-                                        <li key={ind}>
-                                            {elt.titre} : {elt.texte}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </Card.Body>
-                        </Card>
-                    </div>
-
-                    <div className="mt-3">
-                        <Leaderboard
-                            data={leaderboardData}
-                            title="Meilleurs contrôleurs"
-                            isLoading={isLoadingLeaderboard}
-                        />
-                    </div>
+                                        <p className="mb-1 fw-bold">Commandes (commencent par la lettre de l&apos;avion) :</p>
+                                        <ul className="ps-3 mb-2">
+                                            {COMMANDES.map((elt, ind) => (
+                                                <li key={ind}>
+                                                    {elt.titre} : {elt.texte}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </Card.Body>
+                                </Card>
+                            </div>
+                        </Col>
+                        <Col sm={5}>
+                            <Leaderboard
+                                data={leaderboardData}
+                                title="Meilleurs contrôleurs"
+                                titleRow={true}
+                                format={[
+                                    { nom: "Avions", scoreKey: "score", formatScore: (s) => s },
+                                    { nom: "Ticks", scoreKey: "ticks", formatScore: (t) => t ?? 0 },
+                                ]}
+                                isLoading={isLoadingLeaderboard}
+                            />
+                        </Col>
+                    </Row>
                 </div>
             }
         />
