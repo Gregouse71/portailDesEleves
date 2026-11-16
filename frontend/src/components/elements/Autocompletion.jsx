@@ -4,7 +4,7 @@ import { Form, ListGroup, Spinner } from 'react-bootstrap';
 import { searchUsers } from '../../api/api_utilisateurs';
 import "../../assets/styles/autocomplete.scss"
 
-function useDebounce(valeur, delai = 250) {
+export function useDebounce(valeur, delai = 250) {
     const [valeurDebounced, setValeurDebounced] = useState(valeur);
     useEffect(() => {
         const timer = setTimeout(() => setValeurDebounced(valeur), delai);
@@ -16,7 +16,7 @@ function useDebounce(valeur, delai = 250) {
 /**
  * Normalise la réponse de searchUsers
  */
-function normaliserResultats(reponse) {
+export function normaliserResultats(reponse) {
     if (Array.isArray(reponse)) return reponse;
     if (Array.isArray(reponse?.users)) return reponse.users;
     if (Array.isArray(reponse?.results)) return reponse.results;
@@ -24,7 +24,7 @@ function normaliserResultats(reponse) {
     return [];
 }
 
-function libelleUtilisateur(u) {
+export function libelleUtilisateur(u) {
     if (u.prenom && u.nom && u.cycle && u.promotion)
         return `${u.prenom} ${u.nom} ${u.cycle}${u.promotion}`
     if (u.nom_utilisateur) return u.nom_utilisateur;

@@ -17,6 +17,10 @@
     background-color: color-mix(in srgb, var(--primary-color) 8%, transparent);
 }
 
+body[data-theme="dark"] .chat-message:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
 .chat-message-suite {
     border-top: none;
 }
@@ -38,4 +42,64 @@ body[data-theme] .chat-author-me {
 
 .chat-input {
     font-size: 0.8em;
+}
+
+// Mention d'un utilisateur : texte en gras, souligné au survol
+.chat-mention {
+    font-style: italic;
+    color: inherit !important;
+    text-decoration: none;
+    padding: 1px 3px;
+    border-radius: 4px;
+}
+
+.chat-mention:hover {
+    text-decoration: underline;
+}
+
+body[data-theme] .chat-mention {
+    background-color: color-mix(in srgb, var(--secondary-color) 10%, transparent) !important;
+}
+
+body[data-theme="dark"] .chat-mention {
+    background-color: color-mix(in srgb, var(--secondary-color) 20%, transparent) !important;
+}
+
+// Quand c'est moi qui suis tagué
+body[data-theme] .chat-mention-me {
+    background-color: color-mix(in srgb, var(--primary-color) 35%, transparent) !important;
+}
+
+body[data-theme="dark"] .chat-mention-me {
+    background-color: color-mix(in srgb, var(--primary-color) 90%, transparent) !important;
+}
+
+// Liste de suggestions
+.chat-mention-liste {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    max-height: 160px;
+    overflow-y: auto;
+    font-size: 0.8em;
+    background-color: var(--bs-body-bg);
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+}
+
+.chat-mention-liste .list-group-item {
+    padding: 2px 8px;
+    line-height: 1.3;
+    background-color: var(--bs-body-bg);
+}
+
+// Élément sélectionné
+body[data-theme] .chat-mention-liste .chat-mention-actif {
+    background-color: color-mix(in srgb, var(--primary-color) 15%, var(--bs-body-bg)) !important;
+}
+
+body[data-theme="dark"] .chat-mention-liste .chat-mention-actif {
+    background-color: color-mix(in srgb, var(--primary-color) 90%, var(--bs-body-bg)) !important;
 }
