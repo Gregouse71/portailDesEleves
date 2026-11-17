@@ -1,18 +1,5 @@
-/*!
- * @license BSD-3-Clause
- * Copyright (c) 1990, 1993
- *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Ed James.
- *
- * Copyright (c) 1987 by Ed James, UC Berkeley.  All rights reserved.
- *
- * Copy permission is hereby granted provided that this notice is
- * retained on all partial or complete copies.
- */
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Card, Button, Table, Alert, Row, Col } from "react-bootstrap";
+import { Card, Button, Alert, Row, Col, Modal } from "react-bootstrap";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { nouvellePartie, faireUnCoup, leaderboardJeu } from "../../../api/api_jeux";
 import Leaderboard from "../../../components/elements/Leaderboard";
@@ -59,27 +46,117 @@ function getPlaneDestColor(pp) {
     return EXIT_COLORS[pp.dest_no % EXIT_COLORS.length];
 }
 
-const COMPASS_KEYS = [
-    { key: "a", arrow: "↖", deg: "315°" },
-    { key: "z", arrow: "↑", deg: "0°" },
-    { key: "e", arrow: "↗", deg: "45°" },
-    { key: "q", arrow: "←", deg: "270°" },
-    { key: "s", arrow: "•", deg: "centre", center: true },
-    { key: "d", arrow: "→", deg: "90°" },
-    { key: "w", arrow: "↙", deg: "225°" },
-    { key: "x", arrow: "↓", deg: "180°" },
-    { key: "c", arrow: "↘", deg: "135°" },
-];
+function getInputActionLines(inputState, gameState, gameStarted, sp = DEFAULT_SCREEN) {
+    if (!gameStarted || gameState.loser_msg) {
+        return [];
+    }
 
-const QUICK_ACTIONS = [
-    { touche: "a [0-9]", action: "Altitude cible" },
-    { touche: "t [cap]", action: "Virer vers cap" },
-    { touche: "tv b/s/a #", action: <>Cap <b>v</b>ers <b>b</b>alise, <b>s</b>ortie, <b>a</b>éroport</> },
-    { touche: "ab #", action: "Différer le virage/cercle à la balise" },
-    { touche: "m/u/i", action: "Marquer / Démarquer / Ignorer" },
-    { touche: "?", action: "Aide" },
-    { touche: "Entrée", action: "Tour suivant" },
-];
+    const b = (key, text = key, title) => ({ key, text, title });
+    const t = (text) => ({ text });
+
+    const compassRows = [
+        [t(" "), b("a", "↖a", "315° NO"), t("  "), b("z", "↑z", "0° N"), t("  "), b("e", "↗e", "45° NE")],
+        [t(" "), b("q", "←q", "270° O"), t("  "), t("• "), t("  "), b("d", "→d", "90° E")],
+        [t(" "), b("w", "↙w", "225° SO"), t("  "), b("x", "↓x", "180° S"), t("  "), b("c", "↘c", "135° SE")],
+    ];
+
+    const stateId = inputState.stack[inputState.level]?.state ?? 0;
+    switch (stateId) {
+        case 0: {
+            const planes = [...gameState.air, ...gameState.ground]
+                .map((pp) => planeName(pp).toLowerCase())
+                .sort();
+            const planeRow =
+                planes.length > 0
+                    ? [
+                        ...planes.slice(0, 6).flatMap((ch, idx) =>
+                            idx > 0
+                                ? [t(","), b(ch, ch, `Sélectionner l'avion ${ch}`)]
+                                : [b(ch, ch, `Sélectionner l'avion ${ch}`)]
+                        ),
+                        t(planes.length > 6 ? "[a-z] : choisir avion" : " : choisir avion"),
+                    ]
+                    : [t("Aucun avion")];
+            return [
+                [t("Actions disp. :")],
+                planeRow,
+                [b("Enter", "Entrée", "Avancer d'un tour"), t(" : tour suiv.")],
+            ];
+        }
+        case 1:
+            return [
+                [b("t", "t tourner"), t("   "), b("u", "u démarquer")],
+                [b("a", "a altitude"), t("  "), b("m", "m marquer")],
+                [b("c", "c cercle"), t("    "), b("i", "i ignorer")],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 2:
+            return [
+                ...compassRows,
+                [b("l"), t("/"), b("r"), t(" 45°  "), b("L"), t("/"), b("R"), t(" 90°")],
+                [b("v", "v vers"), t("   "), b("Backspace", "⌫ retour")],
+            ];
+        case 3:
+            return [
+                ["2", "3", "4", "6", "8"].map((k) => b(k, " " + k)),
+                ["0", "1", "5", "7", "9"].map((k) => b(k, " " + k)),
+                [b("c", "c monter"), t("  "), b("d", "d desc.")],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 4:
+            return [
+                [b("Enter", "Entrée : valider")],
+                [b("a", "a : à balise")],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 5:
+            return [
+                [
+                    t("balise "),
+                    ...Array.from({ length: sp.beacon.length }, (_, i) =>
+                        i > 0 ? [t(" "), b(String(i))] : [b(String(i))]
+                    ).flat(),
+                ],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 6:
+            return [
+                ...compassRows,
+                [b("Enter", "Entrée : valider")],
+                [b("a", "a bal."), t("   "), b("Backspace", "⌫ retour")],
+            ];
+        case 7:
+            return [
+                [b("Enter", "Entrée : valider")],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 8:
+            return [
+                ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].map((k) => b(k)),
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 9:
+            return [
+                [b("b", "b : balise")],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 10:
+            return [
+                ["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((k) => b(k)),
+                [t("(x1000ft) "), b("Backspace", "⌫ retour")],
+            ];
+        case 11:
+            return [
+                [b("b", "b balise"), t("  "), b("s", "s sortie")],
+                [b("a", "a aéroport")],
+                [b("Backspace", "⌫ retour")],
+            ];
+        case 12:
+            return [[b("Backspace", "⌫ effacer '?'")]];
+        default:
+            return [];
+    }
+}
 
 const CONSIGNES = [
     {
@@ -104,41 +181,6 @@ const CONSIGNES = [
     },
 ];
 
-const COMMANDES = [
-    {
-        titre: <><code>a[0-9]</code></>,
-        texte: <>changer d&apos;altitude (ex: <code>aa9</code> pour monter à 9000 ft, <code>ac2</code> / <code>ad2</code> pour +2000 / -2000 ft).</>,
-    },
-    {
-        titre: <><code>t[zedcxwqa]</code></>,
-        texte: <>tourner vers une direction absolue (<code>z</code> = 0° N, <code>e</code> = 45° NE, <code>d</code> = 90° E, <code>c</code> = 135° SE, <code>x</code> = 180° S, <code>w</code> = 225° SO, <code>q</code> = 270° O, <code>a</code> = 315° NO).</>,
-    },
-    {
-        titre: <><code>tl</code> / <code>tr</code> (<code>tL</code> / <code>tR</code>)</>,
-        texte: <>tourner de 45° (90°) à gauche / droite.</>,
-    },
-    {
-        titre: <><code>tvb0</code> / <code>tvs2</code></>,
-        texte: <>tourner vers (<code>v</code>) une balise (<code>b</code>/<code>*</code>), une sortie (<code>s</code>) ou un aéroport (<code>a</code>).</>,
-    },
-    {
-        titre: <><code>c</code></>,
-        texte: <>décrire un cercle.</>,
-    },
-    {
-        titre: <><code>ab0</code> (à la fin d&apos;une commande de virage ou cercle)</>,
-        texte: <>différer l&apos;ordre au passage sur la balise.</>,
-    },
-    {
-        titre: <><code>m</code> / <code>u</code> / <code>i</code></>,
-        texte: <>marquer (surbrillance), démarquer (réactivé à la prochaine balise) ou ignorer.</>,
-    },
-    {
-        titre: <><code>Entrée</code></>,
-        texte: <>avancer immédiatement d&apos;un tour.</>,
-    },
-];
-
 export default function Atc() {
     const queryClient = useQueryClient();
     const [isMobile, setIsMobile] = useState(
@@ -154,7 +196,7 @@ export default function Atc() {
     }));
     const [inputState, setInputState] = useState(() => createInitialInputState());
     const [gameStarted, setGameStarted] = useState(false);
-    const [showQuickHelp, setShowQuickHelp] = useState(true);
+    const [showManual, setShowManual] = useState(false);
 
     const commandsRef = useRef([]);
     const forcedUpdatesRef = useRef(0);
@@ -202,6 +244,9 @@ export default function Atc() {
     useEffect(() => {
         if (gameStarted && gameState.loser_msg && !submittedRef.current) {
             submittedRef.current = true;
+            while (commandsRef.current.length < gameState.clck) {
+                commandsRef.current.push([]);
+            }
             submitScoreMutation.mutate({
                 ticks: gameState.clck,
                 forced_updates: forcedUpdatesRef.current,
@@ -223,6 +268,49 @@ export default function Atc() {
         return () => clearInterval(timer);
     }, [isMobile, gameStarted, gameState.clck, gameState.loser_msg, triggerUpdate]);
 
+    const processKey = useCallback(
+        (key) => {
+            if (isMobile || !gameStarted || gameState.loser_msg) return;
+            const {
+                inputState: nextInput,
+                gameState: nextGame,
+                forceUpdate,
+                executedCommand,
+            } = handleInputKey(key, inputState, gameState, DEFAULT_SCREEN);
+
+            if (executedCommand) {
+                while (commandsRef.current.length <= gameState.clck) {
+                    commandsRef.current.push([]);
+                }
+                commandsRef.current[gameState.clck].push(executedCommand);
+            }
+
+            setInputState(nextInput);
+            if (forceUpdate) {
+                forcedUpdatesRef.current += 1;
+                setGameState(stepUpdate(nextGame, DEFAULT_SCREEN));
+            } else {
+                setGameState(nextGame);
+            }
+        },
+        [isMobile, gameStarted, gameState, inputState]
+    );
+
+    const selectPlane = useCallback(
+        (planeKey) => {
+            if (isMobile || !gameStarted || gameState.loser_msg) return;
+            const { inputState: nextInput, gameState: nextGame } = handleInputKey(
+                planeKey,
+                createInitialInputState(),
+                gameState,
+                DEFAULT_SCREEN
+            );
+            setInputState(nextInput);
+            setGameState(nextGame);
+        },
+        [isMobile, gameStarted, gameState]
+    );
+
     useEffect(() => {
         if (isMobile || !gameStarted) return;
 
@@ -241,33 +329,13 @@ export default function Atc() {
 
             if (e.key === "Backspace" || e.key === "Enter" || e.key.length === 1) {
                 e.preventDefault();
-                const {
-                    inputState: nextInput,
-                    gameState: nextGame,
-                    forceUpdate,
-                    executedCommand,
-                } = handleInputKey(e.key, inputState, gameState, DEFAULT_SCREEN);
-
-                if (executedCommand) {
-                    commandsRef.current.push({
-                        clck: gameState.clck,
-                        keys: executedCommand,
-                    });
-                }
-
-                setInputState(nextInput);
-                if (forceUpdate) {
-                    forcedUpdatesRef.current += 1;
-                    setGameState(stepUpdate(nextGame, DEFAULT_SCREEN));
-                } else {
-                    setGameState(nextGame);
-                }
+                processKey(e.key);
             }
         };
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isMobile, gameStarted, gameState, inputState, startNewGameMutation]);
+    }, [isMobile, gameStarted, gameState.loser_msg, processKey, startNewGameMutation]);
 
     const handleRestart = () => {
         startNewGameMutation.mutate();
@@ -281,36 +349,53 @@ export default function Atc() {
         }));
     };
 
-    // Construction des 21 lignes de la fenêtre "planes" (à droite du radar, 20 colonnes)
-    const planeLines = useMemo(() => {
-        const lines = Array.from({ length: DEFAULT_SCREEN.height }, () => ({
-            text: "",
-            color: null,
-        }));
-        lines[0] = {
-            text: `Tps : ${String(gameState.clck).padEnd(4, " ")} Sûrs : ${gameState.safe_planes}`,
-            color: null,
-        };
-        lines[1] = { text: "", color: null };
-        lines[2] = { text: "av dst consigne", color: null };
+    const rawActionLines = getInputActionLines(inputState, gameState, gameStarted, DEFAULT_SCREEN);
 
-        let row = 3;
+    // Zone droite unifiée (24 lignes au total) : priorité à la liste des avions, on rogne sur l'aide en bas s'il y a trop d'avions
+    const totalTerminalRows = DEFAULT_SCREEN.height + 3; // 21 radar + 3 saisie = 24
+    const maxPlaneListRows = totalTerminalRows - 3;
+
+    const planeRowsList = useMemo(() => {
+        const list = [];
         for (const pp of gameState.air) {
-            if (row >= DEFAULT_SCREEN.height) break;
-            lines[row++] = { text: formatCommand(pp), color: getPlaneDestColor(pp) };
+            list.push({
+                text: formatCommand(pp),
+                color: getPlaneDestColor(pp),
+                planeKey: planeName(pp).toLowerCase(),
+            });
         }
-        if (row < DEFAULT_SCREEN.height) {
-            lines[row++] = { text: "", color: null };
+        if (gameState.air.length > 0 && gameState.ground.length > 0) {
+            list.push({ text: "", color: null, planeKey: null });
         }
         for (const pp of gameState.ground) {
-            if (row >= DEFAULT_SCREEN.height) break;
-            lines[row++] = { text: formatCommand(pp), color: getPlaneDestColor(pp) };
+            list.push({
+                text: formatCommand(pp),
+                color: getPlaneDestColor(pp),
+                planeKey: planeName(pp).toLowerCase(),
+            });
         }
-        return lines.map((l) => ({
+        return list.map((l) => ({
             text: l.text.slice(0, PLANE_COLS).padEnd(PLANE_COLS, " "),
             color: l.color,
+            planeKey: l.planeKey,
         }));
-    }, [gameState]);
+    }, [gameState.air, gameState.ground]);
+
+    const visiblePlaneRows = planeRowsList.slice(0, maxPlaneListRows);
+    const remainingRows = totalTerminalRows - 3 - visiblePlaneRows.length;
+    const availActionRows = remainingRows >= 2 ? remainingRows - 1 : 0;
+    const displayedActionLines =
+        availActionRows > 0 ? rawActionLines.slice(-availActionRows) : [];
+    const planeHeaderRows = [
+        {
+            text: `Tps : ${String(gameState.clck).padEnd(4, " ")} Sûrs : ${gameState.safe_planes}`
+                .slice(0, PLANE_COLS)
+                .padEnd(PLANE_COLS, " "),
+            color: null,
+        },
+        { text: "".padEnd(PLANE_COLS, " "), color: null },
+        { text: "av dst consigne".padEnd(PLANE_COLS, " "), color: null },
+    ];
 
     // Construction des 21 lignes du radar avec les sorties et avions colorés
     const radarRows = useMemo(() => {
@@ -341,7 +426,13 @@ export default function Atc() {
                 return <span key={`r-${y}`}>{rowChars.join("")}</span>;
             }
 
-            const cells = rowChars.map((ch) => ({ ch, color: null, standout: false, bold: false }));
+            const cells = rowChars.map((ch) => ({
+                ch,
+                color: null,
+                standout: false,
+                bold: false,
+                planeKey: null,
+            }));
 
             if (rowExits) {
                 for (const ex of rowExits) {
@@ -367,23 +458,51 @@ export default function Atc() {
                     const col = pp.xpos * 2;
                     const isMarked = pp.status === S_MARKED;
                     const color = getPlaneDestColor(pp);
+                    const pKey = planeName(pp).toLowerCase();
                     if (col >= 0 && col + 1 < RADAR_COLS) {
-                        cells[col] = { ch: planeName(pp), color, standout: isMarked, bold: true };
-                        cells[col + 1] = { ch: String(pp.altitude), color, standout: isMarked, bold: true };
+                        cells[col] = {
+                            ch: planeName(pp),
+                            color,
+                            standout: isMarked,
+                            bold: true,
+                            planeKey: pKey,
+                        };
+                        cells[col + 1] = {
+                            ch: String(pp.altitude),
+                            color,
+                            standout: isMarked,
+                            bold: true,
+                            planeKey: pKey,
+                        };
                     }
                 }
             }
 
             const segments = [];
-            let cur = { color: cells[0].color, standout: cells[0].standout, bold: cells[0].bold };
+            let cur = {
+                color: cells[0].color,
+                standout: cells[0].standout,
+                bold: cells[0].bold,
+                planeKey: cells[0].planeKey,
+            };
             let curStr = "";
             for (let x = 0; x < cells.length; x++) {
                 const c = cells[x];
-                if (c.color === cur.color && c.standout === cur.standout && c.bold === cur.bold) {
+                if (
+                    c.color === cur.color &&
+                    c.standout === cur.standout &&
+                    c.bold === cur.bold &&
+                    c.planeKey === cur.planeKey
+                ) {
                     curStr += c.ch;
                 } else {
                     segments.push({ text: curStr, ...cur });
-                    cur = { color: c.color, standout: c.standout, bold: c.bold };
+                    cur = {
+                        color: c.color,
+                        standout: c.standout,
+                        bold: c.bold,
+                        planeKey: c.planeKey,
+                    };
                     curStr = c.ch;
                 }
             }
@@ -392,7 +511,7 @@ export default function Atc() {
             return (
                 <span key={`r-${y}`}>
                     {segments.map((seg, i) => {
-                        if (!seg.color && !seg.standout && !seg.bold) {
+                        if (!seg.color && !seg.standout && !seg.bold && !seg.planeKey) {
                             return <span key={i}>{seg.text}</span>;
                         }
                         const style = seg.standout
@@ -405,6 +524,20 @@ export default function Atc() {
                                 color: seg.color || undefined,
                                 fontWeight: seg.bold ? "bold" : undefined,
                             };
+                        if (seg.planeKey) {
+                            return (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    className="atc-plane-btn"
+                                    style={style}
+                                    onClick={() => selectPlane(seg.planeKey)}
+                                    title={`Sélectionner l'avion ${seg.planeKey}`}
+                                >
+                                    {seg.text}
+                                </button>
+                            );
+                        }
                         return (
                             <span key={i} style={style}>
                                 {seg.text}
@@ -414,7 +547,7 @@ export default function Atc() {
                 </span>
             );
         });
-    }, [cleanRadar, gameState.air]);
+    }, [cleanRadar, gameState.air, selectPlane]);
 
     const promptText = "> " + getInputPromptText(inputState);
 
@@ -440,6 +573,24 @@ export default function Atc() {
         ];
     }
 
+    const actionHints = displayedActionLines.map((items) =>
+        items.map((item, idx) =>
+            item.key ? (
+                <button
+                    key={`${item.key}-${idx}`}
+                    type="button"
+                    className="atc-hint-btn"
+                    onClick={() => processKey(item.key)}
+                    title={item.title}
+                >
+                    {item.text}
+                </button>
+            ) : (
+                <span key={idx}>{item.text}</span>
+            )
+        )
+    );
+
     if (isMobile) {
         return (
             <JeuxTemplate
@@ -462,43 +613,67 @@ export default function Atc() {
             fluid={true}
             contenu={
                 <div className="w-100">
-                    <div className="d-flex flex-nowrap justify-content-between align-items-start gap-3 mb-3 w-100">
+                    <div className="d-flex justify-content-center mb-3 w-100">
                         <div className="atc-terminal-wrapper d-flex flex-column align-items-center">
-                            <div className="atc-terminal">
-                                {radarRows.map((radarRow, y) => (
-                                    <div key={`line-${y}`}>
-                                        {radarRow}
-                                        <span
-                                            style={
-                                                planeLines[y].color
-                                                    ? { color: planeLines[y].color }
-                                                    : undefined
-                                            }
-                                        >
-                                            {planeLines[y].text}
-                                        </span>
-                                    </div>
-                                ))}
-                                <div>
-                                    {!gameStarted || gameState.loser_msg ? (
-                                        <span>{inputLines[0]}</span>
-                                    ) : (
-                                        <>
+                            <div className="atc-terminal d-flex">
+                                <div className="atc-terminal-left">
+                                    {radarRows.map((radarRow, y) => (
+                                        <div key={`line-${y}`}>{radarRow}</div>
+                                    ))}
+                                    <div>
+                                        {!gameStarted || gameState.loser_msg ? (
                                             <span>{inputLines[0]}</span>
-                                            <span className="atc-cursor">&nbsp;</span>
-                                            <span>
-                                                {" ".repeat(
-                                                    Math.max(0, RADAR_COLS - inputLines[0].length - 1)
+                                        ) : (
+                                            <>
+                                                <span>{inputLines[0]}</span>
+                                                <span className="atc-cursor">&nbsp;</span>
+                                                <span>
+                                                    {" ".repeat(
+                                                        Math.max(0, RADAR_COLS - inputLines[0].length - 1)
+                                                    )}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <span>{inputLines[1]}</span>
+                                    </div>
+                                    <div>
+                                        <span>{inputLines[2]}</span>
+                                    </div>
+                                </div>
+                                <div className="atc-terminal-right d-flex flex-column justify-content-between">
+                                    <div>
+                                        {planeHeaderRows.map((row, idx) => (
+                                            <div key={`ph-${idx}`}>{row.text}</div>
+                                        ))}
+                                        {visiblePlaneRows.map((row, idx) => (
+                                            <div
+                                                key={`pr-${idx}`}
+                                                style={row.color ? { color: row.color } : undefined}
+                                            >
+                                                {row.planeKey ? (
+                                                    <button
+                                                        type="button"
+                                                        className="atc-plane-btn"
+                                                        onClick={() => selectPlane(row.planeKey)}
+                                                        title={`Sélectionner l'avion ${row.planeKey}`}
+                                                    >
+                                                        {row.text}
+                                                    </button>
+                                                ) : (
+                                                    row.text
                                                 )}
-                                            </span>
-                                        </>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {actionHints.length > 0 && (
+                                        <div className="atc-action-hint">
+                                            {actionHints.map((row, idx) => (
+                                                <div key={`ah-${idx}`}>{row}</div>
+                                            ))}
+                                        </div>
                                     )}
-                                </div>
-                                <div>
-                                    <span>{inputLines[1]}</span>
-                                </div>
-                                <div>
-                                    <span>{inputLines[2]}</span>
                                 </div>
                             </div>
 
@@ -522,83 +697,29 @@ export default function Atc() {
                                 )}
                             </div>
                         </div>
-                        <div className="d-flex align-items-start">
-                            <button
-                                type="button"
-                                className="atc-quick-help-tab"
-                                onClick={() => setShowQuickHelp((prev) => !prev)}
-                                title={showQuickHelp ? "Réduire l'aide rapide" : "Afficher l'aide rapide"}
-                            >
-                                <span>{showQuickHelp ? "▶" : "◀"} Aide rapide</span>
-                            </button>
-
-                            {showQuickHelp && (
-                                <div className="atc-quick-help ms-2 d-flex flex-column align-items-stretch flex-grow-1">
-                                    <Card className="mb-3 w-100">
-                                        <Card.Header className="fw-bold py-2">
-                                            Caps
-                                        </Card.Header>
-                                        <Card.Body className="p-1">
-                                            <div className="atc-compass-keys">
-                                                {COMPASS_KEYS.map((item) => (
-                                                    <div
-                                                        key={item.key}
-                                                        className={`atc-compass-cell ${item.center ? "atc-compass-center" : ""
-                                                            }`}
-                                                    >
-                                                        <div className="atc-key">
-                                                            {item.arrow} {item.key}
-                                                        </div>
-                                                        <div className="atc-deg">{item.deg}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
-
-                                    <Card className="w-100">
-                                        <Card.Header className="fw-bold py-2">
-                                            Commandes essentielles
-                                        </Card.Header>
-                                        <Card.Body className="p-0">
-                                            <Table size="sm" striped className="mb-0">
-                                                <tbody>
-                                                    {QUICK_ACTIONS.map((row, idx) => (
-                                                        <tr key={idx}><td className="py-0">
-                                                            <code>{row.touche}</code><br />
-                                                            {row.action}
-                                                        </td></tr>
-                                                    ))}
-                                                </tbody>
-                                            </Table>
-                                        </Card.Body>
-                                    </Card>
-                                </div>
-                            )}
-                        </div>
                     </div>
                     <Row>
                         <Col sm={7}>
                             <div className="atc-consignes">
                                 <Card>
-                                    <Card.Header className="fw-bold py-2">Consignes</Card.Header>
+                                    <Card.Header className="fw-bold py-2 d-flex justify-content-between align-items-center">
+                                        <span>Consignes</span>
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={() => setShowManual(true)}
+                                        >
+                                            Manuel complet
+                                        </Button>
+                                    </Card.Header>
                                     <Card.Body className="py-2">
                                         <p className="mb-2">
-                                            <strong>But :</strong> Guider les avions à travers l&apos;espace aérien sans collision ni panne de carburant.
+                                            <strong>But :</strong> Guider les avions à travers l&apos;espace aérien sans collision ni panne de carburant. Donnez des consignes au clavier ou en cliquant sur les avions.
                                         </p>
                                         <ul className="ps-3 mb-2">
                                             {CONSIGNES.map((elt, ind) => (
                                                 <li key={ind}>
                                                     <strong>{elt.titre} :</strong> {elt.texte}
-                                                </li>
-                                            ))}
-                                        </ul>
-
-                                        <p className="mb-1 fw-bold">Commandes (commencent par la lettre de l&apos;avion) :</p>
-                                        <ul className="ps-3 mb-2">
-                                            {COMMANDES.map((elt, ind) => (
-                                                <li key={ind}>
-                                                    {elt.titre} : {elt.texte}
                                                 </li>
                                             ))}
                                         </ul>
@@ -620,14 +741,18 @@ export default function Atc() {
                         </Col>
                     </Row>
 
-                    <Row className="mt-3">
-                        <Col>
-                            <div className="atc-manpage">
-                                <Card>
-                                    <Card.Header className="fw-bold py-2">
-                                        Manuel du jeu — <code>man atc(6)</code>
-                                    </Card.Header>
-                                    <Card.Body className="py-2">
+                    <Modal
+                        show={showManual}
+                        onHide={() => setShowManual(false)}
+                        size="lg"
+                        scrollable
+                    >
+                        <Modal.Header closeButton>
+                            <Modal.Title className="fs-5 fw-bold">
+                                Manuel du jeu
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body className="atc-manpage">
                                         <h6 className="mt-1">Nom</h6>
                                         <p className="mb-2">
                                             <code>atc</code> — Jeu de simulation de contrôle du trafic aérien
@@ -777,11 +902,13 @@ export default function Atc() {
                                         <p className="mb-0 text-muted">
                                             Ed James, UC Berkeley (1987) — BSD Games <code>atc(6)</code>.
                                         </p>
-                                    </Card.Body>
-                                </Card>
-                            </div>
-                        </Col>
-                    </Row>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" size="sm" onClick={() => setShowManual(false)}>
+                                Fermer
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </div>
             }
         />

@@ -732,7 +732,7 @@ def apply_command_keys(cmd_str: str, game_state: dict, sp: dict = DEFAULT_SCREEN
 def simulate_atc(seed: int, total_ticks: int, commands: list) -> dict:
     """
     Rejoue intégralement une partie d'ATC à partir de `seed`, `total_ticks` et la liste `commands`
-    (`[{ "clck": int, "keys": str }, ...]`).
+    (`list[list[str]]`, une liste de commandes par cycle).
     """
     rng = Mulberry32(seed)
     state = add_plane(
@@ -748,17 +748,19 @@ def simulate_atc(seed: int, total_ticks: int, commands: list) -> dict:
         DEFAULT_SCREEN,
     )
 
-    cmds_by_clck = {}
-    if isinstance(commands, list):
-        for entry in commands:
-            if isinstance(entry, dict) and isinstance(entry.get("clck"), int) and isinstance(entry.get("keys"), str):
-                cmds_by_clck.setdefault(entry["clck"], []).append(entry["keys"])
-
     max_ticks = min(max(0, int(total_ticks)), 10000)
 
     for current_clck in range(max_ticks):
-        for cmd_str in cmds_by_clck.get(current_clck, []):
-            state = apply_command_keys(cmd_str, state, DEFAULT_SCREEN)
+        tick_cmds = (
+            commands[current_clck]
+            if isinstance(commands, list)
+            and current_clck < len(commands)
+            and isinstance(commands[current_clck], list)
+            else []
+        )
+        for cmd_str in tick_cmds:
+            if isinstance(cmd_str, str):
+                state = apply_command_keys(cmd_str, state, DEFAULT_SCREEN)
 
         state = step_update(state, rng, DEFAULT_SCREEN)
         if state.get("loser_msg"):

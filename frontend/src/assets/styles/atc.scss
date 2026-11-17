@@ -1,5 +1,6 @@
 .atc-terminal-wrapper {
-    flex: 1 1 66%;
+    width: 100%;
+    max-width: 960px;
     min-width: 0;
     container-type: inline-size;
 }
@@ -12,7 +13,7 @@
     color: #e6e6e6;
     font-family: "Courier New", Courier, monospace;
     font-size: 15px;
-    font-size: clamp(8px, 1.92cqi, 16px);
+    font-size: clamp(8px, 1.88cqi, 16px);
     line-height: 1.2;
     padding: 10px 12px;
     border-radius: 4px;
@@ -24,6 +25,55 @@
 
     &:focus {
         border-color: #888;
+    }
+}
+
+.atc-terminal-left {
+    flex: 0 0 auto;
+}
+
+.atc-terminal-right {
+    flex: 1 1 auto;
+    min-width: 20ch;
+}
+
+.atc-action-hint {
+    color: #8ecae6;
+}
+
+.atc-hint-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    line-height: inherit;
+    color: #8ecae6;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+        color: #ffffff;
+        background-color: rgba(142, 202, 230, 0.2);
+    }
+}
+
+.atc-plane-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    line-height: inherit;
+    color: inherit;
+    cursor: pointer;
+    display: inline;
+    text-align: left;
+
+    &:hover {
+        filter: brightness(1.25);
+        text-decoration: underline;
     }
 }
 
