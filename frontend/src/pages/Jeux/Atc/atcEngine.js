@@ -529,10 +529,10 @@ export function buildCleanRadarGrid(sp = DEFAULT_SCREEN) {
     const rows = sp.height;
     const grid = Array.from({ length: rows }, () => Array(cols).fill(" "));
 
-    // Fond de points '.'
+    // Fond de points médians '·'
     for (let y = 1; y < rows - 1; y++) {
         for (let x = 1; x < sp.width - 1; x++) {
-            grid[y][x * 2] = ".";
+            grid[y][x * 2] = "·";
         }
     }
 
@@ -551,20 +551,22 @@ export function buildCleanRadarGrid(sp = DEFAULT_SCREEN) {
         }
     }
 
-    // Bordures horizontales '-'
+    // Bordures horizontales '─' et coins '┌' '┐' '└' '┘'
     for (let x = 0; x < sp.width - 1; x++) {
-        grid[0][x * 2] = "-";
-        grid[0][x * 2 + 1] = "-";
-        grid[rows - 1][x * 2] = "-";
-        grid[rows - 1][x * 2 + 1] = "-";
+        grid[0][x * 2] = "─";
+        grid[0][x * 2 + 1] = "─";
+        grid[rows - 1][x * 2] = "─";
+        grid[rows - 1][x * 2 + 1] = "─";
     }
-    grid[0][(sp.width - 1) * 2] = "-";
-    grid[rows - 1][(sp.width - 1) * 2] = "-";
+    grid[0][0] = "┌";
+    grid[0][(sp.width - 1) * 2] = "┐";
+    grid[rows - 1][0] = "└";
+    grid[rows - 1][(sp.width - 1) * 2] = "┘";
 
-    // Bordures verticales '|'
+    // Bordures verticales '│'
     for (let y = 1; y < rows - 1; y++) {
-        grid[y][0] = "|";
-        grid[y][(sp.width - 1) * 2] = "|";
+        grid[y][0] = "│";
+        grid[y][(sp.width - 1) * 2] = "│";
     }
 
     // Balises '*0', '*1'
