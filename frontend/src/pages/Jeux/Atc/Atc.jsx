@@ -209,6 +209,49 @@ export default function Atc() {
         [isMobile]
     );
 
+    const selectTarget = useCallback(
+        (targetType, targetNum) => {
+            const cur = liveRef.current;
+            if (isMobile || !cur.gameStarted || cur.isPaused || cur.gameState.loser_msg) return;
+
+            const stateId = cur.inputState.stack[cur.inputState.level]?.state ?? 0;
+            const numStr = String(targetNum);
+            let keys = null;
+
+            if (stateId === 1) {
+                keys = ["t", "v", targetType, numStr];
+            } else if (stateId === 2) {
+                keys = ["v", targetType, numStr];
+            } else if (stateId === 11) {
+                keys = [targetType, numStr];
+            } else if (stateId === 8) {
+                keys = [numStr];
+            } else if ((stateId === 4 || stateId === 6) && targetType === "b") {
+                keys = ["a", "b", numStr];
+            } else if (stateId === 9 && targetType === "b") {
+                keys = ["b", numStr];
+            } else if (stateId === 5 && targetType === "b") {
+                keys = [numStr];
+            }
+
+            if (!keys) return;
+
+            let nextInput = cur.inputState;
+            let nextGame = cur.gameState;
+            for (const ch of keys) {
+                ({ inputState: nextInput, gameState: nextGame } = handleInputKey(
+                    ch,
+                    nextInput,
+                    nextGame,
+                    DEFAULT_SCREEN
+                ));
+            }
+            setInputState(nextInput);
+            setGameState(nextGame);
+        },
+        [isMobile]
+    );
+
     // Écoute clavier globale
     useEffect(() => {
         if (isMobile || !gameStarted) return;
@@ -226,6 +269,11 @@ export default function Atc() {
             }
 
             if (isPaused) return;
+            if (e.key === "Escape") {
+                e.preventDefault();
+                setInputState(createInitialInputState());
+                return;
+            }
             if (e.key === "Backspace" || e.key === "Enter" || e.key.length === 1) {
                 e.preventDefault();
                 processKey(e.key);
@@ -307,6 +355,7 @@ export default function Atc() {
                                 isPaused={isPaused}
                                 onKey={processKey}
                                 onSelectPlane={selectPlane}
+                                onSelectTarget={selectTarget}
                             />
                             <AtcControls
                                 gameStarted={gameStarted}

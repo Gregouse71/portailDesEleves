@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     PLANE_COLS,
     S_MARKED,
@@ -12,6 +12,7 @@ import {
     RADAR_COLS,
     EXITS_BY_ROW,
     AIRPORTS_BY_ROW,
+    BEACONS_BY_ROW,
     getPlaneDestColor,
     getInputActionLines,
 } from "./atcConstants";
@@ -19,6 +20,31 @@ import {
 const CLEAN_RADAR = buildCleanRadarGrid(DEFAULT_SCREEN);
 const TOTAL_TERMINAL_ROWS = DEFAULT_SCREEN.height + 3; // 21 radar + 3 saisie = 24
 const MAX_PLANE_LIST_ROWS = TOTAL_TERMINAL_ROWS - 3;
+const TARGET_LABELS = { b: "balise", s: "sortie", a: "aéroport" };
+
+function AtcTickBar({ clck, isActive, updateSecs }) {
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        if (!isActive) return undefined;
+        const start = Date.now();
+        const durationMs = updateSecs * 1000;
+        const interval = setInterval(() => {
+            const pct = Math.min(100, ((Date.now() - start) / durationMs) * 100);
+            setProgress(pct);
+        }, 100);
+        return () => {
+            clearInterval(interval);
+            setProgress(0);
+        };
+    }, [clck, isActive, updateSecs]);
+
+    const barWidth = PLANE_COLS - 2; // 18 blocs entre [ et ]
+    const filled = isActive ? Math.round((progress / 100) * barWidth) : 0;
+    const bar = `[${"█".repeat(filled)}${"░".repeat(barWidth - filled)}]`;
+
+    return <div className="atc-tick-bar">{bar}</div>;
+}
 
 export default function AtcTerminal({
     gameState,
@@ -27,6 +53,7 @@ export default function AtcTerminal({
     isPaused,
     onKey,
     onSelectPlane,
+    onSelectTarget,
 }) {
     const radarRows = useMemo(() => {
         const planesByRow = new Map();
@@ -39,8 +66,9 @@ export default function AtcTerminal({
             const rowPlanes = planesByRow.get(y);
             const rowExits = EXITS_BY_ROW.get(y);
             const rowAirports = AIRPORTS_BY_ROW.get(y);
+            const rowBeacons = BEACONS_BY_ROW.get(y);
 
-            if (!rowPlanes && !rowExits && !rowAirports) {
+            if (!rowPlanes && !rowExits && !rowAirports && !rowBeacons) {
                 return <span key={`r-${y}`}>{rowChars.join("")}</span>;
             }
 
@@ -50,13 +78,31 @@ export default function AtcTerminal({
                 standout: false,
                 bold: false,
                 planeKey: null,
+                targetType: null,
+                targetNum: null,
             }));
+
+            if (rowBeacons) {
+                for (const bc of rowBeacons) {
+                    const col = bc.x * 2;
+                    if (col >= 0 && col + 1 < RADAR_COLS) {
+                        cells[col] = { ...cells[col], targetType: "b", targetNum: bc.num };
+                        cells[col + 1] = { ...cells[col + 1], targetType: "b", targetNum: bc.num };
+                    }
+                }
+            }
 
             if (rowExits) {
                 for (const ex of rowExits) {
                     const col = ex.x * 2;
                     if (col >= 0 && col < RADAR_COLS) {
-                        cells[col] = { ...cells[col], color: ex.color, bold: true };
+                        cells[col] = {
+                            ...cells[col],
+                            color: ex.color,
+                            bold: true,
+                            targetType: "s",
+                            targetNum: ex.num,
+                        };
                     }
                 }
             }
@@ -65,8 +111,20 @@ export default function AtcTerminal({
                 for (const ap of rowAirports) {
                     const col = ap.x * 2;
                     if (col >= 0 && col + 1 < RADAR_COLS) {
-                        cells[col] = { ...cells[col], color: ap.color, bold: true };
-                        cells[col + 1] = { ...cells[col + 1], color: ap.color, bold: true };
+                        cells[col] = {
+                            ...cells[col],
+                            color: ap.color,
+                            bold: true,
+                            targetType: "a",
+                            targetNum: ap.num,
+                        };
+                        cells[col + 1] = {
+                            ...cells[col + 1],
+                            color: ap.color,
+                            bold: true,
+                            targetType: "a",
+                            targetNum: ap.num,
+                        };
                     }
                 }
             }
@@ -84,6 +142,8 @@ export default function AtcTerminal({
                             standout: isMarked,
                             bold: true,
                             planeKey: pKey,
+                            targetType: null,
+                            targetNum: null,
                         };
                         cells[col + 1] = {
                             ch: String(pp.altitude),
@@ -91,6 +151,8 @@ export default function AtcTerminal({
                             standout: isMarked,
                             bold: true,
                             planeKey: pKey,
+                            targetType: null,
+                            targetNum: null,
                         };
                     }
                 }
@@ -102,6 +164,8 @@ export default function AtcTerminal({
                 standout: cells[0].standout,
                 bold: cells[0].bold,
                 planeKey: cells[0].planeKey,
+                targetType: cells[0].targetType,
+                targetNum: cells[0].targetNum,
             };
             let curStr = "";
             for (let x = 0; x < cells.length; x++) {
@@ -110,7 +174,9 @@ export default function AtcTerminal({
                     c.color === cur.color &&
                     c.standout === cur.standout &&
                     c.bold === cur.bold &&
-                    c.planeKey === cur.planeKey
+                    c.planeKey === cur.planeKey &&
+                    c.targetType === cur.targetType &&
+                    c.targetNum === cur.targetNum
                 ) {
                     curStr += c.ch;
                 } else {
@@ -120,6 +186,8 @@ export default function AtcTerminal({
                         standout: c.standout,
                         bold: c.bold,
                         planeKey: c.planeKey,
+                        targetType: c.targetType,
+                        targetNum: c.targetNum,
                     };
                     curStr = c.ch;
                 }
@@ -129,7 +197,13 @@ export default function AtcTerminal({
             return (
                 <span key={`r-${y}`}>
                     {segments.map((seg, i) => {
-                        if (!seg.color && !seg.standout && !seg.bold && !seg.planeKey) {
+                        if (
+                            !seg.color &&
+                            !seg.standout &&
+                            !seg.bold &&
+                            !seg.planeKey &&
+                            !seg.targetType
+                        ) {
                             return <span key={i}>{seg.text}</span>;
                         }
                         const style = seg.standout
@@ -156,6 +230,20 @@ export default function AtcTerminal({
                                 </button>
                             );
                         }
+                        if (seg.targetType) {
+                            return (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    className="atc-plane-btn"
+                                    style={style}
+                                    onClick={() => onSelectTarget(seg.targetType, seg.targetNum)}
+                                    title={`Cibler ${TARGET_LABELS[seg.targetType]} #${seg.targetNum}`}
+                                >
+                                    {seg.text}
+                                </button>
+                            );
+                        }
                         return (
                             <span key={i} style={style}>
                                 {seg.text}
@@ -165,7 +253,7 @@ export default function AtcTerminal({
                 </span>
             );
         });
-    }, [gameState.air, onSelectPlane]);
+    }, [gameState.air, onSelectPlane, onSelectTarget]);
 
     const planeRowsList = useMemo(() => {
         const list = [];
@@ -203,13 +291,10 @@ export default function AtcTerminal({
     );
     const displayedActionLines = availActionRows > 0 ? rawActionLines.slice(-availActionRows) : [];
 
-    const planeHeaderRows = [
-        `Tps : ${String(gameState.clck).padEnd(4, " ")} Sûrs : ${gameState.safe_planes}`
-            .slice(0, PLANE_COLS)
-            .padEnd(PLANE_COLS, " "),
-        "".padEnd(PLANE_COLS, " "),
-        "av dst consigne".padEnd(PLANE_COLS, " "),
-    ];
+    const statusRowText = `Tps : ${String(gameState.clck).padEnd(4, " ")} Sûrs : ${gameState.safe_planes}`
+        .slice(0, PLANE_COLS)
+        .padEnd(PLANE_COLS, " ");
+    const colHeaderText = "av dst consigne".padEnd(PLANE_COLS, " ");
 
     let inputLines;
     if (!gameStarted) {
@@ -276,9 +361,13 @@ export default function AtcTerminal({
             </div>
             <div className="atc-terminal-right d-flex flex-column justify-content-between">
                 <div>
-                    {planeHeaderRows.map((text, idx) => (
-                        <div key={`ph-${idx}`}>{text}</div>
-                    ))}
+                    <div>{statusRowText}</div>
+                    <AtcTickBar
+                        clck={gameState.clck}
+                        isActive={gameStarted && !isPaused && !gameState.loser_msg}
+                        updateSecs={DEFAULT_SCREEN.update_secs}
+                    />
+                    <div>{colHeaderText}</div>
                     {visiblePlaneRows.map((row, idx) => (
                         <div
                             key={`pr-${idx}`}

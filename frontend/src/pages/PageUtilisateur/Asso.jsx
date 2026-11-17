@@ -105,7 +105,7 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
             tooltipContent="Cliquez-glissez les associations pour les réordonner"
         >
             <AssosList id={id} autoriseAModifier={autoriseAModifier} list={actuel} setList={setActuel} type="actuel" />
-        </OngletTemplate >;
+        </OngletTemplate >
 
         <OngletTemplate
             titre="Associations passées"
@@ -113,6 +113,6 @@ function AssosDnd({ id, autoriseAModifier, initActuel, initAncien }) {
             tooltipContent="Cliquez-glissez les associations pour les réordonner"
         >
             <AssosList id={id} autoriseAModifier={autoriseAModifier} list={ancien} setList={setAncien} type="ancien" />
-        </OngletTemplate >;
+        </OngletTemplate >
     </>;
 }

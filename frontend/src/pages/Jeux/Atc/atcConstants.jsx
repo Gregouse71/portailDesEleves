@@ -26,12 +26,12 @@ export function getPlaneDestColor(pp) {
     return EXIT_COLORS[pp.dest_no % EXIT_COLORS.length];
 }
 
-// Pré-calcul statique des sorties et aéroports par ligne pour éviter de reconstruire les Maps à chaque tick
+// Pré-calcul statique des sorties, aéroports et balises par ligne pour éviter de reconstruire les Maps à chaque tick
 export const EXITS_BY_ROW = (() => {
     const map = new Map();
     DEFAULT_SCREEN.exit.forEach((e, idx) => {
         if (!map.has(e.y)) map.set(e.y, []);
-        map.get(e.y).push({ x: e.x, color: EXIT_COLORS[idx % EXIT_COLORS.length] });
+        map.get(e.y).push({ x: e.x, num: idx, color: EXIT_COLORS[idx % EXIT_COLORS.length] });
     });
     return map;
 })();
@@ -40,7 +40,16 @@ export const AIRPORTS_BY_ROW = (() => {
     const map = new Map();
     DEFAULT_SCREEN.airport.forEach((a, idx) => {
         if (!map.has(a.y)) map.set(a.y, []);
-        map.get(a.y).push({ x: a.x, color: AIRPORT_COLORS[idx % AIRPORT_COLORS.length] });
+        map.get(a.y).push({ x: a.x, num: idx, color: AIRPORT_COLORS[idx % AIRPORT_COLORS.length] });
+    });
+    return map;
+})();
+
+export const BEACONS_BY_ROW = (() => {
+    const map = new Map();
+    DEFAULT_SCREEN.beacon.forEach((beacon, idx) => {
+        if (!map.has(beacon.y)) map.set(beacon.y, []);
+        map.get(beacon.y).push({ x: beacon.x, num: idx });
     });
     return map;
 })();
