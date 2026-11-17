@@ -121,7 +121,7 @@ def sgn(x: int) -> int:
 
 
 def dir_from_dxdy(dx: int, dy: int) -> int:
-    return int(math.floor((math.atan2(dy, dx) * MAXDIR) / (2 * math.pi) + 2.5 + MAXDIR)) % MAXDIR
+    return math.floor((math.atan2(dy, dx) * MAXDIR) / (2 * math.pi) + 2.5 + MAXDIR) % MAXDIR
 
 
 def dir_no(ch: str) -> int:
@@ -188,7 +188,7 @@ def add_plane(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict:
     p = {
         "status": S_MARKED,
         "plane_no": 0,
-        "plane_type": int(math.floor(rng() * 2)),
+        "plane_type": math.floor(rng() * 2),
         "orig_no": 0,
         "orig_type": T_NODEST,
         "dest_no": 0,
@@ -205,7 +205,7 @@ def add_plane(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict:
     }
 
     num_starts = len(sp["exit"]) + len(sp["airport"])
-    rnd = int(math.floor(rng() * num_starts))
+    rnd = math.floor(rng() * num_starts)
 
     if rnd < len(sp["exit"]):
         p["dest_type"] = T_EXIT
@@ -216,9 +216,9 @@ def add_plane(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict:
 
     placed = False
     for _ in range(num_starts):
-        rnd2 = int(math.floor(rng() * num_starts))
+        rnd2 = math.floor(rng() * num_starts)
         while rnd2 == rnd:
-            rnd2 = int(math.floor(rng() * num_starts))
+            rnd2 = math.floor(rng() * num_starts)
         if rnd2 < len(sp["exit"]):
             p["orig_type"] = T_EXIT
             p["orig_no"] = rnd2
@@ -428,7 +428,8 @@ def step_update(state: dict, rng: Mulberry32, sp: dict = DEFAULT_SCREEN) -> dict
         "loser_msg": None,
     }
 
-    if int(math.floor(rng() * sp["newplane_time"])) == 0:
+    effective_newplane_time = max(3, sp["newplane_time"] - (clck // 50))
+    if math.floor(rng() * effective_newplane_time) == 0:
         next_state = add_plane(next_state, rng, sp)
 
     return next_state

@@ -467,13 +467,14 @@ export function stepUpdate(state, sp = DEFAULT_SCREEN) {
         loser_msg: null,
     };
 
-    // 5. Apparition aléatoire d'un nouvel avion
+    // 5. Apparition aléatoire d'un nouvel avion (accélération progressive jusqu'à 1 chance sur 3)
     const [spawnRnd, nextRngState] = nextRandom((nextState.rng_state ?? 4) >>> 0);
     nextState = {
         ...nextState,
         rng_state: nextRngState,
     };
-    if (Math.floor(spawnRnd * sp.newplane_time) === 0) {
+    const effectiveNewplaneTime = Math.max(3, sp.newplane_time - Math.floor(clck / 50));
+    if (Math.floor(spawnRnd * effectiveNewplaneTime) === 0) {
         nextState = addPlane(nextState, sp);
     }
 
