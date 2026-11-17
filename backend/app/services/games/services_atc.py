@@ -781,12 +781,15 @@ def verify_and_score_atc(partie_etat: dict, data: dict) -> dict:
     seed = partie_etat.get("seed")
     started_at = partie_etat.get("started_at", 0)
     update_sec = partie_etat.get("update_sec", DEFAULT_SCREEN["update_secs"])
+    paused_at = partie_etat.get("paused_at")
+    total_paused_sec = float(partie_etat.get("total_paused_sec", 0.0) or 0.0)
 
     ticks = max(0, int(data.get("ticks", 0)))
     forced_updates = max(0, min(ticks, int(data.get("forced_updates", 0))))
     commands = data.get("commands", [])
 
-    elapsed = time.time() - started_at
+    end_time = paused_at if paused_at is not None else time.time()
+    elapsed = max(0.0, end_time - started_at - total_paused_sec)
     min_expected_duration = max(0, ticks - forced_updates) * update_sec
     max_expected_duration = ticks * update_sec
 

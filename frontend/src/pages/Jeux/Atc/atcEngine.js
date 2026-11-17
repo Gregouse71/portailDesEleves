@@ -1036,3 +1036,29 @@ export function handleInputKey(key, inputState, gameState, sp = DEFAULT_SCREEN) 
         executedCommand,
     };
 }
+
+/**
+ * Reconstruit l'état exact d'une partie à partir de sa seed, du nombre de ticks
+ * et de l'historique des commandes par cycle (pour reprise après pause/rechargement).
+ */
+export function replayAtcGame(seed, totalTicks, commands = [], sp = DEFAULT_SCREEN) {
+    let state = createInitialGame(sp, seed);
+    const cmds = Array.isArray(commands) ? commands : [];
+    const maxTicks = Math.max(0, Number(totalTicks) || 0);
+
+    for (let clck = 0; clck < maxTicks; clck++) {
+        const tickCmds = Array.isArray(cmds[clck]) ? cmds[clck] : [];
+        for (const cmdStr of tickCmds) {
+            if (typeof cmdStr !== "string") continue;
+            let input = createInitialInputState();
+            for (const ch of cmdStr) {
+                ({ inputState: input, gameState: state } = handleInputKey(ch, input, state, sp));
+            }
+            ({ gameState: state } = handleInputKey("Enter", input, state, sp));
+        }
+        state = stepUpdate(state, sp);
+        if (state.loser_msg) break;
+    }
+
+    return state;
+}

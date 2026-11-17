@@ -43,6 +43,8 @@ class JeuxPartie(db.Model):
                 "seed": random.randint(1, 2**31 - 1),
                 "started_at": time.time(),
                 "update_sec": 5,
+                "paused_at": None,
+                "total_paused_sec": 0.0,
             }
 
     def to_dict(self):

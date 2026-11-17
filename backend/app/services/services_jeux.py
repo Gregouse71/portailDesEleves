@@ -1,5 +1,6 @@
 from sqlalchemy import desc, func
 import redis
+import time
 from datetime import datetime, UTC
 
 from app import db
@@ -107,12 +108,39 @@ def faire_un_coup(s: str, id: int, data: dict):
             db.session.commit()
             return partie.to_dict()
         elif partie.jeu == "atc" and s == partie.jeu:
+            action = data.get("action")
+            print(action)
+            if action in ("pause", "resume"):
+                etat = dict(partie.etat or {})
+                now = time.time()
+                if action == "pause":
+                    if etat.get("paused_at") is None:
+                        etat["paused_at"] = now
+                    etat["paused"] = True
+                    if "ticks" in data:
+                        etat["paused_tick"] = max(0, int(data.get("ticks", 0)))
+                    if "forced_updates" in data:
+                        etat["paused_forced_updates"] = max(0, int(data.get("forced_updates", 0)))
+                    if isinstance(data.get("commands"), list):
+                        etat["commandes"] = data.get("commands", [])
+                else:
+                    paused_at = etat.get("paused_at")
+                    if paused_at is not None:
+                        etat["total_paused_sec"] = float(etat.get("total_paused_sec", 0.0) or 0.0) + max(0.0, now - paused_at)
+                        etat["paused_at"] = None
+                    etat["paused"] = False
+                partie.etat = etat
+                db.session.add(partie)
+                db.session.commit()
+                return partie.to_dict()
+
             res = verify_and_score_atc(partie.etat, data)
             partie.terminee = True
             partie.fin = datetime.now(UTC)
             partie.score = res["score"] if res["valid"] else 0
             partie.etat = {
                 **partie.etat,
+                "paused": False,
                 "valid": res["valid"],
                 "reason": res.get("reason"),
                 "verified_tick": res.get("tick", 0),
