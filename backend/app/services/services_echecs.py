@@ -42,7 +42,44 @@ def get_ou_creer_elo(utilisateur_id: int) -> EchecsElo:
 # Constantes Glicko-2
 TAU    = 0.5    # contrainte sur la volatilité (0.3-1.2, 0.5 recommandé)
 EPSILON = 0.000001
+PERIODE_RATING = timedelta(days=7)   # 1 période = 7 jours
+RD_MAX = 350.0                      
 
+
+# Augmentation automatique de RD pendant une période d'inactivité
+def _aware(dt):
+    """Rattache UTC à une date naïve relue depuis la base."""
+    if dt is None:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def appliquer_inactivite_rd():
+    """
+    Augmente le RD des joueurs inactifs : φ' = √(φ² + n·σ²),
+    n = nombre de périodes entières écoulées depuis mis_a_jour_le.
+    Idempotent : mis_a_jour_le avance de n périodes exactement.
+    """
+    maintenant = datetime.now(timezone.utc)
+
+    for elo in EchecsElo.query.filter(EchecsElo.rd < RD_MAX).all():
+        ref = _aware(elo.mis_a_jour_le)
+        if ref is None:
+            continue
+
+        n = int((maintenant - ref) / PERIODE_RATING)
+        if n < 1:
+            continue
+
+        phi = elo.rd / 173.7178
+        phi_new = math.sqrt(phi**2 + n * elo.volatilite**2)
+        elo.rd = min(RD_MAX, phi_new * 173.7178)
+        elo.mis_a_jour_le = ref + n * PERIODE_RATING   # explicite : évite la dérive
+
+    db.session.commit()
+
+
+# Mis à jour en fin de partie
 def _g(rd):
     return 1 / math.sqrt(1 + 3 * rd**2 / math.pi**2)
 
@@ -62,7 +99,7 @@ def glicko2_update(r, rd, sigma, opponents):
     """
     if not opponents:
         # Pas de partie : RD augmente (inactivité)
-        rd_new = min(math.sqrt(rd**2 + sigma**2), 350)
+        rd_new = min(math.sqrt(rd**2 + sigma**2), 350 / 173.7178)
         return r, rd_new, sigma
 
     # Étape 3 : calculer v (variance estimée)
@@ -135,7 +172,7 @@ def _to_glicko2(r, rd):
 
 def _from_glicko2(r, rd):
     """Convertit rating/RD de l'échelle Glicko-2 vers l'échelle classique."""
-    return round(173.7178 * r + 1500), round(173.7178 * rd)
+    return round(173.7178 * r + 1500), 173.7178 * rd
 
 def _rating_ia_effectif(rating_humain: int) -> int:
     return max(1320, min(rating_humain + 10, 3190))
