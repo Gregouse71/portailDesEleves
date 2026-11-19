@@ -47,15 +47,14 @@ def authorize():
         # Redirect to the frontend login page using a relative path to avoid host issues.
         return redirect(f"/login?next={encoded_next}")
 
-    baptise = getattr(current_user, "est_baptise", False)
-    if not baptise:
-        return "Utilisateur non trouvé", 404
-    
     try:
         # Authlib 1.x: Validate the request and get the grant object.
         # This will raise an error if client_id or redirect_uri is invalid.
         grant = authorization.get_consent_grant(end_user=current_user)
-        
+
+        if (grant.client.client_metadata or {}).get("require_baptise") is not False and not getattr(current_user, "est_baptise", False):
+            return "Utilisateur non trouvé", 404
+
         # Auto-approve: directly create the authorization response.
         response = authorization.create_authorization_response(grant=grant, grant_user=current_user)
         return response
