@@ -31,7 +31,8 @@ with app.app_context():
         ],
         "response_types": ["code"],
         "scope": "openid profile email",
-        "token_endpoint_auth_method": "client_secret_basic"
+        "token_endpoint_auth_method": "client_secret_basic",
+        "require_baptise": True
     })
 
     # 3. Save to the database
