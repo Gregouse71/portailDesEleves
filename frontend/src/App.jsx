@@ -34,6 +34,11 @@ const Jeux2048 = lazy(() => import("./pages/Jeux/2048"));
 const EchecsLobby = lazy(() => import("./pages/Jeux/Echecs/EchecsLobby"));
 const EchecsPartie = lazy(() => import("./pages/Jeux/Echecs/EchecsPartie"));
 const CleApi = lazy(() => import("./pages/CleApi/CleApi"));
+const PublicLayout = lazy(() => import("./layouts/PublicLayout"));
+const PublicAccueil = lazy(() => import("./pages/Public/PublicAccueil"));
+const PublicAdmissibles = lazy(() => import("./pages/Public/PublicLaVie"));
+const PublicEntreprises = lazy(() => import("./pages/Public/PublicEntreprises"));
+const PublicCours = lazy(() => import("./pages/Public/PublicCours"));
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -85,7 +90,13 @@ export default function App() {
           <Route path="/login" element={<FormulaireConnexion />} />
           <Route path="/reset/:token" element={<NouveauMDP />} />
           <Route path="/oublie" element={<MDPoublie />} />
-          <Route element={<ProtectedRoute />}>
+          <Route path="/public" element={<PublicLayout />}>
+            <Route index element={<PublicAccueil />} />
+            <Route path="lavie" element={<PublicAdmissibles />} />
+            <Route path="entreprises" element={<PublicEntreprises />} />
+            <Route path="cours" element={<PublicCours />} />
+          </Route>
+          <Route path="/" element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="assos">

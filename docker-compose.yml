@@ -7,14 +7,6 @@ services:
     depends_on:
       backend:
         condition: service_started
-      php:
-        condition: service_started
-    restart: unless-stopped
-
-  php:
-    image: php:8.4-fpm
-    volumes:
-      - ./public:/var/www/html:ro,z
     restart: unless-stopped
 
   backend:

@@ -116,7 +116,7 @@ Le frontend est une application React qui communique avec le backend via une API
 
 ## IV. Installation avec Podman
 
-Cette méthode permet de lancer l'ensemble des services (frontend, backend, base de données, valkey, php-fpm) de manière isolée dans un conteneur. C'est multiplateforme, plus facile à utilisé (quand ça marche), et reproductible (pas de "Ça marche sur mon orinateur).
+Cette méthode permet de lancer l'ensemble des services (frontend, backend, base de données, valkey) de manière isolée dans un conteneur. C'est multiplateforme, plus facile à utilisé (quand ça marche), et reproductible (pas de "Ça marche sur mon orinateur).
 
 ### A. Préparation
 

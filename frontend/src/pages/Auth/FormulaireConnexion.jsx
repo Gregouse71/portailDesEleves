@@ -3,8 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { seConnecter } from "../../api/api_global";
 import { Container, Form, Button, Alert, Card } from "react-bootstrap";
 import { useQueryClient } from "@tanstack/react-query";
+import { VP_GEEK_EMAIL } from "../../globals";
 
-const VP_GEEK_EMAIL = "vianney.decroux@etu.minesparis.psl.eu";
 const PORTAL_TITLE = "Portail des élèves";
 
 export default function FormulaireConnexion() {
@@ -85,16 +85,14 @@ export default function FormulaireConnexion() {
                 </Card.Body>
             </Card>
 
-            <div className="text-center mt-3 text-secondary" style={{ maxWidth: '500px' }}>
-                <p className="fs-6">
-                    Accès au <strong>{PORTAL_TITLE}</strong> de l&apos;École des <strong>Mines de Paris</strong>.
+            <div className="text-center mt-3 text-secondary" style={{ maxWidth: '700px' }}>
+                <p className="mb-3 fs-4">
+                    <Link to="/public" className="interactive-link">
+                        Retour à l'espace public ➢
+                    </Link>
                 </p>
                 <p className="small mb-1">
-                    En cas de problèmes d&apos;identification, contactez le
-                    <a href={`mailto:${VP_GEEK_EMAIL}`} className="ms-1">VP Geek ({VP_GEEK_EMAIL})</a>.
-                </p>
-                <p className="small">
-                    Si vous souhaitez vous désinscrire du site et/ou retirer vos données, contactez également le
+                    En cas de problèmes d&apos;identification, si vous souhaitez vous désinscrire du site et/ou retirer vos données, ou pour toute autre question, contactez le
                     <a href={`mailto:${VP_GEEK_EMAIL}`} className="ms-1">VP Geek ({VP_GEEK_EMAIL})</a>.
                 </p>
             </div>

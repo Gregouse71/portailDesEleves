@@ -38,7 +38,7 @@ class Config:
     RATELIMIT_STORAGE_OPTIONS   = {"socket_connect_timeout": 30}
     RATELIMIT_STRATEGY          = "moving-window"               # "fixed-window"
 
-    AUTHLIB_INSECURE_TRANSPORT  = True                          # OAuth sans HTTPS, nécessaire pour le reverse proxy
+    AUTHLIB_INSECURE_TRANSPORT  = True                          # OAuth sans HTTPS, nécessaire pour tester
     OAUTH2_TOKEN_EXPIRES_IN = { # 1 mois
         'authorization_code': 2592000,
         'implicit': 2592000,

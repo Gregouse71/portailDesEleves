@@ -22,7 +22,6 @@ export function ProtectedRoute() {
         queryFn: () => obtenirIdUser({}),
         enabled: !isDead,
         retry: (failureCount, error) => {
-            console.log(isDead)
             if (error?.response?.status === 401) return false;
             return failureCount < 3;
         }
@@ -65,6 +64,9 @@ export function ProtectedRoute() {
     const isUnauthorized = (isError && error?.response?.status === 401) || (isErrorUser && errorUser?.response?.status === 401);
 
     if (!id || isUnauthorized || isError) {
+        if (location.pathname === "/") {
+            return <Navigate to="/public" replace />;
+        }
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
